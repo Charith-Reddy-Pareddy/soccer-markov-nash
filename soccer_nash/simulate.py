@@ -28,6 +28,12 @@ class GameResult:
             return 0.0
         return 1.0 if self.winner == 0 else -1.0
 
+    def discounted_return(self, gamma: float) -> float:
+        """Row player's return: the +/-1 outcome discounted to the start state."""
+        if self.winner is None:
+            return 0.0
+        return gamma ** (self.steps - 1) * self.outcome_for_row
+
 
 def _sample(dist: np.ndarray, rng: np.random.Generator) -> int:
     return int(rng.choice(len(dist), p=dist / dist.sum()))
@@ -99,11 +105,14 @@ def win_rates(
     n_games: int = 500,
     rng: np.random.Generator | None = None,
     start: State | None = None,
+    gamma: float = 1.0,
 ) -> dict[str, float]:
     rng = rng or np.random.default_rng(0)
     wins = ties = losses = 0
+    discounted = 0.0
     for _ in range(n_games):
         r = play_game(game, row_policy, col_policy, rng, start)
+        discounted += r.discounted_return(gamma)
         if r.winner is None:
             ties += 1
         elif r.winner == 0:
@@ -114,4 +123,6 @@ def win_rates(
         "row_win": wins / n_games,
         "tie": ties / n_games,
         "row_loss": losses / n_games,
+        "row_return": (wins - losses) / n_games,
+        "discounted_return": discounted / n_games,
     }

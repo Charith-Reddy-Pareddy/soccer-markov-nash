@@ -36,6 +36,13 @@ the scripted opponent, imitates it with a bias-free `5->99->99->4` network, and
 writes the Q7 weights and the Q8 winning trajectory. See
 [docs/a10_part2.md](docs/a10_part2.md).
 
+## Self-play
+
+`python scripts/selfplay.py` plays the Nash Q policy against itself (empirical
+return matches the value function) and reports exploitability: the Nash policy
+has a `~0` duality gap, while best-responding to one assumed opponent is more
+exploitable than random play. See [docs/selfplay.md](docs/selfplay.md).
+
 ## Reward shaping
 
 `soccer_nash.shaping` adds intermediate rewards on top of the sparse win/lose

@@ -90,6 +90,20 @@ Running the full LP (`mixed`) over the 7x5 random game reproduces the `hybrid`
 value function to `4e-16` -- confirmation that `hybrid` is exact and that the LP
 is only doing work on the 94 no-saddle states (it takes ~8 min vs ~20 s).
 
+## Q5: Is the Nash Q policy actually an equilibrium, and is it worth playing?
+
+**Yes and yes.** Self-play (`scripts/selfplay.py`):
+
+- The duality gap `V0_br(s0) + V1_br(s0)` of the Nash Q policy is `< 1e-9` for
+  every move order -- an optimal opponent cannot beat the equilibrium value.
+- Nash vs. Nash from the kickoff reproduces the value: forced draws in the
+  deterministic and coinflip games, a `+0.157` empirical discounted return
+  (vs. `0.150` computed) in the random game.
+- The Part 2 best-response-to-the-scripted-opponent policy has exploitability
+  `0.43` -- worse than moving uniformly at random (`0.39`) once the opponent
+  best-responds to it. Best-responding to one assumed opponent is fragile; the
+  Nash policy is the safe submission.
+
 ## Value-function structure (deterministic game)
 
 - Values fall in clean `gamma^k` bands, `k` = moves to a forced score.
