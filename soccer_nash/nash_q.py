@@ -26,6 +26,7 @@ import numpy as np
 
 from soccer_nash.game import JOINT_ACTIONS, SoccerGame, State
 from soccer_nash.matrix_games import (
+    game_value,
     pure_bounds,
     security_strategy_row,
     solve_zero_sum,
@@ -104,11 +105,11 @@ class NashQIteration:
         if self.mode == "pure":
             return security_strategy_row(m)[1]
         if self.mode == "mixed":
-            return solve_zero_sum(m)[0]
+            return game_value(m)
         lo, hi = pure_bounds(m)
         if hi - lo <= _SADDLE_TOL:
             return lo
-        return solve_zero_sum(m)[0]
+        return game_value(m)
 
     # -------------------------------------------------------------- iteration
     def run(self) -> NashQResult:

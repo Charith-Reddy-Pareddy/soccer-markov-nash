@@ -77,6 +77,11 @@ def _lp_row_value(A: np.ndarray) -> tuple[float, np.ndarray]:
     return float(res.x[-1]), p
 
 
+def game_value(A: np.ndarray) -> float:
+    """Row player's minimax value only (one LP, no strategies)."""
+    return _lp_row_value(np.asarray(A, dtype=float))[0]
+
+
 def solve_zero_sum(A: np.ndarray) -> tuple[float, np.ndarray, np.ndarray]:
     """Return ``(value, row_strategy, col_strategy)`` for the zero-sum game.
 
@@ -86,5 +91,5 @@ def solve_zero_sum(A: np.ndarray) -> tuple[float, np.ndarray, np.ndarray]:
     A = np.asarray(A, dtype=float)
     value, p = _lp_row_value(A)
     # Player 1 maximises -A^T as a row player.
-    neg_value, q = _lp_row_value(-A.T)
+    _, q = _lp_row_value(-A.T)
     return value, p, q

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from soccer_nash.matrix_games import (
+    game_value,
     has_pure_saddle,
     pure_bounds,
     pure_saddle_points,
@@ -57,6 +58,13 @@ def test_lp_value_is_between_pure_bounds():
         assert q.sum() == pytest.approx(1.0)
         # Row strategy guarantees at least `value` against any column.
         assert np.min(p @ A) >= value - 1e-6
+
+
+def test_game_value_matches_solve_zero_sum():
+    rng = np.random.default_rng(1)
+    for _ in range(30):
+        A = rng.normal(size=(4, 4))
+        assert game_value(A) == pytest.approx(solve_zero_sum(A)[0], abs=1e-7)
 
 
 def test_rps_style_value_zero():
