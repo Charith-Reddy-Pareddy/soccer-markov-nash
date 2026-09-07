@@ -149,26 +149,40 @@ mixed        94      +0.150        ~3.6 M                ~8 min    (exact, waste
   below the true value elsewhere. Pure-strategy iteration is efficient but, when
   a mixed equilibrium is the real answer, wrong.
 
-### Freeze-then-iterate
+### Freeze-then-iterate, and its staleness
 
 `run_policy_iteration()` solves each stage game only on its outer rounds,
-holding the strategies fixed for up to 50 cheap linear evaluation sweeps in
-between. It reaches the same fixed point (`|diff| < 3e-9`) with markedly fewer
-matrix-game solves:
+holding the strategies fixed for cheap linear evaluation sweeps in between. It
+reaches the same fixed point (`|diff| < 3e-9`) with ~5x fewer matrix-game solves
+(1 879 vs 9 672 on the random game) -- but it records the *staleness* the
+scheme's proposer flagged: how far the frozen strategies are from the Nash of
+the current Q. That stays **maximal (a full pure-strategy flip) for 16 outer
+rounds**, then snaps to `< 1e-8`. The thrashing eats the wall-clock saving
+(17 s vs 14 s), and on the deterministic game freeze-then-iterate is strictly
+worse (65 LP solves where value iteration needs 0). Value iteration with the
+per-sweep Nash cache -- which `run()` already does -- wins here; the freeze
+trick pays off only where the equilibrium solve dominates the backup.
 
-```
-random move order, hybrid solver, gamma = 0.9
-                  rounds/sweeps   matrix-game solves   wall clock
-value iteration        108            9 672              13.5 s
-policy iteration        25            2 255              20.5 s
-```
+## 4b. Numerical foundations
 
-On this small game the LP is not the bottleneck -- building the 2380 stage
-matrices each sweep is -- so cutting solves 4x does not cut wall-clock. The
-technique pays off exactly where the project notes expect: larger action spaces
-or general-sum games, where the equilibrium solve (support enumeration,
-Lemke-Howson) dominates the backup. `scripts/policy_iteration.py` runs the
-comparison.
+Three things the research meeting flagged as unsolved for the discrete solver
+(`soccer_nash/numerics.py`, `scripts/numerics.py`, `docs/numerics.md`):
+
+- **The value is three numbers** -- what the row player guarantees, gets, and
+  can reach. `value_bracket` returns all three; the true minimax value is
+  bracketed, so `upper - lower` certifies the LP error. On the random game the
+  gap is `1.1e-16` per stage and `8.7e-10` accumulated: with `scipy`'s HiGHS the
+  concern is real in theory, negligible in practice.
+- **Rounding to force indifference is scale-blind.** `classify_stage_game`
+  splits stage games into `pure` (strict saddle), `mixed`, and `degenerate`
+  (non-strict saddle) with a tolerance that scales with the entries.
+  `rounding_changes_saddle` shows fixed 0.1-rounding flips the saddle status of
+  **62** of the random game's stage games -- exactly the small-entry mixed
+  region -- while the deterministic game (clean `gamma^k` bands) is safe to
+  round but has a **non-strict saddle at every one of its 2 380 states**.
+- **The mixed states are matching pennies.** Of the 94 states that need mixing,
+  **68 reduce to a 2x2** support: carrier {advance, hold} vs defender {block,
+  intercept}. That is the "place where they had to have" mixed strategies.
 
 ## 5. The equilibrium policy is worth playing
 

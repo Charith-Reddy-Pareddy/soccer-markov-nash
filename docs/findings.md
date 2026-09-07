@@ -117,9 +117,27 @@ See [a10_competition.md](a10_competition.md).
 
 `run_policy_iteration()` solves each stage game only on its outer rounds and
 holds the strategies fixed for cheap linear evaluation sweeps in between. On the
-7x5 random game it reaches the same fixed point with ~4x fewer matrix-game
-solves (2255 vs 9672), though wall-clock is not lower on a game this small
-because stage-matrix construction dominates. `scripts/policy_iteration.py`.
+7x5 random game it reaches the same fixed point with ~5x fewer matrix-game
+solves (1879 vs 9672), but the frozen strategies stay *maximally stale* (a full
+pure flip) for 16 outer rounds before locking in, so wall-clock is not lower
+(17s vs 14s). Value iteration with the per-sweep Nash cache wins here.
+`scripts/policy_iteration.py`.
+
+## Q7: Numerical foundations (from the research meeting)
+
+`scripts/numerics.py`, `docs/numerics.md`.
+
+- **The "3 numbers" / value bracket:** with `scipy` HiGHS the row player's
+  guaranteed / bilinear / best-response values agree to `1.1e-16` per stage
+  game, `8.7e-10` accumulated. `value_bracket` certifies the LP error.
+- **Rounding under discounting:** rounding stage-game entries to 0.1 flips the
+  pure-saddle status of 62 of the random game's stage games (the small-entry
+  mixed region); 0 on the deterministic game. `classify_stage_game` uses a
+  scale-aware tolerance instead.
+- **Degeneracy:** the deterministic game has a *non-strict* saddle at all 2380
+  states; the random game has 604 strict-pure, 1682 degenerate, 94 mixed.
+- **The mixed states:** 68 of the 94 reduce to a 2x2 matching-pennies support
+  (carrier {advance, hold} x defender {block, intercept}).
 
 ## Value-function structure (deterministic game)
 
