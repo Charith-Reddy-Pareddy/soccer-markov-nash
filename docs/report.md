@@ -260,9 +260,13 @@ satisfying:
   worse than moving uniformly at random -- which is exactly the A10 competition's
   warning about non-equilibrium submissions.
 - The A10 deliverables (Part 1 successor/reward tables, Part 2 imitation network,
-  competition networks) are in `docs/a10_*.md`; the imitation and competition
-  networks' fit accuracy and exploitability, over 5 seeds, are in
-  `experiments/a10_*_seeds.csv`.
+  competition networks) are in `docs/a10_*.md`. Over 5 seeds
+  (`experiments/a10_competition_seeds.csv`): the Part 2 imitation network plays
+  an optimal action at `0.990 +/- 0.000` of states and wins the Q8 rollout every
+  time; the competition Network Second is exact (`1.000` optimal, `0`
+  exploitable) but Network First sits at `0.994` optimal and a stubborn
+  `0.28 +/- 0.01` exploitability -- one badly-fit state a best-responder can
+  exploit, and it does not wash out with re-seeding.
 
 ## 8. Neural Nash-Q vs. the exact solver
 
@@ -280,8 +284,8 @@ biases (frozen target network, 600 epochs) to the exact stage matrices of the
 | action agreement | 100% | 43% +/- 2% |
 | pure/mixed classification agreement | 100% | 67% +/- 2% |
 | exploitability (duality gap) | `<1e-9` | 0.43 +/- 0.04 |
-| convergence (epochs to MSE plateau) | exact fixed point | ~250 of 600, then flat |
-| runtime | 9 sweeps, 0.3 s | 600 epochs, 32 +/- 1 s |
+| convergence (epochs to MSE plateau, of 600) | exact fixed point | 469 +/- 31; still creeping down at 600 in 3/5 seeds |
+| runtime | 9 sweeps, 0.3 s | 600 epochs, ~35 s |
 
 Deterministic game only -- `train_nash_dqn` rejects the stochastic variants, so
 the network is never asked to represent a genuinely mixed stage game. Even so it

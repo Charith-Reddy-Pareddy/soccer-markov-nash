@@ -33,15 +33,19 @@ artifact that closes the point.
   dilution effect); goal width past 2 has a small negative coefficient. So goal
   width is a switch, not a dial, and board size only dilutes.
 - **5** -- every neural fit and every stochastic rollout now takes `--seeds`
-  and reports mean +/- sd: DQN (`nash_dqn_seeds.csv`), the A10 imitation net,
-  the A10 competition nets (`a10_competition_seeds.csv`), and Nash-vs-Nash
-  self-play. Exact dynamic-programming results carry no seed by construction.
+  and reports mean +/- sd over seeds 0-4. DQN action agreement
+  `0.43 +/- 0.02`, exploitability `0.43 +/- 0.04` (`nash_dqn_seeds.csv`); A10
+  imitation net `0.990 +/- 0.000` optimal, 5/5 Q8 wins; A10 competition Network
+  First `0.28 +/- 0.01` exploitable / Second `0.00` (`a10_competition_seeds.csv`);
+  Nash-vs-Nash self-play `+0.149 +/- 0.005`. Exact DP results carry no seed.
 - **6** -- `benchmark.py` times the hybrid over 5 repeats and reports the
   median, plus `LP calls`, `states needing LP` (3.95%, exact and portable),
   `LP/state/sweep`. The report separates this from the wall-clock ratio.
-- **12** -- the exact-vs-DQN table is six measured rows over 5 seeds, with the
-  ground-truth column filled in and a note that the network only handles the
-  deterministic game.
+- **12** -- the exact-vs-DQN table (report `&sect;8`) is seven measured rows
+  over 5 seeds -- value (max + mean), action agreement, pure/mixed
+  classification, exploitability, convergence (epochs to MSE plateau: 469 +/- 31
+  of 600, 3/5 still creeping), runtime -- with the ground-truth column filled in
+  and a note that `train_nash_dqn` only handles the deterministic game.
 
 ## Still open (not part of this review)
 

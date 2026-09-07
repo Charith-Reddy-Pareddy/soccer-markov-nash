@@ -482,7 +482,8 @@
     <ul class="plain">
       <li>Duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; no opponent beats the game value.</li>
       <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.149 &plusmn; 0.005</span> empirical discounted return over 5 seeds of 3&thinsp;000 games (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
-      <li>A best response to one assumed opponent is fragile: the Part&nbsp;2 policy has exploitability <span class="mono">0.43</span> &mdash; worse than random &mdash; which is the A10 competition's warning about non-equilibrium submissions. The A10 imitation and competition networks' fit accuracy and exploitability over 5 seeds are in <span class="mono">experiments/a10_*_seeds.csv</span>.</li>
+      <li>A best response to one assumed opponent is fragile: the Part&nbsp;2 policy has exploitability <span class="mono">0.43</span> &mdash; worse than random &mdash; which is the A10 competition's warning about non-equilibrium submissions.</li>
+      <li>A10 networks over 5 seeds (<span class="mono">experiments/a10_competition_seeds.csv</span>): the Part&nbsp;2 imitation net plays optimally at <span class="mono">0.990&nbsp;&plusmn;&nbsp;0.000</span> of states and wins Q8 every time; competition Network Second is exact, but Network First sits at a stubborn <span class="mono">0.28&nbsp;&plusmn;&nbsp;0.01</span> exploitability that does not wash out with re-seeding.</li>
     </ul>
   </section>
 
@@ -501,11 +502,12 @@
           <tr><td>action agreement</td><td class="yes">100%</td><td class="no">43% &plusmn; 2%</td></tr>
           <tr><td>pure/mixed classification</td><td class="yes">100%</td><td class="no">67% &plusmn; 2%</td></tr>
           <tr><td>exploitability</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.43 &plusmn; 0.04</td></tr>
-          <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, 32 &plusmn; 1 s</td></tr>
+          <tr><td>convergence (epochs to plateau, of 600)</td><td class="yes">exact</td><td class="no">469 &plusmn; 31; 3/5 still creeping</td></tr>
+          <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, ~35 s</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The network fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions: worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, and it mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
+    <p>Deterministic game only &mdash; <span class="mono">train_nash_dqn</span> rejects the stochastic variants, so the network never has to represent a genuinely mixed stage game. Even so it trails: it fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions &mdash; worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
     <ul class="plain">
       <li><b>A proof (partly done).</b> The single-cell pure-saddle theorem now has the defender's optimal strategy in closed form and a dominance-solvability certificate for every finite board (<span class="mono">docs/proof.md</span>); the carrier's half, board-size-free, is open.</li>
     </ul>
