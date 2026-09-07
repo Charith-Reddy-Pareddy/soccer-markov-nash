@@ -100,12 +100,15 @@ class MLP:
                 # which reduces to a one-hot label when the mask has one entry.
                 masked = p * mb
                 soft = masked / np.clip(masked.sum(axis=1, keepdims=True), 1e-12, None)
-                g3 = wb * (p - soft) / wb.sum()
-                dW3 = a2.T @ g3
-                g2 = (g3 @ self.W3.T) * (z2 > 0)
-                dW2 = a1.T @ g2
-                g1 = (g2 @ self.W2.T) * (z1 > 0)
-                dW1 = x.T @ g1
+                delta = wb * (p - soft) / wb.sum()
+
+                relu2 = z2 > 0
+                back2 = (delta @ self.W3.T) * relu2
+                back1 = back2 @ self.W2.T
+
+                dW3 = a2.T @ delta
+                dW2 = a1.T @ back2
+                dW1 = x.T @ back1
 
                 t += 1
                 for (name, w), grad in zip(self._named(), (dW1, dW2, dW3)):
