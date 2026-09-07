@@ -92,7 +92,7 @@ class NashQIteration:
                 ns = nxt[i, j]
                 if not self.game.is_terminal(ns):
                     cont[i, j] = values[ns]
-        return self.gamma * (self._reward[s] + cont)
+        return self._reward[s] + self.gamma * cont
 
     def _stage_value(self, m: np.ndarray) -> float:
         if self.mode == "pure":

@@ -31,6 +31,15 @@ def test_value_decays_with_distance_to_goal(hybrid_result):
     assert r.values[(4, 2, 0, 0, 0)] == pytest.approx(0.81)
 
 
+def test_immediate_scoring_reward_is_undiscounted():
+    # A state with a forced score next move is worth exactly +1, not gamma.
+    game = SoccerGame()
+    for gamma in (0.5, 0.9, 0.99):
+        r = NashQIteration(game, gamma=gamma, mode="hybrid", tol=1e-9).run()
+        assert r.values[(6, 2, 0, 0, 0)] == pytest.approx(1.0)
+        assert r.values[(5, 2, 0, 0, 0)] == pytest.approx(gamma)
+
+
 def test_defender_between_carrier_and_goal_neutralizes(hybrid_result):
     _, r = hybrid_result
     assert r.values[(1, 2, 5, 2, 0)] == pytest.approx(0.0)
