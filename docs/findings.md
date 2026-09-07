@@ -104,6 +104,16 @@ is only doing work on the 94 no-saddle states (it takes ~8 min vs ~20 s).
   best-responds to it. Best-responding to one assumed opponent is fragile; the
   Nash policy is the safe submission.
 
+## Q6: A neural policy is only as safe as its worst state
+
+The competition submission is the Nash Q policy (exploitability 0). Fitting it to
+a bias-free `5->99->99->4` network with partial-label training gets ~99% of
+states' action right, but the residual matters: a single state where the network
+prefers a losing move lets a best-responding opponent force a win. Trained
+Network First landed at exploitability ~0.3, Network Second at ~0.0 -- re-seed
+and retrain until the exploitability number the script prints is near 0.
+See `docs/a10_competition.md`.
+
 ## Value-function structure (deterministic game)
 
 - Values fall in clean `gamma^k` bands, `k` = moves to a forced score.
