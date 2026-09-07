@@ -218,26 +218,18 @@ satisfying:
 - **General-sum, done.** `soccer_nash/markov_game.py` solves 2-player
   general-sum Markov games by enumerating *all* stage equilibria
   (`support_enum.py`) and selecting one -- the notes' "largest sum of values"
-  rule, a no-op for zero-sum but decisive for Battle of the Sexes (it avoids the
-  value-destroying mixed equilibrium). It keeps the pure-first philosophy: check
-  for a pure Nash before enumerating.
-- **The dog / debate game, done.** The research group's second game
-  (`soccer_nash/dog_game.py`) has a closed-form Nash -- both players in their
-  corners, dog at `w_a*house_a + w_b*house_b` -- and the general-sum solver hits
-  it exactly in 1D and 2D, symmetric and asymmetric weights. A finding: *every*
-  stage game of the discretised dog game has a pure Nash equilibrium (support
-  enumeration is never triggered), so the pure-first strategy pays off here too;
-  many states have several pure equilibria, so the selection rule matters.
+  rule, a no-op for zero-sum but decisive for Battle of the Sexes, where it
+  avoids the mixed equilibrium whose value is below either pure one. It keeps
+  the pure-first philosophy: check for a pure Nash before enumerating. The
+  soccer game itself is zero-sum, so this is an extension point rather than a
+  change to the main result.
 - **Function approximation, partial.** `soccer_nash/nash_dqn.py` fits a network
   to the stage-game matrices. Even with the A10-format constraints relaxed it
   trails the exact solver on value error and action agreement (section 10); the
-  exact solver should stay the ground truth while the continuous-action work
+  exact solver should stay the ground truth while any continuous-action work
   develops.
 - **A proof (open).** Can the "one-cell goal => pure everywhere" observation be
   turned into a theorem about the transition structure?
-- **Continuous actions (open).** The dog game's real form has a continuous
-  direction/position action space; projected gradient or best-response dynamics
-  on the neural Q is the next step, with the discrete solver as the reference.
 
 ## 10. Neural Nash-Q vs. the exact solver
 
