@@ -42,7 +42,7 @@ def gamma_sweep() -> None:
 
 
 def tolerance_sweep() -> None:
-    tols = [1e-12, 1e-10, 1e-8, 1e-6, 1e-4, 1e-3]
+    tols = [1e-12, 1e-10, 1e-8, 1e-6, 1e-4, 1e-3, 1e-2, 3e-2, 1e-1]
     rows = [
         run_config(move_order="random", gamma=0.9, rel_tol=t) for t in tols
     ]
