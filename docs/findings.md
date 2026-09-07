@@ -2,13 +2,15 @@
 
 ## Setup
 
-- Environment: 7x5 grid. Two move-resolution rules:
+- Environment: 7x5 grid. Three move-resolution rules:
   - **deterministic** (A10 rule): carrier wins contested squares, swaps flip
     possession, a carrier blocked by a standing opponent loses the ball.
     Transitions are a pure function of the joint action.
   - **random** (Littman rule): the two moves are applied in a random order, each
     ordering with probability 1/2; a move into the other player's current cell
     fails and hands over the ball if the mover was carrying it.
+  - **coinflip**: the A10 rule, but a fair coin (not possession) decides who
+    wins a contested square or a swap.
 - Rewards: `+1 / -1 / 0`, zero-sum, immediate reward undiscounted.
 - Solver: value iteration on `V(s) = val(E[R(s) + gamma * V(s')])` with three
   stage solvers -- `pure` (maximin), `mixed` (LP minimax), `hybrid` (pure saddle
@@ -52,6 +54,20 @@ no-saddle states:
 
 Small or narrow boards have no such states: the contested-square geometry that
 forces mixing needs room to arise.
+
+### It is the move *order*, not the randomness, that breaks it
+
+The **coinflip** rule is also stochastic -- a fair coin decides every contested
+square and swap -- yet its Nash Q value function is *identical to the
+deterministic game's* (`max |V_det - V_coin| = 0` for every gamma) and it has a
+pure stationary equilibrium at every state. With optimal play neither side
+enters a contest it would lose under the deterministic rule, so the coin is
+never actually flipped on the equilibrium path.
+
+So randomness in the *outcome* of a contest changes nothing; only the
+sequential coupling of Littman's random move order -- where whether you steal
+the ball depends on who is resolved first *and* on both targets -- creates the
+matching-pennies sub-games that need mixed strategies.
 
 ## Q3: Does using pure strategies anyway cost anything?
 

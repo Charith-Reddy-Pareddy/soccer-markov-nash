@@ -100,6 +100,22 @@ def test_standing_carrier_keeps_ball_when_bumped(game):
     assert nxt[4] == 1  # bump still transfers the ball
 
 
+def test_carrier_barging_into_stationary_opponent_loses_the_ball(game):
+    # Player 0 carries and steps into player 1, who is pinned against the wall.
+    s = (1, 2, 0, 2, 0)
+    nxt, _, done = game.step(s, Action.L, Action.L)
+    assert not done
+    assert nxt[0:2] == (1, 2)  # carrier blocked by the standing opponent
+    assert nxt[2:4] == (0, 2)  # opponent stays
+    assert nxt[4] == 1  # the contested-cell rule still hands over the ball
+
+    # Symmetric case with player 1 carrying.
+    s = (6, 3, 5, 3, 1)
+    nxt, _, done = game.step(s, Action.R, Action.R)
+    assert nxt[0:4] == (6, 3, 5, 3)
+    assert nxt[4] == 0
+
+
 def test_successors_length_and_order(game):
     s = game.initial_state()
     succ = game.successors(s)

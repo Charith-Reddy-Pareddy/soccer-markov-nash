@@ -14,6 +14,9 @@ rules are supported:
 * ``move_order="random"`` -- Littman's rule: the two moves are applied in a
   random order (each ordering with probability 1/2); a move into the other
   player's current cell fails and transfers the ball if the mover held it.
+* ``move_order="coinflip"`` -- the A10 rule but a fair coin, not possession,
+  decides who wins a contested square or a swap (each player with probability
+  1/2). ``deterministic`` is this rule with the carrier always winning.
 """
 
 from __future__ import annotations
@@ -64,7 +67,7 @@ class SoccerGame:
     move_order: str = "deterministic"
 
     def __post_init__(self) -> None:
-        if self.move_order not in ("deterministic", "random"):
+        if self.move_order not in ("deterministic", "random", "coinflip"):
             raise ValueError(f"unknown move_order {self.move_order!r}")
 
     # ------------------------------------------------------------------ basics
@@ -117,14 +120,19 @@ class SoccerGame:
         reward = (1, -1) if winner == 0 else (-1, 1)
         return (-1, -1, -1, -1, winner), reward, True
 
-    def _resolve_deterministic(
+    def _resolve_with_winner(
         self,
         p0: tuple[int, int],
         p1: tuple[int, int],
         a0: Action,
         a1: Action,
         b: int,
+        winner: int,
     ) -> tuple[State, tuple[int, int], bool]:
+        """Resolve a joint action where ``winner`` wins any contest.
+
+        The A10 deterministic rule is this with ``winner = b`` (the carrier).
+        """
         (t0, s0) = self._target(0, p0, a0, has_ball=(b == 0))
         (t1, s1) = self._target(1, p1, a1, has_ball=(b == 1))
 
@@ -134,26 +142,37 @@ class SoccerGame:
         if s1:
             return self._score_result(1)
 
+        pos = (p0, p1)
+        tgt = (t0, t1)
+        loser = 1 - winner
+
         if t0 == t1:
-            # Both want the same cell: carrier takes it, other keeps its cell
-            # and steals the ball. A carrier blocked by a standing opponent
-            # cannot advance.
-            new_b = 1 - b
-            if b == 0:
-                n1 = p1
-                n0 = t0 if t0 != n1 else p0
-            else:
-                n0 = p0
-                n1 = t1 if t1 != n0 else p1
+            # Contested cell: the winner moves in (unless the loser is standing
+            # on it) and the loser takes the ball either way.
+            n = [pos[0], pos[1]]
+            if tgt[winner] != pos[loser]:
+                n[winner] = tgt[winner]
+            n0, n1 = n
+            new_b = loser
         elif t0 == p1 and t1 == p0:
-            # Swap: players exchange cells and possession flips.
+            # Swap: players exchange cells; the coin decides possession.
             n0, n1 = p1, p0
-            new_b = 1 - b
+            new_b = loser
         else:
             n0, n1 = t0, t1
             new_b = b
 
         return (n0[0], n0[1], n1[0], n1[1], new_b), (0, 0), False
+
+    def _resolve_deterministic(
+        self,
+        p0: tuple[int, int],
+        p1: tuple[int, int],
+        a0: Action,
+        a1: Action,
+        b: int,
+    ) -> tuple[State, tuple[int, int], bool]:
+        return self._resolve_with_winner(p0, p1, a0, a1, b, winner=b)
 
     def _resolve_sequential(
         self,
@@ -199,9 +218,19 @@ class SoccerGame:
             ns, reward, _ = self._resolve_deterministic(p0, p1, a0, a1, b)
             return [(1.0, ns, reward)]
 
+        if self.move_order == "random":
+            branches = [
+                self._resolve_sequential(p0, p1, a0, a1, b, first)
+                for first in (0, 1)
+            ]
+        else:  # coinflip
+            branches = [
+                self._resolve_with_winner(p0, p1, a0, a1, b, winner)
+                for winner in (0, 1)
+            ]
+
         merged: dict[tuple[State, tuple[int, int]], float] = {}
-        for first in (0, 1):
-            ns, reward, _ = self._resolve_sequential(p0, p1, a0, a1, b, first)
+        for ns, reward, _ in branches:
             merged[(ns, reward)] = merged.get((ns, reward), 0.0) + 0.5
         return [(prob, ns, reward) for (ns, reward), prob in merged.items()]
 

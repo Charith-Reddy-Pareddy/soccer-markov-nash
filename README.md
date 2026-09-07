@@ -50,6 +50,9 @@ change the solution. See [docs/shaping.md](docs/shaping.md).
 - **Random move order:** ~4% of stage games (7x5 board) have no pure saddle, so
   no pure stationary equilibrium exists; the `pure` solver then under-values the
   kickoff by 0.15. Small/narrow boards keep a pure equilibrium.
+- **Coinflip tie-break:** stochastic, yet its value function is identical to the
+  deterministic game's and it keeps a pure equilibrium everywhere -- it is
+  Littman's move *order*, not randomness, that forces mixed strategies.
 
 See [docs/findings.md](docs/findings.md).
 
@@ -71,6 +74,8 @@ in the public page). This repo uses the standard Littman soccer geometry:
 - Collisions (`random`): the two moves are applied in a random order (each with
   probability 1/2); a move into the other player's current cell fails, and
   transfers the ball if the mover held it.
+- Collisions (`coinflip`): the A10 rule, but a fair coin (not possession)
+  decides who wins a contested square or a swap.
 - Rewards: `+1` win, `-1` loss, `0` otherwise (zero-sum). Game ties after 100
   steps.
 
