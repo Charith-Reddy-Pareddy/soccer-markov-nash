@@ -40,7 +40,9 @@ class PotentialShaping:
     def reward_delta(
         self, game: SoccerGame, s: State, s_next: State, gamma: float
     ) -> float:
-        return gamma * (self.phi(game, s_next) - self.phi(game, s))
+        # Ng, Harada & Russell (1999): the current-state potential is NOT
+        # discounted. ``gamma * (phi(s') - phi(s))`` would break invariance.
+        return gamma * self.phi(game, s_next) - self.phi(game, s)
 
 
 class StepPossessionBonus:

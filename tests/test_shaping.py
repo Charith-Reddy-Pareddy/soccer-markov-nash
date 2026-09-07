@@ -23,6 +23,17 @@ def test_phi_is_zero_on_terminal_states(game):
     assert sh.phi(game, (-1, -1, -1, -1, 1)) == 0.0
 
 
+def test_reward_delta_does_not_discount_the_current_potential(game):
+    sh = PotentialShaping(0.1, 0.1)
+    s, s_next = (3, 2, 4, 2, 0), (4, 2, 4, 3, 0)
+    gamma = 0.9
+    expected = gamma * sh.phi(game, s_next) - sh.phi(game, s)
+    assert sh.reward_delta(game, s, s_next, gamma) == pytest.approx(expected)
+    # The wrong form gamma*(phi(s') - phi(s)) would give a different number here.
+    wrong = gamma * (sh.phi(game, s_next) - sh.phi(game, s))
+    assert not sh.reward_delta(game, s, s_next, gamma) == pytest.approx(wrong)
+
+
 def test_phi_sign_follows_possession(game):
     sh = PotentialShaping(w_ball=0.1, w_advance=0.0)
     assert sh.phi(game, (3, 2, 4, 2, 0)) > 0  # player 0 has the ball
