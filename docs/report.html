@@ -16,6 +16,8 @@
     --pitch-soft: #dfeae1;
     --ember: #a94e18;
     --ember-soft: #f2e5da;
+    --p0: #2f6bb0;
+    --p1: #2f8a52;
     --shadow: 24px 24px 60px -30px rgba(25, 45, 33, .28);
   }
   @media (prefers-color-scheme: dark) {
@@ -32,6 +34,8 @@
       --pitch-soft: #1f2a20;
       --ember: #dd9057;
       --ember-soft: #2a2117;
+      --p0: #6ea8de;
+      --p1: #7cba95;
       --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
     }
   }
@@ -48,6 +52,8 @@
     --pitch-soft: #1f2a20;
     --ember: #dd9057;
     --ember-soft: #2a2117;
+    --p0: #6ea8de;
+    --p1: #7cba95;
     --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
   }
 
@@ -272,6 +278,7 @@
       --rule: #c9d2cb; --rule-strong: #a9b4ab;
       --pitch: #256b45; --pitch-soft: #e8f0e9;
       --ember: #9c4614; --ember-soft: #f4e8de;
+      --p0: #235a99; --p1: #256b45;
       --shadow: none;
     }
     body { font-size: 10.5pt; line-height: 1.5; }
@@ -306,7 +313,7 @@
   </header>
 
   <div class="hero fade">
-    <svg viewBox="0 0 720 300" role="img" aria-label="A 7 by 5 soccer grid: player 0 on the left carrying the ball, player 1 on the right, goal mouths on the middle three rows of each edge.">
+    <svg viewBox="0 0 720 300" role="img" aria-label="A 7 by 5 soccer grid: player 0 (blue) on the left carrying the ball, player 1 (green) on the right, goal mouths on the middle three rows of each edge.">
       <rect x="40" y="20" width="640" height="260" fill="var(--tint)" stroke="var(--rule-strong)" stroke-width="1.5"/>
       <g stroke="var(--rule)" stroke-width="1">
         <line x1="131.4" y1="20" x2="131.4" y2="280"/><line x1="222.9" y1="20" x2="222.9" y2="280"/>
@@ -317,19 +324,19 @@
         <line x1="40" y1="72" x2="680" y2="72"/><line x1="40" y1="124" x2="680" y2="124"/>
         <line x1="40" y1="176" x2="680" y2="176"/><line x1="40" y1="228" x2="680" y2="228"/>
       </g>
-      <rect x="34" y="72" width="6" height="156" fill="var(--pitch)"/>
-      <rect x="680" y="72" width="6" height="156" fill="var(--pitch)"/>
+      <rect x="34" y="72" width="6" height="156" fill="var(--p1)"/>
+      <rect x="680" y="72" width="6" height="156" fill="var(--p0)"/>
       <text x="26" y="154" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="end" transform="rotate(-90 26 154)">player 1 goal</text>
       <text x="700" y="150" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="middle" transform="rotate(90 700 150)">player 0 goal</text>
-      <circle cx="85.7" cy="150" r="17" fill="var(--pitch)"/>
-      <circle cx="85.7" cy="150" r="24" fill="none" stroke="var(--pitch)" stroke-width="1.5" stroke-dasharray="3 4"/>
+      <circle cx="85.7" cy="150" r="17" fill="var(--p0)"/>
+      <circle cx="85.7" cy="150" r="24" fill="none" stroke="var(--p0)" stroke-width="1.5" stroke-dasharray="3 4"/>
       <text x="85.7" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">0</text>
-      <circle cx="110" cy="132" r="5.5" fill="var(--ember)"/>
-      <circle cx="634.3" cy="150" r="17" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
-      <text x="634.3" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--ink-soft)" text-anchor="middle">1</text>
+      <circle cx="110" cy="132" r="5.5" fill="var(--ember)" stroke="var(--paper)" stroke-width="1"/>
+      <circle cx="634.3" cy="150" r="17" fill="var(--p1)"/>
+      <text x="634.3" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">1</text>
       <text x="40" y="298" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">state = (x0, y0, x1, y1, b) = (0, 2, 6, 2, 0)</text>
     </svg>
-    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2&thinsp;380 non-terminal states. Player&nbsp;0 carries the ball and attacks the right edge; player&nbsp;1 the left. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
+    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2&thinsp;380 non-terminal states. Player&nbsp;0 (blue) carries the ball and attacks the right edge; player&nbsp;1 (green) the left. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
   </div>
 
   <section>
@@ -529,8 +536,8 @@
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
     experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
