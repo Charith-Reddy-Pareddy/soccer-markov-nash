@@ -20,6 +20,23 @@ def test_repeated_battle_of_the_sexes():
     assert "x" in r.multi_equilibrium_states
 
 
+def test_each_player_bootstraps_from_its_own_value_function():
+    # A one-state repeated game where the single equilibrium pays the two
+    # players very differently; the values must not collapse to one number.
+    A = np.array([[5.0]])
+    B = np.array([[1.0]])
+
+    def transition(s, a0, a1):
+        return [(1.0, 0)]
+
+    def reward(s, a0, a1, s_next):
+        return 5.0, 1.0
+
+    r = solve_markov_game([0], (1, 1), transition, reward, gamma=0.9)
+    assert r.row_values[0] == pytest.approx(50.0)  # 5 / (1 - 0.9)
+    assert r.col_values[0] == pytest.approx(10.0)  # 1 / (1 - 0.9), not 50
+
+
 def test_coordination_markov_game_reaches_the_goal():
     def transition(s, a0, a1):
         if s == 0 and a0 == 0 and a1 == 0:
