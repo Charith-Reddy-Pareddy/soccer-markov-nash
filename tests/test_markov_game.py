@@ -30,7 +30,7 @@ def test_each_player_bootstraps_from_its_own_value_function():
         return [(1.0, 0)]
 
     def reward(s, a0, a1, s_next):
-        return 5.0, 1.0
+        return float(A[a0, a1]), float(B[a0, a1])
 
     r = solve_markov_game([0], (1, 1), transition, reward, gamma=0.9)
     assert r.row_values[0] == pytest.approx(50.0)  # 5 / (1 - 0.9)
@@ -65,7 +65,7 @@ def test_zero_sum_markov_game_matches_the_lp_solver():
         return [(p, ns) for p, ns, _ in game.transitions(s, a0, a1)]
 
     def reward(s, a0, a1, s_next):
-        for p, ns, (r0, r1) in game.transitions(s, a0, a1):
+        for _p, ns, (r0, r1) in game.transitions(s, a0, a1):
             if ns == s_next:
                 return r0, r1
         return 0.0, 0.0

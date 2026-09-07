@@ -19,13 +19,11 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-import numpy as np
 
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.numerics import (
     classify_stage_game,
-    is_matching_pennies,
     rounding_changes_saddle,
     support_shape,
 )
@@ -59,8 +57,14 @@ def iteration_schemes(game, gamma):
     t_pi = time.time() - t
     stale = pi.staleness_trace or []
     lock = next((i for i, x in enumerate(stale) if x < 1e-6), len(stale))
-    print(f"  value iteration : {vi.iterations:3d} sweeps, {vi.matrix_game_solves:6d} solves, {t_vi:5.1f} s")
-    print(f"  policy iteration: {pi.iterations:3d} rounds, {pi.matrix_game_solves:6d} solves, {t_pi:5.1f} s")
+    print(
+        f"  value iteration : {vi.iterations:3d} sweeps, "
+        f"{vi.matrix_game_solves:6d} solves, {t_vi:5.1f} s"
+    )
+    print(
+        f"  policy iteration: {pi.iterations:3d} rounds, "
+        f"{pi.matrix_game_solves:6d} solves, {t_pi:5.1f} s"
+    )
     print(f"  freeze staleness stayed maximal for {lock} rounds, then locked in")
 
 

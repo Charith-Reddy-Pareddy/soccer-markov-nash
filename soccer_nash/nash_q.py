@@ -178,7 +178,7 @@ class NashQIteration:
         """Value iteration: solve a matrix game at every state, every sweep."""
         self._lp_calls = 0
         self._lp_cache: dict = {}
-        values: dict[State, float] = {s: 0.0 for s in self._states}
+        values: dict[State, float] = dict.fromkeys(self._states, 0.0)
 
         iterations = 0
         for iterations in range(1, self.max_iters + 1):
@@ -223,7 +223,7 @@ class NashQIteration:
                 return 0.0
             return table[s] if s in rep_set else -table[image_of[s]]
 
-        values: dict[State, float] = {s: 0.0 for s in reps}
+        values: dict[State, float] = dict.fromkeys(reps, 0.0)
         iterations = 0
         for iterations in range(1, self.max_iters + 1):
             delta = 0.0
@@ -269,7 +269,7 @@ class NashQIteration:
         then re-solve. Same fixed point, far fewer matrix-game solves."""
         self._lp_calls = 0
         self._lp_cache: dict = {}
-        values: dict[State, float] = {s: 0.0 for s in self._states}
+        values: dict[State, float] = dict.fromkeys(self._states, 0.0)
         row_policy = {s: np.full(4, 0.25) for s in self._states}
         col_policy = {s: np.full(4, 0.25) for s in self._states}
         staleness_trace: list[float] = []
@@ -320,7 +320,7 @@ class NashQIteration:
             staleness_trace=staleness_trace,
         )
 
-    def value_bracket_gaps(self, result: "NashQResult") -> np.ndarray:
+    def value_bracket_gaps(self, result: NashQResult) -> np.ndarray:
         """Per-state certified value error of the solved policy.
 
         For each state the row player can guarantee ``min_j (p M)_j`` and reach
@@ -336,7 +336,7 @@ class NashQIteration:
         return gaps
 
     def optimal_action_masks(
-        self, result: "NashQResult", tol: float = 1e-6
+        self, result: NashQResult, tol: float = 1e-6
     ) -> tuple[list[State], np.ndarray, np.ndarray]:
         """Per-state 0/1 masks of each player's security-optimal actions.
 

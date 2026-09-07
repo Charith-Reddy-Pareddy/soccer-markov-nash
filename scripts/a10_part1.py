@@ -51,7 +51,7 @@ def main() -> None:
     print("# Q1/Q3 successors")
     for label, s in zip(ACTION_LABELS, succ):
         print(f"{','.join(map(str, s))}    # {label}")
-    print("# Q2/Q4 rewards (player {})".format(args.player))
+    print(f"# Q2/Q4 rewards (player {args.player})")
     print(format_rewards(game, args.state, args.player))
 
 

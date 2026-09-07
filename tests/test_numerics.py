@@ -3,7 +3,6 @@ import pytest
 
 from soccer_nash.matrix_games import solve_zero_sum
 from soccer_nash.numerics import (
-    ValueBracket,
     certified_value,
     classify_stage_game,
     essential_subgame,

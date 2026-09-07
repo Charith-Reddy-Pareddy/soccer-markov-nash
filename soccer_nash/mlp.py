@@ -139,7 +139,7 @@ class MLP:
         return "\n-----\n".join(blocks)
 
     @classmethod
-    def from_a10(cls, text: str) -> "MLP":
+    def from_a10(cls, text: str) -> MLP:
         mats = [
             np.array(
                 [[float(v) for v in line.split(",")] for line in block.strip().splitlines()]
