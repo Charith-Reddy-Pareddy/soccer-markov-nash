@@ -292,198 +292,119 @@
 
 <div class="wrap">
   <header>
-    <p class="kicker">CS 540 · Multi-Agent Reinforcement Learning</p>
-    <h1>Pure Nash Equilibria<br>for Soccer</h1>
-    <p class="dek">Solving a two-player zero-sum Markov game with pure-strategy Nash Q-iteration &mdash; and finding where pure strategies quietly stop working.</p>
+    <p class="kicker">CS 540 &middot; Multi-Agent Reinforcement Learning &middot; research report</p>
+    <h1>Pure-First Nash&nbsp;Q for Soccer</h1>
+    <p class="dek">Where a two-player soccer Markov game does &mdash; and does not &mdash; need mixed strategies, and how much matrix-game work that saves.</p>
     <div class="rq">
-      <span class="label">Research question</span>
-      Can pure-strategy Nash equilibria be used to <em>efficiently</em> solve the soccer Markov game, and under what state and reward settings does a pure Nash equilibrium exist?
+      <span class="label">Four questions</span>
+      <b>RQ1 Existence</b> &mdash; under what transition structures does a pure equilibrium exist at every state?
+      <b>RQ2 Efficiency</b> &mdash; how much work does checking for a pure saddle first eliminate?
+      <b>RQ3 Mechanism</b> &mdash; which spatial configurations force mixing?
+      <b>RQ4 Robustness</b> &mdash; how do discounting and tolerance affect the split?
     </div>
-    <p class="byline">repo · soccer-markov-nash &nbsp;|&nbsp; 131 tests &nbsp;|&nbsp; built on the CS&nbsp;540 A10 assignment</p>
+    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 150+ tests &nbsp;|&nbsp; tables from <span class="mono">experiments/*.csv</span> &nbsp;|&nbsp; scope in <span class="mono">docs/assumptions.md</span></p>
   </header>
 
   <div class="hero fade">
     <svg viewBox="0 0 720 300" role="img" aria-label="A 7 by 5 soccer grid: player 0 on the left carrying the ball, player 1 on the right, goal mouths on the middle three rows of each edge.">
       <rect x="40" y="20" width="640" height="260" fill="var(--tint)" stroke="var(--rule-strong)" stroke-width="1.5"/>
-      <!-- vertical grid lines (7 cols) -->
       <g stroke="var(--rule)" stroke-width="1">
-        <line x1="131.4" y1="20" x2="131.4" y2="280"/>
-        <line x1="222.9" y1="20" x2="222.9" y2="280"/>
-        <line x1="314.3" y1="20" x2="314.3" y2="280"/>
-        <line x1="405.7" y1="20" x2="405.7" y2="280"/>
-        <line x1="497.1" y1="20" x2="497.1" y2="280"/>
-        <line x1="588.6" y1="20" x2="588.6" y2="280"/>
+        <line x1="131.4" y1="20" x2="131.4" y2="280"/><line x1="222.9" y1="20" x2="222.9" y2="280"/>
+        <line x1="314.3" y1="20" x2="314.3" y2="280"/><line x1="405.7" y1="20" x2="405.7" y2="280"/>
+        <line x1="497.1" y1="20" x2="497.1" y2="280"/><line x1="588.6" y1="20" x2="588.6" y2="280"/>
       </g>
-      <!-- horizontal grid lines (5 rows) -->
       <g stroke="var(--rule)" stroke-width="1">
-        <line x1="40" y1="72" x2="680" y2="72"/>
-        <line x1="40" y1="124" x2="680" y2="124"/>
-        <line x1="40" y1="176" x2="680" y2="176"/>
-        <line x1="40" y1="228" x2="680" y2="228"/>
+        <line x1="40" y1="72" x2="680" y2="72"/><line x1="40" y1="124" x2="680" y2="124"/>
+        <line x1="40" y1="176" x2="680" y2="176"/><line x1="40" y1="228" x2="680" y2="228"/>
       </g>
-      <!-- goal mouths: middle 3 rows -->
       <rect x="34" y="72" width="6" height="156" fill="var(--pitch)"/>
       <rect x="680" y="72" width="6" height="156" fill="var(--pitch)"/>
       <text x="26" y="154" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="end" transform="rotate(-90 26 154)">player 1 goal</text>
       <text x="700" y="150" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="middle" transform="rotate(90 700 150)">player 0 goal</text>
-      <!-- player 0 (left, carrier) at col 0 row 2 -->
       <circle cx="85.7" cy="150" r="17" fill="var(--pitch)"/>
       <circle cx="85.7" cy="150" r="24" fill="none" stroke="var(--pitch)" stroke-width="1.5" stroke-dasharray="3 4"/>
       <text x="85.7" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">0</text>
-      <!-- ball -->
       <circle cx="110" cy="132" r="5.5" fill="var(--ember)"/>
-      <!-- player 1 (right) at col 6 row 2 -->
       <circle cx="634.3" cy="150" r="17" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
       <text x="634.3" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--ink-soft)" text-anchor="middle">1</text>
       <text x="40" y="298" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">state = (x0, y0, x1, y1, b) = (0, 2, 6, 2, 0)</text>
     </svg>
-    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2 380 non-terminal states. Player&nbsp;0 carries the ball and attacks the right edge; player&nbsp;1 the left. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
+    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2&thinsp;380 non-terminal states. Player&nbsp;0 carries the ball and attacks the right edge; player&nbsp;1 the left. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
   </div>
 
   <section>
-    <p class="kicker">The answer, in four lines</p>
+    <p class="kicker">Abstract</p>
     <ol class="answers">
-      <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2 380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program. This is not a proof about the theoretical game &mdash; see <a href="#limitations">limitations</a>.</span></li>
-      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this.</b> Randomising <em>who wins a contested square</em> leaves the value function bit-identical to the deterministic game's.</span></li>
-      <li><span class="n">3</span><span><b>Littman's random <em>move order</em> does break it.</b> Under the specified 7&times;5 configuration, 94 of 2 380 stage games (3.9%) have no pure saddle &mdash; a figure that is board-size dependent, not a constant.</span></li>
-      <li><span class="n">4</span><span><b>Potential-based reward shaping preserves the equilibrium <em>structure</em> exactly;</b> a naive per-step possession bonus changes it. The recommended solver is the hybrid: the pure saddle value where one exists, the LP only where it does not.</span></li>
+      <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2&thinsp;380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program.</span></li>
+      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on ~4% of states (this configuration).</span></li>
+      <li><span class="n">3</span><span><b>Those mixed states are geometrically localised:</b> a decision tree predicts them from the state with precision 0.96, and 68 of 94 reduce to a 2&times;2 matching-pennies support.</span></li>
+      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while doing ~25&times; less matrix-game work; mirror symmetry halves it again.</span></li>
     </ol>
   </section>
 
   <section>
-    <h2>The two solvers</h2>
+    <h2>Method</h2>
     <p>The game is zero-sum, so at every state the stage game is a payoff matrix <span class="mono">M(s)[a&#8320;, a&#8321;] = E[R + &gamma;V(s&prime;)]</span> and the Shapley&nbsp;(1953) fixed point is the minimax value:</p>
     <div class="formula">V(s) = val(M(s)) = max&#8345; min&#8342;&#8323; (p&#7488;M)[a&#8321;]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= min&#8346; max&#8336;&#8320; (Mq)[a&#8320;]</div>
-    <p>The <span class="mono">Q = R + &beta;&thinsp;Nash(Q&prime;)</span> update from the project notes is the same operator. Two stage solvers implement the two versions asked for:</p>
-    <div class="tbl-scroll">
-      <table>
-        <caption>soccer_nash/matrix_games.py</caption>
-        <thead><tr><th>version</th><th>stage value</th><th>method</th></tr></thead>
-        <tbody>
-          <tr><td><b>Pure Nash Q-iteration</b></td><td>pure maximin<br><span class="mono">max&#8336;&#8320; min&#8342;&#8323; M[i,j]</span></td><td>no LP, O(A&sup2;)</td></tr>
-          <tr><td><b>LP / Mixed Nash Q-iteration</b></td><td>LP minimax value</td><td><span class="mono">scipy linprog</span> (HiGHS)</td></tr>
-          <tr><td><b>Hybrid</b> &nbsp;<span class="yes">&larr; default</span></td><td>pure saddle if <span class="mono">maximin = minimax</span>, else LP</td><td>exact everywhere</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>A pure saddle point exists <em>iff</em> the maximin equals the minimax. When it does, the pure value <em>is</em> the minimax value, so the hybrid is exact; when it doesn't, the hybrid falls back to the LP for that state only.</p>
-
+    <p>The <span class="mono">Q = R + &beta;&thinsp;Nash(Q&prime;)</span> update is this operator. Three stage backups: <b>pure</b> (the maximin security value &mdash; a fast lower bound, not a Nash value when it is below the minimax), <b>mixed</b> (the LP minimax value, via <span class="mono">scipy</span> HiGHS), and <b>hybrid</b> (the pure saddle value where <span class="mono">maximin = minimax</span>, the LP elsewhere &mdash; exact everywhere). Support enumeration (<span class="mono">support_enum.py</span>) finds <em>all</em> equilibria, including of general-sum games.</p>
     <figure>
       <svg viewBox="0 0 720 132" role="img" aria-label="Flow: from the stage matrix, a check of whether maximin equals minimax branches to either the pure saddle value with no LP, or the LP minimax value.">
         <g font-family="'IBM Plex Mono', monospace" font-size="12.5" fill="var(--ink)">
           <rect x="1" y="46" width="150" height="40" rx="4" fill="var(--tint)" stroke="var(--rule-strong)"/>
           <text x="76" y="70" text-anchor="middle">stage matrix M(s)</text>
-
           <path d="M151 66 H196" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
-
           <path d="M262 40 L328 66 L262 92 L196 66 Z" fill="none" stroke="var(--pitch)" stroke-width="1.5"/>
           <text x="262" y="63" text-anchor="middle" font-size="11">maximin</text>
           <text x="262" y="77" text-anchor="middle" font-size="11">= minimax ?</text>
-
           <path d="M328 66 H392" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
           <text x="360" y="58" text-anchor="middle" font-size="10.5" fill="var(--pitch)">yes</text>
           <rect x="392" y="34" width="200" height="30" rx="4" fill="var(--pitch-soft)" stroke="var(--pitch)"/>
           <text x="492" y="53" text-anchor="middle" font-size="11.5">pure saddle value &mdash; no LP</text>
-
           <path d="M262 92 V112 H392" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
           <text x="300" y="108" text-anchor="middle" font-size="10.5" fill="var(--ember)">no</text>
           <rect x="392" y="98" width="200" height="30" rx="4" fill="var(--ember-soft)" stroke="var(--ember)"/>
           <text x="492" y="117" text-anchor="middle" font-size="11.5">LP minimax value</text>
         </g>
-        <defs>
-          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M0 0 L10 5 L0 10 z" fill="var(--rule-strong)"/>
-          </marker>
-        </defs>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--rule-strong)"/></marker></defs>
       </svg>
-      <figcaption class="fig-cap"><b>The hybrid solver.</b> On the deterministic game the "yes" branch is taken at every one of the 2 380 states, so the LP is never called.</figcaption>
+      <figcaption class="fig-cap"><b>The pure-first hybrid.</b> On the deterministic game the "yes" branch is taken at every one of the 2&thinsp;380 states, so the LP is never called.</figcaption>
     </figure>
   </section>
 
   <section>
-    <h2>When does a pure Nash equilibrium exist?</h2>
-
-    <h3>By move rule &mdash; 7&times;5 board, &gamma; = 0.9</h3>
+    <h2>RQ1 &mdash; Existence</h2>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th>move order</th><th class="num">stochastic</th><th class="num">no-saddle stage games</th><th>pure eq?</th><th class="num">V(kickoff)</th></tr></thead>
+        <thead><tr><th>move order</th><th class="num">stochastic</th><th class="num">converged stage games with no pure saddle</th><th>stationary pure eq?</th><th class="num">V(kickoff)</th></tr></thead>
         <tbody>
-          <tr><td>deterministic</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
+          <tr><td>deterministic (exact A10)</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
           <tr><td>coinflip tie-break</td><td class="num">yes</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
-          <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380</td><td class="no">no</td><td class="num">+0.150</td></tr>
+          <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380 (this config)</td><td class="no">no</td><td class="num">+0.150</td></tr>
         </tbody>
       </table>
     </div>
     <div class="note">
-      <span class="label">Key finding</span>
-      <p>The deterministic and coin-flip value functions are <em>identical</em> &mdash; <span class="mono">max |V_det &minus; V_coin| = 0</span> for every &gamma;. With optimal play neither player enters a contest it would lose deterministically, so the coin is never flipped on the equilibrium path.</p>
-      <p>It is <b>not stochasticity</b> that forces mixed strategies. It is the sequential coupling of Littman's random move order &mdash; where whether you steal the ball depends on who resolves first <em>and</em> on both players' targets &mdash; that creates matching-pennies sub-games with no pure saddle.</p>
-    </div>
-
-    <h3>By board size &mdash; random move order</h3>
-    <figure>
-      <svg viewBox="0 0 720 200" role="img" aria-label="Bar chart of the percentage of stage games with no pure saddle, by board size: 4x3 zero percent, 5x3 zero percent, 5x5 four point five percent, 7x5 three point nine percent.">
-        <g font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">
-          <line x1="70" y1="150" x2="690" y2="150" stroke="var(--rule-strong)" stroke-width="1.5"/>
-          <line x1="70" y1="150" x2="70" y2="24" stroke="var(--rule)" stroke-width="1"/>
-          <line x1="70" y1="87" x2="690" y2="87" stroke="var(--rule)" stroke-width="1" stroke-dasharray="2 4"/>
-          <text x="62" y="153" text-anchor="end">0%</text>
-          <text x="62" y="90" text-anchor="end">3%</text>
-          <text x="62" y="28" text-anchor="end">6%</text>
-        </g>
-        <g font-family="'IBM Plex Mono', monospace" font-size="12">
-          <!-- scale: 6% -> 126px.  4x3:0  5x3:0  5x5:4.5% -> 94.5px  7x5:3.9% -> 81.9px -->
-          <rect x="104" y="148" width="96" height="2" fill="var(--pitch)"/>
-          <text x="152" y="168" text-anchor="middle" fill="var(--ink-soft)">4&times;3</text>
-          <text x="152" y="140" text-anchor="middle" fill="var(--ink-faint)" font-size="11">0</text>
-
-          <rect x="248" y="148" width="96" height="2" fill="var(--pitch)"/>
-          <text x="296" y="168" text-anchor="middle" fill="var(--ink-soft)">5&times;3</text>
-          <text x="296" y="140" text-anchor="middle" fill="var(--ink-faint)" font-size="11">0</text>
-
-          <rect x="392" y="55.5" width="96" height="94.5" fill="var(--ember)"/>
-          <text x="440" y="168" text-anchor="middle" fill="var(--ink-soft)">5&times;5</text>
-          <text x="440" y="47" text-anchor="middle" fill="var(--ember)" font-size="11">4.5% &middot; 54</text>
-
-          <rect x="536" y="68.1" width="96" height="81.9" fill="var(--ember)"/>
-          <text x="584" y="168" text-anchor="middle" fill="var(--ink-soft)">7&times;5</text>
-          <text x="584" y="60" text-anchor="middle" fill="var(--ember)" font-size="11">3.9% &middot; 94</text>
-        </g>
-        <text x="70" y="192" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="var(--ink-faint)">stage games with no pure saddle, by board dimensions (goal rows scale with height)</text>
-      </svg>
-      <figcaption class="fig-cap"><b>Room to fail.</b> The no-saddle states are the "defender directly ahead of the carrier" stand-off; they come in exact mirror pairs and never occur when the players are far apart. Narrow boards have no room for that geometry, so their equilibrium stays pure.</figcaption>
-    </figure>
-
-    <h3>By reward setting</h3>
-    <p>Potential-based shaping <span class="mono">F(s,s&prime;) = &gamma;&Phi;(s&prime;) &minus; &Phi;(s)</span> with &Phi; = possession bonus + ball advancement:</p>
-    <ul class="plain">
-      <li><span class="mono">V_shaped = V_base &minus; &Phi;</span> to machine precision; identical policies; identical no-saddle set. <b>The equilibrium &mdash; pure or mixed &mdash; is unchanged.</b></li>
-      <li>It <em>slows</em> exact value iteration (9 &rarr; ~130 sweeps), because &Phi; is nonzero on the ~1 000 states where <span class="mono">V_base = 0</span>.</li>
-    </ul>
-    <div class="note warn">
-      <span class="label">Caution</span>
-      <p>A non-potential per-step possession bonus is <b>not</b> invariant: a <span class="mono">+0.05</span> bonus turns the kickoff draw into a <span class="mono">+0.5</span> value for the carrier and changes the optimal policy. Shaping rewards for this game must be potential-based.</p>
+      <span class="label">It is the move order, not the randomness</span>
+      <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames.</p>
     </div>
   </section>
 
   <section>
-    <h2>Can pure equilibria solve it <em>efficiently</em>?</h2>
-    <p>Yes. On the deterministic and coin-flip games the pure solver <em>is</em> the exact solver &mdash; <span class="mono">pure</span>, <span class="mono">hybrid</span> and <span class="mono">mixed</span> return the same value function in 9 sweeps with zero LP calls. On the random game the hybrid is still the right tool:</p>
+    <h2>RQ2 &mdash; Efficiency</h2>
     <div class="tbl-scroll">
       <table>
-        <caption>random move order, &gamma; = 0.9</caption>
+        <caption>random move order, &gamma; = 0.9 &mdash; the case where the LP is actually needed</caption>
         <thead><tr><th>solver</th><th class="num">sweeps</th><th class="num">V(kickoff)</th><th class="num">matrix-game solves</th><th class="num">wall clock</th></tr></thead>
         <tbody>
-          <tr><td>pure</td><td class="num">18</td><td class="num">+0.000</td><td class="num">0</td><td class="num">&lt;1 s</td></tr>
-          <tr><td>hybrid <span class="yes">exact</span></td><td class="num">94</td><td class="num">+0.150</td><td class="num">~8 800</td><td class="num">~20 s</td></tr>
-          <tr><td>mixed <span class="yes">exact</span></td><td class="num">94</td><td class="num">+0.150</td><td class="num">~3.6 M</td><td class="num">~8 min</td></tr>
+          <tr><td>pure (lower bound)</td><td class="num">18</td><td class="num">+0.000</td><td class="num">0</td><td class="num">&lt;1 s</td></tr>
+          <tr><td>hybrid <span class="yes">exact</span></td><td class="num">108</td><td class="num">+0.150</td><td class="num">~9 700</td><td class="num">~14 s</td></tr>
+          <tr><td>mixed <span class="yes">exact</span></td><td class="num">108</td><td class="num">+0.150</td><td class="num">~3.6 M</td><td class="num">~8 min</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The hybrid reproduces the full-LP value function to <span class="mono">4e&minus;16</span> while solving an LP on only the ~4% of states that need one. The <span class="mono">pure</span>-only solver is a strict lower bound &mdash; it reports a kickoff draw when the game actually favours the initial carrier by <span class="mono">0.15</span>, and sits up to <span class="mono">0.37</span> below the true value elsewhere. Efficient, but when a mixed equilibrium is the real answer, wrong.</p>
+    <p>The hybrid solves an LP on only the ~4% of states lacking a pure saddle &mdash; ~25&times; fewer &mdash; and matches the all-LP value to <span class="mono">4e&minus;16</span>. <b>Mirror symmetry</b> (<span class="mono">run_symmetric</span>): the game is anti-symmetric under board-flip + player-swap and every state has a distinct mirror, so the 2&thinsp;380 states are 1&thinsp;190 pairs &mdash; solve one, reconstruct the other by <span class="mono">V(mirror(s)) = &minus;V(s)</span>.</p>
 
-    <h3>Freeze then iterate &mdash; and its staleness</h3>
-    <p>Solving a matrix game at every state on every sweep is wasteful. <span class="mono">run_policy_iteration()</span> solves each stage game only on its outer rounds and holds the strategies fixed for cheap linear evaluation sweeps in between &mdash; the notes' "don't recompute Nash every time".</p>
+    <h3>Freeze-then-iterate, and its staleness</h3>
     <div class="tbl-scroll">
       <table>
         <caption>random move order, hybrid solver &mdash; same fixed point, |diff| &lt; 3e&minus;9</caption>
@@ -494,55 +415,122 @@
         </tbody>
       </table>
     </div>
-    <p>The solver records the <b>staleness</b> the scheme's proposer flagged &mdash; how far the frozen strategies are from the Nash of the current Q. It stays <em>maximal</em> (a full pure-strategy flip) for <b>16 outer rounds</b>, then snaps to <span class="mono">&lt; 1e&minus;8</span>. The thrashing eats the 5&times; saving in LP solves; on the deterministic game freeze-then-iterate is strictly worse. Value iteration with the per-sweep Nash cache wins here &mdash; the freeze trick pays off only where the equilibrium solve dominates the backup.</p>
+    <p>5&times; fewer LP solves &mdash; but the frozen strategies' distance to the current Nash stays <em>maximal</em> (a full pure-strategy flip) for <b>16 outer rounds</b>, then collapses to <span class="mono">&lt; 1e&minus;8</span>. The thrashing eats the saving; on the deterministic game it is strictly worse. Value iteration with the per-sweep Nash cache wins here.</p>
   </section>
 
   <section>
-    <h2>Numerical foundations</h2>
-    <p>Three things the research meeting flagged as unsolved for the discrete solver (<span class="mono">soccer_nash/numerics.py</span>):</p>
-
-    <h3>The value is three numbers</h3>
-    <p>For strategies <span class="mono">(p, q)</span> the row player can <em>guarantee</em> <span class="mono">min&#8342;(pM)&#8342;</span>, <em>gets</em> <span class="mono">p&#7488;Mq</span>, and can <em>reach at most</em> <span class="mono">max&#7522;(Mq)&#7522;</span>. At equilibrium they coincide; numerically they never do. <span class="mono">value_bracket</span> returns all three; the true minimax value is bracketed, so the width certifies the LP error.</p>
-    <div class="note">
-      <span class="label">Finding</span>
-      <p>With <span class="mono">scipy</span>'s HiGHS solver the three numbers agree to <span class="mono">1.1e&minus;16</span> per stage game and <span class="mono">8.7e&minus;10</span> accumulated. The concern is real for older vertex/simplex solvers but not a practical problem here &mdash; the LP solution is a certified <span class="mono">1e&minus;16</span>-equilibrium.</p>
-    </div>
-
-    <h3>Rounding to force indifference is scale-blind</h3>
-    <p>Mixed equilibria need <em>exact</em> indifference, so RPS-plus-epsilon has no exact pure saddle &mdash; but rounding manufactures one, and under discounting the real <span class="mono">&gamma;&#7503;</span> differences are that small. <span class="mono">classify_stage_game</span> uses a tolerance that scales with the entries.</p>
+    <h2>RQ3 &mdash; Mechanism</h2>
+    <p><b>A stage game needs mixed strategies only when the goal mouth is more than one cell wide.</b></p>
+    <figure>
+      <svg viewBox="0 0 720 190" role="img" aria-label="Bar chart: mixed states versus goal-mouth width on a 5 by 9 board. 1 cell: 0. 2 cells: 186. 3 cells: 162. 4: 138. 5: 116. 6: 110. 7: 106.">
+        <g font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">
+          <line x1="60" y1="150" x2="700" y2="150" stroke="var(--rule-strong)" stroke-width="1.5"/>
+          <line x1="60" y1="30" x2="60" y2="150" stroke="var(--rule)" stroke-width="1"/>
+          <text x="52" y="153" text-anchor="end">0</text>
+          <text x="52" y="93" text-anchor="end">100</text>
+          <text x="52" y="33" text-anchor="end">200</text>
+        </g>
+        <g font-family="'IBM Plex Mono', monospace" font-size="11.5">
+          <!-- scale: 200 -> 120px -->
+          <rect x="78" y="148" width="72" height="2" fill="var(--pitch)"/><text x="114" y="167" text-anchor="middle" fill="var(--ink-soft)">1</text><text x="114" y="140" text-anchor="middle" fill="var(--pitch)" font-size="10.5">0</text>
+          <rect x="168" y="38.4" width="72" height="111.6" fill="var(--ember)"/><text x="204" y="167" text-anchor="middle" fill="var(--ink-soft)">2</text><text x="204" y="30" text-anchor="middle" fill="var(--ember)" font-size="10.5">186</text>
+          <rect x="258" y="52.8" width="72" height="97.2" fill="var(--ember)"/><text x="294" y="167" text-anchor="middle" fill="var(--ink-soft)">3</text><text x="294" y="44" text-anchor="middle" fill="var(--ember)" font-size="10.5">162</text>
+          <rect x="348" y="67.2" width="72" height="82.8" fill="var(--ember)"/><text x="384" y="167" text-anchor="middle" fill="var(--ink-soft)">4</text>
+          <rect x="438" y="80.4" width="72" height="69.6" fill="var(--ember)"/><text x="474" y="167" text-anchor="middle" fill="var(--ink-soft)">5</text>
+          <rect x="528" y="84" width="72" height="66" fill="var(--ember)"/><text x="564" y="167" text-anchor="middle" fill="var(--ink-soft)">6</text>
+          <rect x="618" y="86.4" width="72" height="63.6" fill="var(--ember)"/><text x="654" y="167" text-anchor="middle" fill="var(--ink-soft)">7</text>
+        </g>
+        <text x="60" y="185" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="var(--ink-faint)">mixed states vs. goal-mouth width (cells), 5&times;9 board, random move order</text>
+      </svg>
+      <figcaption class="fig-cap"><b>The gate.</b> One-cell goal &rarr; the carrier has one threat, the defender one response, best responses stay pure. Two or more &rarr; the defender must guess. Every height-3 board (width 3&ndash;11) has zero mixed states.</figcaption>
+    </figure>
+    <p>Geometry predicts the label (<span class="mono">scripts/geometry_model.py</span>): a depth-4 decision tree on carrier-frame features separates <span class="mono">mixed</span> from the rest with <b>precision 0.96, recall 0.91</b>. The dominant feature is <span class="mono">defender_can_intercept</span> &mdash; the defender within one move of the carrier's forward cell (<span class="mono">P(mixed) = 0.44</span> vs <span class="mono">0.002</span>).</p>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th>move order</th><th class="num">pure</th><th class="num">degenerate</th><th class="num">mixed</th><th class="num">rounding to 0.1 flips a saddle</th></tr></thead>
+        <caption>the 94 mixed states, by equilibrium support &times; defender geometry</caption>
+        <thead><tr><th>support</th><th>defender</th><th class="num">count</th></tr></thead>
         <tbody>
-          <tr><td>deterministic</td><td class="num">0</td><td class="num">2380</td><td class="num">0</td><td class="num">0</td></tr>
-          <tr><td>random</td><td class="num">604</td><td class="num">1682</td><td class="num">94</td><td class="num">62</td></tr>
+          <tr><td>2&times;2 (matching pennies)</td><td>ahead of the carrier</td><td class="num">40</td></tr>
+          <tr><td>2&times;2</td><td>directly ahead, same row</td><td class="num">24</td></tr>
+          <tr><td>2&times;1 / 1&times;2</td><td>directly ahead, same row</td><td class="num">12</td></tr>
+          <tr><td>3&times;3 / 2&times;3 / 3&times;2</td><td>ahead</td><td class="num">12</td></tr>
+          <tr><td>2&times;2</td><td>merely adjacent</td><td class="num">4</td></tr>
+          <tr><td>2&times;1 / 1&times;2</td><td>ahead</td><td class="num">2</td></tr>
         </tbody>
       </table>
     </div>
-    <p>Rounding to 0.1 misclassifies <b>62</b> of the random game's stage games &mdash; the small-entry region where mixing lives. The deterministic game is safe to round but has a <b>non-strict saddle at every one of its 2 380 states</b>: the pure equilibrium exists everywhere yet is tie-ridden.</p>
-
-    <h3>The mixed states have a 2&times;2 matching-pennies support</h3>
-    <p>Of the 94 states that require mixing, <b>68 have an equilibrium supported on a 2&times;2 subgame</b> with no pure saddle: carrier {advance, hold} &times; defender {block, intercept} &mdash; a "guess where the ball goes" game. Strict dominance only collapses 4 of them fully, so this describes the equilibrium support, not a reduction of the full 4&times;4 game. All 94 share one value across every equilibrium; 64 have a unique one.</p>
+    <p>~88 of 94 have the defender ahead; 68 are a 2&times;2 matching-pennies mix of carrier {advance, hold} against defender {block, intercept}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
   </section>
 
   <section>
-    <h2>The equilibrium policy is worth playing</h2>
+    <h2>RQ4 &mdash; Numerical robustness</h2>
+    <h3>The value is three numbers</h3>
+    <p><span class="mono">value_bracket</span> returns what the row player guarantees (<span class="mono">min&#8342;(pM)&#8342;</span>), gets (<span class="mono">p&#7488;Mq</span>), and can reach (<span class="mono">max&#7522;(Mq)&#7522;</span>). The true value is bracketed, so the width certifies the LP error.</p>
+    <div class="note">
+      <span class="label">Finding</span>
+      <p>With <span class="mono">scipy</span>'s HiGHS the three agree to <span class="mono">1.1e&minus;16</span> per stage game, <span class="mono">8.7e&minus;10</span> accumulated. The concern is real for older vertex/simplex solvers &mdash; a non-issue here.</p>
+    </div>
+    <h3>Discounting and tolerance</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th></th><th class="num">deterministic</th><th class="num">random (7&times;5)</th></tr></thead>
+        <tbody>
+          <tr><td>mixed states, &gamma; = 0.5 &rarr; 0.9 &rarr; 0.995</td><td class="num">0 &rarr; 0 &rarr; 0</td><td class="num">122 &rarr; 94 &rarr; 102</td></tr>
+          <tr><td>classification split, rel_tol 1e&minus;12 &rarr; 1e&minus;3</td><td class="num">stable</td><td class="num">604 / 1682 / 94 (stable)</td></tr>
+          <tr><td>classification, rel_tol 1e&minus;2 / 1e&minus;1</td><td class="num">&mdash;</td><td class="num">80 / 0 mixed</td></tr>
+          <tr><td>fixed 0.1-rounding flips a saddle</td><td class="num">0</td><td class="num">62</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Discounting mildly shifts which states mix; the classification is otherwise robust across nine orders of magnitude of tolerance, breaking only as the tolerance approaches the real <span class="mono">minimax &minus; maximin</span> gaps. Fixed 0.1-rounding &mdash; proposed to force indifference &mdash; misclassifies 62 states, exactly the small-entry mixed region.</p>
+  </section>
+
+  <section id="limitations">
+    <h2>Limitations</h2>
     <ul class="plain">
-      <li>The Nash Q policy has a duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; <b>no opponent can beat the game value.</b></li>
-      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; a <span class="mono">+0.157</span> empirical discounted return (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
-      <li>Best-responding to a <em>guess</em> about the opponent is fragile: the Part&nbsp;2 best-response-to-the-scripted-opponent policy has exploitability <span class="mono">0.43</span> &mdash; worse than moving uniformly at random (<span class="mono">0.39</span>) once the opponent best-responds to it.</li>
+      <li>The A10 page redacts the ID-specific start position and goal rows; this repo uses the standard Littman geometry (configurable). Qualitative results hold across 40+ board configurations; the exact <span class="mono">3.9%</span> is the 7&times;5 / 3-cell-goal case.</li>
+      <li>Several collision sub-cases (carrier vs. stationary opponent, bump = steal, swap possession) are <em>interpreted</em> from the two stated A10 rules, not quoted. If course staff intended otherwise, Claim&nbsp;A must be re-measured. See <span class="mono">docs/assumptions.md</span>.</li>
+      <li><b>Claim A</b> (every converged stage game has a pure saddle) and <b>Claim B</b> (a stationary pure equilibrium exists) are established by enumeration. <b>Claim C</b> (the theoretical game necessarily has one, over all settings) is <em>not</em> &mdash; that needs a proof.</li>
+      <li><span class="mono">random</span> and <span class="mono">coinflip</span> are different game definitions, isolating the collision rule and the tie-break respectively &mdash; not the A10 game.</li>
     </ul>
-    <p>That last line is exactly the A10 competition's warning about non-equilibrium submissions. The equilibrium networks (<span class="mono">scripts/a10_competition.py</span>) are the principled answer &mdash; though a neural approximation is only as safe as its worst-fit state, so the script prints the trained network's exploitability and the student re-seeds until it is near zero.</p>
   </section>
 
   <section>
-    <h2>Conclusion</h2>
-    <p>For the soccer game as specified by A10, pure-strategy Nash equilibria are not just usable but <b>sufficient and efficient</b>: they exist everywhere and are found in a handful of sweeps with no linear programming. Pure equilibria fail only under Littman's sequential random move order, and even then only on ~4% of states of a large enough board. The hybrid solver &mdash; pure where possible, LP where necessary &mdash; is exact everywhere and pays the LP cost only where a pure equilibrium genuinely does not exist. Potential-based reward shaping leaves all of this untouched.</p>
+    <h2>Secondary validation &mdash; the policy plays correctly</h2>
+    <ul class="plain">
+      <li>Duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; no opponent beats the game value.</li>
+      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.157</span> empirical discounted return (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
+      <li>A best response to one assumed opponent is fragile: the Part&nbsp;2 policy has exploitability <span class="mono">0.43</span> &mdash; worse than random &mdash; which is the A10 competition's warning about non-equilibrium submissions.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <ul class="plain">
+      <li><b>General-sum.</b> <span class="mono">markov_game.py</span> solves 2-player general-sum Markov games by enumerating stage equilibria and selecting one (the notes' "largest sum of values" &mdash; a no-op for zero-sum, decisive for Battle of the Sexes). The discretised dog / debate game is next.</li>
+      <li><b>Function approximation.</b> A network fit to the stage matrices (<span class="mono">nash_dqn.py</span>, 5&rarr;96&rarr;96&rarr;16 with biases, 500 epochs) trails the exact solver badly:</li>
+    </ul>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th></th><th>exact hybrid Nash-Q</th><th>neural Nash-Q</th></tr></thead>
+        <tbody>
+          <tr><td>wall clock</td><td>9 sweeps, 0.45 s</td><td>500 epochs, 55 s</td></tr>
+          <tr><td>max |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.54</td></tr>
+          <tr><td>action agreement</td><td class="yes">100%</td><td class="no">53%</td></tr>
+          <tr><td>exploitability</td><td class="yes">0</td><td class="no">0.43</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The network fits the ~1&thinsp;000 zero-value states but misses the <span class="mono">&gamma;&#7503;</span> structure &mdash; about as exploitable as random play. Keep the exact solver as ground truth.</p>
+    <ul class="plain">
+      <li><b>A proof.</b> Can "one-cell goal &rArr; pure everywhere" be turned into a theorem about the transition structure?</li>
+    </ul>
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; nash_q.py &middot; numerics.py &middot; best_response.py &middot; mlp.py &middot; opponents.py &middot; shaping.py &middot; exploit.py &middot; simulate.py<br>
-    scripts &mdash; analyze.py &middot; numerics.py &middot; policy_iteration.py &middot; selfplay.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    131 passing tests (126 fast + 5 slow) &nbsp;|&nbsp; env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv<br>
+    env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
 </div>
