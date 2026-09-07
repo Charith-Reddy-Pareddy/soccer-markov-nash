@@ -22,6 +22,7 @@ and the LP only where it does not.
 
 - Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
 - Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/mechanism.md](docs/mechanism.md)
+- Everything else: [docs/README.md](docs/README.md)
 - `make test` / `make experiments` / `make report` regenerate everything
 
 ## Results at a glance
