@@ -16,6 +16,12 @@ Three stage solvers are offered:
 After convergence the solver reports the states whose stage game has no pure
 saddle: a pure stationary equilibrium of the whole Markov game exists iff that
 set is empty.
+
+``run()`` is value iteration -- it solves a matrix game at every state on every
+sweep. ``run_policy_iteration()`` is the "freeze then iterate" scheme: solve the
+stage games once, hold the strategies fixed for several cheap linear
+policy-evaluation sweeps, then re-solve. It reaches the same fixed point with
+far fewer (expensive) matrix-game solves.
 """
 
 from __future__ import annotations
@@ -44,6 +50,7 @@ class NashQResult:
     iterations: int
     mode: str
     gamma: float
+    matrix_game_solves: int = 0  # LP calls (0 for a purely pure/saddle run)
 
     @property
     def pure_equilibrium_exists(self) -> bool:
@@ -73,6 +80,7 @@ class NashQIteration:
         self.tol = tol
         self.max_iters = max_iters
         self.shaping = shaping
+        self._lp_calls = 0
 
         self._states: list[State] = list(game.states())
         # Per state: a 4x4 grid of outcome lists [(prob, next_state, r0), ...],
@@ -110,14 +118,39 @@ class NashQIteration:
         if self.mode == "pure":
             return security_strategy_row(m)[1]
         if self.mode == "mixed":
+            self._lp_calls += 1
             return game_value(m)
         lo, hi = pure_bounds(m)
         if hi - lo <= _SADDLE_TOL:
             return lo
+        self._lp_calls += 1
         return game_value(m)
+
+    def _stage_policy(self, m: np.ndarray) -> tuple[np.ndarray, np.ndarray, bool]:
+        """Equilibrium (or security) strategies for the stage game."""
+        def _pure() -> tuple[np.ndarray, np.ndarray]:
+            p = np.zeros(4)
+            q = np.zeros(4)
+            p[int(np.argmax(m.min(axis=1)))] = 1.0
+            q[int(np.argmin(m.max(axis=0)))] = 1.0
+            return p, q
+
+        if self.mode == "pure":
+            p, q = _pure()
+            return p, q, False
+        if self.mode == "hybrid":
+            lo, hi = pure_bounds(m)
+            if hi - lo <= _SADDLE_TOL:
+                p, q = _pure()
+                return p, q, False
+        self._lp_calls += 1
+        _, p, q = solve_zero_sum(m)
+        return p, q, True
 
     # -------------------------------------------------------------- iteration
     def run(self) -> NashQResult:
+        """Value iteration: solve a matrix game at every state, every sweep."""
+        self._lp_calls = 0
         values: dict[State, float] = {s: 0.0 for s in self._states}
 
         iterations = 0
@@ -141,6 +174,59 @@ class NashQIteration:
             iterations=iterations,
             mode=self.mode,
             gamma=self.gamma,
+            matrix_game_solves=self._lp_calls,
+        )
+
+    def run_policy_iteration(
+        self, eval_sweeps: int = 50, max_outer: int = 200
+    ) -> NashQResult:
+        """Freeze the stage-game strategies, run cheap linear evaluation sweeps,
+        then re-solve. Same fixed point, far fewer matrix-game solves."""
+        self._lp_calls = 0
+        values: dict[State, float] = {s: 0.0 for s in self._states}
+        row_policy = {s: np.full(4, 0.25) for s in self._states}
+        col_policy = {s: np.full(4, 0.25) for s in self._states}
+
+        outer = 0
+        for outer in range(1, max_outer + 1):
+            # --- improvement: re-solve every stage game from the current V
+            policy_delta = 0.0
+            for s in self._states:
+                p, q, _ = self._stage_policy(self._matrix(s, values))
+                policy_delta = max(
+                    policy_delta,
+                    float(np.abs(p - row_policy[s]).max()),
+                    float(np.abs(q - col_policy[s]).max()),
+                )
+                row_policy[s], col_policy[s] = p, q
+
+            # --- evaluation: strategies frozen, linear backups only
+            eval_delta = 0.0
+            for _ in range(eval_sweeps):
+                eval_delta = 0.0
+                updated: dict[State, float] = {}
+                for s in self._states:
+                    m = self._matrix(s, values)
+                    v = float(row_policy[s] @ m @ col_policy[s])
+                    eval_delta = max(eval_delta, abs(v - values[s]))
+                    updated[s] = v
+                values = updated
+                if eval_delta < self.tol:
+                    break
+
+            if policy_delta < 1e-9 and eval_delta < self.tol:
+                break
+
+        _, _, no_saddle = self._extract_policies(values)
+        return NashQResult(
+            values=values,
+            row_policy=row_policy,
+            col_policy=col_policy,
+            no_saddle_states=no_saddle,
+            iterations=outer,
+            mode=self.mode,
+            gamma=self.gamma,
+            matrix_game_solves=self._lp_calls,
         )
 
     def optimal_action_masks(
