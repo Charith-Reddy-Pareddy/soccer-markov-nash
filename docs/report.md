@@ -6,24 +6,33 @@
 > Markov game, and under what state and reward settings does a pure Nash
 > equilibrium exist?
 
-Short answers:
+Short answers (see `docs/assumptions.md` for the exact scope of each claim):
 
-1. **Under the CS 540 A10 move rule, a pure stationary Nash equilibrium exists
-   at every state, and pure-strategy Nash Q-iteration solves the game exactly in
-   9 sweeps with no linear program at all.**
+1. **For the implemented deterministic A10 transition model, every one of the
+   2380 enumerated non-terminal stage games -- built from the converged value
+   function -- has a pure saddle point.** Playing a pure saddle action at every
+   state is then a stationary pure-strategy equilibrium (Claim B), found by
+   value iteration in 9 sweeps with no linear program. This does *not* prove the
+   theoretical A10 game necessarily has one (Claim C) -- that depends on
+   confirming the interpreted collision sub-cases and holds only for the reward
+   settings tested.
 2. **Randomness in the *outcome* of a contested square (a coin-flip tie-break)
-   does not break this.** Its value function is bit-identical to the
+   does not change this.** Its value function is bit-identical to the
    deterministic game's.
-3. **Littman's random *move order* does break it**: on the 7x5 board ~4% of
-   stage games have no pure saddle, so no pure stationary equilibrium exists and
-   a mixed (LP) solver is required for those states. This is board-size
-   dependent -- small or narrow boards keep a pure equilibrium.
-4. **Potential-based reward shaping preserves the equilibrium exactly** (the
-   value function shifts by `-Phi`, policies are unchanged); a naive per-step
-   possession bonus changes the solution.
-5. The recommended solver is the **hybrid**: take the pure saddle point wherever
-   one exists, fall back to the LP only where it does not. It matches the full
-   LP solution to `4e-16` while doing ~25x less work.
+3. **Littman's random *move order* does break it**: under the specified 7x5
+   configuration, 94 of 2380 stage games (3.9%) have no pure saddle, so no
+   stationary pure-strategy equilibrium exists and a mixed (LP) solver is
+   required for those states. The 3.9% is not a universal constant -- it is
+   board-size dependent, and small or narrow boards have none.
+4. **Potential-based reward shaping preserves the equilibrium structure
+   exactly**: the value function shifts by `-Phi`, but the pure/mixed
+   classification of every state is unchanged. A naive per-step possession bonus
+   changes the solution.
+5. The recommended solver is the **hybrid**: take the pure saddle value wherever
+   `maximin == minimax`, fall back to the LP only where it does not. It matches
+   the full LP solution to `4e-16` while doing ~25x less work. (A fourth backup,
+   `pure`, takes the maximin security value even with no saddle -- a fast lower
+   bound, not a Nash solver.)
 
 ---
 
@@ -80,11 +89,11 @@ counts.
 
 ### 3.1 By move rule (7x5 board, gamma = 0.9)
 
-| move order | stochastic? | stage games with no pure saddle | pure stationary equilibrium? | `V(kickoff)` |
+| move order | stochastic? | converged stage games with no pure saddle | stationary pure eq? | `V(kickoff)` |
 |---|---|---|---|---|
-| `deterministic` | no | 0 / 2380 | **yes, everywhere** | 0 |
-| `coinflip` | yes | 0 / 2380 | **yes, everywhere** | 0 |
-| `random` | yes | 94 / 2380 (3.9%) | **no** | +0.150 |
+| `deterministic` | no | 0 / 2380 | yes (Claim B) | 0 |
+| `coinflip` | yes | 0 / 2380 | yes (Claim B) | 0 |
+| `random` | yes | 94 / 2380 (3.9% here) | no | +0.150 |
 
 The deterministic and coinflip value functions are *identical*
 (`max |V_det - V_coin| = 0` for every gamma tested). With optimal play neither
@@ -180,9 +189,14 @@ Three things the research meeting flagged as unsolved for the discrete solver
   **62** of the random game's stage games -- exactly the small-entry mixed
   region -- while the deterministic game (clean `gamma^k` bands) is safe to
   round but has a **non-strict saddle at every one of its 2 380 states**.
-- **The mixed states are matching pennies.** Of the 94 states that need mixing,
-  **68 reduce to a 2x2** support: carrier {advance, hold} vs defender {block,
-  intercept}. That is the "place where they had to have" mixed strategies.
+- **The mixed states have a 2x2 matching-pennies support.** Of the 94 states
+  that need mixing, **68 have an equilibrium supported on a 2x2 subgame** with no
+  pure saddle (matching-pennies strategic structure): carrier {advance, hold} vs
+  defender {block, intercept}. Iterated *strict* dominance only collapses 4 of
+  them fully -- the rest carry tied actions -- so this is a statement about the
+  equilibrium support, not a reduction of the full game. All 94 have the same
+  value across every equilibrium (zero-sum interchangeability), and 64 have a
+  unique equilibrium.
 
 ## 5. The equilibrium policy is worth playing
 

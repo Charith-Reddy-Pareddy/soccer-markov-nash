@@ -13,10 +13,12 @@ Research code built on top of the CS 540 A10 soccer assignment
 needed. Also as [docs/report.html](docs/report.html) (open in any browser) and
 [docs/report.md](docs/report.md).
 
-In short: under the A10 move rule a pure stationary equilibrium exists at every
-state and is found in 9 sweeps with no LP; it fails only under Littman's random
-move *order*, and only on ~4% of states of a large enough board; the hybrid
-solver uses the pure saddle where one exists and the LP only where it does not.
+In short: for the implemented deterministic A10 model every converged stage game
+has a pure saddle, so a stationary pure-strategy equilibrium exists and is found
+in 9 sweeps with no LP; this breaks only under Littman's random move *order*,
+and there only on ~4% of states of a large enough board. The hybrid solver uses
+the pure saddle where `maximin == minimax` and the LP only where it does not.
+Scope and caveats: [docs/assumptions.md](docs/assumptions.md).
 
 ## Plan
 

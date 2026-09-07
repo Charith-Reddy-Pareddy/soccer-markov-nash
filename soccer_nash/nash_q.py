@@ -7,15 +7,21 @@ game and the fixed point of
 
 is the minimax value function (Shapley 1953). The expectation is over the
 (possibly stochastic) transition; the immediate reward is not discounted.
-Three stage solvers are offered:
+Three stage backups are offered:
 
-* ``"mixed"``  -- always take the LP minimax value.
-* ``"pure"``   -- always take the pure maximin (security) value.
-* ``"hybrid"`` -- pure saddle value when it exists, LP value otherwise.
+* ``"mixed"``  -- the LP minimax value ``val(M) = max_p min_j (p^T M)_j``. This
+  is the true Nash value of the (zero-sum) stage game.
+* ``"pure"``   -- the **pure-security / maximin** value ``max_i min_j M[i,j]``.
+  This quantity always exists, but when it is strictly below the minimax it is
+  *not* a Nash equilibrium value -- it is what the row player can guarantee by
+  committing to a single action. Use it as a fast lower bound, not as a solver.
+* ``"hybrid"`` -- the pure *saddle* value when ``maximin == minimax`` (then it
+  equals the Nash value), the LP value otherwise. Exact everywhere.
 
-After convergence the solver reports the states whose stage game has no pure
-saddle: a pure stationary equilibrium of the whole Markov game exists iff that
-set is empty.
+After convergence the solver reports the states whose converged stage game has
+no pure saddle. If that set is empty, playing a pure saddle action at every
+state is a stationary pure-strategy equilibrium of the Markov game (see
+``docs/assumptions.md``, Claim B).
 
 ``run()`` is value iteration -- it solves a matrix game at every state on every
 sweep. ``run_policy_iteration()`` is the "freeze then iterate" scheme: solve the
