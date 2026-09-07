@@ -343,10 +343,10 @@
   <section>
     <p class="kicker">The answer, in four lines</p>
     <ol class="answers">
-      <li><span class="n">1</span><span><b>Under the A10 move rule, a pure stationary Nash equilibrium exists at every state.</b> Pure-strategy Nash Q-iteration solves the game exactly in 9 sweeps with no linear program at all.</span></li>
-      <li><span class="n">2</span><span><b>A coin-flip tie-break does not break this.</b> Randomising <em>who wins a contested square</em> leaves the value function bit-identical to the deterministic game's.</span></li>
-      <li><span class="n">3</span><span><b>Littman's random <em>move order</em> does break it.</b> On the 7&times;5 board, 94 of 2 380 stage games (3.9%) have no pure saddle, so no pure stationary equilibrium exists &mdash; and the effect is board-size dependent.</span></li>
-      <li><span class="n">4</span><span><b>Potential-based reward shaping preserves the equilibrium exactly;</b> a naive per-step possession bonus changes it. The recommended solver is the hybrid: pure where possible, LP only where necessary.</span></li>
+      <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2 380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program. This is not a proof about the theoretical game &mdash; see <a href="#limitations">limitations</a>.</span></li>
+      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this.</b> Randomising <em>who wins a contested square</em> leaves the value function bit-identical to the deterministic game's.</span></li>
+      <li><span class="n">3</span><span><b>Littman's random <em>move order</em> does break it.</b> Under the specified 7&times;5 configuration, 94 of 2 380 stage games (3.9%) have no pure saddle &mdash; a figure that is board-size dependent, not a constant.</span></li>
+      <li><span class="n">4</span><span><b>Potential-based reward shaping preserves the equilibrium <em>structure</em> exactly;</b> a naive per-step possession bonus changes it. The recommended solver is the hybrid: the pure saddle value where one exists, the LP only where it does not.</span></li>
     </ol>
   </section>
 
@@ -408,8 +408,8 @@
       <table>
         <thead><tr><th>move order</th><th class="num">stochastic</th><th class="num">no-saddle stage games</th><th>pure eq?</th><th class="num">V(kickoff)</th></tr></thead>
         <tbody>
-          <tr><td>deterministic</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes, everywhere</td><td class="num">0</td></tr>
-          <tr><td>coinflip tie-break</td><td class="num">yes</td><td class="num">0 / 2380</td><td class="yes">yes, everywhere</td><td class="num">0</td></tr>
+          <tr><td>deterministic</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
+          <tr><td>coinflip tie-break</td><td class="num">yes</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
           <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380</td><td class="no">no</td><td class="num">+0.150</td></tr>
         </tbody>
       </table>
@@ -521,8 +521,8 @@
     </div>
     <p>Rounding to 0.1 misclassifies <b>62</b> of the random game's stage games &mdash; the small-entry region where mixing lives. The deterministic game is safe to round but has a <b>non-strict saddle at every one of its 2 380 states</b>: the pure equilibrium exists everywhere yet is tie-ridden.</p>
 
-    <h3>The mixed states are matching pennies</h3>
-    <p>Of the 94 states that require mixing, <b>68 reduce to a 2&times;2 support</b>: carrier {advance, hold} &times; defender {block, intercept} &mdash; a "guess where the ball goes" game. That is why Littman's <em>random move order</em> creates the mixing and the deterministic A10 rule does not.</p>
+    <h3>The mixed states have a 2&times;2 matching-pennies support</h3>
+    <p>Of the 94 states that require mixing, <b>68 have an equilibrium supported on a 2&times;2 subgame</b> with no pure saddle: carrier {advance, hold} &times; defender {block, intercept} &mdash; a "guess where the ball goes" game. Strict dominance only collapses 4 of them fully, so this describes the equilibrium support, not a reduction of the full 4&times;4 game. All 94 share one value across every equilibrium; 64 have a unique one.</p>
   </section>
 
   <section>

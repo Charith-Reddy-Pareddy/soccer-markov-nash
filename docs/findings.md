@@ -21,11 +21,12 @@ Working notes. The polished write-up is [report.md](report.md).
 
 ## Q1: Can pure-strategy Nash equilibria solve the game?
 
-**Deterministic game: yes, completely.** At all 2380 non-terminal states the
-stage game induced by the converged value function has a pure saddle point
-(`saddle_fraction = 1.00`). `pure`, `hybrid` and `mixed` produce identical value
-functions (max difference `0`). A pure stationary equilibrium exists and value
-iteration finds it in 9 sweeps. The LP solver is never needed.
+**Deterministic model: yes, for every enumerated state (Claim A).** All 2380
+converged stage games have a pure saddle (`maximin == minimax`), so `pure`,
+`hybrid` and `mixed` give identical value functions and value iteration
+converges in 9 sweeps with no LP. Playing a pure saddle action everywhere is a
+stationary pure-strategy equilibrium (Claim B). This is not a proof about the
+theoretical A10 game (Claim C) -- see `docs/assumptions.md`.
 
 Intuition: deterministic transitions + a carrier that always wins contested
 squares means best responses are pure -- there is no guessing pressure.
@@ -33,7 +34,8 @@ squares means best responses are pure -- there is no guessing pressure.
 ## Q2: When does the pure equilibrium break?
 
 **Random move order breaks it, but only partially and only on large enough
-boards.**
+boards.** The percentages below are for the configurations tested, not
+universal constants (see Q3-board-sweep and `experiments/board_sweep.csv`).
 
 | board | states | no-saddle states | pure eq? |
 |---|---|---|---|
