@@ -13,10 +13,11 @@ from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 
 
-def run(gammas: list[float]) -> None:
-    game = SoccerGame()
+def run(gammas: list[float], move_order: str) -> None:
+    game = SoccerGame(move_order=move_order)
     s0 = game.initial_state()
 
+    print(f"move_order = {move_order}")
     header = f"{'gamma':>6} {'iters':>6} {'saddle%':>9} {'V(kick)':>9} {'|hyb-mix|':>10}"
     print(header)
     print("-" * len(header))
@@ -40,8 +41,13 @@ def main() -> None:
         nargs="+",
         default=[0.5, 0.7, 0.8, 0.9, 0.95, 0.99],
     )
+    parser.add_argument(
+        "--move-order",
+        choices=["deterministic", "random"],
+        default="deterministic",
+    )
     args = parser.parse_args()
-    run(args.gammas)
+    run(args.gammas, args.move_order)
 
 
 if __name__ == "__main__":
