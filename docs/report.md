@@ -152,6 +152,12 @@ matching-pennies subgame. The coin-flip tie-break does not do this because it
 randomises the outcome *independently* of the action choices; the deterministic
 rule does not because the carrier always wins, removing the guess.
 
+An argument sketch for "one-cell goal => pure everywhere" -- the value collapses
+to a one-dimensional race to the single goal cell, in which each player has a
+best-response direction independent of the other -- is in `docs/mechanism.md`,
+along with 19/19 single-cell configurations that show zero mixed states. It is
+not yet a proof.
+
 ## 6. Limitations
 
 - The A10 page redacts the ID-specific start position and goal rows; this repo
