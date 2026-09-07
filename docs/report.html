@@ -27,7 +27,6 @@
       --ink-soft: #a9b3a6;
       --ink-faint: #7c867a;
       --rule: #2b342a;
-      --rule-strong: #3a453800;
       --rule-strong: #3b463a;
       --pitch: #7cba95;
       --pitch-soft: #1f2a20;
@@ -138,7 +137,7 @@
 
   /* ---------- pitch hero ---------- */
   .hero { margin: 2.8rem 0 0; }
-  .hero svg { width: 100%; height: auto; display: block; }
+  .hero svg { width: 100%; height: auto; display: block; overflow: visible; }
   .fig-cap {
     font-size: .84rem;
     line-height: 1.5;
@@ -280,9 +279,6 @@
 
   <div class="hero fade">
     <svg viewBox="0 0 720 300" role="img" aria-label="A 7 by 5 soccer grid: player 0 on the left carrying the ball, player 1 on the right, goal mouths on the middle three rows of each edge.">
-      <defs>
-        <pattern id="turf" width="102.8" height="1" patternUnits="userSpaceOnUse"></pattern>
-      </defs>
       <rect x="40" y="20" width="640" height="260" fill="var(--tint)" stroke="var(--rule-strong)" stroke-width="1.5"/>
       <!-- vertical grid lines (7 cols) -->
       <g stroke="var(--rule)" stroke-width="1">
