@@ -147,15 +147,13 @@ class SoccerGame:
         loser = 1 - winner
 
         if t0 == t1:
-            # Contested cell: the winner moves in and the loser takes the ball.
+            # Contested cell: the winner moves in (unless the loser is standing
+            # on it) and the loser takes the ball either way.
             n = [pos[0], pos[1]]
             if tgt[winner] != pos[loser]:
                 n[winner] = tgt[winner]
-                new_b = loser
-            else:
-                # Winner is blocked by the loser standing on the cell.
-                new_b = b
             n0, n1 = n
+            new_b = loser
         elif t0 == p1 and t1 == p0:
             # Swap: players exchange cells; the coin decides possession.
             n0, n1 = p1, p0
