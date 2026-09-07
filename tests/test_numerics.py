@@ -93,6 +93,16 @@ def test_essential_subgame_removes_dominated_rows():
     assert list(ri) == [0]  # row 0 strictly dominates the others
 
 
+def test_essential_subgame_removes_dominated_columns():
+    # No row dominates; column 1 is strictly worse for the minimiser than
+    # column 0 everywhere, so it drops out.
+    M = np.array([[1.0, 9.0, 2.0], [8.0, 10.0, 0.0]])
+    ri, ci, sub = essential_subgame(M)
+    assert list(ri) == [0, 1]
+    assert list(ci) == [0, 2]
+    assert sub.shape == (2, 2)
+
+
 def test_support_shape_of_matching_pennies_is_two_by_two():
     assert support_shape(MATCHING_PENNIES) == (2, 2)
     assert support_shape(RPS) == (3, 3)

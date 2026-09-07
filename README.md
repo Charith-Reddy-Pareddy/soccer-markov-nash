@@ -161,7 +161,8 @@ make test   # fast suite; `make test-all` adds the slow solver runs
 ```
 
 CI (`.github/workflows/tests.yml`) runs `ruff check` and the full `pytest` on
-every push and pull request.
+every push and pull request. `make coverage` reports line coverage (99%, with
+the gaps in degenerate-case guards).
 
 On very recent macOS builds the PyPI SciPy wheel can fail to load
 (`_spropack.so` dyld error). If so, create the venv against a working
