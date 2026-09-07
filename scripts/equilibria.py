@@ -24,7 +24,7 @@ import numpy as np
 from soccer_nash.game import SoccerGame
 from soccer_nash.markov_game import solve_markov_game
 from soccer_nash.nash_q import NashQIteration
-from soccer_nash.support_enum import all_equilibria, select_equilibrium
+from soccer_nash.support_enum import all_equilibria
 
 
 def soccer_stage_equilibria(gamma: float) -> None:

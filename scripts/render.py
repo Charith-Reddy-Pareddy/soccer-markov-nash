@@ -15,9 +15,9 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
+from soccer_nash.best_response import BestResponse
 from soccer_nash.game import A10SoccerGame
 from soccer_nash.opponents import part2_opponent
-from soccer_nash.best_response import BestResponse
 from soccer_nash.render import board_svg, trajectory_svg
 from soccer_nash.simulate import play_deterministic
 

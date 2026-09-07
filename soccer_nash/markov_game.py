@@ -18,8 +18,8 @@ Terminal states are any not in ``states``; their value is 0.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Hashable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Hashable, Sequence
 
 import numpy as np
 

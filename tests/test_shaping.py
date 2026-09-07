@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from soccer_nash.best_response import BestResponse
@@ -31,7 +30,7 @@ def test_reward_delta_does_not_discount_the_current_potential(game):
     assert sh.reward_delta(game, s, s_next, gamma) == pytest.approx(expected)
     # The wrong form gamma*(phi(s') - phi(s)) would give a different number here.
     wrong = gamma * (sh.phi(game, s_next) - sh.phi(game, s))
-    assert not sh.reward_delta(game, s, s_next, gamma) == pytest.approx(wrong)
+    assert sh.reward_delta(game, s, s_next, gamma) != pytest.approx(wrong)
 
 
 def test_phi_sign_follows_possession(game):

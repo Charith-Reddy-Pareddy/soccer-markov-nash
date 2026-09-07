@@ -7,10 +7,8 @@ value iteration.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
-
-import numpy as np
 
 from soccer_nash.game import Action, SoccerGame, State
 
@@ -64,7 +62,7 @@ class BestResponse:
             self._trans[s] = row
 
     def solve(self) -> BestResponseResult:
-        values: dict[State, float] = {s: 0.0 for s in self._states}
+        values: dict[State, float] = dict.fromkeys(self._states, 0.0)
 
         iterations = 0
         for iterations in range(1, self.max_iters + 1):

@@ -6,6 +6,7 @@ A policy maps a state to a length-4 probability vector over actions. The
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -13,6 +14,7 @@ import numpy as np
 from soccer_nash.game import Action, SoccerGame, State
 
 Policy = dict[State, np.ndarray]
+ActionFn = Callable[[SoccerGame, State, int], int]
 
 
 @dataclass
@@ -66,8 +68,8 @@ def play_game(
 
 def play_deterministic(
     game: SoccerGame,
-    action_of: "dict[State, int] | callable",
-    opponent_action_of: "dict[State, int] | callable",
+    action_of: dict[State, int] | ActionFn,
+    opponent_action_of: dict[State, int] | ActionFn,
     me: int = 0,
     start: State | None = None,
 ) -> GameResult:

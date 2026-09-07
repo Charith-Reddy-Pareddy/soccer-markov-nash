@@ -58,7 +58,8 @@ def main() -> None:
     states = list(game.states())
 
     br = BestResponse(game, part2_opponent, me=0, gamma=args.gamma).solve()
-    print(f"best response: {br.iterations} iters, V(kickoff) = {br.values[game.initial_state()]:.4f}")
+    v0 = br.values[game.initial_state()]
+    print(f"best response: {br.iterations} iters, V(kickoff) = {v0:.4f}")
 
     X = np.array(states, dtype=float)
     mask = optimal_action_mask(game, br.values, args.gamma)

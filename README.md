@@ -155,9 +155,13 @@ in the public page). This repo uses the standard Littman soccer geometry:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pytest
+pip install -r requirements.txt -e .
+make lint   # ruff check
+make test   # fast suite; `make test-all` adds the slow solver runs
 ```
+
+CI (`.github/workflows/tests.yml`) runs `ruff check` and the full `pytest` on
+every push and pull request.
 
 On very recent macOS builds the PyPI SciPy wheel can fail to load
 (`_spropack.so` dyld error). If so, create the venv against a working

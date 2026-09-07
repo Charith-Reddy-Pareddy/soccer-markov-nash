@@ -23,8 +23,8 @@ def _gini(y: np.ndarray) -> float:
 class Node:
     feature: int | None = None
     threshold: float | None = None
-    left: "Node | None" = None
-    right: "Node | None" = None
+    left: Node | None = None
+    right: Node | None = None
     label: object = None
     n: int = 0
     impurity: float = 0.0

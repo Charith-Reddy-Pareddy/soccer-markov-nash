@@ -9,7 +9,7 @@ from __future__ import annotations
 import csv
 import pathlib
 import time
-from typing import Iterable
+from collections.abc import Iterable
 
 from soccer_nash.exploit import duality_gap
 from soccer_nash.game import SoccerGame

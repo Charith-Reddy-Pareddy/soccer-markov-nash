@@ -153,7 +153,7 @@ def train_nash_dqn(
 
 def compare_to_exact(game: SoccerGame, net: _QNet, exact_values, exact_row_policy, gamma):
     """value error, action agreement, and exploitability of the DQN policy."""
-    from soccer_nash.exploit import duality_gap, onehot_policy
+    from soccer_nash.exploit import duality_gap
     from soccer_nash.matrix_games import solve_zero_sum
 
     states = list(game.states())

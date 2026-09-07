@@ -10,7 +10,26 @@ requires-python = ">=3.10"
 dependencies = ["numpy>=1.26", "scipy>=1.11"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [tool.setuptools]
 packages = ["soccer_nash"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4"]
+ignore = [
+    "B905",  # zip(..., strict=) -- not worth annotating every call site
+    "SIM108",  # ternary over if/else is not always clearer
+    "B007",  # `for iterations in range(...)` captures the last sweep count on purpose
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts prepend the repo root to sys.path before importing soccer_nash.
+"scripts/*" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["soccer_nash"]

@@ -21,9 +21,9 @@ rules are supported:
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Iterator
 
 import numpy as np
 
@@ -106,12 +106,10 @@ class SoccerGame:
         dx, dy = _DELTA[action]
         rx, ry = x + dx, y + dy
 
-        scored = False
-        if has_ball and y in self.goal_rows:
-            if player == 0 and rx >= self.width:  # player 0 attacks the right edge
-                scored = True
-            elif player == 1 and rx < 0:  # player 1 attacks the left edge
-                scored = True
+        # player 0 attacks the right edge (x = width), player 1 the left (x = -1)
+        scored = has_ball and y in self.goal_rows and (
+            (player == 0 and rx >= self.width) or (player == 1 and rx < 0)
+        )
 
         return (_clamp(rx, 0, self.width - 1), _clamp(ry, 0, self.height - 1)), scored
 
