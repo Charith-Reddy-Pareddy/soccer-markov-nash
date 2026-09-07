@@ -1,14 +1,18 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help test test-all report experiments figures a10 clean
+.PHONY: help lint test test-all report experiments figures a10 clean
 
 help:
+	@echo "make lint         - ruff check (style + unused code)"
 	@echo "make test         - fast test suite"
 	@echo "make test-all     - full suite including slow tests (~10 min)"
 	@echo "make experiments  - regenerate experiments/*.csv (board sweep is slow)"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
-	@echo "make a10           - regenerate the A10 Part 2 + competition artifacts"
+	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
+
+lint:
+	$(PY) -m ruff check .
 
 test:
 	$(PY) -m pytest -m "not slow" -q
