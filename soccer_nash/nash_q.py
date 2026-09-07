@@ -63,6 +63,7 @@ class NashQIteration:
         mode: str = "hybrid",
         tol: float = 1e-8,
         max_iters: int = 2000,
+        shaping=None,
     ):
         if mode not in {"mixed", "pure", "hybrid"}:
             raise ValueError(f"unknown mode {mode!r}")
@@ -71,18 +72,22 @@ class NashQIteration:
         self.mode = mode
         self.tol = tol
         self.max_iters = max_iters
+        self.shaping = shaping
 
         self._states: list[State] = list(game.states())
-        # Per state: a 4x4 grid of outcome lists [(prob, next_state, r0), ...].
+        # Per state: a 4x4 grid of outcome lists [(prob, next_state, r0), ...],
+        # with any shaping reward folded into r0.
         self._out: dict[State, np.ndarray] = {}
         for s in self._states:
             grid = np.empty((4, 4), dtype=object)
             for k, (a0, a1) in enumerate(JOINT_ACTIONS):
                 i, j = divmod(k, 4)
-                grid[i, j] = [
-                    (prob, ns, r0)
-                    for prob, ns, (r0, _) in game.transitions(s, a0, a1)
-                ]
+                outcomes = []
+                for prob, ns, (r0, _) in game.transitions(s, a0, a1):
+                    if shaping is not None:
+                        r0 = r0 + shaping.reward_delta(game, s, ns, gamma)
+                    outcomes.append((prob, ns, r0))
+                grid[i, j] = outcomes
             self._out[s] = grid
 
     # ------------------------------------------------------------------ stage
