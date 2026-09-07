@@ -88,13 +88,12 @@ the defender's strategy in closed form and an independent proof of one half.
   nothing can block it). It strictly dominates; the residual is one row,
   `V* = ±1`.
 - **The draw region.** `scripts/onecell_proof.py` reports `V(kickoff) = 0` for
-  every board, and enumeration shows `V* = 0` on a large connected set `Z`
-  (184 of 420 states on 5×3). On `Z` the stage matrix is `0` except possibly a
-  single positive entry in the carrier's "charge" row against the defender's
-  "leave the row" columns (see the matrices in the docstring of
-  `scripts/templates.py`'s single-cell run). The defender's "stay on row `g`"
-  columns are then all-zero and weakly dominate; the residual is all-zero, a
-  pure saddle at `0`.
+  every board, and enumeration shows `V* = 0` on a large set `Z` (about half the
+  states: 1070 of 2380 on 7×5). About half of the stage games on `Z` are the
+  all-zero game (trivially a pure saddle at `0`); the rest are small mixed-sign
+  matrices where the defender's guard column still holds the carrier to `0`
+  (Lemma 1) and weak-dominance elimination removes the carrier's losing rows to
+  leave one. None require mixing.
 - **The clean-race region.** Where one player can force a goal in `k` moves
   against any defence, that player's distance-reducing move weakly dominates
   after eliminating the opponent's hopeless replies, and `V* = ±γ^{k}` (or
