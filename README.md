@@ -36,6 +36,14 @@ the scripted opponent, imitates it with a bias-free `5->99->99->4` network, and
 writes the Q7 weights and the Q8 winning trajectory. See
 [docs/a10_part2.md](docs/a10_part2.md).
 
+## A10 competition
+
+`python scripts/a10_competition.py --out results/` fits the two equilibrium
+policy networks (player 0 and player 1) to the Nash Q solution and reports how
+exploitable the trained networks are. The Nash policy is unbeatable below the
+game value; the network approximation is only as safe as its worst-fit state.
+See [docs/a10_competition.md](docs/a10_competition.md).
+
 ## Self-play
 
 `python scripts/selfplay.py` plays the Nash Q policy against itself (empirical
