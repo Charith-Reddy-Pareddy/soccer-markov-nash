@@ -5,8 +5,15 @@ State: ``(x0, y0, x1, y1, b)`` where ``(x0, y0)`` is player 0's cell,
 
 Terminal states are encoded ``(-1, -1, -1, -1, winner)``.
 
-Dynamics are deterministic and simultaneous-move: both players pick an action
-from ``{U, D, L, R}`` and the successor is a pure function of the joint action.
+Both players pick an action from ``{U, D, L, R}`` simultaneously. Two resolution
+rules are supported:
+
+* ``move_order="deterministic"`` -- the A10 rule: the carrier wins contested
+  squares, swaps flip possession, a carrier blocked by a standing opponent
+  loses the ball. Transitions are a pure function of the joint action.
+* ``move_order="random"`` -- Littman's rule: the two moves are applied in a
+  random order (each ordering with probability 1/2); a move into the other
+  player's current cell fails and transfers the ball if the mover held it.
 """
 
 from __future__ import annotations
@@ -15,7 +22,12 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Iterator
 
+import numpy as np
+
 State = tuple[int, int, int, int, int]
+Outcome = tuple[float, State, tuple[int, int]]
+
+_DEFAULT_RNG = np.random.default_rng()
 
 
 class Action(IntEnum):
@@ -49,6 +61,11 @@ class SoccerGame:
     height: int = 5
     goal_rows: tuple[int, ...] = (1, 2, 3)
     max_steps: int = 100
+    move_order: str = "deterministic"
+
+    def __post_init__(self) -> None:
+        if self.move_order not in ("deterministic", "random"):
+            raise ValueError(f"unknown move_order {self.move_order!r}")
 
     # ------------------------------------------------------------------ basics
     def actions(self) -> list[Action]:
@@ -95,24 +112,27 @@ class SoccerGame:
 
         return (_clamp(rx, 0, self.width - 1), _clamp(ry, 0, self.height - 1)), scored
 
-    def step(
-        self, state: State, a0: Action, a1: Action
+    @staticmethod
+    def _score_result(winner: int) -> tuple[State, tuple[int, int], bool]:
+        reward = (1, -1) if winner == 0 else (-1, 1)
+        return (-1, -1, -1, -1, winner), reward, True
+
+    def _resolve_deterministic(
+        self,
+        p0: tuple[int, int],
+        p1: tuple[int, int],
+        a0: Action,
+        a1: Action,
+        b: int,
     ) -> tuple[State, tuple[int, int], bool]:
-        """Apply a joint action. Returns (next_state, (r0, r1), done)."""
-        if self.is_terminal(state):
-            raise ValueError("step() called on a terminal state")
-
-        x0, y0, x1, y1, b = state
-        p0, p1 = (x0, y0), (x1, y1)
-
         (t0, s0) = self._target(0, p0, a0, has_ball=(b == 0))
         (t1, s1) = self._target(1, p1, a1, has_ball=(b == 1))
 
         # Only the carrier can score, so at most one of s0/s1 is true.
         if s0:
-            return (-1, -1, -1, -1, 0), (1, -1), True
+            return self._score_result(0)
         if s1:
-            return (-1, -1, -1, -1, 1), (-1, 1), True
+            return self._score_result(1)
 
         if t0 == t1:
             # Both want the same cell: carrier takes it, other keeps its cell
@@ -135,10 +155,76 @@ class SoccerGame:
 
         return (n0[0], n0[1], n1[0], n1[1], new_b), (0, 0), False
 
-    def successors(self, state: State) -> list[tuple[State, tuple[int, int]]]:
-        """Successor state and reward for every joint action, in A10 order."""
-        out: list[tuple[State, tuple[int, int]]] = []
-        for a0, a1 in JOINT_ACTIONS:
-            nxt, reward, _ = self.step(state, a0, a1)
-            out.append((nxt, reward))
-        return out
+    def _resolve_sequential(
+        self,
+        p0: tuple[int, int],
+        p1: tuple[int, int],
+        a0: Action,
+        a1: Action,
+        b: int,
+        first: int,
+    ) -> tuple[State, tuple[int, int], bool]:
+        pos = {0: p0, 1: p1}
+        acts = {0: a0, 1: a1}
+        ball = b
+
+        for mover in (first, 1 - first):
+            other = 1 - mover
+            tgt, scored = self._target(
+                mover, pos[mover], acts[mover], has_ball=(ball == mover)
+            )
+            if scored:
+                return self._score_result(mover)
+            if tgt == pos[other]:
+                # Blocked by the other player's current cell; a bump transfers
+                # the ball if the mover was carrying it.
+                if ball == mover:
+                    ball = other
+            else:
+                pos[mover] = tgt
+
+        (x0, y0), (x1, y1) = pos[0], pos[1]
+        return (x0, y0, x1, y1, ball), (0, 0), False
+
+    def transitions(self, state: State, a0: Action, a1: Action) -> list[Outcome]:
+        """All ``(probability, next_state, (r0, r1))`` outcomes of a joint action."""
+        if self.is_terminal(state):
+            raise ValueError("transitions() called on a terminal state")
+
+        x0, y0, x1, y1, b = state
+        p0, p1 = (x0, y0), (x1, y1)
+
+        if self.move_order == "deterministic":
+            ns, reward, _ = self._resolve_deterministic(p0, p1, a0, a1, b)
+            return [(1.0, ns, reward)]
+
+        merged: dict[tuple[State, tuple[int, int]], float] = {}
+        for first in (0, 1):
+            ns, reward, _ = self._resolve_sequential(p0, p1, a0, a1, b, first)
+            merged[(ns, reward)] = merged.get((ns, reward), 0.0) + 0.5
+        return [(prob, ns, reward) for (ns, reward), prob in merged.items()]
+
+    def step(
+        self,
+        state: State,
+        a0: Action,
+        a1: Action,
+        rng: np.random.Generator | None = None,
+    ) -> tuple[State, tuple[int, int], bool]:
+        """Apply a joint action, sampling stochastic outcomes.
+
+        Returns ``(next_state, (r0, r1), done)``.
+        """
+        outcomes = self.transitions(state, a0, a1)
+        if len(outcomes) == 1:
+            _, ns, reward = outcomes[0]
+        else:
+            rng = rng if rng is not None else _DEFAULT_RNG
+            probs = [p for p, _, _ in outcomes]
+            idx = int(rng.choice(len(outcomes), p=probs))
+            _, ns, reward = outcomes[idx]
+        return ns, reward, self.is_terminal(ns)
+
+    def successors(self, state: State) -> list[list[Outcome]]:
+        """Outcome list for every joint action, in A10 order."""
+        return [self.transitions(state, a0, a1) for a0, a1 in JOINT_ACTIONS]

@@ -104,9 +104,11 @@ def test_successors_length_and_order(game):
     s = game.initial_state()
     succ = game.successors(s)
     assert len(succ) == 16
-    # First entry is joint action (U, U).
-    nxt_uu, _, _ = game.step(s, Action.U, Action.U)
-    assert succ[0][0] == nxt_uu
+    # Deterministic game: one outcome per joint action, first is (U, U).
+    prob, nxt, reward = succ[0][0]
+    assert prob == 1.0
+    nxt_uu, reward_uu, _ = game.step(s, Action.U, Action.U)
+    assert (nxt, reward) == (nxt_uu, reward_uu)
 
 
 def test_step_on_terminal_raises(game):

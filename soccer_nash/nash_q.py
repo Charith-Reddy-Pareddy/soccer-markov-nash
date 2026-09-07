@@ -1,11 +1,13 @@
 """Nash Q-iteration for the zero-sum soccer Markov game.
 
-Because the game is two-player zero-sum with deterministic transitions, the
-stage game at each state is a matrix game and the fixed point of
+The game is two-player zero-sum, so the stage game at each state is a matrix
+game and the fixed point of
 
-    V(s) = val( R(s, .,.) + gamma * V(succ(s, .,.)) )
+    V(s) = val( E[ R(s, .,.) + gamma * V(s') ] )
 
-is the minimax value function (Shapley 1953). Three stage solvers are offered:
+is the minimax value function (Shapley 1953). The expectation is over the
+(possibly stochastic) transition; the immediate reward is not discounted.
+Three stage solvers are offered:
 
 * ``"mixed"``  -- always take the LP minimax value.
 * ``"pure"``   -- always take the pure maximin (security) value.
@@ -70,29 +72,33 @@ class NashQIteration:
         self.max_iters = max_iters
 
         self._states: list[State] = list(game.states())
-        self._next: dict[State, np.ndarray] = {}
-        self._reward: dict[State, np.ndarray] = {}
+        # Per state: a 4x4 grid of outcome lists [(prob, next_state, r0), ...].
+        self._out: dict[State, np.ndarray] = {}
         for s in self._states:
-            nxt = np.empty((4, 4), dtype=object)
-            rew = np.zeros((4, 4))
+            grid = np.empty((4, 4), dtype=object)
             for k, (a0, a1) in enumerate(JOINT_ACTIONS):
                 i, j = divmod(k, 4)
-                ns, (r0, _), _ = game.step(s, a0, a1)
-                nxt[i, j] = ns
-                rew[i, j] = r0
-            self._next[s] = nxt
-            self._reward[s] = rew
+                grid[i, j] = [
+                    (prob, ns, r0)
+                    for prob, ns, (r0, _) in game.transitions(s, a0, a1)
+                ]
+            self._out[s] = grid
 
     # ------------------------------------------------------------------ stage
     def _matrix(self, s: State, values: dict[State, float]) -> np.ndarray:
-        cont = np.zeros((4, 4))
-        nxt = self._next[s]
+        m = np.zeros((4, 4))
+        grid = self._out[s]
+        gamma = self.gamma
         for i in range(4):
             for j in range(4):
-                ns = nxt[i, j]
-                if not self.game.is_terminal(ns):
-                    cont[i, j] = values[ns]
-        return self._reward[s] + self.gamma * cont
+                acc = 0.0
+                for prob, ns, r0 in grid[i, j]:
+                    if self.game.is_terminal(ns):
+                        acc += prob * r0
+                    else:
+                        acc += prob * (r0 + gamma * values[ns])
+                m[i, j] = acc
+        return m
 
     def _stage_value(self, m: np.ndarray) -> float:
         if self.mode == "pure":
