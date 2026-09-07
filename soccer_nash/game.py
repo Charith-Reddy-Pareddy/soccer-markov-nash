@@ -164,6 +164,7 @@ class SoccerGame:
         b: int,
         first: int,
     ) -> tuple[State, tuple[int, int], bool]:
+        start = {0: p0, 1: p1}
         pos = {0: p0, 1: p1}
         acts = {0: a0, 1: a1}
         ball = b
@@ -175,9 +176,9 @@ class SoccerGame:
             )
             if scored:
                 return self._score_result(mover)
-            if tgt == pos[other]:
-                # Blocked by the other player's current cell; a bump transfers
-                # the ball if the mover was carrying it.
+            if tgt == start[other]:
+                # Blocked by the other player's cell; a bump transfers the ball
+                # if the mover was carrying it.
                 if ball == mover:
                     ball = other
             else:
