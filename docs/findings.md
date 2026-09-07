@@ -95,3 +95,13 @@ draw from the centre. Convergence is discount-insensitive because values
 propagate along shortest paths to a forced score.
 
 Reproduce: `python scripts/analyze.py --move-order {deterministic,random}`.
+
+## Q4: Does intermediate-reward shaping help?
+
+Potential-based shaping `F = gamma*Phi(s') - Phi(s)` leaves the equilibrium
+exactly where it was: `V_shaped = V_base - Phi` to machine precision, identical
+optimal policies, identical `no_saddle_states`. But it *slows* exact value
+iteration on this game from 9 sweeps to ~130, because `Phi` fills in the ~1000
+states where `V_base` is exactly 0. A naive (non-potential) per-step possession
+bonus does change the solution -- the kickoff draw becomes a +0.5 value for the
+carrier. See `docs/shaping.md`.

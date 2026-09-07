@@ -36,6 +36,13 @@ the scripted opponent, imitates it with a bias-free `5->99->99->4` network, and
 writes the Q7 weights and the Q8 winning trajectory. See
 [docs/a10_part2.md](docs/a10_part2.md).
 
+## Reward shaping
+
+`soccer_nash.shaping` adds intermediate rewards on top of the sparse win/lose
+signal. Potential-based shaping is verified to leave the equilibrium unchanged
+(value shifts by exactly `-Phi`); a naive per-step possession bonus is shown to
+change the solution. See [docs/shaping.md](docs/shaping.md).
+
 ## Headline result
 
 - **Deterministic game:** every stage game has a pure saddle; `pure`, `hybrid`
