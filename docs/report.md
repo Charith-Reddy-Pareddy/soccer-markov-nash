@@ -3,6 +3,9 @@
 A research report. Scope and caveats are in `docs/assumptions.md`; every table
 below regenerates from `experiments/*.csv` via `scripts/experiments.py`.
 
+![Kickoff: player 0 (blue) carries the ball toward the right goal; player 1
+(green) defends the left.](figures/kickoff.svg)
+
 ---
 
 ## 1. Problem
