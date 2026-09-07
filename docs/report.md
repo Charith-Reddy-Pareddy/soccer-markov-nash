@@ -4,7 +4,7 @@
 structure.*
 
 A research report. Scope and caveats are in `docs/assumptions.md`; every table
-below regenerates from `experiments/*.csv` via `scripts/experiments.py`.
+below regenerates from `experiments/*.csv` (`make experiments phase dqn`).
 
 Two contributions:
 
@@ -85,50 +85,60 @@ resolves first *and* on both players' targets, breaks it.
 
 ### RQ2 -- Efficiency
 
+Two numbers, kept separate. **LP-call rate** is a property of the game and
+reproduces exactly; **wall-clock** is a median over 5 repeats and depends on the
+machine and the LP backend (`scripts/benchmark.py`).
+
 ```
 random move order, gamma = 0.9 (the case where the LP is actually needed)
-          sweeps   matrix-game solves   wall clock   V(kickoff)
-pure        18            0                <1 s        +0.000   (a lower bound, not Nash)
-hybrid      108        ~9 700              ~14 s        +0.150   (exact)
-mixed       108        ~3.6 M              ~8 min       +0.150   (exact, wasteful)
+                    sweeps   LP calls   states needing LP   LP/state/sweep   median wall clock
+pure                  18          0           --                 --               0.3 s   (a lower bound, not Nash)
+hybrid               108       9 672        3.95% (94/2380)      0.038            13.2 s  (exact)
+hybrid + mirror       -           -            -                  -                 -     (deterministic game only)
+all-LP (mixed)       108     ~3.6 M         100%                 1.0             ~8 min  (exact, wasteful)
 ```
 
-The pure-first hybrid solves an LP only on the ~4% of states that lack a pure
-saddle -- ~25x fewer LP calls per sweep -- and matches the all-LP value
-function to `4e-16`. On the deterministic and coin-flip games it never calls the
-LP at all.
+The pure-first hybrid solves an LP only on the **3.95%** of states that lack a
+pure saddle -- a **~25x** per-sweep reduction in LP calls -- and matches the
+all-LP value function to `4e-16`. On the deterministic and coin-flip games it
+calls the LP zero times.
 
-*LP-solve reduction and wall-clock speedup are separate quantities and should
-not be conflated.* The 4% figure (a ~25x per-sweep LP reduction) is a property
-of the game and is reproducible; the ~34x wall-clock ratio (14 s vs 8 min)
-depends on the machine, the LP backend, and how much of the runtime is matrix
-construction rather than the solve. This report quotes the LP reduction as the
-headline and treats wall-clock as indicative. Two further reductions:
+*Do not conflate the LP-call reduction with the wall-clock speedup.* The 3.95%
+figure is exact and portable. The wall-clock ratio (~13 s vs ~8 min here, ~37x)
+also reflects how much of each sweep is matrix construction rather than the
+solve, the LP backend, and the machine; treat it as indicative, not a headline.
+Two further reductions:
 
 - **Mirror symmetry** (`run_symmetric`, `soccer_nash/symmetry.py`): the game is
   anti-symmetric under board-flip + player-swap, and every state has a distinct
   mirror image, so the 2380 states are 1190 mirror pairs. Solving one per pair
-  and reconstructing the other by `V(mirror(s)) = -V(s)` halves the iteration.
+  and reconstructing the other by `V(mirror(s)) = -V(s)` cuts the deterministic
+  solve from 0.33 s to 0.23 s. (Deterministic dynamics only -- the mirror of a
+  stochastic transition is not verified.)
 - **Freeze-then-iterate** (`run_policy_iteration`): 5x fewer LP solves, but the
   frozen strategies stay maximally stale for 16 outer rounds before locking in,
   so wall-clock is not lower on a game this small. See section 7.
 
 ### RQ3 -- Mechanism
 
-**A stage game needs mixed strategies only when the goal mouth is more than one
-cell wide** (`experiments/board_sweep.csv`, `goal_mouth_sweep.csv`):
+**Goal-mouth width, not board size, is the gate.** The phase diagram
+(`scripts/phase_diagram.py`, `experiments/phase_diagram.csv`) sweeps every board
+from 3x3 to 9x5 against goal widths 1 to `height-2`:
 
-| goal mouth | mixed states (7x5-shaped board) |
-|---|---|
-| 1 cell | **0** -- every height-3 board, any width 3..11 |
-| 2 cells | 186 (5x9 board) |
-| 3 cells | 162 |
-| >= 4 cells | slowly declines |
+![Mixed-state fraction by board size and goal-mouth width. The goal-width-1
+column is zero for every board.](figures/phase_diagram.svg)
 
-With a one-cell goal the carrier's only winning approach is that cell, so the
-defender always knows where to stand. With a wider goal the carrier threatens
-more than one cell and, under the random move order, the defender cannot cover
-them all -- it has to *guess*.
+- **Goal width 1: exactly 0 mixed states, on all 16 boards.** The carrier's only
+  winning approach is that one cell, so the defender always knows where to
+  stand.
+- **Goal width >= 2: mixed states on every board**, at a fraction of **3-12%**
+  that barely depends on the board. It drifts *down* with board area (more
+  midfield filler) and is roughly flat in goal width beyond 2.
+
+So the split is a threshold in goal width (1 vs >= 2), and every state is
+reachable from the kickoff (`reachable == states` in every row), so the fraction
+over reachable states equals the fraction over all states. Board width and
+height only modulate the fraction within a narrow band.
 
 Geometry predicts the classification (`scripts/geometry_model.py`): a depth-4
 decision tree separates `mixed` from the rest with **precision 0.96, recall
@@ -212,8 +222,9 @@ not yet a proof.
 
 - The A10 page redacts the ID-specific start position and goal rows; this repo
   uses the standard Littman geometry (configurable). Qualitative results are
-  geometry-robust (tested across 40+ board configurations); the exact `3.9%`
-  is for the 7x5 / 3-cell-goal case only.
+  geometry-robust: across 46 board / goal-width configurations, all 17 with a
+  one-cell goal have 0 mixed states and all 29 with a wider goal have some. The
+  exact `3.95%` mixed fraction is for the 7x5 / 3-cell-goal case only.
 - Several collision sub-cases (carrier vs. stationary opponent, non-carrier
   bump = steal, swap possession) are *interpreted* from the two stated A10
   rules, not quoted. If course staff intended a different rule, Claim A must be
@@ -224,6 +235,13 @@ not yet a proof.
 - The `random` and `coinflip` variants are *different game definitions*, not the
   A10 game; comparisons across them isolate the collision rule and the tie-break
   respectively.
+
+**Reproducibility.** The value-iteration results are exact dynamic programming
+and carry no seed. The randomised measurements are each run over 5 seeds and
+quoted as mean +/- sd: the neural Nash-Q metrics (`experiments/nash_dqn_seeds.csv`),
+the random-game self-play return (`+0.149 +/- 0.005`), and the wall-clock
+figures (median of 5 repeats). LP-call counts and mixed-state counts are
+deterministic.
 
 ## 7. The algorithm
 
@@ -256,8 +274,8 @@ satisfying:
 - Its duality gap `V0_br(s0) + V1_br(s0)` is `< 1e-9` for every move order -- no
   opponent beats the game value.
 - Nash vs. Nash reproduces the value: forced draws in the deterministic and
-  coin-flip games; a `+0.157` empirical discounted return (vs. `+0.150`
-  computed) in the random game.
+  coin-flip games; a `+0.149 +/- 0.005` empirical discounted return over 5 seeds
+  of 3000 games (vs. `+0.150` computed) in the random game.
 - A best response to one assumed opponent is fragile: the Part 2
   best-response-to-the-scripted-opponent policy has exploitability `0.43` --
   worse than moving uniformly at random -- which is exactly the A10 competition's
@@ -283,19 +301,27 @@ satisfying:
 
 ## 10. Neural Nash-Q vs. the exact solver
 
-`scripts/nash_dqn.py` (7x5 deterministic game, gamma 0.9, 5 -> 96 -> 96 -> 16
-regressor with biases, 500 epochs, frozen target network):
+The meeting's stated pipeline is: exact discrete solver first, then a network to
+replicate it. `scripts/nash_dqn.py` fits a `5 -> 96 -> 96 -> 16` regressor with
+biases (frozen target network, 600 epochs) to the exact stage matrices of the
+7x5 deterministic game and measures the gap over **5 seeds**
+(`experiments/nash_dqn_seeds.csv`):
 
-| | exact hybrid Nash-Q | neural Nash-Q |
+| metric | exact hybrid Nash-Q | neural Nash-Q (mean +/- sd, n=5) |
 |---|---|---|
-| wall clock | 9 sweeps, 0.45 s | 500 epochs, 55 s |
-| max `|V - V_exact|` | 0 | 0.54 |
-| action agreement | 100% | 53% |
-| exploitability | 0 | 0.43 |
+| value / policy | ground truth | -- |
+| max `\|V - V_exact\|` | 0 | 0.55 +/- 0.02 |
+| mean `\|V - V_exact\|` | 0 | 0.13 +/- 0.00 |
+| action agreement | 100% | 43% +/- 2% |
+| pure/mixed classification agreement | 100% | 67% +/- 2% |
+| exploitability (duality gap) | `<1e-9` | 0.43 +/- 0.04 |
+| convergence | exact fixed point | MSE plateau ~3e-3 |
+| runtime | 9 sweeps, 0.3 s | 600 epochs, 32 +/- 1 s |
 
-The exact solver is both ~120x faster and correct. The network fits the
-~1000 zero-value states easily but misses the `gamma^k` structure and the
-contested regions -- its policy is about as exploitable as playing uniformly at
-random. This is the concrete baseline the eventual continuous-action work has to
-beat, and it argues for keeping the exact solver as ground truth rather than
-replacing it.
+The exact solver is both ~100x faster and correct. The network fits the ~1000
+zero-value states easily -- hence the small *mean* error -- but misses the
+`gamma^k` bands and the contested regions: its worst-state value error is `0.55`
+and its policy is about as exploitable as moving uniformly at random (`~0.43`).
+It even gets *whether a state needs mixing* wrong a third of the time. This is
+the concrete baseline the eventual continuous-action work has to beat, and it is
+why the exact solver stays the ground truth rather than being replaced.

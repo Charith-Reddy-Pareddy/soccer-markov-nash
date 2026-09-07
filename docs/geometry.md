@@ -1,31 +1,28 @@
 # RQ3: where does the game *have* to mix?
 
-`scripts/geometry_model.py`, `scripts/experiments.py board|goalmouth`.
+`scripts/geometry_model.py`, `scripts/phase_diagram.py`.
 
 ## The mechanism: a multi-cell goal mouth
 
-Earlier notes attributed the mixed-strategy states to "large boards". The board
-sweep (`experiments/board_sweep.csv`) shows the real gate:
+Earlier notes attributed the mixed-strategy states to "large boards". The phase
+diagram (`experiments/phase_diagram.csv`, `figures/phase_diagram.svg`) sweeps 46
+board / goal-width configurations and shows the real gate:
 
-| board height | goal rows | mixed states |
+| goal-mouth width | configs | mixed states |
 |---|---|---|
-| 3 (any width 3-11) | 1 | **0** |
-| >= 4 | >= 2 | grows with board area |
+| 1 | 17 (boards 3x3 .. 9x5) | **0 in every one** |
+| >= 2 | 29 | 3-12% of states, in every one |
 
-And directly (`experiments/goal_mouth_sweep.csv`, fixed 5x9 board):
-
-| goal rows | mixed states |
-|---|---|
-| 1 | 0 |
-| 2 | (grows) |
-| ... | ... |
+The mixed fraction drifts *down* with board area (more midfield filler) and is
+roughly flat in goal width beyond 2 -- so it is a threshold in goal width, not a
+board-size effect.
 
 **A state requires mixed strategies only when the goal is more than one cell
 wide.** With a one-cell goal the carrier's only winning approach is that single
 cell, so the defender knows exactly where to stand and every stage game has a
 pure saddle. With a wider goal the carrier can threaten more than one cell at
 once, and under the random move order the defender cannot cover all of them --
-it has to *guess*, which is a matching-pennies subgame.
+it has to *guess*, which is a matching-pennies subgame ([templates.md](templates.md)).
 
 ## Geometry predicts the classification
 
