@@ -191,6 +191,63 @@ class NashQIteration:
             matrix_game_solves=self._lp_calls,
         )
 
+    def run_symmetric(self) -> NashQResult:
+        """Value iteration that solves one state per mirror pair and
+        reconstructs the other by ``V(mirror(s)) = -V(s)``. Same fixed point,
+        half the stage-game work. Deterministic move order only -- the mirror
+        of a stochastic transition is not verified here."""
+        if self.game.move_order != "deterministic":
+            raise ValueError("run_symmetric() requires deterministic move order")
+        from soccer_nash.symmetry import canonical_pairs
+
+        self._lp_calls = 0
+        reps, image_of = canonical_pairs(self.game)
+        rep_set = set(reps)
+
+        def val(s: State, table: dict[State, float]) -> float:
+            if self.game.is_terminal(s):
+                return 0.0
+            return table[s] if s in rep_set else -table[image_of[s]]
+
+        values: dict[State, float] = {s: 0.0 for s in reps}
+        iterations = 0
+        for iterations in range(1, self.max_iters + 1):
+            delta = 0.0
+            updated: dict[State, float] = {}
+            for s in reps:
+                grid = self._out[s]
+                m = np.zeros((4, 4))
+                for i in range(4):
+                    for j in range(4):
+                        acc = 0.0
+                        for prob, ns, r0 in grid[i, j]:
+                            acc += prob * (
+                                r0
+                                if self.game.is_terminal(ns)
+                                else r0 + self.gamma * val(ns, values)
+                            )
+                        m[i, j] = acc
+                nv = self._stage_value(m)
+                delta = max(delta, abs(nv - values[s]))
+                updated[s] = nv
+            values = updated
+            if delta < self.tol:
+                break
+
+        # Expand to the full state set, then extract policies as usual.
+        full = {s: (values[s] if s in rep_set else -values[image_of[s]]) for s in self._states}
+        row_policy, col_policy, no_saddle = self._extract_policies(full)
+        return NashQResult(
+            values=full,
+            row_policy=row_policy,
+            col_policy=col_policy,
+            no_saddle_states=no_saddle,
+            iterations=iterations,
+            mode=self.mode,
+            gamma=self.gamma,
+            matrix_game_solves=self._lp_calls,
+        )
+
     def run_policy_iteration(
         self, eval_sweeps: int = 50, max_outer: int = 200
     ) -> NashQResult:
