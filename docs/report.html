@@ -263,6 +263,31 @@
     .fade { animation: rise .7s cubic-bezier(.2,.7,.3,1) both; }
     @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
   }
+
+  /* ---------- print / PDF ---------- */
+  @media print {
+    :root {
+      --paper: #ffffff; --tint: #f1f4f0; --raise: #ffffff;
+      --ink: #141815; --ink-soft: #3f4a42; --ink-faint: #5c665d;
+      --rule: #c9d2cb; --rule-strong: #a9b4ab;
+      --pitch: #256b45; --pitch-soft: #e8f0e9;
+      --ember: #9c4614; --ember-soft: #f4e8de;
+      --shadow: none;
+    }
+    body { font-size: 10.5pt; line-height: 1.5; }
+    .wrap { max-width: none; padding: 0; }
+    header { padding: 0 0 12pt; }
+    h1 { font-size: 30pt; }
+    h2 { font-size: 15pt; }
+    .dek { font-size: 12pt; }
+    .fade { animation: none !important; }
+    section { padding: 14pt 0; break-inside: avoid-page; }
+    figure, .tbl-scroll, .note, .formula, .answers li { break-inside: avoid; }
+    h2, h3 { break-after: avoid; }
+    a { color: var(--ink); text-decoration: none; }
+    .byline, .fig-cap { color: var(--ink-faint); }
+    @page { margin: 14mm 16mm; }
+  }
 </style>
 
 <div class="wrap">
@@ -274,7 +299,7 @@
       <span class="label">Research question</span>
       Can pure-strategy Nash equilibria be used to <em>efficiently</em> solve the soccer Markov game, and under what state and reward settings does a pure Nash equilibrium exist?
     </div>
-    <p class="byline">repo · soccer-markov-nash &nbsp;|&nbsp; 114 tests &nbsp;|&nbsp; built on the CS&nbsp;540 A10 assignment</p>
+    <p class="byline">repo · soccer-markov-nash &nbsp;|&nbsp; 118 tests &nbsp;|&nbsp; built on the CS&nbsp;540 A10 assignment</p>
   </header>
 
   <div class="hero fade">
@@ -490,6 +515,6 @@
   <footer>
     soccer_nash &mdash; game.py &middot; matrix_games.py &middot; nash_q.py &middot; best_response.py &middot; mlp.py &middot; opponents.py &middot; shaping.py &middot; exploit.py &middot; simulate.py<br>
     scripts &mdash; analyze.py &middot; policy_iteration.py &middot; selfplay.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    114 passing tests + 4 slow &nbsp;|&nbsp; env: 7&times;5 grid, 2 380 states, zero-sum &plusmn;1, &gamma; = 0.9
+    118 passing tests (114 fast + 4 slow) &nbsp;|&nbsp; env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
 </div>
