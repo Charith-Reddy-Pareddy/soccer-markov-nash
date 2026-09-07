@@ -1,47 +1,43 @@
 # Review checklist
 
-Tracking the 20 points from the review. `[x]` done, `[~]` partial, `[ ]` open.
+Status of the 20 review points.
 
 ## Terminology & claims
 
-- [ ] 1. Verify exact A10 transition semantics -- add an explicit assumptions
-  doc listing the interpreted collision sub-cases; flag as "to confirm with
-  course staff".
-- [ ] 2. Precise language for the existence result -- distinguish Claim A
-  (every converged stage game has a pure saddle), Claim B (stationary pure
-  equilibrium of the Markov game), Claim C (the theoretical A10 game).
-- [ ] 3. "pure Nash" vs "pure-saddle / pure-security" -- `mode="pure"` takes the
-  maximin security value, which exists even when it is below the minimax and is
-  *not* a Nash equilibrium there.
-- [ ] 8. "3.9% under the specified 7x5 config", not a universal constant.
-- [ ] 18. Soften "matching pennies" to "matching-pennies-like strategic
-  structure", or prove strategic equivalence via the payoff inequalities.
+- [x] 1. Exact A10 transition semantics -- `docs/assumptions.md` lists every
+  interpreted collision sub-case and what to confirm with course staff.
+- [x] 2. Claim A / B / C distinguished in the report, findings, README,
+  `assumptions.md`.
+- [x] 3. `mode="pure"` documented as the maximin *security* value, not a Nash
+  equilibrium value (nash_q.py docstring, report).
+- [x] 8. "3.9% for this configuration" language; goal-mouth sweep replaces the
+  "big board" framing.
+- [x] 18. "matching-pennies-like / 2x2 support" wording; strict-dominance
+  reduction only collapses 4 of 94 -- stated explicitly.
 
 ## Experiments & code
 
-- [ ] 4/5. Geometry -> equilibrium-type model: per-state spatial features,
-  predict {pure, degenerate, mixed}.
-- [ ] 6/15. Minimum geometric configuration for unavoidable mixing; reduce each
-  mixed game to essential support, symmetry-normalise, cluster into templates.
-- [ ] 7. Board-size heatmap: width 3..11, height 3..9, P(mixed).
-- [ ] 10. Exact hybrid Nash-Q vs DQN approximation: value error, action
-  agreement, exploitability, convergence, runtime.
-- [ ] 11. Reposition self-play/exploitability as a secondary validation
-  experiment.
-- [ ] 16. gamma sweep {0.5 .. 0.995}: mixed fraction, runtime, V(s0), max
-  bracket error.
-- [ ] 17. tolerance sweep {1e-12 .. 1e-3}: #pure / #degenerate / #mixed,
-  max |V_hybrid - V_LP|.
-- [ ] 19. Single experiment driver -> machine-readable CSV/JSON under
-  `experiments/`.
-- [ ] 20. Symmetry reduction: canonical representatives, solve one, reconstruct
-  the mirror -- computational optimisation + structural property.
+- [x] 4/5. `soccer_nash/geometry.py` + `tree.py` + `scripts/geometry_model.py`
+  -- decision tree predicts pure/mixed at precision 0.96 / recall 0.91.
+- [x] 6/15. Mechanism: goal-mouth width is the gate (`scripts/experiments.py
+  goalmouth`); template table by (support, defender geometry) in
+  `docs/geometry.md`.
+- [x] 7. `experiments/board_sweep.csv` (width 3-11 x height 3-9) +
+  `goal_mouth_sweep.csv`.
+- [x] 10. `soccer_nash/nash_dqn.py` + `scripts/nash_dqn.py` -- exact vs neural
+  Nash-Q on value error, action agreement, exploitability, runtime.
+- [x] 11. Self-play repositioned as "secondary validation" (report section 8).
+- [x] 16. `experiments/gamma_sweep.csv` -- gamma 0.5 .. 0.995.
+- [x] 17. `experiments/tolerance_sweep.csv` -- rel_tol 1e-12 .. 1e-1.
+- [x] 19. `soccer_nash/experiment.py` (`run_config` -> flat row) +
+  `scripts/experiments.py` -> `experiments/*.csv`.
+- [x] 20. `soccer_nash/symmetry.py` + `NashQIteration.run_symmetric()` --
+  1190 mirror pairs, `V(mirror(s)) = -V(s)`, verified equivariant.
 
 ## Structure
 
-- [ ] 12/13/24. Restructure the report as a paper (Problem / Method / RQ1-4 /
-  Results / Mechanism / Limitations / New Algorithm / Open Questions) with the
-  four research questions RQ1 Existence, RQ2 Efficiency, RQ3 Mechanism, RQ4
-  Numerical robustness.
-- [ ] Separate exact-A10 semantics from research variants
-  (`A10SoccerGame` vs the flexible `SoccerGame`).
+- [x] 12/13/24. Report restructured as Problem / Method / RQ1-4 / Mechanism /
+  Limitations / Algorithm / Secondary validation / Open questions, with the
+  four RQs.
+- [x] `A10SoccerGame` (exact assignment) vs `SoccerGame` (flexible, research
+  variants); a10 scripts use `A10SoccerGame`.

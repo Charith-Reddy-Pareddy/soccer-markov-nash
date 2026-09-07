@@ -21,7 +21,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import numpy as np
 
 from soccer_nash.best_response import BestResponse
-from soccer_nash.game import SoccerGame
+from soccer_nash.game import A10SoccerGame
 from soccer_nash.mlp import MLP
 from soccer_nash.opponents import part2_opponent
 from soccer_nash.simulate import play_deterministic
@@ -54,7 +54,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
-    game = SoccerGame()
+    game = A10SoccerGame()
     states = list(game.states())
 
     br = BestResponse(game, part2_opponent, me=0, gamma=args.gamma).solve()

@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.a10 import ACTION_LABELS, format_rewards, successors
-from soccer_nash.game import SoccerGame
+from soccer_nash.game import A10SoccerGame
 
 
 def _parse_state(text: str) -> tuple[int, int, int, int, int]:
@@ -40,11 +40,10 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    game = SoccerGame(
+    game = A10SoccerGame(
         width=args.width,
         height=args.height,
         goal_rows=tuple(args.goal_rows),
-        move_order="deterministic",
     )
 
     succ = successors(game, args.state)
