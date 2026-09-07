@@ -130,3 +130,15 @@ def test_successors_length_and_order(game):
 def test_step_on_terminal_raises(game):
     with pytest.raises(ValueError):
         game.step((-1, -1, -1, -1, 0), Action.U, Action.U)
+
+
+def test_a10_game_is_deterministic_only():
+    from soccer_nash.game import A10SoccerGame
+
+    a10 = A10SoccerGame()
+    assert a10.move_order == "deterministic"
+    # identical transitions to SoccerGame with the default rule
+    for s, a0, a1 in [((3, 2, 4, 2, 0), Action.R, Action.L), ((0, 2, 6, 2, 0), Action.U, Action.U)]:
+        assert a10.step(s, a0, a1) == SoccerGame().step(s, a0, a1)
+    with pytest.raises(ValueError):
+        A10SoccerGame(move_order="coinflip")

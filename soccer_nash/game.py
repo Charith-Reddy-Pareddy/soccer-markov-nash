@@ -258,3 +258,24 @@ class SoccerGame:
     def successors(self, state: State) -> list[list[Outcome]]:
         """Outcome list for every joint action, in A10 order."""
         return [self.transitions(state, a0, a1) for a0, a1 in JOINT_ACTIONS]
+
+
+@dataclass(frozen=True)
+class A10SoccerGame(SoccerGame):
+    """The exact CS 540 A10 environment: deterministic move resolution only.
+
+    This is the game the "pure saddle at every state" result is measured on.
+    The interpreted collision sub-cases are listed in ``docs/assumptions.md``.
+    Research variants (`move_order` "random" / "coinflip") are *different game
+    definitions* -- use ``SoccerGame`` for those, not this class.
+    """
+
+    move_order: str = "deterministic"
+
+    def __post_init__(self) -> None:
+        if self.move_order != "deterministic":
+            raise ValueError(
+                "A10SoccerGame is the exact assignment environment; use "
+                "SoccerGame(move_order=...) for research variants"
+            )
+        super().__post_init__()
