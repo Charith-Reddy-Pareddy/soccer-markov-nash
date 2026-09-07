@@ -85,14 +85,14 @@ class NashQIteration:
 
     # ------------------------------------------------------------------ stage
     def _matrix(self, s: State, values: dict[State, float]) -> np.ndarray:
-        m = self._reward[s].copy()
+        cont = np.zeros((4, 4))
         nxt = self._next[s]
         for i in range(4):
             for j in range(4):
                 ns = nxt[i, j]
                 if not self.game.is_terminal(ns):
-                    m[i, j] += self.gamma * values[ns]
-        return m
+                    cont[i, j] = values[ns]
+        return self.gamma * (self._reward[s] + cont)
 
     def _stage_value(self, m: np.ndarray) -> float:
         if self.mode == "pure":
