@@ -120,6 +120,24 @@ def test_policy_iteration_pure_mode_uses_no_linear_program():
     assert pi.matrix_game_solves == 0
 
 
+def test_policy_iteration_reports_staleness_that_decays_to_zero():
+    pi = NashQIteration(SMALL, gamma=0.9, mode="hybrid", tol=1e-9).run_policy_iteration()
+    trace = pi.staleness_trace
+    assert trace is not None and len(trace) == pi.iterations
+    assert trace[-1] < 1e-6  # frozen strategies match the final Nash
+    assert max(trace) >= trace[-1]  # it was worse earlier
+
+
+@pytest.mark.slow
+def test_value_bracket_gaps_certify_the_solution():
+    game = SoccerGame(move_order="random")
+    solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9)
+    r = solver.run()
+    gaps = solver.value_bracket_gaps(r)
+    assert len(gaps) == len(r.values)
+    assert gaps.max() < 1e-6  # HiGHS solves each stage game to near machine eps
+
+
 @pytest.mark.slow
 def test_policy_iteration_solves_fewer_stage_games_on_the_random_game():
     game = SoccerGame(width=5, height=5, goal_rows=(1, 2, 3), move_order="random")
