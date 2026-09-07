@@ -88,6 +88,7 @@ class NashQIteration:
         self.max_iters = max_iters
         self.shaping = shaping
         self._lp_calls = 0
+        self._lp_cache: dict = {}
 
         self._states: list[State] = list(game.states())
         # Per state: a 4x4 grid of outcome lists [(prob, next_state, r0), ...],
@@ -121,17 +122,28 @@ class NashQIteration:
                 m[i, j] = acc
         return m
 
+    def _cached_game_value(self, m: np.ndarray) -> float:
+        """LP minimax value, memoised on the (rounded) matrix content. Near
+        convergence most stage matrices repeat sweep to sweep, so this turns
+        thousands of LP calls into a few hundred."""
+        key = np.round(m, 11).tobytes()
+        hit = self._lp_cache.get(key)
+        if hit is not None:
+            return hit
+        self._lp_calls += 1
+        v = game_value(m)
+        self._lp_cache[key] = v
+        return v
+
     def _stage_value(self, m: np.ndarray) -> float:
         if self.mode == "pure":
             return security_strategy_row(m)[1]
         if self.mode == "mixed":
-            self._lp_calls += 1
-            return game_value(m)
+            return self._cached_game_value(m)
         lo, hi = pure_bounds(m)
         if hi - lo <= _SADDLE_TOL:
             return lo
-        self._lp_calls += 1
-        return game_value(m)
+        return self._cached_game_value(m)
 
     @staticmethod
     def _pure_strategies(m: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -165,6 +177,7 @@ class NashQIteration:
     def run(self) -> NashQResult:
         """Value iteration: solve a matrix game at every state, every sweep."""
         self._lp_calls = 0
+        self._lp_cache: dict = {}
         values: dict[State, float] = {s: 0.0 for s in self._states}
 
         iterations = 0
@@ -201,6 +214,7 @@ class NashQIteration:
         from soccer_nash.symmetry import canonical_pairs
 
         self._lp_calls = 0
+        self._lp_cache: dict = {}
         reps, image_of = canonical_pairs(self.game)
         rep_set = set(reps)
 
@@ -254,6 +268,7 @@ class NashQIteration:
         """Freeze the stage-game strategies, run cheap linear evaluation sweeps,
         then re-solve. Same fixed point, far fewer matrix-game solves."""
         self._lp_calls = 0
+        self._lp_cache: dict = {}
         values: dict[State, float] = {s: 0.0 for s in self._states}
         row_policy = {s: np.full(4, 0.25) for s in self._states}
         col_policy = {s: np.full(4, 0.25) for s in self._states}

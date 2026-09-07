@@ -16,9 +16,13 @@ needed. Also as [docs/report.html](docs/report.html) (open in any browser) and
 In short: for the implemented deterministic A10 model every converged stage game
 has a pure saddle, so a stationary pure-strategy equilibrium exists and is found
 in 9 sweeps with no LP; this breaks only under Littman's random move *order*,
-and there only on ~4% of states of a large enough board. The hybrid solver uses
-the pure saddle where `maximin == minimax` and the LP only where it does not.
-Scope and caveats: [docs/assumptions.md](docs/assumptions.md).
+and there only when the goal mouth is more than one cell wide (~4% of states on
+the 7x5 board). The hybrid solver uses the pure saddle where `maximin == minimax`
+and the LP only where it does not.
+
+- Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
+- Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/mechanism.md](docs/mechanism.md)
+- `make test` / `make experiments` / `make report` regenerate everything
 
 ## Plan
 
