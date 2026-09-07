@@ -9,6 +9,7 @@ from soccer_nash.symmetry import mirror_state
 from soccer_nash.templates import (
     describe_action,
     equilibrium_support,
+    format_templates,
     matching_pennies_pattern,
     mirror_reduce,
     mixed_state_templates,
@@ -67,6 +68,25 @@ def test_describe_action_is_mirror_invariant():
     # action 3 (R) for player 0 mirrors to action 2 (L) for player 1's role;
     # the gloss should be the same because it is carrier-frame.
     assert describe_action(game, s, 0, 3) == describe_action(game, m, 1, 2)
+
+
+def test_mixed_state_templates_cluster_and_format():
+    game = SoccerGame(width=7, height=5, move_order="random")
+    # A fixed matching-pennies stage matrix for every state, so the pipeline
+    # (features -> support -> cluster -> format) runs without a full solve.
+    mp = np.array([
+        [0.20, -0.30, 0.0, 0.0],
+        [-0.30, 0.20, 0.0, 0.0],
+        [-0.9, -0.9, -0.9, -0.9],
+        [-0.9, -0.9, -0.9, -0.9],
+    ])
+    states = [(1, 2, 3, 2, 0), (2, 1, 4, 1, 1), (5, 3, 3, 3, 0)]
+    templates = mixed_state_templates(game, states, lambda _s: mp)
+    assert sum(t.count for t in templates) == len(states)
+    assert all(t.mp is not None and t.mp.is_matching_pennies for t in templates)
+    text = format_templates(templates)
+    assert "matching pennies" in text
+    assert "carrier:" in text
 
 
 @pytest.mark.slow

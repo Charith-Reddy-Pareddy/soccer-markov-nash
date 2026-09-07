@@ -151,21 +151,42 @@ def train_nash_dqn(
     return NashDQNResult(net, epochs, losses)
 
 
-def compare_to_exact(game: SoccerGame, net: _QNet, exact_values, exact_row_policy, gamma):
-    """value error, action agreement, and exploitability of the DQN policy."""
+def compare_to_exact(
+    game: SoccerGame,
+    net: _QNet,
+    exact_values,
+    exact_row_policy,
+    gamma,
+    exact_no_saddle: set | None = None,
+):
+    """Value error, action agreement, pure/mixed classification agreement, and
+    exploitability of the DQN policy.
+
+    ``exact_no_saddle`` is the exact solver's set of no-pure-saddle states; when
+    given, ``classification_agreement`` reports how often the network agrees on
+    whether a state's stage game has a pure saddle.
+    """
     from soccer_nash.exploit import duality_gap
     from soccer_nash.matrix_games import solve_zero_sum
 
+    exact_no_saddle = exact_no_saddle or set()
     states = list(game.states())
     verr = 0.0
     agree = 0
+    class_agree = 0
+    mean_verr = 0.0
     row_pol: dict[State, np.ndarray] = {}
     col_pol: dict[State, np.ndarray] = {}
     for s in states:
         m = net.matrix(s)
-        verr = max(verr, abs(_minimax(m) - exact_values[s]))
+        err = abs(_minimax(m) - exact_values[s])
+        verr = max(verr, err)
+        mean_verr += err
         lo, hi = pure_bounds(m)
-        if hi - lo <= _SADDLE_TOL:
+        net_mixed = hi - lo > _SADDLE_TOL
+        if net_mixed == (s in exact_no_saddle):
+            class_agree += 1
+        if not net_mixed:
             p = np.zeros(4)
             q = np.zeros(4)
             p[int(np.argmax(m.min(axis=1)))] = 1.0
@@ -178,8 +199,11 @@ def compare_to_exact(game: SoccerGame, net: _QNet, exact_values, exact_row_polic
             agree += 1
 
     gap = duality_gap(game, row_pol, col_pol, gamma=gamma)
+    n = len(states)
     return {
         "max_value_error": verr,
-        "action_agreement": agree / len(states),
+        "mean_value_error": mean_verr / n,
+        "action_agreement": agree / n,
+        "classification_agreement": class_agree / n,
         "duality_gap": gap,
     }

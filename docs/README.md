@@ -15,6 +15,8 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [templates.md](templates.md) — the 94 mixed states reduced to 8 geometric
   templates, with the stage matrix and matching-pennies proof for each.
 - [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
+- `experiments/phase_diagram.csv` + `figures/phase_diagram.svg` — the
+  goal-width × board-size phase diagram (`make phase`).
 - [numerics.md](numerics.md) — the value bracket, stage-game classification, and
   how rounding under discounting misfires.
 - [findings.md](findings.md) — dated working notes (Q1–Q7).
@@ -32,6 +34,8 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [selfplay.md](selfplay.md) — Nash-vs-Nash return and exploitability.
 - [shaping.md](shaping.md) — potential-based reward shaping leaves the
   equilibrium fixed; a naive possession bonus does not.
+- Neural Nash-Q vs. the exact solver — report section 10, multi-seed
+  (`experiments/nash_dqn_seeds.csv`, `make dqn`).
 
 ## Provenance
 

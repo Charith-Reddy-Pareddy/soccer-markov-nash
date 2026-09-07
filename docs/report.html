@@ -343,9 +343,9 @@
     <p class="kicker">Abstract</p>
     <ol class="answers">
       <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2&thinsp;380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program.</span></li>
-      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on ~4% of states (this configuration).</span></li>
+      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on 3.95% of states (this configuration).</span></li>
       <li><span class="n">3</span><span><b>Those mixed states are geometrically localised:</b> a decision tree predicts them from the state with precision 0.96, and 68 of 94 have a 2&times;2 matching-pennies support.</span></li>
-      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only ~4% of states &mdash; ~25&times; fewer per sweep; mirror symmetry halves the work again.</span></li>
+      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only 3.95% of states &mdash; ~25&times; fewer per sweep; mirror symmetry halves the work again.</span></li>
     </ol>
   </section>
 
@@ -398,18 +398,19 @@
 
   <section>
     <h2>RQ2 &mdash; Efficiency</h2>
+    <p>Two numbers, kept apart: the <b>LP-call rate</b> is a property of the game and reproduces exactly; <b>wall clock</b> is a median of 5 repeats and depends on the machine and LP backend (<span class="mono">scripts/benchmark.py</span>).</p>
     <div class="tbl-scroll">
       <table>
         <caption>random move order, &gamma; = 0.9 &mdash; the case where the LP is actually needed</caption>
-        <thead><tr><th>solver</th><th class="num">sweeps</th><th class="num">V(kickoff)</th><th class="num">matrix-game solves</th><th class="num">wall clock</th></tr></thead>
+        <thead><tr><th>solver</th><th class="num">sweeps</th><th class="num">LP calls</th><th class="num">states needing LP</th><th class="num">median wall clock</th></tr></thead>
         <tbody>
-          <tr><td>pure (lower bound)</td><td class="num">18</td><td class="num">+0.000</td><td class="num">0</td><td class="num">&lt;1 s</td></tr>
-          <tr><td>hybrid <span class="yes">exact</span></td><td class="num">108</td><td class="num">+0.150</td><td class="num">~9 700</td><td class="num">~14 s</td></tr>
-          <tr><td>mixed <span class="yes">exact</span></td><td class="num">108</td><td class="num">+0.150</td><td class="num">~3.6 M</td><td class="num">~8 min</td></tr>
+          <tr><td>pure (lower bound)</td><td class="num">18</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">0.3 s</td></tr>
+          <tr><td>hybrid <span class="yes">exact</span></td><td class="num">108</td><td class="num">9 672</td><td class="num">3.95%</td><td class="num">13.2 s</td></tr>
+          <tr><td>all-LP <span class="yes">exact</span></td><td class="num">108</td><td class="num">~3.6 M</td><td class="num">100%</td><td class="num">~8 min</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The hybrid solves an LP on only the ~4% of states lacking a pure saddle &mdash; ~25&times; fewer &mdash; and matches the all-LP value to <span class="mono">4e&minus;16</span>. <b>Mirror symmetry</b> (<span class="mono">run_symmetric</span>): the game is anti-symmetric under board-flip + player-swap and every state has a distinct mirror, so the 2&thinsp;380 states are 1&thinsp;190 pairs &mdash; solve one, reconstruct the other by <span class="mono">V(mirror(s)) = &minus;V(s)</span>.</p>
+    <p>The hybrid solves an LP on only the <b>3.95%</b> of states lacking a pure saddle &mdash; a ~25&times; per-sweep reduction &mdash; and matches the all-LP value to <span class="mono">4e&minus;16</span>. The wall-clock ratio (~13&nbsp;s vs ~8&nbsp;min) is larger but less portable: it also reflects matrix construction and the LP backend. <b>Mirror symmetry</b> (<span class="mono">run_symmetric</span>, deterministic dynamics only): every state has a distinct board-flip&#8209;plus&#8209;player&#8209;swap mirror, so the 2&thinsp;380 states are 1&thinsp;190 pairs &mdash; reconstruct one from the other by <span class="mono">V(mirror(s)) = &minus;V(s)</span>, cutting the deterministic solve 0.33&nbsp;s &rarr; 0.23&nbsp;s.</p>
 
     <h3>Freeze-then-iterate, and its staleness</h3>
     <div class="tbl-scroll">
@@ -427,29 +428,10 @@
 
   <section>
     <h2>RQ3 &mdash; Mechanism</h2>
-    <p><b>A stage game needs mixed strategies only when the goal mouth is more than one cell wide.</b></p>
+    <p><b>Goal-mouth width, not board size, is the gate.</b> The phase diagram sweeps every board from 3&times;3 to 9&times;5 against goal widths 1 to <span class="mono">height&minus;2</span> (<span class="mono">scripts/phase_diagram.py</span>, <span class="mono">experiments/phase_diagram.csv</span>).</p>
     <figure>
-      <svg viewBox="0 0 720 190" role="img" aria-label="Bar chart: mixed states versus goal-mouth width on a 5 by 9 board. 1 cell: 0. 2 cells: 186. 3 cells: 162. 4: 138. 5: 116. 6: 110. 7: 106.">
-        <g font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">
-          <line x1="60" y1="150" x2="700" y2="150" stroke="var(--rule-strong)" stroke-width="1.5"/>
-          <line x1="60" y1="30" x2="60" y2="150" stroke="var(--rule)" stroke-width="1"/>
-          <text x="52" y="153" text-anchor="end">0</text>
-          <text x="52" y="93" text-anchor="end">100</text>
-          <text x="52" y="33" text-anchor="end">200</text>
-        </g>
-        <g font-family="'IBM Plex Mono', monospace" font-size="11.5">
-          <!-- scale: 200 -> 120px -->
-          <rect x="78" y="148" width="72" height="2" fill="var(--pitch)"/><text x="114" y="167" text-anchor="middle" fill="var(--ink-soft)">1</text><text x="114" y="140" text-anchor="middle" fill="var(--pitch)" font-size="10.5">0</text>
-          <rect x="168" y="38.4" width="72" height="111.6" fill="var(--ember)"/><text x="204" y="167" text-anchor="middle" fill="var(--ink-soft)">2</text><text x="204" y="30" text-anchor="middle" fill="var(--ember)" font-size="10.5">186</text>
-          <rect x="258" y="52.8" width="72" height="97.2" fill="var(--ember)"/><text x="294" y="167" text-anchor="middle" fill="var(--ink-soft)">3</text><text x="294" y="44" text-anchor="middle" fill="var(--ember)" font-size="10.5">162</text>
-          <rect x="348" y="67.2" width="72" height="82.8" fill="var(--ember)"/><text x="384" y="167" text-anchor="middle" fill="var(--ink-soft)">4</text>
-          <rect x="438" y="80.4" width="72" height="69.6" fill="var(--ember)"/><text x="474" y="167" text-anchor="middle" fill="var(--ink-soft)">5</text>
-          <rect x="528" y="84" width="72" height="66" fill="var(--ember)"/><text x="564" y="167" text-anchor="middle" fill="var(--ink-soft)">6</text>
-          <rect x="618" y="86.4" width="72" height="63.6" fill="var(--ember)"/><text x="654" y="167" text-anchor="middle" fill="var(--ink-soft)">7</text>
-        </g>
-        <text x="60" y="185" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="var(--ink-faint)">mixed states vs. goal-mouth width (cells), 5&times;9 board, random move order</text>
-      </svg>
-      <figcaption class="fig-cap"><b>The gate.</b> One-cell goal &rarr; the carrier has one threat, the defender one response, best responses stay pure. Two or more &rarr; the defender must guess. Every height-3 board (width 3&ndash;11) has zero mixed states.</figcaption>
+      <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:320px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>The gate.</b> Goal width 1 &rarr; <b>0</b> mixed states on all 16 boards: the carrier has one threat, the defender one response. Goal width &ge; 2 &rarr; mixing on every board, at 3&ndash;12% that drifts down with board area and is roughly flat in goal width beyond 2. Every state is reachable from the kickoff, so this is also the fraction over reachable states.</figcaption>
     </figure>
     <p>Geometry predicts the label (<span class="mono">scripts/geometry_model.py</span>): a depth-4 decision tree on carrier-frame features separates <span class="mono">mixed</span> from the rest with <b>precision 0.96, recall 0.91</b>. The dominant feature is <span class="mono">defender_can_intercept</span> &mdash; the defender within one move of the carrier's forward cell (<span class="mono">P(mixed) = 0.44</span> vs <span class="mono">0.002</span>).</p>
     <p>Beyond prediction, the 94 mixed states canonicalize under the board mirror to 47 pairs and cluster into <b>8 geometric templates</b> (<span class="mono">scripts/templates.py</span>, <span class="mono">docs/templates.md</span>).</p>
@@ -518,20 +500,22 @@
     <h2>Beyond zero-sum, and open questions</h2>
     <ul class="plain">
       <li><b>General-sum &mdash; extension point.</b> <span class="mono">markov_game.py</span> solves 2-player general-sum Markov games by enumerating <em>all</em> stage equilibria (<span class="mono">support_enum.py</span>) and selecting one &mdash; the notes' "largest sum of values", a no-op for zero-sum but decisive for Battle of the Sexes, where it avoids the mixed equilibrium whose value is below either pure one. Pure-first throughout. The soccer game is zero-sum, so this does not touch the main result.</li>
-      <li><b>Function approximation &mdash; partial.</b> A network fit to the stage matrices (<span class="mono">nash_dqn.py</span>, 5&rarr;96&rarr;96&rarr;16 with biases, 500 epochs) trails the exact solver badly:</li>
+      <li><b>Function approximation &mdash; partial.</b> A network fit to the stage matrices (<span class="mono">nash_dqn.py</span>, 5&rarr;96&rarr;96&rarr;16 with biases, 600 epochs) trails the exact solver, over <b>5 seeds</b> (<span class="mono">experiments/nash_dqn_seeds.csv</span>):</li>
     </ul>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th></th><th>exact hybrid Nash-Q</th><th>neural Nash-Q</th></tr></thead>
+        <thead><tr><th></th><th>exact hybrid Nash-Q</th><th>neural Nash-Q (mean&nbsp;&plusmn;&nbsp;sd)</th></tr></thead>
         <tbody>
-          <tr><td>wall clock</td><td>9 sweeps, 0.45 s</td><td>500 epochs, 55 s</td></tr>
-          <tr><td>max |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.54</td></tr>
-          <tr><td>action agreement</td><td class="yes">100%</td><td class="no">53%</td></tr>
-          <tr><td>exploitability</td><td class="yes">0</td><td class="no">0.43</td></tr>
+          <tr><td>max |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.55 &plusmn; 0.02</td></tr>
+          <tr><td>mean |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.13 &plusmn; 0.00</td></tr>
+          <tr><td>action agreement</td><td class="yes">100%</td><td class="no">43% &plusmn; 2%</td></tr>
+          <tr><td>pure/mixed classification</td><td class="yes">100%</td><td class="no">67% &plusmn; 2%</td></tr>
+          <tr><td>exploitability</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.43 &plusmn; 0.04</td></tr>
+          <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, 32 &plusmn; 1 s</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The network fits the ~1&thinsp;000 zero-value states but misses the <span class="mono">&gamma;&#7503;</span> structure &mdash; about as exploitable as random play. Keep the exact solver as ground truth.</p>
+    <p>The network fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions: worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, and it mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
     <ul class="plain">
       <li><b>A proof (open).</b> Can "one-cell goal &rArr; pure everywhere" be turned into a theorem about the transition structure?</li>
     </ul>
@@ -539,8 +523,8 @@
 
   <footer>
     soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; templates.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
 </div>
