@@ -158,10 +158,12 @@ class NashQIteration:
         col = np.zeros((len(states), 4))
         for i, s in enumerate(states):
             m = self._matrix(s, result.values)
-            row_worst = m.min(axis=1)
-            col_best = m.max(axis=0)
-            row[i] = row_worst >= row_worst.max() - tol
-            col[i] = col_best <= col_best.min() + tol
+            # Player 0 maximises its worst case over the row; player 1 minimises
+            # player 0's best case over the column.
+            row_security = m.min(axis=1)
+            col_security = m.max(axis=0)
+            row[i] = row_security >= row_security.max() - tol
+            col[i] = col_security >= col_security.min() - tol
         return states, row, col
 
     def _extract_policies(
