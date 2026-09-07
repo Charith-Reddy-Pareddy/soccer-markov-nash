@@ -35,6 +35,7 @@ class BestResponse:
         gamma: float = 0.95,
         tol: float = 1e-10,
         max_iters: int = 5000,
+        shaping=None,
     ):
         if game.move_order != "deterministic":
             raise ValueError("best response assumes deterministic dynamics")
@@ -43,17 +44,23 @@ class BestResponse:
         self.gamma = gamma
         self.tol = tol
         self.max_iters = max_iters
+        self.shaping = shaping
 
         self._states = list(game.states())
-        # state -> list over my actions of (action, next_state, my_reward)
-        self._trans: dict[State, list[tuple[Action, State, int]]] = {}
+        # state -> list over my actions of (action, next_state, my_reward),
+        # with any shaping reward folded into my_reward.
+        self._trans: dict[State, list[tuple[Action, State, float]]] = {}
         for s in self._states:
             a_opp = opponent(game, s, 1 - me)
             row = []
             for a_me in game.actions():
                 a0, a1 = (a_me, a_opp) if me == 0 else (a_opp, a_me)
                 ns, (r0, r1), _ = game.step(s, a0, a1)
-                row.append((a_me, ns, r0 if me == 0 else r1))
+                r = r0 if me == 0 else r1
+                if shaping is not None:
+                    delta = shaping.reward_delta(game, s, ns, gamma)
+                    r = r + (delta if me == 0 else -delta)
+                row.append((a_me, ns, r))
             self._trans[s] = row
 
     def solve(self) -> BestResponseResult:
