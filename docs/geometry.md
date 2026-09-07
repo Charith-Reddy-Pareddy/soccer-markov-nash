@@ -50,18 +50,10 @@ A depth-4 decision tree (`soccer_nash/tree.py`) predicts "mixed" with
 
 ## Templates
 
-Of the 94 mixed states (7x5, gamma 0.9), by (equilibrium support, defender
-geometry):
-
-| support | defender geometry | count |
-|---|---|---|
-| 2x2 | ahead of the carrier | 40 |
-| 2x2 | directly ahead, same row | 24 |
-| 2x1 / 1x2 | directly ahead, same row | 12 |
-| 3x3 / 2x3 / 3x2 | ahead | 12 |
-| 2x2 | merely adjacent | 4 |
-| 2x1 / 1x2 | ahead | 2 |
-
-**~88 of 94 have the defender ahead of the carrier**; ~68 are a 2x2
-matching-pennies mix of carrier {advance, hold} against defender {block,
-intercept}.
+The 94 mixed states (7x5, gamma 0.9) canonicalize under the board mirror to 47
+pairs, then cluster into **8 geometric templates**. The four with a 2x2
+equilibrium support are all verified matching pennies (best replies cross both
+ways) and cover **68 of 94** states; the rest are borderline near-pure saddles
+or a single 3x3 mix. Each template's stage matrix, action meanings, and the
+analytic argument for why the mix is unavoidable are in
+[templates.md](templates.md).

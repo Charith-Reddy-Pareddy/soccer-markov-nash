@@ -114,13 +114,24 @@ Geometry predicts the classification (`scripts/geometry_model.py`): a depth-4
 decision tree separates `mixed` from the rest with **precision 0.96, recall
 0.91** using carrier-frame features. The dominant signal is
 `defender_can_intercept` -- the defender within one move of the carrier's
-forward cell (`P(mixed) = 0.44` vs `0.002`). Of the 94 mixed states, ~88 have
-the defender ahead of the carrier and **68 have an equilibrium supported on a
-2x2 subgame** with no pure saddle: carrier {advance, hold} against defender
-{block, intercept}. Strict dominance collapses only 4 of them fully, so this
-describes the equilibrium support, not a reduction of the 4x4 game. All 94 share
+forward cell (`P(mixed) = 0.44` vs `0.002`).
+
+Beyond prediction, the 94 mixed states canonicalize under the board mirror to 47
+pairs and cluster into **8 geometric templates** (`scripts/templates.py`,
+`docs/templates.md`). The **four templates with a 2x2 equilibrium support are
+all verified matching pennies** -- the row player's best reply flips between the
+two defender columns and vice versa -- covering **68 of 94** states; carrier
+{climb, advance} against defender {cover a lane, hold the forward cell}. The
+other 26 are borderline near-pure saddles (22) or one 3x3 mix (4). All 94 share
 one value across every equilibrium (zero-sum interchangeability); 64 have a
 unique equilibrium.
+
+The precise analytic condition for an unavoidable mixed stage game is a
+stochastic (½–½) resolution order **and** a goal mouth wider than one cell
+**and** a defender close enough to contest the carrier's forward cell but unable
+to cover every scoring lane in a single move. Remove any one -- a one-cell goal,
+deterministic resolution, the coin-flip tie-break -- and every stage game has a
+pure saddle.
 
 ### RQ4 -- Numerical robustness
 
