@@ -1,0 +1,499 @@
+<title>Pure Nash Equilibria for Soccer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --paper: #f7f8f5;
+    --tint: #eef2ec;
+    --raise: #ffffff;
+    --ink: #19211c;
+    --ink-soft: #4b564e;
+    --ink-faint: #77817a;
+    --rule: #d9e2db;
+    --rule-strong: #c2cec5;
+    --pitch: #2f6b48;
+    --pitch-soft: #dfeae1;
+    --ember: #a94e18;
+    --ember-soft: #f2e5da;
+    --shadow: 24px 24px 60px -30px rgba(25, 45, 33, .28);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #11150f;
+      --tint: #191e15;
+      --raise: #1b2118;
+      --ink: #e7ece2;
+      --ink-soft: #a9b3a6;
+      --ink-faint: #7c867a;
+      --rule: #2b342a;
+      --rule-strong: #3a453800;
+      --rule-strong: #3b463a;
+      --pitch: #7cba95;
+      --pitch-soft: #1f2a20;
+      --ember: #dd9057;
+      --ember-soft: #2a2117;
+      --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #11150f;
+    --tint: #191e15;
+    --raise: #1b2118;
+    --ink: #e7ece2;
+    --ink-soft: #a9b3a6;
+    --ink-faint: #7c867a;
+    --rule: #2b342a;
+    --rule-strong: #3b463a;
+    --pitch: #7cba95;
+    --pitch-soft: #1f2a20;
+    --ember: #dd9057;
+    --ember-soft: #2a2117;
+    --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.62;
+    font-feature-settings: "onum" 1;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- type ---------- */
+  h1, h2, h3, .kicker, .label, th, .stat-k, .fig-cap b {
+    font-family: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  }
+  h1 {
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 4rem);
+    line-height: .98;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h2 {
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3.4vw, 1.95rem);
+    line-height: 1.08;
+    letter-spacing: .002em;
+    text-wrap: balance;
+    margin: 0 0 .5rem;
+  }
+  h3 {
+    font-weight: 600;
+    font-size: 1.12rem;
+    letter-spacing: .01em;
+    margin: 2rem 0 .3rem;
+  }
+  .kicker {
+    font-weight: 600;
+    font-size: .82rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--pitch);
+  }
+  p { margin: 0 0 1.1rem; }
+  a { color: var(--pitch); text-underline-offset: 3px; }
+  strong { font-weight: 600; }
+  em { color: var(--ink-soft); }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .86em; }
+  p code, li code, td code { background: var(--tint); padding: .08em .38em; border-radius: 3px; }
+
+  /* ---------- masthead ---------- */
+  header { padding: clamp(3rem, 9vw, 6rem) 0 2.4rem; }
+  .dek {
+    font-size: 1.24rem;
+    color: var(--ink-soft);
+    max-width: 34ch;
+    margin: 1.4rem 0 0;
+  }
+  .rq {
+    margin: 2.6rem 0 0;
+    padding: 1.3rem 0 1.3rem 1.4rem;
+    border-left: 3px solid var(--pitch);
+    font-size: 1.08rem;
+    color: var(--ink);
+  }
+  .rq .label {
+    display: block;
+    font-size: .74rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: .5rem;
+  }
+  .byline {
+    margin-top: 2.4rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .78rem;
+    letter-spacing: .04em;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- pitch hero ---------- */
+  .hero { margin: 2.8rem 0 0; }
+  .hero svg { width: 100%; height: auto; display: block; }
+  .fig-cap {
+    font-size: .84rem;
+    line-height: 1.5;
+    color: var(--ink-faint);
+    margin: .7rem 0 0;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .fig-cap b { color: var(--ink-soft); font-weight: 600; }
+
+  /* ---------- answer list ---------- */
+  section { padding: 2.8rem 0; border-top: 1px solid var(--rule); }
+  section:first-of-type { border-top: none; }
+  .answers { list-style: none; margin: 1.4rem 0 0; padding: 0; display: grid; gap: 0; }
+  .answers li {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 1rem;
+    padding: 1.05rem 0;
+    border-top: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .answers li:first-child { border-top: none; }
+  .answers .n {
+    font-family: "Barlow Semi Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--pitch);
+    font-variant-numeric: lining-nums;
+  }
+  .answers b { font-weight: 600; }
+
+  /* ---------- tables ---------- */
+  .tbl-scroll { overflow-x: auto; margin: 1.5rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .92rem;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  caption {
+    text-align: left;
+    font-family: "Barlow Semi Condensed", sans-serif;
+    font-size: .82rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: .7rem;
+  }
+  th {
+    text-align: left;
+    font-weight: 600;
+    font-size: .82rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: var(--tint);
+    padding: .55rem .7rem;
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+  td {
+    padding: .5rem .7rem;
+    border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: 1px solid var(--rule-strong); }
+  td.num { text-align: right; }
+  .yes { color: var(--pitch); font-weight: 500; }
+  .no { color: var(--ember); font-weight: 500; }
+
+  /* ---------- callout ---------- */
+  .note {
+    background: var(--pitch-soft);
+    border-radius: 4px;
+    padding: 1.15rem 1.3rem;
+    margin: 1.6rem 0;
+    font-size: .97rem;
+  }
+  .note.warn { background: var(--ember-soft); }
+  .note .label {
+    display: block;
+    font-family: "Barlow Semi Condensed", sans-serif;
+    font-size: .74rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: .35rem;
+  }
+  .note p:last-child { margin-bottom: 0; }
+
+  .formula {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .9rem;
+    background: var(--tint);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    margin: 1.4rem 0;
+    line-height: 1.7;
+  }
+
+  figure { margin: 2rem 0; }
+  figure svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+  ul.plain { padding-left: 1.1rem; }
+  ul.plain li { margin: .4rem 0; padding-left: .2rem; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 2.4rem 0 4rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .8rem;
+    color: var(--ink-faint);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 540px) {
+    body { font-size: 17px; }
+    .answers li { grid-template-columns: 1.8rem 1fr; gap: .7rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .fade { animation: rise .7s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="kicker">CS 540 · Multi-Agent Reinforcement Learning</p>
+    <h1>Pure Nash Equilibria<br>for Soccer</h1>
+    <p class="dek">Solving a two-player zero-sum Markov game with pure-strategy Nash Q-iteration &mdash; and finding where pure strategies quietly stop working.</p>
+    <div class="rq">
+      <span class="label">Research question</span>
+      Can pure-strategy Nash equilibria be used to <em>efficiently</em> solve the soccer Markov game, and under what state and reward settings does a pure Nash equilibrium exist?
+    </div>
+    <p class="byline">repo · soccer-markov-nash &nbsp;|&nbsp; 114 tests &nbsp;|&nbsp; built on the CS&nbsp;540 A10 assignment</p>
+  </header>
+
+  <div class="hero fade">
+    <svg viewBox="0 0 720 300" role="img" aria-label="A 7 by 5 soccer grid: player 0 on the left carrying the ball, player 1 on the right, goal mouths on the middle three rows of each edge.">
+      <defs>
+        <pattern id="turf" width="102.8" height="1" patternUnits="userSpaceOnUse"></pattern>
+      </defs>
+      <rect x="40" y="20" width="640" height="260" fill="var(--tint)" stroke="var(--rule-strong)" stroke-width="1.5"/>
+      <!-- vertical grid lines (7 cols) -->
+      <g stroke="var(--rule)" stroke-width="1">
+        <line x1="131.4" y1="20" x2="131.4" y2="280"/>
+        <line x1="222.9" y1="20" x2="222.9" y2="280"/>
+        <line x1="314.3" y1="20" x2="314.3" y2="280"/>
+        <line x1="405.7" y1="20" x2="405.7" y2="280"/>
+        <line x1="497.1" y1="20" x2="497.1" y2="280"/>
+        <line x1="588.6" y1="20" x2="588.6" y2="280"/>
+      </g>
+      <!-- horizontal grid lines (5 rows) -->
+      <g stroke="var(--rule)" stroke-width="1">
+        <line x1="40" y1="72" x2="680" y2="72"/>
+        <line x1="40" y1="124" x2="680" y2="124"/>
+        <line x1="40" y1="176" x2="680" y2="176"/>
+        <line x1="40" y1="228" x2="680" y2="228"/>
+      </g>
+      <!-- goal mouths: middle 3 rows -->
+      <rect x="34" y="72" width="6" height="156" fill="var(--pitch)"/>
+      <rect x="680" y="72" width="6" height="156" fill="var(--pitch)"/>
+      <text x="26" y="154" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="end" transform="rotate(-90 26 154)">player 1 goal</text>
+      <text x="700" y="150" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="middle" transform="rotate(90 700 150)">player 0 goal</text>
+      <!-- player 0 (left, carrier) at col 0 row 2 -->
+      <circle cx="85.7" cy="150" r="17" fill="var(--pitch)"/>
+      <circle cx="85.7" cy="150" r="24" fill="none" stroke="var(--pitch)" stroke-width="1.5" stroke-dasharray="3 4"/>
+      <text x="85.7" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">0</text>
+      <!-- ball -->
+      <circle cx="110" cy="132" r="5.5" fill="var(--ember)"/>
+      <!-- player 1 (right) at col 6 row 2 -->
+      <circle cx="634.3" cy="150" r="17" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
+      <text x="634.3" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--ink-soft)" text-anchor="middle">1</text>
+      <text x="40" y="298" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">state = (x0, y0, x1, y1, b) = (0, 2, 6, 2, 0)</text>
+    </svg>
+    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2 380 non-terminal states. Player&nbsp;0 carries the ball and attacks the right edge; player&nbsp;1 the left. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
+  </div>
+
+  <section>
+    <p class="kicker">The answer, in four lines</p>
+    <ol class="answers">
+      <li><span class="n">1</span><span><b>Under the A10 move rule, a pure stationary Nash equilibrium exists at every state.</b> Pure-strategy Nash Q-iteration solves the game exactly in 9 sweeps with no linear program at all.</span></li>
+      <li><span class="n">2</span><span><b>A coin-flip tie-break does not break this.</b> Randomising <em>who wins a contested square</em> leaves the value function bit-identical to the deterministic game's.</span></li>
+      <li><span class="n">3</span><span><b>Littman's random <em>move order</em> does break it.</b> On the 7&times;5 board, 94 of 2 380 stage games (3.9%) have no pure saddle, so no pure stationary equilibrium exists &mdash; and the effect is board-size dependent.</span></li>
+      <li><span class="n">4</span><span><b>Potential-based reward shaping preserves the equilibrium exactly;</b> a naive per-step possession bonus changes it. The recommended solver is the hybrid: pure where possible, LP only where necessary.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The two solvers</h2>
+    <p>The game is zero-sum, so at every state the stage game is a payoff matrix <span class="mono">M(s)[a&#8320;, a&#8321;] = E[R + &gamma;V(s&prime;)]</span> and the Shapley&nbsp;(1953) fixed point is the minimax value:</p>
+    <div class="formula">V(s) = val(M(s)) = max&#8345; min&#8342;&#8323; (p&#7488;M)[a&#8321;]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= min&#8346; max&#8336;&#8320; (Mq)[a&#8320;]</div>
+    <p>The <span class="mono">Q = R + &beta;&thinsp;Nash(Q&prime;)</span> update from the project notes is the same operator. Two stage solvers implement the two versions asked for:</p>
+    <div class="tbl-scroll">
+      <table>
+        <caption>soccer_nash/matrix_games.py</caption>
+        <thead><tr><th>version</th><th>stage value</th><th>method</th></tr></thead>
+        <tbody>
+          <tr><td><b>Pure Nash Q-iteration</b></td><td>pure maximin<br><span class="mono">max&#8336;&#8320; min&#8342;&#8323; M[i,j]</span></td><td>no LP, O(A&sup2;)</td></tr>
+          <tr><td><b>LP / Mixed Nash Q-iteration</b></td><td>LP minimax value</td><td><span class="mono">scipy linprog</span> (HiGHS)</td></tr>
+          <tr><td><b>Hybrid</b> &nbsp;<span class="yes">&larr; default</span></td><td>pure saddle if <span class="mono">maximin = minimax</span>, else LP</td><td>exact everywhere</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A pure saddle point exists <em>iff</em> the maximin equals the minimax. When it does, the pure value <em>is</em> the minimax value, so the hybrid is exact; when it doesn't, the hybrid falls back to the LP for that state only.</p>
+
+    <figure>
+      <svg viewBox="0 0 720 132" role="img" aria-label="Flow: from the stage matrix, a check of whether maximin equals minimax branches to either the pure saddle value with no LP, or the LP minimax value.">
+        <g font-family="'IBM Plex Mono', monospace" font-size="12.5" fill="var(--ink)">
+          <rect x="1" y="46" width="150" height="40" rx="4" fill="var(--tint)" stroke="var(--rule-strong)"/>
+          <text x="76" y="70" text-anchor="middle">stage matrix M(s)</text>
+
+          <path d="M151 66 H196" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+
+          <path d="M262 40 L328 66 L262 92 L196 66 Z" fill="none" stroke="var(--pitch)" stroke-width="1.5"/>
+          <text x="262" y="63" text-anchor="middle" font-size="11">maximin</text>
+          <text x="262" y="77" text-anchor="middle" font-size="11">= minimax ?</text>
+
+          <path d="M328 66 H392" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+          <text x="360" y="58" text-anchor="middle" font-size="10.5" fill="var(--pitch)">yes</text>
+          <rect x="392" y="34" width="200" height="30" rx="4" fill="var(--pitch-soft)" stroke="var(--pitch)"/>
+          <text x="492" y="53" text-anchor="middle" font-size="11.5">pure saddle value &mdash; no LP</text>
+
+          <path d="M262 92 V112 H392" stroke="var(--rule-strong)" stroke-width="1.5" fill="none" marker-end="url(#ah)"/>
+          <text x="300" y="108" text-anchor="middle" font-size="10.5" fill="var(--ember)">no</text>
+          <rect x="392" y="98" width="200" height="30" rx="4" fill="var(--ember-soft)" stroke="var(--ember)"/>
+          <text x="492" y="117" text-anchor="middle" font-size="11.5">LP minimax value</text>
+        </g>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--rule-strong)"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption class="fig-cap"><b>The hybrid solver.</b> On the deterministic game the "yes" branch is taken at every one of the 2 380 states, so the LP is never called.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>When does a pure Nash equilibrium exist?</h2>
+
+    <h3>By move rule &mdash; 7&times;5 board, &gamma; = 0.9</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>move order</th><th class="num">stochastic</th><th class="num">no-saddle stage games</th><th>pure eq?</th><th class="num">V(kickoff)</th></tr></thead>
+        <tbody>
+          <tr><td>deterministic</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes, everywhere</td><td class="num">0</td></tr>
+          <tr><td>coinflip tie-break</td><td class="num">yes</td><td class="num">0 / 2380</td><td class="yes">yes, everywhere</td><td class="num">0</td></tr>
+          <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380</td><td class="no">no</td><td class="num">+0.150</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <span class="label">Key finding</span>
+      <p>The deterministic and coin-flip value functions are <em>identical</em> &mdash; <span class="mono">max |V_det &minus; V_coin| = 0</span> for every &gamma;. With optimal play neither player enters a contest it would lose deterministically, so the coin is never flipped on the equilibrium path.</p>
+      <p>It is <b>not stochasticity</b> that forces mixed strategies. It is the sequential coupling of Littman's random move order &mdash; where whether you steal the ball depends on who resolves first <em>and</em> on both players' targets &mdash; that creates matching-pennies sub-games with no pure saddle.</p>
+    </div>
+
+    <h3>By board size &mdash; random move order</h3>
+    <figure>
+      <svg viewBox="0 0 720 200" role="img" aria-label="Bar chart of the percentage of stage games with no pure saddle, by board size: 4x3 zero percent, 5x3 zero percent, 5x5 four point five percent, 7x5 three point nine percent.">
+        <g font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">
+          <line x1="70" y1="150" x2="690" y2="150" stroke="var(--rule-strong)" stroke-width="1.5"/>
+          <line x1="70" y1="150" x2="70" y2="24" stroke="var(--rule)" stroke-width="1"/>
+          <line x1="70" y1="87" x2="690" y2="87" stroke="var(--rule)" stroke-width="1" stroke-dasharray="2 4"/>
+          <text x="62" y="153" text-anchor="end">0%</text>
+          <text x="62" y="90" text-anchor="end">3%</text>
+          <text x="62" y="28" text-anchor="end">6%</text>
+        </g>
+        <g font-family="'IBM Plex Mono', monospace" font-size="12">
+          <!-- scale: 6% -> 126px.  4x3:0  5x3:0  5x5:4.5% -> 94.5px  7x5:3.9% -> 81.9px -->
+          <rect x="104" y="148" width="96" height="2" fill="var(--pitch)"/>
+          <text x="152" y="168" text-anchor="middle" fill="var(--ink-soft)">4&times;3</text>
+          <text x="152" y="140" text-anchor="middle" fill="var(--ink-faint)" font-size="11">0</text>
+
+          <rect x="248" y="148" width="96" height="2" fill="var(--pitch)"/>
+          <text x="296" y="168" text-anchor="middle" fill="var(--ink-soft)">5&times;3</text>
+          <text x="296" y="140" text-anchor="middle" fill="var(--ink-faint)" font-size="11">0</text>
+
+          <rect x="392" y="55.5" width="96" height="94.5" fill="var(--ember)"/>
+          <text x="440" y="168" text-anchor="middle" fill="var(--ink-soft)">5&times;5</text>
+          <text x="440" y="47" text-anchor="middle" fill="var(--ember)" font-size="11">4.5% &middot; 54</text>
+
+          <rect x="536" y="68.1" width="96" height="81.9" fill="var(--ember)"/>
+          <text x="584" y="168" text-anchor="middle" fill="var(--ink-soft)">7&times;5</text>
+          <text x="584" y="60" text-anchor="middle" fill="var(--ember)" font-size="11">3.9% &middot; 94</text>
+        </g>
+        <text x="70" y="192" font-family="'IBM Plex Mono', monospace" font-size="10.5" fill="var(--ink-faint)">stage games with no pure saddle, by board dimensions (goal rows scale with height)</text>
+      </svg>
+      <figcaption class="fig-cap"><b>Room to fail.</b> The no-saddle states are the "defender directly ahead of the carrier" stand-off; they come in exact mirror pairs and never occur when the players are far apart. Narrow boards have no room for that geometry, so their equilibrium stays pure.</figcaption>
+    </figure>
+
+    <h3>By reward setting</h3>
+    <p>Potential-based shaping <span class="mono">F(s,s&prime;) = &gamma;&Phi;(s&prime;) &minus; &Phi;(s)</span> with &Phi; = possession bonus + ball advancement:</p>
+    <ul class="plain">
+      <li><span class="mono">V_shaped = V_base &minus; &Phi;</span> to machine precision; identical policies; identical no-saddle set. <b>The equilibrium &mdash; pure or mixed &mdash; is unchanged.</b></li>
+      <li>It <em>slows</em> exact value iteration (9 &rarr; ~130 sweeps), because &Phi; is nonzero on the ~1 000 states where <span class="mono">V_base = 0</span>.</li>
+    </ul>
+    <div class="note warn">
+      <span class="label">Caution</span>
+      <p>A non-potential per-step possession bonus is <b>not</b> invariant: a <span class="mono">+0.05</span> bonus turns the kickoff draw into a <span class="mono">+0.5</span> value for the carrier and changes the optimal policy. Shaping rewards for this game must be potential-based.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Can pure equilibria solve it <em>efficiently</em>?</h2>
+    <p>Yes. On the deterministic and coin-flip games the pure solver <em>is</em> the exact solver &mdash; <span class="mono">pure</span>, <span class="mono">hybrid</span> and <span class="mono">mixed</span> return the same value function in 9 sweeps with zero LP calls. On the random game the hybrid is still the right tool:</p>
+    <div class="tbl-scroll">
+      <table>
+        <caption>random move order, &gamma; = 0.9</caption>
+        <thead><tr><th>solver</th><th class="num">sweeps</th><th class="num">V(kickoff)</th><th class="num">matrix-game solves</th><th class="num">wall clock</th></tr></thead>
+        <tbody>
+          <tr><td>pure</td><td class="num">18</td><td class="num">+0.000</td><td class="num">0</td><td class="num">&lt;1 s</td></tr>
+          <tr><td>hybrid <span class="yes">exact</span></td><td class="num">94</td><td class="num">+0.150</td><td class="num">~8 800</td><td class="num">~20 s</td></tr>
+          <tr><td>mixed <span class="yes">exact</span></td><td class="num">94</td><td class="num">+0.150</td><td class="num">~3.6 M</td><td class="num">~8 min</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The hybrid reproduces the full-LP value function to <span class="mono">4e&minus;16</span> while solving an LP on only the ~4% of states that need one. The <span class="mono">pure</span>-only solver is a strict lower bound &mdash; it reports a kickoff draw when the game actually favours the initial carrier by <span class="mono">0.15</span>, and sits up to <span class="mono">0.37</span> below the true value elsewhere. Efficient, but when a mixed equilibrium is the real answer, wrong.</p>
+
+    <h3>Freeze then iterate</h3>
+    <p>Solving a matrix game at every state on every sweep is wasteful. <span class="mono">run_policy_iteration()</span> solves each stage game only on its outer rounds and holds the strategies fixed for cheap linear evaluation sweeps in between &mdash; the notes' "don't recompute Nash every time".</p>
+    <div class="tbl-scroll">
+      <table>
+        <caption>random move order, hybrid solver &mdash; same fixed point, |diff| &lt; 3e&minus;9</caption>
+        <thead><tr><th></th><th class="num">rounds / sweeps</th><th class="num">matrix-game solves</th><th class="num">wall clock</th></tr></thead>
+        <tbody>
+          <tr><td>value iteration</td><td class="num">108</td><td class="num">9 672</td><td class="num">13.5 s</td></tr>
+          <tr><td>policy iteration</td><td class="num">25</td><td class="num">2 255</td><td class="num">20.5 s</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>On this small game the stage-matrix construction, not the LP, is the bottleneck &mdash; so cutting solves 4&times; doesn't cut wall-clock. The technique pays off where the notes expect: larger action spaces or general-sum games, where the equilibrium solve dominates the backup.</p>
+  </section>
+
+  <section>
+    <h2>The equilibrium policy is worth playing</h2>
+    <ul class="plain">
+      <li>The Nash Q policy has a duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; <b>no opponent can beat the game value.</b></li>
+      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; a <span class="mono">+0.157</span> empirical discounted return (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
+      <li>Best-responding to a <em>guess</em> about the opponent is fragile: the Part&nbsp;2 best-response-to-the-scripted-opponent policy has exploitability <span class="mono">0.43</span> &mdash; worse than moving uniformly at random (<span class="mono">0.39</span>) once the opponent best-responds to it.</li>
+    </ul>
+    <p>That last line is exactly the A10 competition's warning about non-equilibrium submissions. The equilibrium networks (<span class="mono">scripts/a10_competition.py</span>) are the principled answer &mdash; though a neural approximation is only as safe as its worst-fit state, so the script prints the trained network's exploitability and the student re-seeds until it is near zero.</p>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>For the soccer game as specified by A10, pure-strategy Nash equilibria are not just usable but <b>sufficient and efficient</b>: they exist everywhere and are found in a handful of sweeps with no linear programming. Pure equilibria fail only under Littman's sequential random move order, and even then only on ~4% of states of a large enough board. The hybrid solver &mdash; pure where possible, LP where necessary &mdash; is exact everywhere and pays the LP cost only where a pure equilibrium genuinely does not exist. Potential-based reward shaping leaves all of this untouched.</p>
+  </section>
+
+  <footer>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; nash_q.py &middot; best_response.py &middot; mlp.py &middot; opponents.py &middot; shaping.py &middot; exploit.py &middot; simulate.py<br>
+    scripts &mdash; analyze.py &middot; policy_iteration.py &middot; selfplay.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    114 passing tests + 4 slow &nbsp;|&nbsp; env: 7&times;5 grid, 2 380 states, zero-sum &plusmn;1, &gamma; = 0.9
+  </footer>
+</div>

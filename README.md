@@ -5,23 +5,29 @@ Research code built on top of the CS 540 A10 soccer assignment
 
 ## Research question
 
-Can **pure-strategy Nash equilibria** be used to solve the soccer Markov game
-efficiently, and under which state / reward settings does a pure equilibrium of
-the stage game exist? When it does not, we fall back to a mixed-strategy
-(linear-programming) solver.
+> Can **pure-strategy Nash equilibria** be used to *efficiently* solve the
+> soccer Markov game, and under what state and reward settings does a pure Nash
+> equilibrium exist?
+
+**Full answer: [docs/report.md](docs/report.md)** (or open
+[docs/report.html](docs/report.html) in a browser). In short: under the A10 move
+rule a pure stationary equilibrium exists at every state and is found in 9
+sweeps with no LP; it fails only under Littman's random move *order*, and only
+on ~4% of states of a large enough board; the hybrid solver uses the pure
+saddle where one exists and the LP only where it does not.
 
 ## Plan
 
 1. **Environment** — reproduce the A10 two-player soccer Markov game on a 7x5
-   grid. Two move-resolution rules: `deterministic` (A10) and `random`
-   (Littman's random move order).
+   grid. Three move-resolution rules: `deterministic` (A10), `random` (Littman's
+   random move order), `coinflip` (a fair-coin tie-break).
 2. **Stage-game solvers** — pure saddle-point finder and an LP solver for
    zero-sum mixed Nash.
-3. **Nash Q-iteration** — three modes:
-   - `pure` — pure security value at every stage game.
-   - `mixed` — exact LP minimax value at every stage game.
-   - `hybrid` — pure equilibrium when it exists, LP otherwise.
-4. **Analysis** — where the value functions and policies agree / diverge.
+3. **Nash Q-iteration** — three stage solvers (`pure` / `mixed` / `hybrid`),
+   run by either value iteration (`run()`) or freeze-then-iterate policy
+   iteration (`run_policy_iteration()`).
+4. **Analysis** — where the value functions and policies agree / diverge,
+   self-play, exploitability, reward shaping.
 
 ## A10 Part 1
 
@@ -50,6 +56,12 @@ See [docs/a10_competition.md](docs/a10_competition.md).
 return matches the value function) and reports exploitability: the Nash policy
 has a `~0` duality gap, while best-responding to one assumed opponent is more
 exploitable than random play. See [docs/selfplay.md](docs/selfplay.md).
+
+## Value iteration vs. policy iteration
+
+`python scripts/policy_iteration.py` compares `run()` (solve a matrix game every
+sweep) with `run_policy_iteration()` (freeze the strategies, run cheap linear
+evaluation sweeps, re-solve). Same fixed point, ~4x fewer matrix-game solves.
 
 ## Reward shaping
 
