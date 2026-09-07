@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments figures templates a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures templates a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -8,6 +8,9 @@ help:
 	@echo "make test-all     - full suite including slow tests (~10 min)"
 	@echo "make coverage     - fast suite under coverage, report gaps"
 	@echo "make experiments  - regenerate experiments/*.csv (board sweep is slow)"
+	@echo "make phase        - regenerate experiments/phase_diagram.csv (~8 min)"
+	@echo "make benchmark    - repeated-run timing + LP-call rate of the hybrid"
+	@echo "make dqn          - multi-seed neural Nash-Q vs the exact solver (~5 min)"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
@@ -39,6 +42,15 @@ report:
 	  --print-to-pdf=docs/report.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/report.html"
 	@echo "wrote docs/report.pdf"
+
+phase:
+	$(PY) scripts/phase_diagram.py
+
+benchmark:
+	$(PY) scripts/benchmark.py --repeats 5
+
+dqn:
+	$(PY) scripts/nash_dqn.py --seeds 5
 
 figures:
 	$(PY) scripts/render.py 0,2,6,2,0 -o docs/figures/kickoff.svg

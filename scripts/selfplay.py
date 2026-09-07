@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import statistics
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
@@ -26,7 +27,7 @@ from soccer_nash.opponents import part2_opponent
 from soccer_nash.simulate import win_rates
 
 
-def run(move_orders: list[str], gamma: float, n_games: int) -> None:
+def run(move_orders: list[str], gamma: float, n_games: int, seeds: int) -> None:
     for mo in move_orders:
         game = SoccerGame(move_order=mo)
         s0 = game.initial_state()
@@ -36,19 +37,20 @@ def run(move_orders: list[str], gamma: float, n_games: int) -> None:
         print(f"\n=== move_order = {mo} ===")
         print(f"computed V(kickoff) = {v_nash:+.4f}")
 
-        wr = win_rates(
-            game,
-            nq.row_policy,
-            nq.col_policy,
-            n_games=n_games,
-            rng=np.random.default_rng(0),
-            start=s0,
-            gamma=gamma,
-        )
+        returns = []
+        wr = {}
+        for seed in range(seeds):
+            wr = win_rates(
+                game, nq.row_policy, nq.col_policy, n_games=n_games,
+                rng=np.random.default_rng(seed), start=s0, gamma=gamma,
+            )
+            returns.append(wr["discounted_return"])
+        mean = statistics.mean(returns)
+        std = statistics.stdev(returns) if seeds > 1 else 0.0
         print(
-            f"Nash vs Nash ({n_games} games): "
+            f"Nash vs Nash ({n_games} games x {seeds} seeds): "
             f"win {wr['row_win']:.3f}  tie {wr['tie']:.3f}  loss {wr['row_loss']:.3f}"
-            f"   discounted return {wr['discounted_return']:+.4f}"
+            f"   discounted return {mean:+.4f} +/- {std:.4f}"
         )
 
         candidates = {
@@ -75,8 +77,9 @@ def main() -> None:
     )
     parser.add_argument("--gamma", type=float, default=0.9)
     parser.add_argument("--games", type=int, default=4000)
+    parser.add_argument("--seeds", type=int, default=5)
     args = parser.parse_args()
-    run(args.move_orders, args.gamma, args.games)
+    run(args.move_orders, args.gamma, args.games, args.seeds)
 
 
 if __name__ == "__main__":

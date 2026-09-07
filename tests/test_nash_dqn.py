@@ -28,7 +28,11 @@ def test_qnet_can_regress_toward_the_exact_stage_matrices():
     result = train_nash_dqn(game, gamma=0.9, hidden=48, epochs=40, seed=0)
     assert result.loss_trace[-1] < result.loss_trace[0]
 
-    m = compare_to_exact(game, result.net, exact.values, exact.row_policy, 0.9)
+    m = compare_to_exact(
+        game, result.net, exact.values, exact.row_policy, 0.9,
+        exact_no_saddle=set(exact.no_saddle_states),
+    )
     assert 0.0 <= m["action_agreement"] <= 1.0
-    assert m["max_value_error"] >= 0.0
+    assert 0.0 <= m["classification_agreement"] <= 1.0
+    assert m["max_value_error"] >= m["mean_value_error"] >= 0.0
     assert m["duality_gap"] >= -1e-9
