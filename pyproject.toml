@@ -6,7 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "soccer-nash"
 version = "0.1.0"
 description = "Pure vs. mixed Nash Q-iteration for the CS540 A10 soccer Markov game"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = ["numpy>=1.26", "scipy>=1.11"]
 
 [project.optional-dependencies]

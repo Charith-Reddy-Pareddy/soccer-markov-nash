@@ -171,3 +171,7 @@ interpreter instead:
 ```bash
 python -m venv --system-site-packages .venv
 ```
+
+## License
+
+MIT &mdash; see [LICENSE](LICENSE).
