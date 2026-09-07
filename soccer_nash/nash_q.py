@@ -162,8 +162,8 @@ class NashQIteration:
             # player 0's best case over the column.
             row_security = m.min(axis=1)
             col_security = m.max(axis=0)
-            row[i] = row_security >= row_security.max() - tol
-            col[i] = col_security >= col_security.min() - tol
+            row[i] = row_security >= row_security.max() - tol  # player 0 maximises
+            col[i] = col_security <= col_security.min() + tol  # player 1 minimises
         return states, row, col
 
     def _extract_policies(

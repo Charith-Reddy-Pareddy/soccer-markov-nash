@@ -22,6 +22,11 @@ def test_masks_are_binary_and_nonempty(solved):
     assert set(np.unique(row_mask)) <= {0.0, 1.0}
     assert (row_mask.sum(axis=1) >= 1).all()
     assert (col_mask.sum(axis=1) >= 1).all()
+    # ...and not vacuously all-ones: many states have a genuine preference.
+    assert (row_mask.sum(axis=1) < 4).sum() > 500
+    assert (col_mask.sum(axis=1) < 4).sum() > 500
+    # The two players' masks constrain the game equally.
+    assert row_mask.sum() == pytest.approx(col_mask.sum())
 
 
 def test_nash_policy_support_is_inside_the_mask(solved):
