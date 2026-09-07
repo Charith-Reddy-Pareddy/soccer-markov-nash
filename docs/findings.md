@@ -67,7 +67,12 @@ hybrid      94      +0.150       96.0%     <- true minimax value
 
 The pure-only solver **under-values the kickoff by 0.15** (it reports a draw; the
 game actually favours the initial carrier) because it ignores the value the
-carrier gains by randomising through contested cells.
+carrier gains by randomising through contested cells. Across all states the
+`pure` value function sits up to `0.37` below the true value.
+
+Running the full LP (`mixed`) over the 7x5 random game reproduces the `hybrid`
+value function to `4e-16` -- confirmation that `hybrid` is exact and that the LP
+is only doing work on the 94 no-saddle states (it takes ~8 min vs ~20 s).
 
 ## Value-function structure (deterministic game)
 
