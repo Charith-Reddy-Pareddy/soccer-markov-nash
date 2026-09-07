@@ -13,14 +13,25 @@ the stage game exist? When it does not, we fall back to a mixed-strategy
 ## Plan
 
 1. **Environment** — reproduce the A10 two-player soccer Markov game on a 7x5
-   grid with deterministic simultaneous-move dynamics.
+   grid. Two move-resolution rules: `deterministic` (A10) and `random`
+   (Littman's random move order).
 2. **Stage-game solvers** — pure saddle-point finder and an LP solver for
    zero-sum mixed Nash.
-3. **Nash Q-iteration** — two versions:
-   - *Pure Nash Q-iteration* — pure security value at every stage game.
-   - *LP / Mixed Nash Q-iteration* — exact minimax value at every stage game.
-   - *Hybrid* — pure equilibrium when it exists, LP otherwise.
-4. **Analysis** — where the two value functions and policies agree / diverge.
+3. **Nash Q-iteration** — three modes:
+   - `pure` — pure security value at every stage game.
+   - `mixed` — exact LP minimax value at every stage game.
+   - `hybrid` — pure equilibrium when it exists, LP otherwise.
+4. **Analysis** — where the value functions and policies agree / diverge.
+
+## Headline result
+
+- **Deterministic game:** every stage game has a pure saddle; `pure`, `hybrid`
+  and `mixed` agree exactly. A pure stationary Nash equilibrium exists.
+- **Random move order:** ~4% of stage games (7x5 board) have no pure saddle, so
+  no pure stationary equilibrium exists; the `pure` solver then under-values the
+  kickoff by 0.15. Small/narrow boards keep a pure equilibrium.
+
+See [docs/findings.md](docs/findings.md).
 
 ## Environment assumptions
 
@@ -33,10 +44,13 @@ in the public page). This repo uses the standard Littman soccer geometry:
 - Goal mouth: middle rows `y in {1, 2, 3}`.
 - Actions: `U, D, L, R` (no stay). Vertical moves clamp at the top/bottom walls;
   horizontal moves clamp except a ball carrier moving into the opponent goal.
-- Collisions: if both players target the same square, the ball carrier takes it
-  and possession flips to the other player; on a swap, players swap and
-  possession flips. A carrier blocked by a stationary opponent stays put and
-  loses the ball.
+- Collisions (`deterministic`): if both players target the same square, the ball
+  carrier takes it and possession flips to the other player; on a swap, players
+  swap and possession flips. A carrier blocked by a stationary opponent stays
+  put and loses the ball.
+- Collisions (`random`): the two moves are applied in a random order (each with
+  probability 1/2); a move into the other player's current cell fails, and
+  transfers the ball if the mover held it.
 - Rewards: `+1` win, `-1` loss, `0` otherwise (zero-sum). Game ties after 100
   steps.
 
