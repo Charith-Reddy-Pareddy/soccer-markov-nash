@@ -81,6 +81,56 @@ def test_unknown_mode_rejected():
         NashQIteration(SoccerGame(), mode="bogus")
 
 
+# ------------------------------------------------------------ policy iteration
+
+
+def test_pure_strategies_pick_the_saddle_point():
+    # Saddle at (row 0, col 2): row mins are [2, 0, 1, 2] (maximin 2 at row 0),
+    # col maxes are [5, 5, 2, 7] (minimax 2 at col 2).
+    m = np.array(
+        [
+            [4.0, 3.0, 2.0, 3.0],
+            [1.0, 5.0, 0.0, 6.0],
+            [3.0, 2.0, 1.0, 4.0],
+            [5.0, 4.0, 2.0, 7.0],
+        ]
+    )
+    p, q = NashQIteration._pure_strategies(m)
+    assert np.argmax(p) == 0  # would be 3 if the row axis were flipped
+    assert np.argmax(q) == 2
+
+
+def test_deterministic_hybrid_needs_no_linear_program(hybrid_result):
+    _, r = hybrid_result
+    assert r.matrix_game_solves == 0
+
+
+def test_policy_iteration_matches_value_iteration():
+    for game in (SMALL, SMALL_RANDOM):
+        vi = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-10).run()
+        pi = NashQIteration(
+            game, gamma=0.9, mode="hybrid", tol=1e-10
+        ).run_policy_iteration(eval_sweeps=40)
+        worst = max(abs(vi.values[s] - pi.values[s]) for s in vi.values)
+        assert worst < 1e-7
+
+
+def test_policy_iteration_pure_mode_uses_no_linear_program():
+    pi = NashQIteration(SMALL, gamma=0.9, mode="pure").run_policy_iteration()
+    assert pi.matrix_game_solves == 0
+
+
+@pytest.mark.slow
+def test_policy_iteration_solves_fewer_stage_games_on_the_random_game():
+    game = SoccerGame(width=5, height=5, goal_rows=(1, 2, 3), move_order="random")
+    vi = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9).run()
+    pi = NashQIteration(
+        game, gamma=0.9, mode="hybrid", tol=1e-9
+    ).run_policy_iteration(eval_sweeps=40)
+    assert pi.matrix_game_solves < vi.matrix_game_solves
+    assert max(abs(vi.values[s] - pi.values[s]) for s in vi.values) < 1e-6
+
+
 # --------------------------------------------------------------- random game
 
 SMALL_RANDOM = SoccerGame(width=4, height=3, goal_rows=(1,), move_order="random")
