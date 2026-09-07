@@ -24,6 +24,34 @@ and the LP only where it does not.
 - Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/mechanism.md](docs/mechanism.md)
 - `make test` / `make experiments` / `make report` regenerate everything
 
+## Results at a glance
+
+| move order | stochastic | stage games with no pure saddle | pure stationary eq? | V(kickoff) |
+|---|---|---|---|---|
+| `deterministic` (A10) | no | 0 / 2380 | yes | 0.000 |
+| `coinflip` tie-break | yes | 0 / 2380 | yes | 0.000 |
+| `random` (Littman) | yes | 94 / 2380 | no | 0.150 |
+
+The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
+while calling the LP ~25x less often; mirror symmetry halves the remaining work.
+
+## Repository map
+
+| path | what |
+|---|---|
+| `soccer_nash/game.py` | the Markov game (`SoccerGame`, `A10SoccerGame`) |
+| `soccer_nash/matrix_games.py` | zero-sum stage solvers: pure saddle + LP minimax |
+| `soccer_nash/nash_q.py` | Nash Q-iteration (`pure` / `mixed` / `hybrid`, VI and PI) |
+| `soccer_nash/support_enum.py`, `markov_game.py` | all equilibria / general-sum extension |
+| `soccer_nash/numerics.py` | value bracket, stage-game classification, rounding |
+| `soccer_nash/geometry.py`, `tree.py` | state features and the mixed-state decision tree |
+| `soccer_nash/symmetry.py` | mirror states, symmetric solve |
+| `soccer_nash/render.py` | draw a state as SVG (player 0 blue, player 1 green) |
+| `soccer_nash/a10.py`, `mlp.py`, `opponents.py`, `best_response.py` | A10 deliverables |
+| `soccer_nash/shaping.py`, `exploit.py`, `nash_dqn.py` | reward shaping, self-play, neural Nash-Q |
+| `scripts/` | one entry point per analysis; all write to `docs/` or `results/` |
+| `experiments/*.csv` | committed sweep outputs the report tables read from |
+
 ## Plan
 
 1. **Environment** — reproduce the A10 two-player soccer Markov game on a 7x5

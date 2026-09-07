@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help test test-all report experiments a10 clean
+.PHONY: help test test-all report experiments figures a10 clean
 
 help:
 	@echo "make test         - fast test suite"
@@ -8,6 +8,7 @@ help:
 	@echo "make experiments  - regenerate experiments/*.csv (board sweep is slow)"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10           - regenerate the A10 Part 2 + competition artifacts"
+	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
 
 test:
 	$(PY) -m pytest -m "not slow" -q
@@ -28,6 +29,10 @@ report:
 	  --print-to-pdf=docs/report.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/report.html"
 	@echo "wrote docs/report.pdf"
+
+figures:
+	$(PY) scripts/render.py 0,2,6,2,0 -o docs/figures/kickoff.svg
+	$(PY) scripts/render.py --trajectory -o docs/figures/trajectory.svg
 
 a10:
 	$(PY) scripts/a10_part2.py --out results/

@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2268 608" role="img" aria-label="soccer game trajectory, 7 steps.">
+<g transform="translate(0 0)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="52.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><circle cx="52.0" cy="140.0" r="21" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="52.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="316.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><text x="316.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="65.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=0  (0, 2, 6, 2, 0)</text></g>
+<g transform="translate(380 0)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="96.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><circle cx="96.0" cy="140.0" r="21" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="96.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="272.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><text x="272.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="109.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=1  (1, 2, 5, 2, 0)</text></g>
+<g transform="translate(760 0)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="140.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><circle cx="140.0" cy="140.0" r="21" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="140.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="228.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><text x="228.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="153.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=2  (2, 2, 4, 2, 0)</text></g>
+<g transform="translate(1140 0)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="184.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><text x="184.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="228.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><circle cx="228.0" cy="140.0" r="21" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="228.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="241.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=3  (3, 2, 4, 2, 1)</text></g>
+<g transform="translate(1520 0)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="228.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><circle cx="228.0" cy="140.0" r="21" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="228.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="184.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><text x="184.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="241.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=4  (4, 2, 3, 2, 0)</text></g>
+<g transform="translate(1900 0)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="272.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><circle cx="272.0" cy="140.0" r="21" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="272.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="228.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><text x="228.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="285.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=5  (5, 2, 4, 2, 0)</text></g>
+<g transform="translate(0 310)"><rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="316.0" cy="140.0" r="15" fill="var(--p0, #2f6bb0)"/><circle cx="316.0" cy="140.0" r="21" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="1.5" stroke-dasharray="3 4"/><text x="316.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">0</text>
+<circle cx="272.0" cy="140.0" r="15" fill="var(--p1, #2f8a52)"/><text x="272.0" y="144.0" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--paper, #ffffff)">1</text>
+<circle cx="329.0" cy="127.0" r="5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1"/>
+<text x="30" y="292" font-family="monospace" font-size="11" fill="var(--ink-faint, #77817a)">t=6  (6, 2, 5, 2, 0)</text></g>
+</svg>
