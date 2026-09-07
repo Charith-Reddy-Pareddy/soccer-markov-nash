@@ -5,6 +5,7 @@ imitates it with a bias-free 5->h->h->4 ReLU/softmax network, then rolls the
 network out against the opponent from the kickoff to produce the Q8 trajectory.
 
     python scripts/a10_part2.py --out results/
+    python scripts/a10_part2.py --seeds 5      # imitation accuracy over 5 seeds
 
 Writes ``a10_q7_weights.txt`` (Q7) and ``a10_q8_trajectory.txt`` (Q8).
 Every student must train their own network; these files are git-ignored.
@@ -14,7 +15,9 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import statistics
 import sys
+import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
@@ -45,6 +48,18 @@ def optimal_action_mask(game, values, gamma):
     return mask
 
 
+def _train(game, X, mask, states, hidden, epochs, seed):
+    t = time.perf_counter()
+    net = MLP(h1=hidden, h2=hidden, seed=seed)
+    net.train(X, mask, epochs=epochs, lr=4e-3, batch_size=256, seed=seed)
+    dt = time.perf_counter() - t
+    pred = net.predict(X)
+    in_opt = float(np.mean(mask[np.arange(len(states)), pred] > 0))
+    rollout = play_deterministic(game, net.policy_dict(states), part2_opponent, me=0)
+    wins = rollout.winner == 0 and rollout.steps <= game.max_steps
+    return net, in_opt, dt, wins, rollout
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path("results"))
@@ -52,6 +67,8 @@ def main() -> None:
     parser.add_argument("--gamma", type=float, default=0.9)
     parser.add_argument("--epochs", type=int, default=2500)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seeds", type=int, default=0,
+                        help="if >0, train this many seeds and report mean +/- sd")
     args = parser.parse_args()
 
     game = A10SoccerGame()
@@ -64,18 +81,28 @@ def main() -> None:
     X = np.array(states, dtype=float)
     mask = optimal_action_mask(game, br.values, args.gamma)
 
-    net = MLP(h1=args.hidden, h2=args.hidden, seed=args.seed)
-    net.train(X, mask, epochs=args.epochs, lr=4e-3, batch_size=256, seed=args.seed)
+    if args.seeds > 0:
+        accs, times, wins = [], [], 0
+        for seed in range(args.seeds):
+            _, acc, dt, won, _ = _train(game, X, mask, states, args.hidden,
+                                        args.epochs, seed)
+            accs.append(acc)
+            times.append(dt)
+            wins += won
+            print(f"  seed {seed}: imitation accuracy {acc:.3f}, {dt:.0f}s, "
+                  f"wins Q8: {won}")
+        sd = statistics.stdev if args.seeds > 1 else (lambda _x: 0.0)
+        print(f"\nimitation accuracy : {statistics.mean(accs):.3f} +/- {sd(accs):.3f}")
+        print(f"train time (s)     : {statistics.mean(times):.0f} +/- {sd(times):.0f}")
+        print(f"wins the Q8 rollout: {wins}/{args.seeds} seeds")
+        return
 
-    pred = net.predict(X)
-    in_opt = float(np.mean(mask[np.arange(len(states)), pred] > 0))
-    print(f"imitation: network plays an optimal action at {in_opt:.3f} of states")
-
-    rollout = play_deterministic(
-        game, net.policy_dict(states), part2_opponent, me=0
+    net, in_opt, _dt, won, rollout = _train(
+        game, X, mask, states, args.hidden, args.epochs, args.seed
     )
+    print(f"imitation: network plays an optimal action at {in_opt:.3f} of states")
     print(f"Q8 rollout: winner {rollout.winner}, {rollout.steps} steps")
-    if rollout.winner != 0 or rollout.steps > game.max_steps:
+    if not won:
         raise SystemExit("network does not win from the kickoff -- retrain")
 
     args.out.mkdir(parents=True, exist_ok=True)

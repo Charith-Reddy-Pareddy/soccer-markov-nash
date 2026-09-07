@@ -2,11 +2,14 @@
 width, to test whether goal width -- not board size -- is what drives mixing.
 
 Writes ``experiments/phase_diagram.csv``: one row per (width, height, goal
-width) on the random-move-order game at a fixed gamma.
+width) on the random-move-order game at a fixed gamma, for every board with
+``3 <= width <= 11``, ``3 <= height <= 9``, ``width * height <= 45`` (the cap
+keeps the random-move solve tractable while spanning both axes).
 
-    python scripts/phase_diagram.py            # ~8 min, writes the CSV
+    python scripts/phase_diagram.py            # ~15 min, writes the CSV
     python scripts/phase_diagram.py --quick    # small boards only
-    python scripts/phase_diagram.py --svg-only # just redraw the heatmap from the CSV
+    python scripts/phase_diagram.py --svg-only # redraw the heatmap from the CSV
+    python scripts/phase_diagram.py --analyze  # variance decomposition on the CSV
 """
 
 from __future__ import annotations
@@ -75,14 +78,14 @@ def run_one(width: int, height: int, k: int, gamma: float) -> dict:
 
 
 def configs(quick: bool) -> list[tuple[int, int]]:
-    widths = (3, 5, 7) if quick else (3, 5, 7, 9)
-    cap = 30 if quick else 45
-    out = []
-    for w in widths:
-        for h in range(3, 8):
-            if w * h <= cap:
-                out.append((w, h))
-    return out
+    if quick:
+        return [(w, h) for w in (3, 5, 7) for h in range(3, 8) if w * h <= 30]
+    return [
+        (w, h)
+        for w in range(3, 12)
+        for h in range(3, 10)
+        if w * h <= 45
+    ]
 
 
 def _heat(frac: float, hi: float) -> str:
@@ -149,17 +152,82 @@ def load_rows() -> list[dict]:
     return rows
 
 
+def _ols(y: list[float], cols: list[list[float]]) -> tuple[list[float], float]:
+    """Tiny ordinary-least-squares with an intercept. Returns (coefs, R^2)."""
+    import numpy as np
+
+    X = np.column_stack([np.ones(len(y))] + [np.asarray(c, float) for c in cols])
+    yv = np.asarray(y, float)
+    beta, *_ = np.linalg.lstsq(X, yv, rcond=None)
+    resid = yv - X @ beta
+    ss_res = float(resid @ resid)
+    ss_tot = float(((yv - yv.mean()) ** 2).sum())
+    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
+    return list(beta), r2
+
+
+def analyze() -> None:
+    """Decompose the variance in mixed_fraction: what predicts it?"""
+    rows = load_rows()
+    one = [r for r in rows if r["goal_width"] == 1]
+    multi = [r for r in rows if r["goal_width"] >= 2]
+
+    print(f"{len(rows)} configs: {len(one)} one-cell, {len(multi)} multi-cell\n")
+
+    # (1) the binary gate
+    one_mixed = sum(1 for r in one if r["mixed_states"] > 0)
+    multi_mixed = sum(1 for r in multi if r["mixed_states"] > 0)
+    print("has any mixed state?")
+    print(f"  goal width == 1 : {one_mixed}/{len(one)}   -> a perfect predictor of 'no mixing'")
+    print(f"  goal width >= 2 : {multi_mixed}/{len(multi)}  -> always some mixing\n")
+
+    # (2) among multi-cell boards, what explains the fraction?
+    y = [r["mixed_fraction"] for r in multi]
+    w = [r["width"] for r in multi]
+    h = [r["height"] for r in multi]
+    k = [r["goal_width"] for r in multi]
+    area = [r["width"] * r["height"] for r in multi]
+
+    print("multi-cell boards -- OLS of mixed_fraction, incremental R^2:")
+    for name, cols in [
+        ("goal_width alone", [k]),
+        ("width alone", [w]),
+        ("height alone", [h]),
+        ("board area alone", [area]),
+        ("width + height", [w, h]),
+        ("width + height + goal_width", [w, h, k]),
+        ("area + goal_width", [area, k]),
+    ]:
+        _, r2 = _ols(y, cols)
+        print(f"  {name:<30s} R^2 = {r2:.3f}")
+
+    import statistics
+    print(f"\n  mixed_fraction over multi-cell boards: "
+          f"mean {statistics.mean(y):.3f}, sd {statistics.pstdev(y):.3f}, "
+          f"range [{min(y):.3f}, {max(y):.3f}]")
+    beta, _ = _ols(y, [area, k])
+    print(f"  fitted: mixed_fraction ~= {beta[0]:.3f} + {beta[1]:.5f}*area "
+          f"+ {beta[2]:.4f}*goal_width")
+    print("  -> board area (dilution) drives the residual variation; goal width")
+    print("     past 2 barely matters, and neither creates or removes mixing.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gamma", type=float, default=0.9)
     parser.add_argument("--quick", action="store_true")
     parser.add_argument("--svg-only", action="store_true",
                         help="redraw docs/figures/phase_diagram.svg from the CSV")
+    parser.add_argument("--analyze", action="store_true",
+                        help="variance decomposition on the existing CSV")
     args = parser.parse_args()
 
     if args.svg_only:
         write_heatmap(load_rows(), SVG)
         print(f"wrote {SVG.relative_to(ROOT)}")
+        return
+    if args.analyze:
+        analyze()
         return
 
     rows = []

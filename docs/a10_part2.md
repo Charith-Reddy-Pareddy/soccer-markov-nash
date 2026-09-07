@@ -43,8 +43,9 @@ Outputs (git-ignored -- every student trains their own):
   internal `[1/6, 1/4, 1/6, 1/4, 1]` input scale for conditioning and folds it
   back into the first matrix on export, so the saved weights behave identically
   on raw inputs.
-- A typical run: best-response `V(kickoff) = 0.53` (`gamma^6`, a 7-step win),
-  network plays an optimal action at ~99% of states, Q8 is 7 steps.
+- Best-response `V(kickoff) = 0.53` (`gamma^6`, a 7-step win); over 5 seeds
+  (`scripts/a10_part2.py --seeds 5`) the network plays an optimal action at
+  `0.990 +/- 0.000` of states and wins the Q8 rollout every time, in 7 steps.
 - The opponent is deterministic, so the best response wins outright; there is no
   need for the Nash machinery here (that is for self-play, not a fixed
   opponent).

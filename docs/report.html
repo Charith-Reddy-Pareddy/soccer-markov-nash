@@ -428,10 +428,10 @@
 
   <section>
     <h2>RQ3 &mdash; Mechanism</h2>
-    <p><b>Goal-mouth width, not board size, is the gate.</b> The phase diagram sweeps every board from 3&times;3 to 9&times;5 against goal widths 1 to <span class="mono">height&minus;2</span> (<span class="mono">scripts/phase_diagram.py</span>, <span class="mono">experiments/phase_diagram.csv</span>).</p>
+    <p><b>Goal-mouth width, not board size, is the gate.</b> The phase diagram sweeps every board with <span class="mono">width &le; 11</span>, <span class="mono">height &le; 9</span>, <span class="mono">width&middot;height &le; 45</span> against goal widths 1 to <span class="mono">height&minus;2</span> (<span class="mono">scripts/phase_diagram.py --analyze</span>, <span class="mono">experiments/phase_diagram.csv</span>).</p>
     <figure>
-      <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:320px; margin:0 auto;">
-      <figcaption class="fig-cap"><b>The gate.</b> Goal width 1 &rarr; <b>0</b> mixed states on all 16 boards: the carrier has one threat, the defender one response. Goal width &ge; 2 &rarr; mixing on every board, at 3&ndash;12% that drifts down with board area and is roughly flat in goal width beyond 2. Every state is reachable from the kickoff, so this is also the fraction over reachable states.</figcaption>
+      <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:300px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>The gate.</b> Goal width 1 &rarr; <b>0</b> mixed states, on all 40 one-cell configs. Goal width &ge; 2 &rarr; mixing on all 87: whether a board mixes is a <em>perfect</em> function of goal width. The <em>fraction</em> (2.7&ndash;12%) is an OLS R&sup2; 0.64 in board area &mdash; a dilution effect &mdash; with goal width adding little and a negative coefficient. Every state is reachable from the kickoff.</figcaption>
     </figure>
     <p>Geometry predicts the label (<span class="mono">scripts/geometry_model.py</span>): a depth-4 decision tree on carrier-frame features separates <span class="mono">mixed</span> from the rest with <b>precision 0.96, recall 0.91</b>. The dominant feature is <span class="mono">defender_can_intercept</span> &mdash; the defender within one move of the carrier's forward cell (<span class="mono">P(mixed) = 0.44</span> vs <span class="mono">0.002</span>).</p>
     <p>Beyond prediction, the 94 mixed states canonicalize under the board mirror to 47 pairs and cluster into <b>8 geometric templates</b> (<span class="mono">scripts/templates.py</span>, <span class="mono">docs/templates.md</span>).</p>
@@ -477,22 +477,13 @@
     <p>Discounting mildly shifts which states mix; the classification is otherwise robust across nine orders of magnitude of tolerance, breaking only as the tolerance approaches the real <span class="mono">minimax &minus; maximin</span> gaps. Fixed 0.1-rounding &mdash; proposed to force indifference &mdash; misclassifies 62 states, exactly the small-entry mixed region.</p>
   </section>
 
-  <section id="limitations">
-    <h2>Limitations</h2>
-    <ul class="plain">
-      <li>The A10 page redacts the ID-specific start position and goal rows; this repo uses the standard Littman geometry (configurable). Qualitative results hold across 40+ board configurations; the exact <span class="mono">3.9%</span> is the 7&times;5 / 3-cell-goal case.</li>
-      <li>Several collision sub-cases (carrier vs. stationary opponent, bump = steal, swap possession) are <em>interpreted</em> from the two stated A10 rules, not quoted. If course staff intended otherwise, Claim&nbsp;A must be re-measured. See <span class="mono">docs/assumptions.md</span>.</li>
-      <li><b>Claim A</b> (every converged stage game has a pure saddle) and <b>Claim B</b> (a stationary pure equilibrium exists) are established by enumeration. <b>Claim C</b> (the theoretical game necessarily has one, over all settings) is <em>not</em> &mdash; that needs a proof.</li>
-      <li><span class="mono">random</span> and <span class="mono">coinflip</span> are different game definitions, isolating the collision rule and the tie-break respectively &mdash; not the A10 game.</li>
-    </ul>
-  </section>
-
   <section>
     <h2>Secondary validation &mdash; the policy plays correctly</h2>
     <ul class="plain">
       <li>Duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; no opponent beats the game value.</li>
-      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.157</span> empirical discounted return (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
+      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.149 &plusmn; 0.005</span> empirical discounted return over 5 seeds of 3&thinsp;000 games (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
       <li>A best response to one assumed opponent is fragile: the Part&nbsp;2 policy has exploitability <span class="mono">0.43</span> &mdash; worse than random &mdash; which is the A10 competition's warning about non-equilibrium submissions.</li>
+      <li>A10 networks over 5 seeds (<span class="mono">experiments/a10_competition_seeds.csv</span>): the Part&nbsp;2 imitation net plays optimally at <span class="mono">0.990&nbsp;&plusmn;&nbsp;0.000</span> of states and wins Q8 every time; competition Network Second is exact, but Network First sits at a stubborn <span class="mono">0.28&nbsp;&plusmn;&nbsp;0.01</span> exploitability that does not wash out with re-seeding.</li>
     </ul>
   </section>
 
@@ -511,13 +502,24 @@
           <tr><td>action agreement</td><td class="yes">100%</td><td class="no">43% &plusmn; 2%</td></tr>
           <tr><td>pure/mixed classification</td><td class="yes">100%</td><td class="no">67% &plusmn; 2%</td></tr>
           <tr><td>exploitability</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.43 &plusmn; 0.04</td></tr>
-          <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, 32 &plusmn; 1 s</td></tr>
+          <tr><td>convergence (epochs to plateau, of 600)</td><td class="yes">exact</td><td class="no">469 &plusmn; 31; 3/5 still creeping</td></tr>
+          <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, ~35 s</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The network fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions: worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, and it mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
+    <p>Deterministic game only &mdash; <span class="mono">train_nash_dqn</span> rejects the stochastic variants, so the network never has to represent a genuinely mixed stage game. Even so it trails: it fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions &mdash; worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
     <ul class="plain">
       <li><b>A proof (partly done).</b> The single-cell pure-saddle theorem now has the defender's optimal strategy in closed form and a dominance-solvability certificate for every finite board (<span class="mono">docs/proof.md</span>); the carrier's half, board-size-free, is open.</li>
+    </ul>
+  </section>
+
+  <section id="limitations">
+    <h2>Limitations</h2>
+    <ul class="plain">
+      <li>The A10 page redacts the ID-specific start position and goal rows; this repo uses the standard Littman geometry (configurable). Across the phase-diagram sweep every one-cell-goal board has 0 mixed states and every wider-goal board has some; the exact <span class="mono">3.95%</span> is the 7&times;5 / 3-cell-goal case.</li>
+      <li>Several collision sub-cases (carrier vs. stationary opponent, bump = steal, swap possession) are <em>interpreted</em> from the two stated A10 rules, not quoted. If course staff intended otherwise, Claim&nbsp;A must be re-measured. See <span class="mono">docs/assumptions.md</span>.</li>
+      <li><b>Claim A</b> (every converged stage game has a pure saddle) and <b>Claim B</b> (a stationary pure equilibrium exists) are established by enumeration. <b>Claim C</b> (the theoretical game necessarily has one, over all settings) is <em>not</em>, for the general goal mouth. For the single goal cell it is partly proved (<span class="mono">docs/proof.md</span>).</li>
+      <li><span class="mono">random</span> and <span class="mono">coinflip</span> are different game definitions, isolating the collision rule and the tie-break respectively &mdash; not the A10 game.</li>
     </ul>
   </section>
 

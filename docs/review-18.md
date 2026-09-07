@@ -1,60 +1,54 @@
 # Second review -- 18 points
 
-Tracking the second round of feedback (the geometry-model / research-framing
-review). The reviewer's own priority order is in point 16.
+The geometry-model / research-framing review. Each row names the concrete
+artifact that closes the point.
 
-| # | point | status |
+| # | point | where it lives |
 |---|---|---|
-| 1 | Geometry model as a *discovery tool*, not the final result | done -- [templates.md](templates.md) turns the tree's split into a mechanism |
-| 2 | Central question -> "which geometries force mixing, can they be characterized analytically"; two contributions (algorithmic + structural) | done -- report + README lead with the two contributions |
-| 3 | Don't overclaim the one-cell-goal result; proof is a long-term goal | done (first review) -- [assumptions.md](assumptions.md) Claim C |
-| 4 | Board sweep -> phase diagram: mixed / reachable vs width x height x goal width | done -- `scripts/phase_diagram.py`, `experiments/phase_diagram.csv`, heatmap in RQ3. Goal width 1 -> 0 on all 16 boards; wider -> 3-12%. Every state is reachable so reachable == all. |
-| 5 | Record seeds; run seeds 0-4; report mean +/- std for stochastic experiments | done -- DQN (5 seeds, `nash_dqn_seeds.csv`), self-play return (+0.149 +/- 0.005), Limitations "Reproducibility" note |
-| 6 | Runtime: median of >=5 runs; report LP-calls/state and fraction of states needing LP | done -- `scripts/benchmark.py`; RQ2 table now leads with LP calls / states-needing-LP (3.95%), wall clock is a median labelled machine-dependent |
-| 7 | "25x" wording: keep LP-solve reduction and wall-clock speedup separate | done -- report RQ2 + README say so explicitly |
-| 8 | Explicit stage-game taxonomy (exact / numerically-indistinguishable / strict / degenerate / genuine mixed) | done -- `classify_stage_game` docstring + report RQ4 table |
-| 9 | Strengthen "matching pennies": compute each 2x2 support matrix, test the crossing inequalities | **done** -- `templates.matching_pennies_pattern`, 68/94 verified |
-| 10 | Name actions consistently: {U,D,L,R} -> advance/climb/block/... per template, show real matrices | **done** -- `templates.describe_action`, [templates.md](templates.md) |
-| 11 | Remove the dog/debate game | done (first review) |
-| 12 | DQN phase: exact hybrid as ground truth, full comparison table | done -- report section 10: value (max + mean), action agreement, pure/mixed classification, exploitability, convergence, runtime, all mean +/- sd over 5 seeds |
-| 13 | Paper structure not centered on A10 Part 2 | done -- Problem / Method / RQs / Results / Mechanism / Limitations / Algorithm; A10 Part 2 is section 8 (secondary validation), Parts 1/competition are separate docs |
-| 14 | Title -> "When Does a Soccer Markov Game Need Mixed Strategies?" | done -- report + README + HTML title |
-| 15 | Novelty = the geometric characterization of unavoidable mixing | done -- it is contribution 2, and [templates.md](templates.md) |
-| 16 | Priority order | this table |
-| 17 | Canonical-state analyzer: 2380 states -> equivalence classes -> few geometric templates + stage matrix per class | **done** -- `soccer_nash/templates.py`, [templates.md](templates.md): 94 -> 47 pairs -> 8 templates |
-| 18 | Characterize *why* multi-cell goal + interception geometry forces mixing | **done** -- [templates.md](templates.md) "Why the mix is unavoidable" |
+| 1 | Geometry model as a *discovery tool*, not the final result | `docs/geometry.md` says so explicitly; the tree points at the condition, `templates.md` + `proof.md` turn it into a mechanism and a partial theorem |
+| 2 | Central question -> "which geometries force mixing, can they be characterized analytically"; two contributions (algorithmic + structural) | `docs/report.md` and `README.md` open with the research question and the two contributions; "the two meet in RQ2" line |
+| 3 | Don't overclaim the one-cell result; proof is a long-term goal | `docs/assumptions.md` Claim C / C'; `docs/proof.md` is careful about what is and isn't proved |
+| 4 | Board sweep -> phase diagram: mixed / reachable vs width x height x goal width; compare board width vs goal width | `scripts/phase_diagram.py` (all boards `w<=11, h<=9, w*h<=45`, every goal width), `experiments/phase_diagram.csv`, `figures/phase_diagram.svg`; `--analyze` does the variance decomposition -- goal width (1 vs >=2) perfectly predicts *whether* mixing occurs, board area explains the residual *fraction* |
+| 5 | Record seeds; run seeds 0-4; mean +/- sd for stochastic experiments | `scripts/nash_dqn.py --seeds` (`nash_dqn_seeds.csv`), `scripts/a10_part2.py --seeds`, `scripts/a10_competition.py --seeds` (`a10_competition_seeds.csv`), `scripts/selfplay.py --seeds`; report `&sect;10` Reproducibility note |
+| 6 | Runtime: median of >=5 runs; report LP-calls/state and fraction of states needing LP | `scripts/benchmark.py` (median of 5); report RQ2 table leads with LP calls, states-needing-LP (3.95%), LP/state/sweep; wall clock is a labelled median |
+| 7 | "25x" wording: LP-solve reduction != wall-clock speedup, consistently | report RQ2 ("Two numbers, kept separate" + "Do not conflate..."), README, `findings.md`, `selfplay.md` all use the seeded / reproducible numbers |
+| 8 | Explicit stage-game taxonomy (exact / numerically-indistinguishable / strict / degenerate / genuine mixed) | `classify_stage_game` docstring (all five); report RQ4 table; forward-referenced from Method (`&sect;2`) |
+| 9 | Strengthen "matching pennies": compute each 2x2 support matrix, test the crossing inequalities | `templates.matching_pennies_pattern` (checks `a>=c != b>=d` and `a<=b != c<=d`, returns `p*`, `q*`, value); `templates.md` shows all four 2x2 games and calls them "strategically equivalent to matching pennies" |
+| 10 | Name actions consistently: {U,D,L,R} -> advance/climb/block/... per template; show the matrices | `templates.describe_action`; `templates.md` "The templates" table + Template 2 walk-through (state -> Q matrix -> support -> action names -> mixed probabilities) + the other three MP games |
+| 11 | Remove the dog/debate game | done (first review); `grep` finds no `dog` references |
+| 12 | DQN phase: exact hybrid as ground truth, full comparison table | report `&sect;8`: value (max + mean), action agreement, pure/mixed classification, exploitability, convergence (epochs to MSE plateau), runtime -- all mean +/- sd over 5 seeds; `nash_dqn_seeds.csv` |
+| 13 | Paper structure not centered on A10 Part 2 | report reordered: Problem / Game+Nash-Q / **Algorithm** / RQs / Results / Mechanism / Secondary validation / Neural / Open questions / Limitations. A10 is one bullet in Secondary validation; Parts 1/2/competition are separate docs |
+| 14 | Title -> "When Does a Soccer Markov Game Need Mixed Strategies?" | report `.md` / `.html` `<title>` / `<h1>`, README |
+| 15 | Novelty = the geometric characterization of unavoidable mixing | it is contribution 2; `templates.md` "Why the mix is unavoidable"; the "two meet in RQ2" line ties it to the algorithm |
+| 16 | Priority order | this table; items 1-7 of the reviewer's list all have an artifact (item 1, A10 fidelity, is documented in `assumptions.md` -- confirming with staff is the only open part) |
+| 17 | Canonical-state analyzer: 2380 states -> equivalence classes -> geometric templates + stage matrix per class | `soccer_nash/templates.py` (`mirror_reduce` -> carrier-frame clustering), `docs/templates.md`: 94 -> 47 mirror pairs -> 8 templates, matrix per template |
+| 18 | Characterize *why* multi-cell goal + interception geometry forces mixing | `templates.md` "Why the mix is unavoidable" (4-step argument + remove-any-ingredient); the analytic condition is a stochastic order **and** goal mouth > 1 cell **and** a defender that can contest but not cover both lanes |
 
-## Earlier passes
+## The measurement pass (4, 5, 6, 12)
 
-- **1, 9, 10, 17, 18** -- `soccer_nash/templates.py` + `scripts/templates.py` +
-  `docs/templates.md`: the 94 no-pure-saddle states reduce to **8 geometric
-  templates**; the **four with a 2x2 equilibrium support are all genuine
-  matching pennies** (best replies cross both ways), covering **68 of 94**
-  states. The remaining 26 are borderline (a near-pure saddle) or a 3x3 mix.
-- **2, 7, 8, 13, 14, 15** -- editing pass on `docs/report.md` + README:
-  retitled, lead with the two contributions, added the five-way stage-game
-  taxonomy to RQ4, split "LP-solve reduction" from "wall-clock speedup".
+- **4** -- `phase_diagram.csv` covers every board `3<=w<=11`, `3<=h<=9`,
+  `w*h<=45` at every goal width. `--analyze`: goal width `1` -> **0 mixed states
+  on every board**; goal width `>=2` -> mixing on every board. Among the boards
+  that mix, an OLS of the mixed *fraction* is carried by board **area** (a
+  dilution effect); goal width past 2 has a small negative coefficient. So goal
+  width is a switch, not a dial, and board size only dilutes.
+- **5** -- every neural fit and every stochastic rollout now takes `--seeds`
+  and reports mean +/- sd over seeds 0-4. DQN action agreement
+  `0.43 +/- 0.02`, exploitability `0.43 +/- 0.04` (`nash_dqn_seeds.csv`); A10
+  imitation net `0.990 +/- 0.000` optimal, 5/5 Q8 wins; A10 competition Network
+  First `0.28 +/- 0.01` exploitable / Second `0.00` (`a10_competition_seeds.csv`);
+  Nash-vs-Nash self-play `+0.149 +/- 0.005`. Exact DP results carry no seed.
+- **6** -- `benchmark.py` times the hybrid over 5 repeats and reports the
+  median, plus `LP calls`, `states needing LP` (3.95%, exact and portable),
+  `LP/state/sweep`. The report separates this from the wall-clock ratio.
+- **12** -- the exact-vs-DQN table (report `&sect;8`) is seven measured rows
+  over 5 seeds -- value (max + mean), action agreement, pure/mixed
+  classification, exploitability, convergence (epochs to MSE plateau: 469 +/- 31
+  of 600, 3/5 still creeping), runtime -- with the ground-truth column filled in
+  and a note that `train_nash_dqn` only handles the deterministic game.
 
-The precise analytic condition for an unavoidable mixed stage game:
+## Still open (not part of this review)
 
-> stochastic (½–½) resolution order **and** a goal mouth wider than one cell
-> **and** the defender able to contest the carrier's forward cell but not cover
-> every scoring lane in one move.
-
-## Measurement pass (4, 5, 6, 12)
-
-- **4** `scripts/phase_diagram.py` -> `experiments/phase_diagram.csv` (46 configs,
-  ~8 min) + `docs/figures/phase_diagram.svg` heatmap. Result: goal width is a
-  binary gate -- **all 17 one-cell-goal configs have 0 mixed states; all 29
-  wider-goal configs have some**, at a 3-12% fraction nearly independent of
-  board size. `reachable_states` confirms the whole legal space is reachable, so
-  mixed/reachable = mixed/all.
-- **5** seeds 0-4 everywhere randomness bites: `scripts/nash_dqn.py --seeds 5`
-  (`nash_dqn_seeds.csv`), `scripts/selfplay.py --seeds 5`. Reported mean +/- sd.
-- **6** `scripts/benchmark.py`: median of 5 repeats; RQ2 table reordered to lead
-  with LP calls and the reproducible "3.95% of states need an LP", wall clock
-  demoted to an indicative median.
-- **12** report section 10 is now a 6-row exact-vs-DQN table over 5 seeds.
-
-## All 18 done. Open (long-term, not part of this review): a formal proof of
-"one-cell goal => pure everywhere".
+A board-size-free proof of the single-cell theorem's carrier half
+(`docs/proof.md`), and confirming the three interpreted A10 collision rules with
+course staff (`docs/assumptions.md`).

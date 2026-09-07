@@ -46,8 +46,8 @@ With a one-cell goal the carrier's only winning approach is that single cell, so
 the defender always knows where to stand and every stage game has a pure saddle.
 With a wider goal the carrier threatens more than one cell and, under the random
 move order, the defender cannot cover them all -- it has to guess. On the 7x5
-board (3-cell goal), 94 of 2380 stage games have no pure saddle (3.9% *for this
-configuration*).
+board (3-cell goal), 94 of 2380 stage games have no pure saddle (3.95% *for
+this configuration*).
 
 The 94 no-saddle states come in exact mirror pairs, are within a move of
 adjacency, and ~88 have the defender ahead of the carrier. Geometry predicts the
@@ -98,8 +98,8 @@ See [shaping.md](shaping.md).
 - The duality gap `V0_br(s0) + V1_br(s0)` of the Nash Q policy is `< 1e-9` for
   every move order -- an optimal opponent cannot beat the equilibrium value.
 - Nash vs. Nash from the kickoff reproduces the value: forced draws in the
-  deterministic and coinflip games, a `+0.157` empirical discounted return
-  (vs. `0.150` computed) in the random game.
+  deterministic and coinflip games, a `+0.149 +/- 0.005` empirical discounted
+  return over 5 seeds (vs. `0.150` computed) in the random game.
 - The Part 2 best-response-to-the-scripted-opponent policy has exploitability
   `0.43` -- worse than moving uniformly at random (`0.39`). Best-responding to
   one assumed opponent is fragile; the Nash policy is the safe submission.

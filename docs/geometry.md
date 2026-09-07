@@ -26,6 +26,11 @@ it has to *guess*, which is a matching-pennies subgame ([templates.md](templates
 
 ## Geometry predicts the classification
 
+The decision tree here is a *discovery tool*: it points at the geometric
+condition, which [templates.md](templates.md) and [proof.md](proof.md) then turn
+into an explicit mechanism and a partial theorem. It is not the end of the
+analysis.
+
 Features are computed in the carrier's frame (invariant under the board mirror;
 `soccer_nash/geometry.py`). For the 7x5 random game:
 

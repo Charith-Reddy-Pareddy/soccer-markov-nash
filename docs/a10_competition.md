@@ -31,14 +31,17 @@ separated by `-----`), git-ignored -- every student trains their own.
 
 ## The approximation is only as safe as its worst state
 
-The *exact* Nash policy has exploitability 0. A network approximation does not:
+The *exact* Nash policy has exploitability 0. A network approximation does not
+(`scripts/a10_competition.py --seeds 5`, `experiments/a10_competition_seeds.csv`):
 
 | network | plays an optimal action | exploitability |
 |---|---|---|
-| Network First (player 0) | ~99% | up to ~0.3 |
-| Network Second (player 1) | ~100% | ~0.0 |
+| Network First (player 0) | `0.994 +/- 0.000` | `0.28 +/- 0.01` |
+| Network Second (player 1) | `1.000 +/- 0.000` | `0.00 +/- 0.00` |
 
 A single state where the network prefers a losing move is enough for a
-best-responding opponent to force a win from the right starting position. Train
-long, check the exploitability number the script prints, and re-seed if
-Network First is not near 0.
+best-responding opponent to force a win from the right starting position.
+Network Second learns its (larger) optimal-action set exactly; Network First
+does not, and the `0.28` exploitability is stable across seeds -- it is a
+capacity / fit limit, not bad luck. The equilibrium policy is the safe
+submission regardless.

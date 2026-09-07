@@ -5,17 +5,17 @@ exploitable various player-0 policies are.
 
 ## Nash vs. Nash from the kickoff
 
-| move order | computed `V(kickoff)` | win / tie / loss | empirical discounted return |
+| move order | computed `V(kickoff)` | win / tie / loss | empirical discounted return (5 seeds) |
 |---|---|---|---|
-| deterministic | `0.000` | 0.00 / 1.00 / 0.00 | `+0.000` |
-| coinflip | `0.000` | 0.00 / 1.00 / 0.00 | `+0.000` |
-| random | `+0.150` | 0.66 / 0.00 / 0.33 | `+0.157` |
+| deterministic | `0.000` | 0.00 / 1.00 / 0.00 | `+0.000 +/- 0.000` |
+| coinflip | `0.000` | 0.00 / 1.00 / 0.00 | `+0.000 +/- 0.000` |
+| random | `+0.150` | 0.65 / 0.00 / 0.35 | `+0.149 +/- 0.005` |
 
 The deterministic and coinflip games are forced draws from the centre -- the
 equilibrium play never scores and the game runs to the 100-step tie. In the
 random game the initial carrier converts its `+0.15` edge into a ~2:1 win ratio,
-and the empirical discounted return matches the value function to sampling
-noise.
+and the empirical discounted return matches the value function within one
+standard deviation over 5 seeds of 3000 games (`scripts/selfplay.py --seeds 5`).
 
 ## Exploitability
 
