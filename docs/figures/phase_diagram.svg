@@ -13,34 +13,34 @@
 <rect x="66" y="86" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="110" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="86" width="38" height="38" rx="2" fill="#b2602f" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="110" text-anchor="middle" fill="var(--ink,#19211c)">12</text>
+<text x="125" y="110" text-anchor="middle" fill="#ffffff">12</text>
 <text x="58" y="150" text-anchor="end">3x5</text>
 <rect x="66" y="126" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="150" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="126" width="38" height="38" rx="2" fill="#c07d56" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="150" text-anchor="middle" fill="var(--ink,#19211c)">10</text>
+<text x="125" y="150" text-anchor="middle" fill="#ffffff">10</text>
 <rect x="146" y="126" width="38" height="38" rx="2" fill="#c3835d" stroke="var(--rule,#d9e2db)"/>
-<text x="165" y="150" text-anchor="middle" fill="var(--ink,#19211c)">9</text>
+<text x="165" y="150" text-anchor="middle" fill="#ffffff">9</text>
 <text x="58" y="190" text-anchor="end">3x6</text>
 <rect x="66" y="166" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="190" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="166" width="38" height="38" rx="2" fill="#cd9878" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="190" text-anchor="middle" fill="var(--ink,#19211c)">7</text>
+<text x="125" y="190" text-anchor="middle" fill="#ffffff">7</text>
 <rect x="146" y="166" width="38" height="38" rx="2" fill="#cd9878" stroke="var(--rule,#d9e2db)"/>
-<text x="165" y="190" text-anchor="middle" fill="var(--ink,#19211c)">7</text>
+<text x="165" y="190" text-anchor="middle" fill="#ffffff">7</text>
 <rect x="186" y="166" width="38" height="38" rx="2" fill="#cd9878" stroke="var(--rule,#d9e2db)"/>
-<text x="205" y="190" text-anchor="middle" fill="var(--ink,#19211c)">7</text>
+<text x="205" y="190" text-anchor="middle" fill="#ffffff">7</text>
 <text x="58" y="230" text-anchor="end">3x7</text>
 <rect x="66" y="206" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="230" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="206" width="38" height="38" rx="2" fill="#ce9b7d" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="230" text-anchor="middle" fill="var(--ink,#19211c)">7</text>
+<text x="125" y="230" text-anchor="middle" fill="#ffffff">7</text>
 <rect x="146" y="206" width="38" height="38" rx="2" fill="#d4a68b" stroke="var(--rule,#d9e2db)"/>
-<text x="165" y="230" text-anchor="middle" fill="var(--ink,#19211c)">6</text>
+<text x="165" y="230" text-anchor="middle" fill="#ffffff">6</text>
 <rect x="186" y="206" width="38" height="38" rx="2" fill="#d4a68b" stroke="var(--rule,#d9e2db)"/>
-<text x="205" y="230" text-anchor="middle" fill="var(--ink,#19211c)">6</text>
+<text x="205" y="230" text-anchor="middle" fill="#ffffff">6</text>
 <rect x="226" y="206" width="38" height="38" rx="2" fill="#d4a68b" stroke="var(--rule,#d9e2db)"/>
-<text x="245" y="230" text-anchor="middle" fill="var(--ink,#19211c)">6</text>
+<text x="245" y="230" text-anchor="middle" fill="#ffffff">6</text>
 <text x="58" y="270" text-anchor="end">5x3</text>
 <rect x="66" y="246" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="270" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
@@ -48,19 +48,19 @@
 <rect x="66" y="286" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="310" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="286" width="38" height="38" rx="2" fill="#cc9676" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="310" text-anchor="middle" fill="var(--ink,#19211c)">7</text>
+<text x="125" y="310" text-anchor="middle" fill="#ffffff">7</text>
 <text x="58" y="350" text-anchor="end">5x5</text>
 <rect x="66" y="326" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="350" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="326" width="38" height="38" rx="2" fill="#d2a285" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="350" text-anchor="middle" fill="var(--ink,#19211c)">6</text>
+<text x="125" y="350" text-anchor="middle" fill="#ffffff">6</text>
 <rect x="146" y="326" width="38" height="38" rx="2" fill="#dcb7a0" stroke="var(--rule,#d9e2db)"/>
 <text x="165" y="350" text-anchor="middle" fill="var(--ink,#19211c)">4</text>
 <text x="58" y="390" text-anchor="end">5x6</text>
 <rect x="66" y="366" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="390" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="366" width="38" height="38" rx="2" fill="#d6ab91" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="390" text-anchor="middle" fill="var(--ink,#19211c)">6</text>
+<text x="125" y="390" text-anchor="middle" fill="#ffffff">6</text>
 <rect x="146" y="366" width="38" height="38" rx="2" fill="#debba6" stroke="var(--rule,#d9e2db)"/>
 <text x="165" y="390" text-anchor="middle" fill="var(--ink,#19211c)">4</text>
 <rect x="186" y="366" width="38" height="38" rx="2" fill="#dfbda9" stroke="var(--rule,#d9e2db)"/>
@@ -83,7 +83,7 @@
 <rect x="66" y="486" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="510" text-anchor="middle" fill="var(--ink,#19211c)">0</text>
 <rect x="106" y="486" width="38" height="38" rx="2" fill="#d09e81" stroke="var(--rule,#d9e2db)"/>
-<text x="125" y="510" text-anchor="middle" fill="var(--ink,#19211c)">7</text>
+<text x="125" y="510" text-anchor="middle" fill="#ffffff">7</text>
 <text x="58" y="550" text-anchor="end">7x5</text>
 <rect x="66" y="526" width="38" height="38" rx="2" fill="#eef2ec" stroke="var(--rule,#d9e2db)"/>
 <text x="85" y="550" text-anchor="middle" fill="var(--ink,#19211c)">0</text>

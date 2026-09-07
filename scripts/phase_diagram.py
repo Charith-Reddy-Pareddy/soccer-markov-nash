@@ -128,8 +128,9 @@ def write_heatmap(rows: list[dict], path: pathlib.Path) -> None:
             out.append(f'<rect x="{x}" y="{y}" width="{cell - 2}" height="{cell - 2}" '
                        f'rx="2" fill="{_heat(f, hi)}" stroke="var(--rule,#d9e2db)"/>')
             label = "0" if f == 0 else f"{f * 100:.0f}"
+            ink = "#ffffff" if (f > 0 and f / hi > 0.45) else "var(--ink,#19211c)"
             out.append(f'<text x="{x + cell / 2 - 1:.0f}" y="{y + cell / 2 + 4:.0f}" '
-                       f'text-anchor="middle" fill="var(--ink,#19211c)">{label}</text>')
+                       f'text-anchor="middle" fill="{ink}">{label}</text>')
     out.append(f'<text x="{left}" y="{H - 12}">cells = mixed-state %</text>')
     out.append("</svg>")
     path.parent.mkdir(parents=True, exist_ok=True)
