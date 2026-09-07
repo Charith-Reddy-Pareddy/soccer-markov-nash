@@ -1,4 +1,4 @@
-<title>Pure Nash Equilibria for Soccer</title>
+<title>When Does Soccer Need Mixed Strategies?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -300,8 +300,8 @@
 <div class="wrap">
   <header>
     <p class="kicker">CS 540 &middot; Multi-Agent Reinforcement Learning &middot; research report</p>
-    <h1>Pure-First Nash&nbsp;Q for Soccer</h1>
-    <p class="dek">Where a two-player soccer Markov game does &mdash; and does not &mdash; need mixed strategies, and how much matrix-game work that saves.</p>
+    <h1>When Does Soccer Need Mixed&nbsp;Strategies?</h1>
+    <p class="dek">A pure-first Nash&#8209;Q approach: where a two-player soccer Markov game does &mdash; and does not &mdash; need mixing, and how much LP work that saves.</p>
     <div class="rq">
       <span class="label">Four questions</span>
       <b>RQ1 Existence</b> &mdash; under what transition structures does a pure equilibrium exist at every state?
@@ -345,7 +345,7 @@
       <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2&thinsp;380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program.</span></li>
       <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on ~4% of states (this configuration).</span></li>
       <li><span class="n">3</span><span><b>Those mixed states are geometrically localised:</b> a decision tree predicts them from the state with precision 0.96, and 68 of 94 have a 2&times;2 matching-pennies support.</span></li>
-      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while doing ~25&times; less matrix-game work; mirror symmetry halves it again.</span></li>
+      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only ~4% of states &mdash; ~25&times; fewer per sweep; mirror symmetry halves the work again.</span></li>
     </ol>
   </section>
 

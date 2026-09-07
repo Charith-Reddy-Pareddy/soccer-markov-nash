@@ -71,16 +71,25 @@ def certified_value(M: np.ndarray) -> tuple[float, float]:
 def classify_stage_game(M: np.ndarray, rel_tol: float = 1e-6) -> str:
     """One of ``"pure"``, ``"mixed"``, ``"degenerate"``.
 
-    * ``mixed``      -- ``minimax - maximin`` exceeds the scaled tolerance: no
-      pure saddle, mixing is genuinely required.
-    * ``pure``       -- a pure saddle exists and it is *strict*: a unique row
-      attains the maximin and a unique column the minimax, each with margin.
-    * ``degenerate`` -- a pure saddle exists but is not strict (several near-tied
-      rows or columns, e.g. the all-zeros game). Playing the saddle is still an
-      equilibrium, but rounding could turn it into a matching-pennies game.
+    The full taxonomy has five cases; this function collapses the first three
+    ("does a pure saddle exist, and is it sharp") into ``"pure"`` /
+    ``"degenerate"`` and reports the last as ``"mixed"``:
 
-    The tolerance scales with the matrix entries, so it behaves the same on a
-    stage game deep in the discounted ``gamma^k`` bands as on one near the goal.
+    1. *exact pure saddle* -- ``maximin == minimax`` with no tolerance;
+    2. *numerically-indistinguishable saddle* -- ``minimax - maximin`` is below
+       the scaled tolerance ``rel_tol * max(1, |M|max)``. With discounting the
+       real ``gamma^k`` gaps can themselves be tiny, so a fixed absolute
+       tolerance would wrongly merge cases 2 and 5 (see
+       :func:`rounding_changes_saddle`);
+    3. *strict pure saddle* -> returns ``"pure"`` -- cases 1/2 **and** a unique
+       row attains the maximin and a unique column the minimax;
+    4. *degenerate saddle* -> returns ``"degenerate"`` -- cases 1/2 but several
+       rows or columns tie (e.g. the all-zeros game). Still an equilibrium to
+       play the saddle, but rounding could turn it into matching pennies;
+    5. *genuine mixed* -> returns ``"mixed"`` -- ``minimax - maximin`` exceeds
+       the scaled tolerance; an LP is genuinely required.
+
+    Only case 5 forces the pure-first hybrid onto its LP branch.
     """
     M = np.asarray(M, dtype=float)
     maximin, minimax = pure_bounds(M)

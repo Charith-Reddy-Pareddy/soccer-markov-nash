@@ -1,7 +1,20 @@
-# Pure-First Nash Q-Iteration for the Soccer Markov Game
+# When Does a Soccer Markov Game Need Mixed Strategies?
+
+*A pure-first Nash-Q approach: efficiency, numerical stability, and geometric
+structure.*
 
 A research report. Scope and caveats are in `docs/assumptions.md`; every table
 below regenerates from `experiments/*.csv` via `scripts/experiments.py`.
+
+Two contributions:
+
+1. **Algorithmic** -- a pure-first hybrid Nash-Q backup: check each stage game
+   for a pure saddle, take its value when it exists, fall back to the LP only
+   where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
+2. **Structural** -- a characterization of *when* a stage game is intrinsically
+   mixed: it takes a stochastic resolution order, a goal mouth wider than one
+   cell, and interception geometry. The 94 mixed states of the 7x5 random game
+   reduce to a handful of matching-pennies templates ([templates.md](templates.md)).
 
 ![Kickoff: player 0 (blue) carries the ball toward the right goal; player 1
 (green) defends the left.](figures/kickoff.svg)
@@ -81,9 +94,16 @@ mixed       108        ~3.6 M              ~8 min       +0.150   (exact, wastefu
 ```
 
 The pure-first hybrid solves an LP only on the ~4% of states that lack a pure
-saddle -- a ~25x reduction in matrix-game work -- and matches the all-LP value
+saddle -- ~25x fewer LP calls per sweep -- and matches the all-LP value
 function to `4e-16`. On the deterministic and coin-flip games it never calls the
-LP at all. Two further reductions:
+LP at all.
+
+*LP-solve reduction and wall-clock speedup are separate quantities and should
+not be conflated.* The 4% figure (a ~25x per-sweep LP reduction) is a property
+of the game and is reproducible; the ~34x wall-clock ratio (14 s vs 8 min)
+depends on the machine, the LP backend, and how much of the runtime is matrix
+construction rather than the solve. This report quotes the LP reduction as the
+headline and treats wall-clock as indicative. Two further reductions:
 
 - **Mirror symmetry** (`run_symmetric`, `soccer_nash/symmetry.py`): the game is
   anti-symmetric under board-flip + player-swap, and every state has a distinct
@@ -134,6 +154,22 @@ deterministic resolution, the coin-flip tie-break -- and every stage game has a
 pure saddle.
 
 ### RQ4 -- Numerical robustness
+
+**A stage game falls into one of five classes** (`classify_stage_game`), and the
+count that matters -- "genuine mixed" -- is the one robust to how the line is
+drawn:
+
+| class | test | on the 7x5 random game |
+|---|---|---|
+| exact pure saddle | `maximin == minimax` exactly | rare (clean `gamma^k` cells) |
+| numerically-indistinguishable saddle | `minimax - maximin <= eps * scale` | most of the 2286 non-mixed |
+| strict pure saddle | + a unique maximin row and minimax column | 604 |
+| degenerate saddle | + several tied rows or columns (e.g. all-zeros) | 1682 |
+| genuine mixed | `minimax - maximin > eps * scale` | **94** |
+
+The tolerance `eps` scales with the matrix entries, so a stage game deep in the
+discounted bands is judged the same way as one at the goal. "Genuine mixed"
+is the only class that forces an LP.
 
 **The value is three numbers** (`value_bracket`): what the row player
 guarantees, gets, and can reach. With `scipy` HiGHS they agree to `1.1e-16` per
