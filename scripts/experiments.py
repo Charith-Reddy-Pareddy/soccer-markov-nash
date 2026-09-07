@@ -89,11 +89,30 @@ def goal_mouth_sweep() -> None:
     print("wrote experiments/goal_mouth_sweep.csv")
 
 
+def one_cell_goal_sweep() -> None:
+    """A single-cell goal across many boards and discounts -- the conjecture is
+    that all of these have zero mixed states."""
+    rows = []
+    configs = [(w, h) for w in (3, 5, 7, 9, 11) for h in (3, 5, 7, 9) if w * h <= 55]
+    for w, h in configs:
+        rows.append(run_config(
+            move_order="random", gamma=0.9, width=w, height=h, goal_rows=(h // 2,),
+        ))
+        print(f"  {w}x{h}: mixed {rows[-1]['mixed_states']}")
+    for gm in (0.5, 0.7, 0.95, 0.99):
+        rows.append(run_config(
+            move_order="random", gamma=gm, width=7, height=5, goal_rows=(2,),
+        ))
+        print(f"  7x5 gamma={gm}: mixed {rows[-1]['mixed_states']}")
+    write_csv(OUT / "one_cell_goal.csv", rows)
+    print("wrote experiments/one_cell_goal.csv")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "which",
-        choices=["baseline", "gamma", "tolerance", "board", "goalmouth", "all"],
+        choices=["baseline", "gamma", "tolerance", "board", "goalmouth", "onecell", "all"],
         default="all",
         nargs="?",
     )
@@ -104,6 +123,7 @@ def main() -> None:
         "tolerance": tolerance_sweep,
         "board": board_sweep,
         "goalmouth": goal_mouth_sweep,
+        "onecell": one_cell_goal_sweep,
     }
     if args.which == "all":
         for fn in jobs.values():
