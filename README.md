@@ -29,6 +29,13 @@ the stage game exist? When it does not, we fall back to a mixed-strategy
 (Q1/Q3) and the 16 transition rewards (Q2/Q4). See
 [docs/a10_part1.md](docs/a10_part1.md).
 
+## A10 Part 2
+
+`python scripts/a10_part2.py --out results/` solves the exact best response to
+the scripted opponent, imitates it with a bias-free `5->99->99->4` network, and
+writes the Q7 weights and the Q8 winning trajectory. See
+[docs/a10_part2.md](docs/a10_part2.md).
+
 ## Headline result
 
 - **Deterministic game:** every stage game has a pure saddle; `pure`, `hybrid`

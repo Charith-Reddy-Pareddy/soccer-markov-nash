@@ -8,6 +8,10 @@ discrepancy between the pure-hybrid and LP-mixed value functions.
 from __future__ import annotations
 
 import argparse
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration

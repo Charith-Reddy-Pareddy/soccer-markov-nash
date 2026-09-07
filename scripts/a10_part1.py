@@ -9,6 +9,10 @@ Q1/Q3 is the block of 16 successor lines; Q2/Q4 is the single reward line.
 from __future__ import annotations
 
 import argparse
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.a10 import ACTION_LABELS, format_rewards, successors
 from soccer_nash.game import SoccerGame

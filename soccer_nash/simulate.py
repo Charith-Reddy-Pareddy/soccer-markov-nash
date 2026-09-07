@@ -58,6 +58,40 @@ def play_game(
     return GameResult(traj, acts, None, len(acts))
 
 
+def play_deterministic(
+    game: SoccerGame,
+    action_of: "dict[State, int] | callable",
+    opponent_action_of: "dict[State, int] | callable",
+    me: int = 0,
+    start: State | None = None,
+) -> GameResult:
+    """Roll out two deterministic policies (dicts or ``state -> action``).
+
+    ``action_of`` controls player ``me``; ``opponent_action_of`` the other.
+    """
+
+    def resolve(policy, state, player):
+        if callable(policy):
+            return int(policy(game, state, player))
+        return int(policy[state])
+
+    state = start or game.initial_state()
+    traj: list[State] = [state]
+    acts: list[tuple[int, int]] = []
+
+    for _ in range(game.max_steps):
+        a_me = resolve(action_of, state, me)
+        a_op = resolve(opponent_action_of, state, 1 - me)
+        a0, a1 = (a_me, a_op) if me == 0 else (a_op, a_me)
+        state, _, done = game.step(state, Action(a0), Action(a1))
+        traj.append(state)
+        acts.append((a0, a1))
+        if done:
+            return GameResult(traj, acts, game.winner(state), len(acts))
+
+    return GameResult(traj, acts, None, len(acts))
+
+
 def win_rates(
     game: SoccerGame,
     row_policy: Policy,
