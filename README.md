@@ -48,3 +48,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 pytest
 ```
+
+On very recent macOS builds the PyPI SciPy wheel can fail to load
+(`_spropack.so` dyld error). If so, create the venv against a working
+interpreter instead:
+
+```bash
+python -m venv --system-site-packages .venv
+```
