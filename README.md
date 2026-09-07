@@ -9,8 +9,7 @@ Research code built on top of the CS 540 A10 soccer assignment
 > soccer Markov game, and under what state and reward settings does a pure Nash
 > equilibrium exist?
 
-**Full answer: [docs/report.pdf](docs/report.pdf)** &mdash; standalone, no login
-needed. Also as [docs/report.html](docs/report.html) (open in any browser) and
+**Full answer: [docs/report.pdf](docs/report.pdf)** &mdash; Also as [docs/report.html](docs/report.html) (open in any browser) and
 [docs/report.md](docs/report.md).
 
 In short: for the implemented deterministic A10 model every converged stage game
