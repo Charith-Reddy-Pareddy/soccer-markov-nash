@@ -207,18 +207,31 @@ satisfying:
   worse than moving uniformly at random -- which is exactly the A10 competition's
   warning about non-equilibrium submissions.
 
-## 9. Open questions
+## 9. Beyond zero-sum, and open questions
 
-- **General-sum.** `soccer_nash/markov_game.py` solves 2-player general-sum
-  Markov games by enumerating stage equilibria and selecting one (the notes'
-  "largest sum of values" rule -- a no-op for zero-sum, decisive for Battle of
-  the Sexes). The discretised dog / debate game is the natural next target.
-- **Function approximation.** `soccer_nash/nash_dqn.py` fits a network to the
-  stage-game matrices. Even with the A10-format constraints relaxed it trails
-  the exact solver on value error and action agreement (section 10); the exact
-  solver should stay the ground truth while the continuous-action work develops.
-- **A proof.** Can the "one-cell goal => pure everywhere" observation be turned
-  into a theorem about the transition structure?
+- **General-sum, done.** `soccer_nash/markov_game.py` solves 2-player
+  general-sum Markov games by enumerating *all* stage equilibria
+  (`support_enum.py`) and selecting one -- the notes' "largest sum of values"
+  rule, a no-op for zero-sum but decisive for Battle of the Sexes (it avoids the
+  value-destroying mixed equilibrium). It keeps the pure-first philosophy: check
+  for a pure Nash before enumerating.
+- **The dog / debate game, done.** The research group's second game
+  (`soccer_nash/dog_game.py`) has a closed-form Nash -- both players in their
+  corners, dog at `w_a*house_a + w_b*house_b` -- and the general-sum solver hits
+  it exactly in 1D and 2D, symmetric and asymmetric weights. A finding: *every*
+  stage game of the discretised dog game has a pure Nash equilibrium (support
+  enumeration is never triggered), so the pure-first strategy pays off here too;
+  many states have several pure equilibria, so the selection rule matters.
+- **Function approximation, partial.** `soccer_nash/nash_dqn.py` fits a network
+  to the stage-game matrices. Even with the A10-format constraints relaxed it
+  trails the exact solver on value error and action agreement (section 10); the
+  exact solver should stay the ground truth while the continuous-action work
+  develops.
+- **A proof (open).** Can the "one-cell goal => pure everywhere" observation be
+  turned into a theorem about the transition structure?
+- **Continuous actions (open).** The dog game's real form has a continuous
+  direction/position action space; projected gradient or best-response dynamics
+  on the neural Q is the next step, with the discrete solver as the reference.
 
 ## 10. Neural Nash-Q vs. the exact solver
 

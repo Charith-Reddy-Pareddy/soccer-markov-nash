@@ -505,10 +505,11 @@
   </section>
 
   <section>
-    <h2>Open questions</h2>
+    <h2>Beyond zero-sum, and open questions</h2>
     <ul class="plain">
-      <li><b>General-sum.</b> <span class="mono">markov_game.py</span> solves 2-player general-sum Markov games by enumerating stage equilibria and selecting one (the notes' "largest sum of values" &mdash; a no-op for zero-sum, decisive for Battle of the Sexes). The discretised dog / debate game is next.</li>
-      <li><b>Function approximation.</b> A network fit to the stage matrices (<span class="mono">nash_dqn.py</span>, 5&rarr;96&rarr;96&rarr;16 with biases, 500 epochs) trails the exact solver badly:</li>
+      <li><b>General-sum &mdash; done.</b> <span class="mono">markov_game.py</span> solves 2-player general-sum Markov games by enumerating <em>all</em> stage equilibria (<span class="mono">support_enum.py</span>) and selecting one &mdash; the notes' "largest sum of values", a no-op for zero-sum but decisive for Battle of the Sexes (it avoids the value-destroying mixed equilibrium). Pure-first throughout.</li>
+      <li><b>The dog / debate game &mdash; done.</b> The group's second game (<span class="mono">dog_game.py</span>) has a closed-form Nash &mdash; both players in their corners, dog at <span class="mono">w_a&middot;house_a + w_b&middot;house_b</span> &mdash; and the general-sum solver hits it exactly in 1D and 2D. Finding: <em>every</em> stage game of the discretised dog game has a pure Nash equilibrium, so pure-first pays off here too.</li>
+      <li><b>Function approximation &mdash; partial.</b> A network fit to the stage matrices (<span class="mono">nash_dqn.py</span>, 5&rarr;96&rarr;96&rarr;16 with biases, 500 epochs) trails the exact solver badly:</li>
     </ul>
     <div class="tbl-scroll">
       <table>
@@ -523,13 +524,14 @@
     </div>
     <p>The network fits the ~1&thinsp;000 zero-value states but misses the <span class="mono">&gamma;&#7503;</span> structure &mdash; about as exploitable as random play. Keep the exact solver as ground truth.</p>
     <ul class="plain">
-      <li><b>A proof.</b> Can "one-cell goal &rArr; pure everywhere" be turned into a theorem about the transition structure?</li>
+      <li><b>A proof (open).</b> Can "one-cell goal &rArr; pure everywhere" be turned into a theorem about the transition structure?</li>
+      <li><b>Continuous actions (open).</b> The dog game's real form has a continuous action space; projected gradient on the neural Q is next, with the discrete solver as the reference.</li>
     </ul>
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; dog_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; dog_game.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
     experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
