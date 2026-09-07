@@ -53,7 +53,7 @@ def value_bracket(
     q = np.asarray(q, dtype=float)
     return ValueBracket(
         lower=float((p @ M).min()),
-        mid=float(p @ M @ q),
+        mid=float(q @ M @ p),  # the notes' pi_2^T Q pi_1
         upper=float((M @ q).max()),
     )
 
