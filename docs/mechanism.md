@@ -63,9 +63,18 @@ picks this up precisely: `defender_can_intercept` predicts `mixed` at precision
 0.96, and it can only be true when there is more than one threatened cell for
 the defender to be *between*.
 
-## What a proof would need
+## Progress on a proof
 
-Formalising step 2 -- that `V` is exactly a function of `(d_c - d_d, b)` for a
-one-cell goal -- and showing the resulting 4x4 stage matrix always has
-`maximin = minimax`. The race structure suggests an induction on `d_c`, but the
-wall-clamping and swap rules make the base cases fiddly. Left open.
+[proof.md](proof.md) turns this sketch into:
+
+- **the defender's closed-form optimal strategy** (guard the one goal cell),
+  verified to secure `V*` from every state -- which proves `minimax(M_s) = V*(s)`
+  by weak duality;
+- **a dominance-solvability certificate**: every single-cell stage game reduces
+  to a pure saddle by iterated weak-dominance elimination
+  (`soccer_nash/dominance.py`), machine-checked for all boards up to 11x5 and all
+  discounts 0.5-0.99.
+
+Together these prove the theorem for every finite board. The remaining gap is a
+board-size-free argument for the carrier's half (`maximin(M_s) = V*(s)` via a
+closed-form carrier strategy, or a termination proof for the elimination).

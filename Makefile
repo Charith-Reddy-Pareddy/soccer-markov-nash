@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures templates a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures templates proof a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -15,6 +15,7 @@ help:
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
 	@echo "make templates    - print the mixed-state geometric templates"
+	@echo "make proof        - run the single-cell pure-saddle certificate (~4 min)"
 
 lint:
 	$(PY) -m ruff check .
@@ -58,6 +59,9 @@ figures:
 
 templates:
 	$(PY) scripts/templates.py
+
+proof:
+	$(PY) scripts/onecell_proof.py
 
 a10:
 	$(PY) scripts/a10_part2.py --out results/

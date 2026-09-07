@@ -451,7 +451,7 @@
       </table>
     </div>
     <p>The <b>four 2&times;2-support templates are all verified matching pennies</b> &mdash; the carrier's best reply flips between the two defender columns and vice versa &mdash; covering <b>68 of 94</b> states: carrier {climb, advance} against defender {cover a lane, hold the forward cell}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
-    <p><b>Why the mix is unavoidable.</b> A mixed stage game needs all three of: a stochastic (&frac12;&ndash;&frac12;) resolution order; a goal mouth wider than one cell, so the carrier has two scoring lanes; and a defender close enough to contest the forward cell but unable to cover both lanes in one move. The carrier climbs or drops, the defender guesses which &mdash; matching pennies. Drop any one clause &mdash; a single goal cell, deterministic resolution, or the coin-flip tie-break &mdash; and every stage game has a pure saddle. The full argument and one stage matrix per template are in <span class="mono">docs/templates.md</span>; a formal proof for the single-cell case is open (<span class="mono">docs/mechanism.md</span>).</p>
+    <p><b>Why the mix is unavoidable.</b> A mixed stage game needs all three of: a stochastic (&frac12;&ndash;&frac12;) resolution order; a goal mouth wider than one cell, so the carrier has two scoring lanes; and a defender close enough to contest the forward cell but unable to cover both lanes in one move. The carrier climbs or drops, the defender guesses which &mdash; matching pennies. Drop any one clause &mdash; a single goal cell, deterministic resolution, or the coin-flip tie-break &mdash; and every stage game has a pure saddle. The full argument and one stage matrix per template are in <span class="mono">docs/templates.md</span>. For the single goal cell the theorem is partly proved (<span class="mono">docs/proof.md</span>): the defender has a closed-form optimal strategy &mdash; guard the one cell &mdash; and every stage game is dominance-solvable, machine-checked for all boards up to 11&times;5.</p>
   </section>
 
   <section>
@@ -517,13 +517,13 @@
     </div>
     <p>The network fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions: worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, and it mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
     <ul class="plain">
-      <li><b>A proof (open).</b> Can "one-cell goal &rArr; pure everywhere" be turned into a theorem about the transition structure?</li>
+      <li><b>A proof (partly done).</b> The single-cell pure-saddle theorem now has the defender's optimal strategy in closed form and a dominance-solvability certificate for every finite board (<span class="mono">docs/proof.md</span>); the carrier's half, board-size-free, is open.</li>
     </ul>
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; templates.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
     experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
