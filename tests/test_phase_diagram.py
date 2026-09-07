@@ -21,10 +21,10 @@ def test_centered_goal_rows():
 def test_configs_respect_the_area_cap():
     full = phase.configs(quick=False)
     for w, h in full:
-        assert w * h <= 60
+        assert w * h <= 45
         assert 3 <= w <= 11 and 3 <= h <= 9
     assert phase.configs(quick=True) != full
-    assert (11, 5) in full and (3, 9) in full
+    assert (11, 3) in full and (3, 9) in full
 
 
 def test_heat_is_pale_at_zero_and_darker_higher():

@@ -3,9 +3,10 @@ width, to test whether goal width -- not board size -- is what drives mixing.
 
 Writes ``experiments/phase_diagram.csv``: one row per (width, height, goal
 width) on the random-move-order game at a fixed gamma, for every board with
-``3 <= width <= 11``, ``3 <= height <= 9``, ``width * height <= 60``.
+``3 <= width <= 11``, ``3 <= height <= 9``, ``width * height <= 45`` (the cap
+keeps the random-move solve tractable while spanning both axes).
 
-    python scripts/phase_diagram.py            # ~30 min, writes the CSV
+    python scripts/phase_diagram.py            # ~15 min, writes the CSV
     python scripts/phase_diagram.py --quick    # small boards only
     python scripts/phase_diagram.py --svg-only # redraw the heatmap from the CSV
     python scripts/phase_diagram.py --analyze  # variance decomposition on the CSV
@@ -83,7 +84,7 @@ def configs(quick: bool) -> list[tuple[int, int]]:
         (w, h)
         for w in range(3, 12)
         for h in range(3, 10)
-        if w * h <= 60
+        if w * h <= 45
     ]
 
 

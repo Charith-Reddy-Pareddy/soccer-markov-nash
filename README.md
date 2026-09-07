@@ -23,7 +23,7 @@ Two contributions:
   converged stage game has a pure saddle. Mixing appears only under Littman's
   random move *order*, only when the goal mouth is wider than one cell, and only
   where the defender can contest the carrier's forward cell but not cover every
-  scoring lane in one move (~4% of states on the 7x5 board). Those states reduce
+  scoring lane in one move (3.95% of states on the 7x5 3-cell-goal board). Those states reduce
   to a few matching-pennies templates.
 
 - Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
@@ -40,7 +40,7 @@ Two contributions:
 | `random` (Littman) | yes | 94 / 2380 | no | 0.150 |
 
 The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
-while calling the LP on only ~4% of states (~25x fewer per sweep); mirror
+while calling the LP on only 3.95% of states (~25x fewer per sweep); mirror
 symmetry halves the remaining work. LP-solve reduction and wall-clock speedup
 are reported separately &mdash; the former is a property of the game, the latter
 depends on the machine and LP backend.
@@ -75,66 +75,39 @@ depends on the machine and LP backend.
 4. **Analysis** — where the value functions and policies agree / diverge,
    self-play, exploitability, reward shaping.
 
-## A10 Part 1
-
-`python scripts/a10_part1.py x0,y0,x1,y1,b` prints the 16 successor states
-(Q1/Q3) and the 16 transition rewards (Q2/Q4). See
-[docs/a10_part1.md](docs/a10_part1.md).
-
-## A10 Part 2
-
-`python scripts/a10_part2.py --out results/` solves the exact best response to
-the scripted opponent, imitates it with a bias-free `5->99->99->4` network, and
-writes the Q7 weights and the Q8 winning trajectory. See
-[docs/a10_part2.md](docs/a10_part2.md).
-
-## A10 competition
-
-`python scripts/a10_competition.py --out results/` fits the two equilibrium
-policy networks (player 0 and player 1) to the Nash Q solution and reports how
-exploitable the trained networks are. The Nash policy is unbeatable below the
-game value; the network approximation is only as safe as its worst-fit state.
-See [docs/a10_competition.md](docs/a10_competition.md).
-
-## Self-play
-
-`python scripts/selfplay.py` plays the Nash Q policy against itself (empirical
-return matches the value function) and reports exploitability: the Nash policy
-has a `~0` duality gap, while best-responding to one assumed opponent is more
-exploitable than random play. See [docs/selfplay.md](docs/selfplay.md).
-
-## Value iteration vs. policy iteration
-
-`python scripts/policy_iteration.py` compares `run()` (solve a matrix game every
-sweep) with `run_policy_iteration()` (freeze the strategies, run cheap linear
-evaluation sweeps, re-solve). Same fixed point, ~5x fewer matrix-game solves.
-
-## Numerical foundations
-
-`python scripts/numerics.py` -- the value bracket (`upper - lower` certifies the
-LP error), scale-aware `pure` / `mixed` / `degenerate` classification, where
-rounding under discounting goes wrong, and the 2x2 matching-pennies structure of
-the mixed-strategy states. See [docs/numerics.md](docs/numerics.md).
-
-## Reward shaping
-
-`soccer_nash.shaping` adds intermediate rewards on top of the sparse win/lose
-signal. Potential-based shaping is verified to leave the equilibrium unchanged
-(value shifts by exactly `-Phi`); a naive per-step possession bonus is shown to
-change the solution. See [docs/shaping.md](docs/shaping.md).
-
 ## Headline result
 
-- **Deterministic game:** every stage game has a pure saddle; `pure`, `hybrid`
-  and `mixed` agree exactly. A pure stationary Nash equilibrium exists.
-- **Random move order:** ~4% of stage games (7x5 board) have no pure saddle, so
-  no pure stationary equilibrium exists; the `pure` solver then under-values the
-  kickoff by 0.15. Small/narrow boards keep a pure equilibrium.
+- **Deterministic game (exact A10):** every stage game has a pure saddle;
+  `pure`, `hybrid` and `mixed` agree exactly. A pure stationary Nash equilibrium
+  exists.
+- **Random move order (Littman):** 3.95% of stage games on the 7x5 3-cell-goal
+  board have no pure saddle, so no pure stationary equilibrium exists; the
+  `pure` solver then under-values the kickoff by 0.15. **Whether any state needs
+  mixing is decided entirely by goal-mouth width** -- one cell: never; two or
+  more: always ([docs/geometry.md](docs/geometry.md), phase diagram).
 - **Coinflip tie-break:** stochastic, yet its value function is identical to the
-  deterministic game's and it keeps a pure equilibrium everywhere -- it is
-  Littman's move *order*, not randomness, that forces mixed strategies.
+  deterministic game's -- it is Littman's move *order*, not randomness, that
+  forces mixed strategies.
 
-See [docs/findings.md](docs/findings.md).
+See [docs/findings.md](docs/findings.md) and [docs/README.md](docs/README.md).
+
+## The pieces
+
+| script | what | doc |
+|---|---|---|
+| `a10_part1.py` / `a10_part2.py` / `a10_competition.py` | the A10 deliverables (successor tables; imitation network; competition networks). `--seeds N` on the last two reports fit accuracy + exploitability over N seeds. | `docs/a10_*.md` |
+| `selfplay.py --seeds 5` | Nash-vs-Nash return and exploitability | [docs/selfplay.md](docs/selfplay.md) |
+| `policy_iteration.py` | value iteration vs. freeze-then-iterate: same fixed point, ~5x fewer LP solves | -- |
+| `numerics.py` | value bracket, five-way stage-game classification, rounding | [docs/numerics.md](docs/numerics.md) |
+| `templates.py` | the 94 mixed states -> 8 geometric templates | [docs/templates.md](docs/templates.md) |
+| `phase_diagram.py` | goal-width x board-size phase diagram (`--analyze` decomposes the variance) | -- |
+| `onecell_proof.py` | the single-cell pure-saddle certificate | [docs/proof.md](docs/proof.md) |
+| `benchmark.py` | repeated-run timing + LP-call rate of the hybrid | -- |
+| `nash_dqn.py --seeds 5` | neural Nash-Q vs. the exact solver | -- |
+
+`soccer_nash.shaping` adds intermediate rewards: potential-based shaping leaves
+the equilibrium unchanged (value shifts by exactly `-Phi`), a naive possession
+bonus changes it ([docs/shaping.md](docs/shaping.md)).
 
 ## Environment assumptions
 

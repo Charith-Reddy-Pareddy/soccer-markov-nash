@@ -1,14 +1,16 @@
 # Why a one-cell goal forces pure strategies -- an argument
 
-The board / goal-mouth sweeps establish empirically:
+The phase-diagram sweep establishes empirically (`experiments/phase_diagram.csv`,
+`scripts/phase_diagram.py --analyze`):
 
-- **Single-cell goal:** 0 stage games need mixed strategies, across every board
-  from 3x3 to 11x5 and every discount from 0.5 to 0.99
-  (`experiments/one_cell_goal.csv`, 19/19 configurations).
-- **Two-or-more-cell goal (with board room):** always some mixed states, count
-  growing with area (`board_sweep.csv`, `goal_mouth_sweep.csv`).
+- **Single-cell goal:** 0 stage games need mixed strategies, on every board with
+  `width <= 11`, `height <= 9`, and every discount from 0.5 to 0.99.
+- **Two-or-more-cell goal:** always some mixed states; the fraction is a
+  board-area dilution effect, not a goal-width effect.
 
-This page sketches *why*. It is an argument, not a formal proof -- Claim C in
+This page sketches *why*, and [proof.md](proof.md) takes the single-cell case
+most of the way to a theorem (the defender's optimal strategy in closed form,
+dominance-solvability per board). Claim C for the general goal mouth in
 `docs/assumptions.md` stays open.
 
 ## Setup

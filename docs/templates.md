@@ -70,6 +70,21 @@ Each player's best reply flips with the opponent's choice, so there is no pure
 saddle. The equilibrium is `p* = 0.87` climb / `q* = 0.70` cover-up, value
 `0.199` -- essentially the kickoff value.
 
+### The other three matching-pennies templates
+
+Same reading -- rows the carrier, columns the defender, `[[a,b],[c,d]]` a
+crossing game (`a > c` while `b < d`, and `a > b` while `c < d`), so it is
+strategically equivalent to matching pennies:
+
+| template | representative | reduced game | equilibrium |
+|---|---|---|---|
+| 1 (24) carrier one row below `r`, defender 1 ahead | `(2,1,3,0,1)` | `[[0.161, 0.150], [0.022, 0.154]]` -- rows {drop, advance}, cols {block, step-in} | `p*=0.92` drop, `q*=0.03` block, value `0.150` |
+| 3 (16) defender 2 ahead on `r` | `(1,1,3,1,1)` | `[[0.205, 0.263], [0.317, 0.049]]` -- rows {climb, advance}, cols {cover-up, block} | `p*=0.82` climb, `q*=0.66` cover-up, value `0.225` |
+| 7 (4) defender diagonally adjacent | `(1,1,1,0,1)` | `[[0.500, 0.141], [0.181, 0.211]]` -- rows {advance, retreat}, cols {tackle, drop-back} | `p*=0.08` advance, `q*=0.18` tackle, value `0.206` |
+
+`scripts/templates.py` prints all eight, including the borderline 2x1 / 3x2
+residuals.
+
 ## Why the mix is unavoidable: multi-cell goal + interception geometry
 
 Take a template-2 state: carrier on goal row `r`, defender one cell ahead on row
