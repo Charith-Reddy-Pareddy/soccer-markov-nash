@@ -40,7 +40,7 @@ class PotentialShaping:
     def reward_delta(
         self, game: SoccerGame, s: State, s_next: State, gamma: float
     ) -> float:
-        return gamma * self.phi(game, s_next) - self.phi(game, s)
+        return gamma * (self.phi(game, s_next) - self.phi(game, s))
 
 
 class StepPossessionBonus:
