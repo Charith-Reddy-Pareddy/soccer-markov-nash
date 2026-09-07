@@ -103,10 +103,9 @@ def solve_markov_game(
         for a0 in range(n0):
             for a1 in range(n1):
                 for prob, ni, r0, r1 in grid[a0][a1]:
-                    c0 = 0.0 if ni is None else v0[ni]
-                    c1 = 0.0 if ni is None else v1[ni]
-                    A[a0, a1] += prob * (r0 + gamma * c0)
-                    B[a0, a1] += prob * (r1 + gamma * c1)
+                    for reward, value, payoff in ((r0, v0, A), (r1, v0, B)):
+                        cont = 0.0 if ni is None else value[ni]
+                        payoff[a0, a1] += prob * (reward + gamma * cont)
         return A, B
 
     v0 = np.zeros(len(states))
