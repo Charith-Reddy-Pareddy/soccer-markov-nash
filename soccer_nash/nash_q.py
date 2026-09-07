@@ -128,10 +128,15 @@ class NashQIteration:
 
     @staticmethod
     def _pure_strategies(m: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """One-hot maximin row for player 0, minimax column for player 1."""
+        """One-hot maximin row for player 0, minimax column for player 1.
+
+        Player 0's security value for a row is that row's minimum over the
+        columns (``axis=1``); player 1's for a column is that column's maximum
+        over the rows (``axis=0``).
+        """
         p = np.zeros(4)
         q = np.zeros(4)
-        p[int(np.argmax(m.min(axis=0)))] = 1.0
+        p[int(np.argmax(m.min(axis=1)))] = 1.0
         q[int(np.argmin(m.max(axis=0)))] = 1.0
         return p, q
 
