@@ -46,6 +46,13 @@ def test_certified_value_error_is_a_real_bound():
         assert abs(v - true_v) <= err + 1e-9
 
 
+def test_mid_uses_the_row_player_layout():
+    # Asymmetric pure-saddle game: value is M[0, 2] = 2, not the transpose's 3.
+    p = np.array([1.0, 0.0, 0.0])
+    q = np.array([0.0, 0.0, 1.0])
+    assert value_bracket(SADDLE, p, q).mid == pytest.approx(SADDLE[0, 2])
+
+
 def test_bracket_gap_is_positive_for_a_bad_strategy():
     # Row player wrongly commits to a pure sub-optimal action in matching pennies.
     b = value_bracket(MATCHING_PENNIES, np.array([1.0, 0.0]), np.array([0.5, 0.5]))

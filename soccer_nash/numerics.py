@@ -53,7 +53,9 @@ def value_bracket(
     q = np.asarray(q, dtype=float)
     return ValueBracket(
         lower=float((p @ M).min()),
-        mid=float(q @ M @ p),  # the notes' pi_2^T Q pi_1
+        # M[i, j] is the row player's payoff, so the mixed value is p^T M q.
+        # (The notes' pi_2^T Q pi_1 uses the transposed layout.)
+        mid=float(p @ M @ q),
         upper=float((M @ q).max()),
     )
 
