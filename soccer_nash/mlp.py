@@ -93,25 +93,10 @@ class MLP:
             perm = rng.permutation(n)
             for start in range(0, n, batch_size):
                 idx = perm[start : start + batch_size]
-                xb, mb, wb = X[idx], target_mask[idx], w_all[idx][:, None]
-                p, (x, z1, a1, z2, a2) = self._forward(xb)
-
-                # Soft target: probability mass renormalised onto the mask,
-                # which reduces to a one-hot label when the mask has one entry.
-                masked = p * mb
-                soft = masked / np.clip(masked.sum(axis=1, keepdims=True), 1e-12, None)
-                delta = wb * (p - soft) / wb.sum()
-
-                relu2 = z2 > 0
-                back2 = (delta @ self.W3.T) * relu2
-                back1 = back2 @ self.W2.T
-
-                dW3 = a2.T @ delta
-                dW2 = a1.T @ back2
-                dW1 = x.T @ back1
+                grads = self._grads(X[idx], target_mask[idx], w_all[idx])
 
                 t += 1
-                for (name, w), grad in zip(self._named(), (dW1, dW2, dW3)):
+                for (name, w), grad in zip(self._named(), grads):
                     m, v = opt[name]
                     m[:] = b1 * m + (1 - b1) * grad
                     v[:] = b2 * v + (1 - b2) * grad**2
@@ -125,6 +110,24 @@ class MLP:
 
     def _named(self):
         return (("W1", self.W1), ("W2", self.W2), ("W3", self.W3))
+
+    def _grads(
+        self, xb: np.ndarray, mask: np.ndarray, weight: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Gradients of the (weighted) partial-label cross-entropy w.r.t. W1-3."""
+        wb = np.asarray(weight, dtype=float)[:, None]
+        p, (x, z1, a1, z2, a2) = self._forward(xb)
+
+        # Soft target: probability mass renormalised onto the acceptable
+        # actions; a one-entry mask reduces this to a plain one-hot label.
+        masked = p * mask
+        soft = masked / np.clip(masked.sum(axis=1, keepdims=True), 1e-12, None)
+        delta = wb * (p - soft) / wb.sum()
+
+        back2 = (delta @ self.W3.T) * (z2 > 0)
+        back1 = (back2 @ self.W2.T) * (z1 > 0)
+
+        return x.T @ back1, a1.T @ back2, a2.T @ delta
 
     # ------------------------------------------------------------------ export
     def to_a10(self) -> str:

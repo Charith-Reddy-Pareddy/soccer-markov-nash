@@ -39,6 +39,35 @@ def test_a10_roundtrip_preserves_predictions():
     assert np.allclose(net.probs(x), reloaded.probs(x), atol=1e-6)
 
 
+def test_backward_matches_numerical_gradient():
+    rng = np.random.default_rng(0)
+    X = rng.integers(0, 7, size=(6, 5)).astype(float)
+    y = rng.integers(0, 4, size=6)
+    mask = np.eye(4)[y]
+    net = MLP(h1=5, h2=4, seed=1)
+
+    def loss():
+        p = net.probs(X)
+        return -np.mean(np.log(p[np.arange(len(y)), y] + 1e-12))
+
+    analytic = net._grads(X, mask, np.ones(len(y)))
+    eps = 1e-5
+    for W, dW in zip((net.W1, net.W2, net.W3), analytic):
+        num = np.zeros_like(W)
+        it = np.nditer(W, flags=["multi_index"])
+        while not it.finished:
+            i = it.multi_index
+            old = W[i]
+            W[i] = old + eps
+            plus = loss()
+            W[i] = old - eps
+            minus = loss()
+            W[i] = old
+            num[i] = (plus - minus) / (2 * eps)
+            it.iternext()
+        assert np.abs(dW - num).max() < 1e-6
+
+
 def test_training_fits_a_small_map():
     rng = np.random.default_rng(0)
     X = rng.integers(0, 7, size=(200, 5)).astype(float)
