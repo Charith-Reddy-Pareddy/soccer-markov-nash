@@ -21,65 +21,42 @@ from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 
 
-def _time(make_solver, repeats: int) -> tuple[list[float], object]:
+def _bench(label: str, game: SoccerGame, mode: str, method: str,
+           repeats: int, n: int) -> None:
     times, result = [], None
     for _ in range(repeats):
-        solver = make_solver()
+        solver = NashQIteration(game, gamma=0.9, mode=mode, tol=1e-9)
         t = time.perf_counter()
-        result = solver.run()
+        result = getattr(solver, method)()
         times.append(time.perf_counter() - t)
-    return times, result
-
-
-def _row(name: str, times: list[float], result, n_states: int) -> str:
     med = statistics.median(times)
     lp = result.matrix_game_solves
     mixed = len(result.no_saddle_states)
-    return (
-        f"{name:<22s} {result.iterations:4d} sweeps   "
-        f"median {med:6.2f} s  (min {min(times):.2f}, max {max(times):.2f})   "
+    print(
+        f"{label:<26s} {result.iterations:4d} sweeps   "
+        f"median {med:6.2f} s (min {min(times):.2f}, max {max(times):.2f})   "
         f"LP calls {lp:>7d}   "
-        f"LP/state/sweep {lp / (n_states * result.iterations):.4f}   "
-        f"states needing LP {mixed / n_states:.4f}"
+        f"LP/state/sweep {lp / (n * result.iterations):.4f}   "
+        f"states needing LP {mixed / n:.4f}"
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gamma", type=float, default=0.9)
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--full", action="store_true", help="also time all-LP mode")
     args = parser.parse_args()
 
-    game = SoccerGame(move_order="random")
-    n = sum(1 for _ in game.states())
-    print(f"random move order, 7x5, gamma {args.gamma}, {n} states, "
-          f"{args.repeats} repeats\n")
+    rnd = SoccerGame(move_order="random")
+    det = SoccerGame(move_order="deterministic")
+    n = sum(1 for _ in rnd.states())
+    print(f"7x5, gamma 0.9, {n} states, {args.repeats} repeats\n")
 
-    def hybrid():
-        return NashQIteration(game, gamma=args.gamma, mode="hybrid", tol=1e-9)
-
-    times, result = _time(hybrid, args.repeats)
-    print(_row("hybrid", times, result, n))
-
-    def sym():
-        return NashQIteration(game, gamma=args.gamma, mode="hybrid", tol=1e-9)
-
-    sym_times = []
-    sym_result = None
-    for _ in range(args.repeats):
-        solver = sym()
-        t = time.perf_counter()
-        sym_result = solver.run_symmetric()
-        sym_times.append(time.perf_counter() - t)
-    print(_row("hybrid + mirror", sym_times, sym_result, n))
-
+    _bench("random: hybrid", rnd, "hybrid", "run", args.repeats, n)
     if args.full:
-        def full_lp():
-            return NashQIteration(game, gamma=args.gamma, mode="mixed", tol=1e-9)
-
-        lp_times, lp_result = _time(full_lp, 1)
-        print(_row("all-LP (1 run)", lp_times, lp_result, n))
+        _bench("random: all-LP", rnd, "mixed", "run", 1, n)
+    _bench("deterministic: hybrid", det, "hybrid", "run", args.repeats, n)
+    _bench("deterministic: + mirror", det, "hybrid", "run_symmetric", args.repeats, n)
 
     print(
         "\nThe 'states needing LP' fraction is a property of the game and "
