@@ -299,7 +299,7 @@
       <span class="label">Research question</span>
       Can pure-strategy Nash equilibria be used to <em>efficiently</em> solve the soccer Markov game, and under what state and reward settings does a pure Nash equilibrium exist?
     </div>
-    <p class="byline">repo · soccer-markov-nash &nbsp;|&nbsp; 118 tests &nbsp;|&nbsp; built on the CS&nbsp;540 A10 assignment</p>
+    <p class="byline">repo · soccer-markov-nash &nbsp;|&nbsp; 131 tests &nbsp;|&nbsp; built on the CS&nbsp;540 A10 assignment</p>
   </header>
 
   <div class="hero fade">
@@ -482,19 +482,47 @@
     </div>
     <p>The hybrid reproduces the full-LP value function to <span class="mono">4e&minus;16</span> while solving an LP on only the ~4% of states that need one. The <span class="mono">pure</span>-only solver is a strict lower bound &mdash; it reports a kickoff draw when the game actually favours the initial carrier by <span class="mono">0.15</span>, and sits up to <span class="mono">0.37</span> below the true value elsewhere. Efficient, but when a mixed equilibrium is the real answer, wrong.</p>
 
-    <h3>Freeze then iterate</h3>
+    <h3>Freeze then iterate &mdash; and its staleness</h3>
     <p>Solving a matrix game at every state on every sweep is wasteful. <span class="mono">run_policy_iteration()</span> solves each stage game only on its outer rounds and holds the strategies fixed for cheap linear evaluation sweeps in between &mdash; the notes' "don't recompute Nash every time".</p>
     <div class="tbl-scroll">
       <table>
         <caption>random move order, hybrid solver &mdash; same fixed point, |diff| &lt; 3e&minus;9</caption>
         <thead><tr><th></th><th class="num">rounds / sweeps</th><th class="num">matrix-game solves</th><th class="num">wall clock</th></tr></thead>
         <tbody>
-          <tr><td>value iteration</td><td class="num">108</td><td class="num">9 672</td><td class="num">13.5 s</td></tr>
-          <tr><td>policy iteration</td><td class="num">25</td><td class="num">2 255</td><td class="num">20.5 s</td></tr>
+          <tr><td>value iteration</td><td class="num">108</td><td class="num">9 672</td><td class="num">13.8 s</td></tr>
+          <tr><td>policy iteration</td><td class="num">21</td><td class="num">1 879</td><td class="num">17.2 s</td></tr>
         </tbody>
       </table>
     </div>
-    <p>On this small game the stage-matrix construction, not the LP, is the bottleneck &mdash; so cutting solves 4&times; doesn't cut wall-clock. The technique pays off where the notes expect: larger action spaces or general-sum games, where the equilibrium solve dominates the backup.</p>
+    <p>The solver records the <b>staleness</b> the scheme's proposer flagged &mdash; how far the frozen strategies are from the Nash of the current Q. It stays <em>maximal</em> (a full pure-strategy flip) for <b>16 outer rounds</b>, then snaps to <span class="mono">&lt; 1e&minus;8</span>. The thrashing eats the 5&times; saving in LP solves; on the deterministic game freeze-then-iterate is strictly worse. Value iteration with the per-sweep Nash cache wins here &mdash; the freeze trick pays off only where the equilibrium solve dominates the backup.</p>
+  </section>
+
+  <section>
+    <h2>Numerical foundations</h2>
+    <p>Three things the research meeting flagged as unsolved for the discrete solver (<span class="mono">soccer_nash/numerics.py</span>):</p>
+
+    <h3>The value is three numbers</h3>
+    <p>For strategies <span class="mono">(p, q)</span> the row player can <em>guarantee</em> <span class="mono">min&#8342;(pM)&#8342;</span>, <em>gets</em> <span class="mono">p&#7488;Mq</span>, and can <em>reach at most</em> <span class="mono">max&#7522;(Mq)&#7522;</span>. At equilibrium they coincide; numerically they never do. <span class="mono">value_bracket</span> returns all three; the true minimax value is bracketed, so the width certifies the LP error.</p>
+    <div class="note">
+      <span class="label">Finding</span>
+      <p>With <span class="mono">scipy</span>'s HiGHS solver the three numbers agree to <span class="mono">1.1e&minus;16</span> per stage game and <span class="mono">8.7e&minus;10</span> accumulated. The concern is real for older vertex/simplex solvers but not a practical problem here &mdash; the LP solution is a certified <span class="mono">1e&minus;16</span>-equilibrium.</p>
+    </div>
+
+    <h3>Rounding to force indifference is scale-blind</h3>
+    <p>Mixed equilibria need <em>exact</em> indifference, so RPS-plus-epsilon has no exact pure saddle &mdash; but rounding manufactures one, and under discounting the real <span class="mono">&gamma;&#7503;</span> differences are that small. <span class="mono">classify_stage_game</span> uses a tolerance that scales with the entries.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>move order</th><th class="num">pure</th><th class="num">degenerate</th><th class="num">mixed</th><th class="num">rounding to 0.1 flips a saddle</th></tr></thead>
+        <tbody>
+          <tr><td>deterministic</td><td class="num">0</td><td class="num">2380</td><td class="num">0</td><td class="num">0</td></tr>
+          <tr><td>random</td><td class="num">604</td><td class="num">1682</td><td class="num">94</td><td class="num">62</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Rounding to 0.1 misclassifies <b>62</b> of the random game's stage games &mdash; the small-entry region where mixing lives. The deterministic game is safe to round but has a <b>non-strict saddle at every one of its 2 380 states</b>: the pure equilibrium exists everywhere yet is tie-ridden.</p>
+
+    <h3>The mixed states are matching pennies</h3>
+    <p>Of the 94 states that require mixing, <b>68 reduce to a 2&times;2 support</b>: carrier {advance, hold} &times; defender {block, intercept} &mdash; a "guess where the ball goes" game. That is why Littman's <em>random move order</em> creates the mixing and the deterministic A10 rule does not.</p>
   </section>
 
   <section>
@@ -513,8 +541,8 @@
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; nash_q.py &middot; best_response.py &middot; mlp.py &middot; opponents.py &middot; shaping.py &middot; exploit.py &middot; simulate.py<br>
-    scripts &mdash; analyze.py &middot; policy_iteration.py &middot; selfplay.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    118 passing tests (114 fast + 4 slow) &nbsp;|&nbsp; env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; nash_q.py &middot; numerics.py &middot; best_response.py &middot; mlp.py &middot; opponents.py &middot; shaping.py &middot; exploit.py &middot; simulate.py<br>
+    scripts &mdash; analyze.py &middot; numerics.py &middot; policy_iteration.py &middot; selfplay.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    131 passing tests (126 fast + 5 slow) &nbsp;|&nbsp; env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
 </div>

@@ -51,6 +51,7 @@ class NashQResult:
     mode: str
     gamma: float
     matrix_game_solves: int = 0  # LP calls (0 for a purely pure/saddle run)
+    staleness_trace: list[float] | None = None  # policy iteration only
 
     @property
     def pure_equilibrium_exists(self) -> bool:
@@ -193,10 +194,13 @@ class NashQIteration:
         values: dict[State, float] = {s: 0.0 for s in self._states}
         row_policy = {s: np.full(4, 0.25) for s in self._states}
         col_policy = {s: np.full(4, 0.25) for s in self._states}
+        staleness_trace: list[float] = []
 
         outer = 0
         for outer in range(1, max_outer + 1):
-            # --- improvement: re-solve every stage game from the current V
+            # --- improvement: re-solve every stage game from the current V.
+            # policy_delta is exactly the staleness Brandon flagged: how far the
+            # frozen strategies were from the Nash of the current Q.
             policy_delta = 0.0
             for s in self._states:
                 p, q, _ = self._stage_policy(self._matrix(s, values))
@@ -206,6 +210,7 @@ class NashQIteration:
                     float(np.abs(q - col_policy[s]).max()),
                 )
                 row_policy[s], col_policy[s] = p, q
+            staleness_trace.append(policy_delta)
 
             # --- evaluation: strategies frozen, linear backups only
             eval_delta = 0.0
@@ -234,7 +239,23 @@ class NashQIteration:
             mode=self.mode,
             gamma=self.gamma,
             matrix_game_solves=self._lp_calls,
+            staleness_trace=staleness_trace,
         )
+
+    def value_bracket_gaps(self, result: "NashQResult") -> np.ndarray:
+        """Per-state certified value error of the solved policy.
+
+        For each state the row player can guarantee ``min_j (p M)_j`` and reach
+        at most ``max_i (M q)_i``; the difference bounds how far the reported
+        value can be from the true minimax value at that state.
+        """
+        from soccer_nash.numerics import value_bracket
+
+        gaps = np.empty(len(self._states))
+        for i, s in enumerate(self._states):
+            m = self._matrix(s, result.values)
+            gaps[i] = value_bracket(m, result.row_policy[s], result.col_policy[s]).gap
+        return gaps
 
     def optimal_action_masks(
         self, result: "NashQResult", tol: float = 1e-6

@@ -63,7 +63,14 @@ exploitable than random play. See [docs/selfplay.md](docs/selfplay.md).
 
 `python scripts/policy_iteration.py` compares `run()` (solve a matrix game every
 sweep) with `run_policy_iteration()` (freeze the strategies, run cheap linear
-evaluation sweeps, re-solve). Same fixed point, ~4x fewer matrix-game solves.
+evaluation sweeps, re-solve). Same fixed point, ~5x fewer matrix-game solves.
+
+## Numerical foundations
+
+`python scripts/numerics.py` -- the value bracket (`upper - lower` certifies the
+LP error), scale-aware `pure` / `mixed` / `degenerate` classification, where
+rounding under discounting goes wrong, and the 2x2 matching-pennies structure of
+the mixed-strategy states. See [docs/numerics.md](docs/numerics.md).
 
 ## Reward shaping
 
