@@ -70,11 +70,30 @@ def board_sweep() -> None:
     print("wrote experiments/board_sweep.csv")
 
 
+def goal_mouth_sweep() -> None:
+    """Vary the number of goal rows on a fixed 5x9 board."""
+    rows = []
+    for k in range(1, 8):
+        start = (9 - k) // 2
+        rows.append(
+            run_config(
+                move_order="random",
+                gamma=0.9,
+                width=5,
+                height=9,
+                goal_rows=tuple(range(start, start + k)),
+            )
+        )
+        print(f"  goal rows = {k}: mixed {rows[-1]['mixed_states']}")
+    write_csv(OUT / "goal_mouth_sweep.csv", rows)
+    print("wrote experiments/goal_mouth_sweep.csv")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "which",
-        choices=["baseline", "gamma", "tolerance", "board", "all"],
+        choices=["baseline", "gamma", "tolerance", "board", "goalmouth", "all"],
         default="all",
         nargs="?",
     )
@@ -84,6 +103,7 @@ def main() -> None:
         "gamma": gamma_sweep,
         "tolerance": tolerance_sweep,
         "board": board_sweep,
+        "goalmouth": goal_mouth_sweep,
     }
     if args.which == "all":
         for fn in jobs.values():

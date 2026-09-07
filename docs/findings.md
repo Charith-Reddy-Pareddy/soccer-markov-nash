@@ -33,28 +33,26 @@ squares means best responses are pure -- there is no guessing pressure.
 
 ## Q2: When does the pure equilibrium break?
 
-**Random move order breaks it, but only partially and only on large enough
-boards.** The percentages below are for the configurations tested, not
-universal constants (see Q3-board-sweep and `experiments/board_sweep.csv`).
+**Random move order breaks it -- and the gate is the width of the goal mouth,
+not the size of the board** (`experiments/board_sweep.csv`,
+`goal_mouth_sweep.csv`).
 
-| board | states | no-saddle states | pure eq? |
-|---|---|---|---|
-| 4x3, 1 goal row | 264 | 0 | exists |
-| 5x3, 1 goal row | 420 | 0 | exists |
-| 5x5, 3 goal rows | 1200 | 54 (4.5%) | **fails** |
-| 7x5, 3 goal rows | 2380 | 94 (3.9%) | **fails** |
+| goal mouth | mixed states |
+|---|---|
+| 1 cell (any board 3x3 .. 11x3, or 5x9 with `goal_rows=(4,)`) | **0** |
+| >= 2 cells | grows with board area |
 
-On the full 7x5 random game, 94 of 2380 stage games have no pure saddle, so **no
-pure stationary equilibrium exists** -- the mixed/LP solver is required. The
-no-saddle states:
+With a one-cell goal the carrier's only winning approach is that single cell, so
+the defender always knows where to stand and every stage game has a pure saddle.
+With a wider goal the carrier threatens more than one cell and, under the random
+move order, the defender cannot cover them all -- it has to guess. On the 7x5
+board (3-cell goal), 94 of 2380 stage games have no pure saddle (3.9% *for this
+configuration*).
 
-- come in exact mirror pairs (47 with each ball holder);
-- 40 have the players adjacent, 54 one move from adjacency;
-- 36 are the "defender directly ahead of the carrier, same row" stand-off;
-- never occur when the players are far apart.
-
-Small or narrow boards have no such states: the contested-square geometry that
-forces mixing needs room to arise.
+The 94 no-saddle states come in exact mirror pairs, are within a move of
+adjacency, and ~88 have the defender ahead of the carrier. Geometry predicts the
+`pure` / `mixed` label with precision 0.96 / recall 0.91 -- see
+[geometry.md](geometry.md).
 
 ### It is the move *order*, not the randomness, that breaks it
 
@@ -140,6 +138,23 @@ pure flip) for 16 outer rounds before locking in, so wall-clock is not lower
   states; the random game has 604 strict-pure, 1682 degenerate, 94 mixed.
 - **The mixed states:** 68 of the 94 reduce to a 2x2 matching-pennies support
   (carrier {advance, hold} x defender {block, intercept}).
+
+## Q3: Does discounting change which states require mixing?
+
+`experiments/gamma_sweep.csv`. **Yes, mildly.** On the 7x5 random game the mixed
+count varies non-monotonically with `gamma`: 122 at 0.5, dips to 94 at 0.9-0.95,
+back to 102 at 0.99-0.995. Deterministic stays 0 at every discount. Iterations
+scale hard (26 at gamma=0.5, 373 at 0.995); the kickoff value rises monotonically
+from 0.001 to 0.32 as future scoring matters more.
+
+## RQ4: Numerical robustness
+
+`experiments/tolerance_sweep.csv`. The `pure` / `degenerate` / `mixed` split
+(604 / 1682 / 94) is **identical for every classification tolerance from 1e-12
+to 1e-3** -- the boundary is well separated. It only degrades once the tolerance
+approaches the actual `minimax - maximin` gaps: 80 mixed at 1e-2, 0 at 1e-1
+(a 10% tolerance, equivalently rounding to one decimal, erases the whole mixed
+region). The value-bracket gap is `2.2e-16` throughout.
 
 ## Value-function structure (deterministic game)
 
