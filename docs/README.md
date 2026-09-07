@@ -15,6 +15,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [templates.md](templates.md) — the 94 mixed states reduced to 8 geometric
   templates, with the stage matrix and matching-pennies proof for each.
 - [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
+- [proof.md](proof.md) — the single-cell pure-saddle theorem: the defender's
+  closed-form optimal strategy, the dominance-solvability certificate
+  (`make proof`), and the gap that remains.
 - `experiments/phase_diagram.csv` + `figures/phase_diagram.svg` — the
   goal-width × board-size phase diagram (`make phase`).
 - [numerics.md](numerics.md) — the value bracket, stage-game classification, and

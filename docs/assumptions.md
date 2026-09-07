@@ -62,5 +62,12 @@ The experiments in this repo establish different things:
   exact intended semantics, over all reward and discount settings -- necessarily
   admits a pure-strategy equilibrium. This would need a proof, not enumeration,
   and depends on resolving the interpretation above.
+- **Claim C', single goal cell (partly established).** For the random-resolution
+  game with *one* goal cell per side, every stage game has a pure saddle. The
+  defender's optimal strategy is closed-form and verified optimal
+  ([proof.md](proof.md), Part 1); dominance-solvability is machine-checked for
+  every board up to 11x5 and every discount 0.5-0.99 (Part 2). A board-size-free
+  proof of the carrier's half is still open.
 
-The report makes Claim A and B; it does not make Claim C.
+The report makes Claim A and B, and Claim C' for the single-cell case; it does
+not make the general Claim C.

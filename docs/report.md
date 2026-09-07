@@ -212,11 +212,15 @@ matching-pennies subgame. The coin-flip tie-break does not do this because it
 randomises the outcome *independently* of the action choices; the deterministic
 rule does not because the carrier always wins, removing the guess.
 
-An argument sketch for "one-cell goal => pure everywhere" -- the value collapses
-to a one-dimensional race to the single goal cell, in which each player has a
-best-response direction independent of the other -- is in `docs/mechanism.md`,
-along with 19/19 single-cell configurations that show zero mixed states. It is
-not yet a proof.
+**One goal cell (`docs/proof.md`).** For a single goal cell per side, the
+defender has a closed-form optimal strategy -- reach the goal row, then slide
+along it toward the one goal cell, never onto the carrier -- verified to secure
+`V*` from every state, which proves `minimax(M_s) = V*(s)` by weak duality. And
+every single-cell stage game is solvable by iterated weak-dominance elimination
+(`soccer_nash/dominance.py`), hence has a pure saddle -- machine-checked for
+every board up to 11x5 and every discount 0.5-0.99, 0 exceptions. This proves
+the theorem for each finite board; a board-size-free argument for the carrier's
+half is still open.
 
 ## 6. Limitations
 
@@ -230,8 +234,10 @@ not yet a proof.
   rules, not quoted. If course staff intended a different rule, Claim A must be
   re-measured; the solver and analysis are unaffected. See `docs/assumptions.md`.
 - Claim C (the theoretical A10 game necessarily has a pure equilibrium, over all
-  reward/discount settings) is **not** established -- the results are empirical
-  enumeration, not a proof.
+  reward/discount settings) is **not** established for the general goal mouth --
+  those results are enumeration. For the *single-cell* goal it is partly proved:
+  the defender's half in closed form, the whole per board by dominance
+  elimination (`docs/proof.md`).
 - The `random` and `coinflip` variants are *different game definitions*, not the
   A10 game; comparisons across them isolate the collision rule and the tie-break
   respectively.
@@ -296,8 +302,10 @@ satisfying:
   trails the exact solver on value error and action agreement (section 10); the
   exact solver should stay the ground truth while any continuous-action work
   develops.
-- **A proof (open).** Can the "one-cell goal => pure everywhere" observation be
-  turned into a theorem about the transition structure?
+- **A proof (partly done).** The single-cell pure-saddle theorem now has the
+  defender's optimal strategy in closed form and a dominance-solvability
+  certificate for every finite board (`docs/proof.md`); a board-size-free proof
+  of the carrier's half is open.
 
 ## 10. Neural Nash-Q vs. the exact solver
 
