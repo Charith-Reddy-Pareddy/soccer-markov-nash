@@ -23,6 +23,12 @@ the stage game exist? When it does not, we fall back to a mixed-strategy
    - `hybrid` — pure equilibrium when it exists, LP otherwise.
 4. **Analysis** — where the value functions and policies agree / diverge.
 
+## A10 Part 1
+
+`python scripts/a10_part1.py x0,y0,x1,y1,b` prints the 16 successor states
+(Q1/Q3) and the 16 transition rewards (Q2/Q4). See
+[docs/a10_part1.md](docs/a10_part1.md).
+
 ## Headline result
 
 - **Deterministic game:** every stage game has a pure saddle; `pure`, `hybrid`
