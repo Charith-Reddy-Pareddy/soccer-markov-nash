@@ -1,4 +1,4 @@
-<title>Pure Nash Equilibria for Soccer</title>
+<title>When Does Soccer Need Mixed Strategies?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -300,8 +300,8 @@
 <div class="wrap">
   <header>
     <p class="kicker">CS 540 &middot; Multi-Agent Reinforcement Learning &middot; research report</p>
-    <h1>Pure-First Nash&nbsp;Q for Soccer</h1>
-    <p class="dek">Where a two-player soccer Markov game does &mdash; and does not &mdash; need mixed strategies, and how much matrix-game work that saves.</p>
+    <h1>When Does Soccer Need Mixed&nbsp;Strategies?</h1>
+    <p class="dek">A pure-first Nash&#8209;Q approach: where a two-player soccer Markov game does &mdash; and does not &mdash; need mixing, and how much LP work that saves.</p>
     <div class="rq">
       <span class="label">Four questions</span>
       <b>RQ1 Existence</b> &mdash; under what transition structures does a pure equilibrium exist at every state?
@@ -345,7 +345,7 @@
       <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2&thinsp;380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program.</span></li>
       <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on ~4% of states (this configuration).</span></li>
       <li><span class="n">3</span><span><b>Those mixed states are geometrically localised:</b> a decision tree predicts them from the state with precision 0.96, and 68 of 94 have a 2&times;2 matching-pennies support.</span></li>
-      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while doing ~25&times; less matrix-game work; mirror symmetry halves it again.</span></li>
+      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only ~4% of states &mdash; ~25&times; fewer per sweep; mirror symmetry halves the work again.</span></li>
     </ol>
   </section>
 
@@ -452,22 +452,24 @@
       <figcaption class="fig-cap"><b>The gate.</b> One-cell goal &rarr; the carrier has one threat, the defender one response, best responses stay pure. Two or more &rarr; the defender must guess. Every height-3 board (width 3&ndash;11) has zero mixed states.</figcaption>
     </figure>
     <p>Geometry predicts the label (<span class="mono">scripts/geometry_model.py</span>): a depth-4 decision tree on carrier-frame features separates <span class="mono">mixed</span> from the rest with <b>precision 0.96, recall 0.91</b>. The dominant feature is <span class="mono">defender_can_intercept</span> &mdash; the defender within one move of the carrier's forward cell (<span class="mono">P(mixed) = 0.44</span> vs <span class="mono">0.002</span>).</p>
+    <p>Beyond prediction, the 94 mixed states canonicalize under the board mirror to 47 pairs and cluster into <b>8 geometric templates</b> (<span class="mono">scripts/templates.py</span>, <span class="mono">docs/templates.md</span>).</p>
     <div class="tbl-scroll">
       <table>
-        <caption>the 94 mixed states, by equilibrium support &times; defender geometry</caption>
-        <thead><tr><th>support</th><th>defender</th><th class="num">count</th></tr></thead>
+        <caption>the mixed-state templates &mdash; carrier-frame geometry, equilibrium support</caption>
+        <thead><tr><th class="num">states</th><th>geometry</th><th>support</th><th>structure</th></tr></thead>
         <tbody>
-          <tr><td>2&times;2 (matching pennies)</td><td>ahead of the carrier</td><td class="num">40</td></tr>
-          <tr><td>2&times;2</td><td>directly ahead, same row</td><td class="num">24</td></tr>
-          <tr><td>2&times;1 / 1&times;2</td><td>directly ahead, same row</td><td class="num">12</td></tr>
-          <tr><td>3&times;3 / 2&times;3 / 3&times;2</td><td>ahead</td><td class="num">12</td></tr>
-          <tr><td>2&times;2</td><td>merely adjacent</td><td class="num">4</td></tr>
-          <tr><td>2&times;1 / 1&times;2</td><td>ahead</td><td class="num">2</td></tr>
+          <tr><td class="num">24</td><td>defender 1 ahead, carrier one row off the goal row</td><td>2&times;2</td><td class="yes">matching pennies</td></tr>
+          <tr><td class="num">24</td><td>defender 1 ahead, same row, carrier on a goal row</td><td>2&times;2</td><td class="yes">matching pennies</td></tr>
+          <tr><td class="num">16</td><td>defender 2 ahead, same row, carrier on a goal row</td><td>2&times;2</td><td class="yes">matching pennies</td></tr>
+          <tr><td class="num">4</td><td>defender diagonally adjacent, carrier off the goal row</td><td>2&times;2</td><td class="yes">matching pennies</td></tr>
+          <tr><td class="num">14</td><td>defender 1&ndash;2 ahead, same row, on a goal row</td><td>2&times;1</td><td>near-pure saddle</td></tr>
+          <tr><td class="num">8</td><td>defender 2 ahead, same row, on a goal row</td><td>3&times;2</td><td>degenerate (row ties)</td></tr>
+          <tr><td class="num">4</td><td>defender 2 ahead, carrier off the goal row</td><td>3&times;3</td><td>wider mix</td></tr>
         </tbody>
       </table>
     </div>
-    <p>~88 of 94 have the defender ahead; 68 are a 2&times;2 matching-pennies mix of carrier {advance, hold} against defender {block, intercept}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
-    <p><b>An argument, not a proof.</b> With one goal cell the value collapses to a one-dimensional race to that cell; each player then has a best-response direction independent of the other, so the stage game has a pure saddle. 19/19 single-cell configurations (boards 3&times;3 to 11&times;5, &gamma; 0.5 to 0.99) show zero mixed states. Sketch in <span class="mono">docs/mechanism.md</span>; formalising it is open.</p>
+    <p>The <b>four 2&times;2-support templates are all verified matching pennies</b> &mdash; the carrier's best reply flips between the two defender columns and vice versa &mdash; covering <b>68 of 94</b> states: carrier {climb, advance} against defender {cover a lane, hold the forward cell}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
+    <p><b>Why the mix is unavoidable.</b> A mixed stage game needs all three of: a stochastic (&frac12;&ndash;&frac12;) resolution order; a goal mouth wider than one cell, so the carrier has two scoring lanes; and a defender close enough to contest the forward cell but unable to cover both lanes in one move. The carrier climbs or drops, the defender guesses which &mdash; matching pennies. Drop any one clause &mdash; a single goal cell, deterministic resolution, or the coin-flip tie-break &mdash; and every stage game has a pure saddle. The full argument and one stage matrix per template are in <span class="mono">docs/templates.md</span>; a formal proof for the single-cell case is open (<span class="mono">docs/mechanism.md</span>).</p>
   </section>
 
   <section>
@@ -536,8 +538,8 @@
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; templates.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
     experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>

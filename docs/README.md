@@ -12,6 +12,8 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 
 - [geometry.md](geometry.md) — RQ3: which spatial configurations force mixing,
   and the decision tree that predicts them.
+- [templates.md](templates.md) — the 94 mixed states reduced to 8 geometric
+  templates, with the stage matrix and matching-pennies proof for each.
 - [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
 - [numerics.md](numerics.md) — the value bracket, stage-game classification, and
   how rounding under discounting misfires.
@@ -33,6 +35,6 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 
 ## Provenance
 
-- [review-checklist.md](review-checklist.md) — the 20 review points and where
-  each is addressed.
+- [review-checklist.md](review-checklist.md) — the first 20 review points.
+- [review-18.md](review-18.md) — the second review (18 points) and its status.
 - [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).

@@ -1,27 +1,33 @@
-# Soccer Markov Game: Pure vs. Mixed Nash Q-Iteration
+# When Does a Soccer Markov Game Need Mixed Strategies?
 
-Research code built on top of the CS 540 A10 soccer assignment
-(<https://pages.cs.wisc.edu/~yw/CS540S26A10.html>).
+A pure-first Nash-Q approach. Research code built on the CS 540 A10 soccer
+assignment (<https://pages.cs.wisc.edu/~yw/CS540S26A10.html>).
 
 ## Research question
 
-> Can **pure-strategy Nash equilibria** be used to *efficiently* solve the
-> soccer Markov game, and under what state and reward settings does a pure Nash
-> equilibrium exist?
+> Which geometric configurations of the soccer Markov game make mixed strategies
+> necessary, can those configurations be characterized analytically, and can a
+> solver that checks for a pure equilibrium first exploit that structure?
 
 **Full answer: [docs/report.pdf](docs/report.pdf)** &mdash; standalone, no login
 needed. Also as [docs/report.html](docs/report.html) (open in any browser) and
 [docs/report.md](docs/report.md).
 
-In short: for the implemented deterministic A10 model every converged stage game
-has a pure saddle, so a stationary pure-strategy equilibrium exists and is found
-in 9 sweeps with no LP; this breaks only under Littman's random move *order*,
-and there only when the goal mouth is more than one cell wide (~4% of states on
-the 7x5 board). The hybrid solver uses the pure saddle where `maximin == minimax`
-and the LP only where it does not.
+Two contributions:
+
+- **Algorithmic** &mdash; a pure-first hybrid Nash-Q backup: check each stage
+  game for a pure saddle, take its value when it exists, fall back to the LP
+  only where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
+- **Structural** &mdash; a characterization of *when* a stage game is
+  intrinsically mixed. For the implemented deterministic A10 model every
+  converged stage game has a pure saddle. Mixing appears only under Littman's
+  random move *order*, only when the goal mouth is wider than one cell, and only
+  where the defender can contest the carrier's forward cell but not cover every
+  scoring lane in one move (~4% of states on the 7x5 board). Those states reduce
+  to a few matching-pennies templates.
 
 - Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
-- Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/mechanism.md](docs/mechanism.md)
+- Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/templates.md](docs/templates.md), [docs/mechanism.md](docs/mechanism.md)
 - Everything else: [docs/README.md](docs/README.md)
 - `make test` / `make experiments` / `make report` regenerate everything
 
@@ -34,7 +40,10 @@ and the LP only where it does not.
 | `random` (Littman) | yes | 94 / 2380 | no | 0.150 |
 
 The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
-while calling the LP ~25x less often; mirror symmetry halves the remaining work.
+while calling the LP on only ~4% of states (~25x fewer per sweep); mirror
+symmetry halves the remaining work. LP-solve reduction and wall-clock speedup
+are reported separately &mdash; the former is a property of the game, the latter
+depends on the machine and LP backend.
 
 ## Repository map
 

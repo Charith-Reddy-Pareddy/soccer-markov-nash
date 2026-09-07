@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments figures a10 clean
+.PHONY: help lint test test-all coverage report experiments figures templates a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -11,6 +11,7 @@ help:
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
+	@echo "make templates    - print the mixed-state geometric templates"
 
 lint:
 	$(PY) -m ruff check .
@@ -42,6 +43,9 @@ report:
 figures:
 	$(PY) scripts/render.py 0,2,6,2,0 -o docs/figures/kickoff.svg
 	$(PY) scripts/render.py --trajectory -o docs/figures/trajectory.svg
+
+templates:
+	$(PY) scripts/templates.py
 
 a10:
 	$(PY) scripts/a10_part2.py --out results/
