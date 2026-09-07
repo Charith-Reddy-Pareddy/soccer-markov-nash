@@ -47,7 +47,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--move-order",
-        choices=["deterministic", "random"],
+        choices=["deterministic", "random", "coinflip"],
         default="deterministic",
     )
     args = parser.parse_args()
