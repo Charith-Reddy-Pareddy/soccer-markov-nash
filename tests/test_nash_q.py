@@ -79,3 +79,58 @@ def test_pure_mode_is_lower_bound():
 def test_unknown_mode_rejected():
     with pytest.raises(ValueError):
         NashQIteration(SoccerGame(), mode="bogus")
+
+
+# --------------------------------------------------------------- random game
+
+SMALL_RANDOM = SoccerGame(width=4, height=3, goal_rows=(1,), move_order="random")
+
+
+@pytest.fixture(scope="module")
+def random_hybrid():
+    game = SoccerGame(move_order="random")
+    return game, NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-8).run()
+
+
+def test_random_game_has_no_pure_stationary_equilibrium(random_hybrid):
+    _, r = random_hybrid
+    assert not r.pure_equilibrium_exists
+    assert 0.90 < r.saddle_fraction < 1.0
+    assert len(r.no_saddle_states) > 50
+
+
+def test_no_saddle_states_come_in_mirror_pairs(random_hybrid):
+    game, r = random_hybrid
+    w = game.width - 1
+    bad = set(r.no_saddle_states)
+    for x0, y0, x1, y1, b in bad:
+        assert (w - x1, y1, w - x0, y0, 1 - b) in bad
+
+
+def test_random_kickoff_favours_the_initial_carrier(random_hybrid):
+    game, r = random_hybrid
+    assert r.values[game.initial_state()] > 0.05
+
+
+def test_pure_mode_underestimates_random_kickoff(random_hybrid):
+    game, hybrid = random_hybrid
+    pure = NashQIteration(game, gamma=0.9, mode="pure", tol=1e-8).run()
+    s0 = game.initial_state()
+    assert pure.values[s0] <= hybrid.values[s0] - 0.05
+    for s in hybrid.values:
+        assert pure.values[s] <= hybrid.values[s] + 1e-6
+
+
+def test_random_modes_agree_on_small_board():
+    hybrid = NashQIteration(SMALL_RANDOM, gamma=0.9, mode="hybrid", tol=1e-9).run()
+    mixed = NashQIteration(SMALL_RANDOM, gamma=0.9, mode="mixed", tol=1e-9).run()
+    worst = max(abs(hybrid.values[s] - mixed.values[s]) for s in hybrid.values)
+    assert worst < 1e-6
+
+
+@pytest.mark.slow
+def test_random_modes_agree_on_full_board(random_hybrid):
+    game, hybrid = random_hybrid
+    mixed = NashQIteration(game, gamma=0.9, mode="mixed", tol=1e-8).run()
+    worst = max(abs(hybrid.values[s] - mixed.values[s]) for s in hybrid.values)
+    assert worst < 1e-5
