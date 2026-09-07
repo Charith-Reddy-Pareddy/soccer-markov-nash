@@ -126,22 +126,24 @@ class NashQIteration:
         self._lp_calls += 1
         return game_value(m)
 
+    @staticmethod
+    def _pure_strategies(m: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """One-hot maximin row for player 0, minimax column for player 1."""
+        p = np.zeros(4)
+        q = np.zeros(4)
+        p[int(np.argmax(m.min(axis=0)))] = 1.0
+        q[int(np.argmin(m.max(axis=0)))] = 1.0
+        return p, q
+
     def _stage_policy(self, m: np.ndarray) -> tuple[np.ndarray, np.ndarray, bool]:
         """Equilibrium (or security) strategies for the stage game."""
-        def _pure() -> tuple[np.ndarray, np.ndarray]:
-            p = np.zeros(4)
-            q = np.zeros(4)
-            p[int(np.argmax(m.min(axis=1)))] = 1.0
-            q[int(np.argmin(m.max(axis=0)))] = 1.0
-            return p, q
-
         if self.mode == "pure":
-            p, q = _pure()
+            p, q = self._pure_strategies(m)
             return p, q, False
         if self.mode == "hybrid":
             lo, hi = pure_bounds(m)
             if hi - lo <= _SADDLE_TOL:
-                p, q = _pure()
+                p, q = self._pure_strategies(m)
                 return p, q, False
         self._lp_calls += 1
         _, p, q = solve_zero_sum(m)
@@ -262,12 +264,7 @@ class NashQIteration:
             m = self._matrix(s, values)
             lo, hi = pure_bounds(m)
             if hi - lo <= _SADDLE_TOL:
-                i = int(np.argmax(m.min(axis=1)))
-                j = int(np.argmin(m.max(axis=0)))
-                p = np.zeros(4)
-                q = np.zeros(4)
-                p[i] = 1.0
-                q[j] = 1.0
+                p, q = self._pure_strategies(m)
             else:
                 no_saddle.append(s)
                 _, p, q = solve_zero_sum(m)
