@@ -16,6 +16,9 @@ Two contributions:
    cell, and interception geometry. The 94 mixed states of the 7x5 random game
    reduce to a handful of matching-pennies templates ([templates.md](templates.md)).
 
+The two meet in RQ2: the hybrid is fast *because* the structural result says
+almost every stage game is pure, so the LP is rare.
+
 ![Kickoff: player 0 (blue) carries the ball toward the right goal; player 1
 (green) defends the left.](figures/kickoff.svg)
 
@@ -32,28 +35,55 @@ a pure saddle point exist at every state? The original soccer game (Littman
 they had to have it" -- but where is that place, and does the A10 formulation
 inherit it?
 
-## 2. Method
+## 2. The soccer Markov game and Nash-Q
 
 - **Environment** (`soccer_nash/game.py`): the A10 two-player soccer game on a
   configurable grid; state `(x0, y0, x1, y1, b)`; 2380 non-terminal states on
   the 7x5 board. `A10SoccerGame` is the exact-semantics class; `SoccerGame`
   additionally offers two research variants of the collision rule (`random`
   move order, `coinflip` tie-break).
+- **Nash-Q** (`soccer_nash/nash_q.py`): the operator `Q = R + gamma * Nash(Q')`,
+  where `Nash` is the minimax value of the stage game `M_s`. Value iteration
+  applies it every sweep; freeze-then-iterate (policy iteration) freezes the
+  stage strategies, runs cheap linear evaluation sweeps, then re-solves.
 - **Stage solvers** (`soccer_nash/matrix_games.py`, `support_enum.py`):
-  - pure-saddle detection (`maximin == minimax`), O(A^2), no LP;
-  - LP minimax value (`scipy` HiGHS);
-  - support enumeration -- *all* equilibria of a general-sum 2-player game.
-- **The pure-first hybrid backup** (`soccer_nash/nash_q.py`): check for a pure
-  saddle first; take its value if it exists (it then equals the Nash value);
-  fall back to the LP only where it does not.
+  pure-saddle detection (`maximin == minimax`, O(A^2), no LP); the LP minimax
+  value (`scipy` HiGHS); support enumeration -- *all* equilibria of a
+  general-sum 2-player game.
 - **Diagnostics** (`soccer_nash/numerics.py`): the value bracket
-  `[min_j (pM)_j, max_i (Mq)_i]` that certifies the LP error; a scale-aware
-  `pure` / `degenerate` / `mixed` classifier.
-- **Geometry** (`soccer_nash/geometry.py`, `tree.py`): carrier-frame spatial
-  features + a small decision tree, to test whether the classification is
-  predictable from the state.
+  `[min_j (pM)_j, max_i (Mq)_i]` that certifies the LP error; a five-way
+  `pure` / `degenerate` / `mixed` classifier whose only load-bearing class is
+  "genuine mixed" (&sect;5, RQ4).
+- **Geometry** (`soccer_nash/geometry.py`, `tree.py`, `templates.py`):
+  carrier-frame spatial features, a decision tree, and a canonical-state
+  template analyzer, to ask whether the classification is predictable and
+  reducible.
 
-## 3. Research questions
+## 3. The pure-first hybrid algorithm
+
+At each state, mark the best responses along rows and columns (`O(A^2)`); if one
+entry is both a row and a column best response, its value is the Nash value --
+use it. Only when no such entry exists solve the LP. On the deterministic A10
+game a pure saddle exists at every state, so the LP is never called; on the
+random variant it is called on 3.95% of states, and the value function matches
+the all-LP solution to `4e-16`.
+
+Two further reductions:
+
+- **Mirror symmetry** (`run_symmetric`, `soccer_nash/symmetry.py`): the game is
+  anti-symmetric under board-flip + player-swap, and every state has a distinct
+  mirror image, so the 2380 states are 1190 mirror pairs. Solving one per pair
+  and reconstructing the other by `V(mirror(s)) = -V(s)` cuts the deterministic
+  solve from 0.33 s to 0.23 s (median of 5; deterministic dynamics only -- the
+  mirror of a stochastic transition is not verified).
+- **Freeze-then-iterate** (`run_policy_iteration`): on the random game, 108
+  value-iteration sweeps and 9 672 LP solves become 21 policy-iteration rounds
+  and 1 879 LP solves -- 5x fewer -- but the frozen strategies stay maximally
+  stale for 16 rounds before locking in, so wall-clock is not lower on a game
+  this small (17.2 s vs 13.8 s). It pays off only where the equilibrium solve
+  dominates (larger action spaces, general-sum).
+
+## 4. Research questions
 
 - **RQ1 -- Existence.** Under what transition structures does a pure-strategy
   equilibrium exist at every state?
@@ -64,7 +94,7 @@ inherit it?
 - **RQ4 -- Numerical robustness.** How do discounting, scale, and classification
   tolerance affect the pure/mixed split?
 
-## 4. Results
+## 5. Results
 
 ### RQ1 -- Existence
 
@@ -107,38 +137,30 @@ calls the LP zero times.
 figure is exact and portable. The wall-clock ratio (~13 s vs ~8 min here, ~37x)
 also reflects how much of each sweep is matrix construction rather than the
 solve, the LP backend, and the machine; treat it as indicative, not a headline.
-Two further reductions:
-
-- **Mirror symmetry** (`run_symmetric`, `soccer_nash/symmetry.py`): the game is
-  anti-symmetric under board-flip + player-swap, and every state has a distinct
-  mirror image, so the 2380 states are 1190 mirror pairs. Solving one per pair
-  and reconstructing the other by `V(mirror(s)) = -V(s)` cuts the deterministic
-  solve from 0.33 s to 0.23 s. (Deterministic dynamics only -- the mirror of a
-  stochastic transition is not verified.)
-- **Freeze-then-iterate** (`run_policy_iteration`): 5x fewer LP solves, but the
-  frozen strategies stay maximally stale for 16 outer rounds before locking in,
-  so wall-clock is not lower on a game this small. See section 7.
+The mirror and freeze-then-iterate reductions are in &sect;3.
 
 ### RQ3 -- Mechanism
 
 **Goal-mouth width, not board size, is the gate.** The phase diagram
 (`scripts/phase_diagram.py`, `experiments/phase_diagram.csv`) sweeps every board
-from 3x3 to 9x5 against goal widths 1 to `height-2`:
+with `3 <= width <= 11`, `3 <= height <= 9`, `width * height <= 45`, against goal
+widths 1 to `height - 2`:
 
 ![Mixed-state fraction by board size and goal-mouth width. The goal-width-1
 column is zero for every board.](figures/phase_diagram.svg)
 
-- **Goal width 1: exactly 0 mixed states, on all 16 boards.** The carrier's only
-  winning approach is that one cell, so the defender always knows where to
-  stand.
-- **Goal width >= 2: mixed states on every board**, at a fraction of **3-12%**
-  that barely depends on the board. It drifts *down* with board area (more
-  midfield filler) and is roughly flat in goal width beyond 2.
+- **Goal width 1: 0 mixed states -- on all 40 one-cell configs.**
+- **Goal width >= 2: mixed states -- on all 87 wider-goal configs**, at a
+  fraction of 2.7-12% (mean 5%).
 
-So the split is a threshold in goal width (1 vs >= 2), and every state is
-reachable from the kickoff (`reachable == states` in every row), so the fraction
-over reachable states equals the fraction over all states. Board width and
-height only modulate the fraction within a narrow band.
+`scripts/phase_diagram.py --analyze` decomposes the variance. Whether a board
+has *any* mixed state is a **perfect** function of goal width (1 vs >= 2). Among
+the boards that do, an OLS of the mixed *fraction* is carried by board area
+(R^2 0.64 -- a dilution effect, more midfield filler), with goal width adding
+little (R^2 0.27 alone) and a *negative* fitted coefficient. So goal width
+creates or removes mixing; it does not scale it, and board size only dilutes it.
+Every state is reachable from the kickoff (`reachable == states` in every row),
+so the fraction over reachable states equals the fraction over all states.
 
 Geometry predicts the classification (`scripts/geometry_model.py`): a depth-4
 decision tree separates `mixed` from the rest with **precision 0.96, recall
@@ -200,7 +222,7 @@ force mixed-strategy indifference -- flips the pure-saddle status of **62**
 states, exactly the small-entry mixed region; the deterministic game is safe to
 round only because its values are clean `gamma^k` bands well above 0.1.
 
-## 5. Mechanistic explanation
+## 6. Mechanistic explanation
 
 Littman's random move order turns every contested square into a lottery whose
 outcome depends on *both* players' concurrent action choices. When the goal is a
@@ -222,56 +244,7 @@ every board up to 11x5 and every discount 0.5-0.99, 0 exceptions. This proves
 the theorem for each finite board; a board-size-free argument for the carrier's
 half is still open.
 
-## 6. Limitations
-
-- The A10 page redacts the ID-specific start position and goal rows; this repo
-  uses the standard Littman geometry (configurable). Qualitative results are
-  geometry-robust: across 46 board / goal-width configurations, all 17 with a
-  one-cell goal have 0 mixed states and all 29 with a wider goal have some. The
-  exact `3.95%` mixed fraction is for the 7x5 / 3-cell-goal case only.
-- Several collision sub-cases (carrier vs. stationary opponent, non-carrier
-  bump = steal, swap possession) are *interpreted* from the two stated A10
-  rules, not quoted. If course staff intended a different rule, Claim A must be
-  re-measured; the solver and analysis are unaffected. See `docs/assumptions.md`.
-- Claim C (the theoretical A10 game necessarily has a pure equilibrium, over all
-  reward/discount settings) is **not** established for the general goal mouth --
-  those results are enumeration. For the *single-cell* goal it is partly proved:
-  the defender's half in closed form, the whole per board by dominance
-  elimination (`docs/proof.md`).
-- The `random` and `coinflip` variants are *different game definitions*, not the
-  A10 game; comparisons across them isolate the collision rule and the tie-break
-  respectively.
-
-**Reproducibility.** The value-iteration results are exact dynamic programming
-and carry no seed. The randomised measurements are each run over 5 seeds and
-quoted as mean +/- sd: the neural Nash-Q metrics (`experiments/nash_dqn_seeds.csv`),
-the random-game self-play return (`+0.149 +/- 0.005`), and the wall-clock
-figures (median of 5 repeats). LP-call counts and mixed-state counts are
-deterministic.
-
-## 7. The algorithm
-
-**Pure-first hybrid Nash Q-iteration.** At each state, highlight best responses
-along rows and columns (`O(A^2)`); if one entry is both a row and a column best
-response, its value is the Nash value -- use it. Only when no such entry exists
-solve the LP. Add mirror-symmetry reduction (solve 1190 of 2380 states) and,
-where the equilibrium solve dominates (larger action spaces, general-sum),
-freeze-then-iterate. On the A10 game this is exact everywhere and never invokes
-an LP; on the random variant it invokes one on 4% of states and matches the
-all-LP solution to machine precision.
-
-Freeze-then-iterate results (random game, hybrid solver, same fixed point):
-
-```
-                  rounds/sweeps   matrix-game solves   wall clock
-value iteration       108             9 672              13.8 s
-policy iteration       21             1 879              17.2 s
-```
-
-The frozen strategies' *staleness* (distance to the current Nash) stays maximal
-for 16 outer rounds, then collapses to `< 1e-8`.
-
-## 8. The equilibrium policy plays correctly (secondary validation)
+## 7. Secondary validation: the equilibrium policy plays correctly
 
 Self-play and exact best response (`soccer_nash/exploit.py`,
 `scripts/selfplay.py`) confirm the solved policy is not merely numerically
@@ -286,28 +259,12 @@ satisfying:
   best-response-to-the-scripted-opponent policy has exploitability `0.43` --
   worse than moving uniformly at random -- which is exactly the A10 competition's
   warning about non-equilibrium submissions.
+- The A10 deliverables (Part 1 successor/reward tables, Part 2 imitation network,
+  competition networks) are in `docs/a10_*.md`; the imitation and competition
+  networks' fit accuracy and exploitability, over 5 seeds, are in
+  `experiments/a10_*_seeds.csv`.
 
-## 9. Beyond zero-sum, and open questions
-
-- **General-sum, done.** `soccer_nash/markov_game.py` solves 2-player
-  general-sum Markov games by enumerating *all* stage equilibria
-  (`support_enum.py`) and selecting one -- the notes' "largest sum of values"
-  rule, a no-op for zero-sum but decisive for Battle of the Sexes, where it
-  avoids the mixed equilibrium whose value is below either pure one. It keeps
-  the pure-first philosophy: check for a pure Nash before enumerating. The
-  soccer game itself is zero-sum, so this is an extension point rather than a
-  change to the main result.
-- **Function approximation, partial.** `soccer_nash/nash_dqn.py` fits a network
-  to the stage-game matrices. Even with the A10-format constraints relaxed it
-  trails the exact solver on value error and action agreement (section 10); the
-  exact solver should stay the ground truth while any continuous-action work
-  develops.
-- **A proof (partly done).** The single-cell pure-saddle theorem now has the
-  defender's optimal strategy in closed form and a dominance-solvability
-  certificate for every finite board (`docs/proof.md`); a board-size-free proof
-  of the carrier's half is open.
-
-## 10. Neural Nash-Q vs. the exact solver
+## 8. Neural Nash-Q vs. the exact solver
 
 The meeting's stated pipeline is: exact discrete solver first, then a network to
 replicate it. `scripts/nash_dqn.py` fits a `5 -> 96 -> 96 -> 16` regressor with
@@ -323,13 +280,61 @@ biases (frozen target network, 600 epochs) to the exact stage matrices of the
 | action agreement | 100% | 43% +/- 2% |
 | pure/mixed classification agreement | 100% | 67% +/- 2% |
 | exploitability (duality gap) | `<1e-9` | 0.43 +/- 0.04 |
-| convergence | exact fixed point | MSE plateau ~3e-3 |
+| convergence (epochs to MSE plateau) | exact fixed point | ~250 of 600, then flat |
 | runtime | 9 sweeps, 0.3 s | 600 epochs, 32 +/- 1 s |
 
-The exact solver is both ~100x faster and correct. The network fits the ~1000
-zero-value states easily -- hence the small *mean* error -- but misses the
-`gamma^k` bands and the contested regions: its worst-state value error is `0.55`
-and its policy is about as exploitable as moving uniformly at random (`~0.43`).
-It even gets *whether a state needs mixing* wrong a third of the time. This is
-the concrete baseline the eventual continuous-action work has to beat, and it is
-why the exact solver stays the ground truth rather than being replaced.
+Deterministic game only -- `train_nash_dqn` rejects the stochastic variants, so
+the network is never asked to represent a genuinely mixed stage game. Even so it
+trails: the network fits the ~1000 zero-value states easily (small *mean* error)
+but misses the `gamma^k` bands and the contested regions -- worst-state value
+error `0.55`, policy about as exploitable as moving uniformly at random, and it
+mis-calls *whether* a state needs mixing a third of the time. This is the
+concrete baseline the eventual continuous-action work has to beat, and it is why
+the exact solver stays the ground truth rather than being replaced.
+
+## 9. Beyond zero-sum, and open questions
+
+- **General-sum, done.** `soccer_nash/markov_game.py` solves 2-player
+  general-sum Markov games by enumerating *all* stage equilibria
+  (`support_enum.py`) and selecting one -- the notes' "largest sum of values"
+  rule, a no-op for zero-sum but decisive for Battle of the Sexes, where it
+  avoids the mixed equilibrium whose value is below either pure one. It keeps
+  the pure-first philosophy: check for a pure Nash before enumerating. The
+  soccer game itself is zero-sum, so this is an extension point rather than a
+  change to the main result.
+- **Function approximation, partial.** `soccer_nash/nash_dqn.py` fits a network
+  to the stage-game matrices (&sect;8). It trails the exact solver and only
+  handles the deterministic game; the exact solver should stay the ground truth
+  while any continuous-action work develops.
+- **A proof (partly done).** The single-cell pure-saddle theorem now has the
+  defender's optimal strategy in closed form and a dominance-solvability
+  certificate for every finite board (`docs/proof.md`); a board-size-free proof
+  of the carrier's half is open.
+
+## 10. Limitations
+
+- The A10 page redacts the ID-specific start position and goal rows; this repo
+  uses the standard Littman geometry (configurable). Qualitative results are
+  geometry-robust: across the phase-diagram sweep, every one-cell-goal board has
+  0 mixed states and every wider-goal board has some. The exact `3.95%` mixed
+  fraction is for the 7x5 / 3-cell-goal case only.
+- Several collision sub-cases (carrier vs. stationary opponent, non-carrier
+  bump = steal, swap possession) are *interpreted* from the two stated A10
+  rules, not quoted. If course staff intended a different rule, Claim A must be
+  re-measured; the solver and analysis are unaffected. See `docs/assumptions.md`.
+- Claim C (the theoretical A10 game necessarily has a pure equilibrium, over all
+  reward/discount settings) is **not** established for the general goal mouth --
+  those results are enumeration. For the *single-cell* goal it is partly proved:
+  the defender's half in closed form, the whole per board by dominance
+  elimination (`docs/proof.md`).
+- The `random` and `coinflip` variants are *different game definitions*, not the
+  A10 game; comparisons across them isolate the collision rule and the tie-break
+  respectively.
+
+**Reproducibility.** The value-iteration results are exact dynamic programming
+and carry no seed. The randomised measurements are each run over 5 seeds and
+quoted as mean +/- sd: the neural Nash-Q metrics (`nash_dqn_seeds.csv`), the
+A10 imitation and competition networks (`a10_part2` / `a10_competition --seeds`),
+the random-game self-play return (`+0.149 +/- 0.005`), and the wall-clock
+figures (median of 5 repeats). LP-call counts and mixed-state counts are
+deterministic.
