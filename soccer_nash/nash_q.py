@@ -143,6 +143,27 @@ class NashQIteration:
             gamma=self.gamma,
         )
 
+    def optimal_action_masks(
+        self, result: "NashQResult", tol: float = 1e-6
+    ) -> tuple[list[State], np.ndarray, np.ndarray]:
+        """Per-state 0/1 masks of each player's security-optimal actions.
+
+        A row is optimal for player 0 if its worst-case entry equals the
+        maximin value; a column is optimal for player 1 if its best-case entry
+        equals the minimax value. Where a pure saddle exists these coincide
+        with the equilibrium supports.
+        """
+        states = list(result.values)
+        row = np.zeros((len(states), 4))
+        col = np.zeros((len(states), 4))
+        for i, s in enumerate(states):
+            m = self._matrix(s, result.values)
+            row_worst = m.min(axis=1)
+            col_best = m.max(axis=0)
+            row[i] = row_worst >= row_worst.max() - tol
+            col[i] = col_best <= col_best.min() + tol
+        return states, row, col
+
     def _extract_policies(
         self, values: dict[State, float]
     ) -> tuple[dict[State, np.ndarray], dict[State, np.ndarray], list[State]]:
