@@ -46,15 +46,14 @@ def play_game(
     traj: list[State] = [state]
     acts: list[tuple[int, int]] = []
 
-    for _ in range(game.max_steps - 1):
+    for _ in range(game.max_steps):
         a0 = _sample(row_policy[state], rng)
         a1 = _sample(col_policy[state], rng)
         state, _, done = game.step(state, Action(a0), Action(a1))
         traj.append(state)
         acts.append((a0, a1))
         if done:
-            winner = state[4] if state[4] else None
-            return GameResult(traj, acts, winner, len(acts))
+            return GameResult(traj, acts, game.winner(state), len(acts))
 
     return GameResult(traj, acts, None, len(acts))
 

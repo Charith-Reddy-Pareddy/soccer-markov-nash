@@ -41,6 +41,35 @@ def test_stalemate_runs_full_horizon(solved):
     assert r.steps == game.max_steps
 
 
+def _det(action):
+    v = np.zeros(4)
+    v[action] = 1.0
+    return v
+
+
+def test_player0_win_not_misreported_as_tie():
+    # Regression: winner 0 is falsy; must not collapse to a tie.
+    game = SoccerGame()
+    start = (6, 2, 0, 0, 0)
+    row = {start: _det(3)}  # R -> score
+    col = {start: _det(0)}
+    r = play_game(game, row, col, np.random.default_rng(0), start=start)
+    assert r.winner == 0
+    assert r.steps == 1
+
+
+def test_horizon_allows_exactly_max_steps():
+    # Regression: off-by-one previously cut the game one step short.
+    game = SoccerGame(width=7, height=5, goal_rows=(1, 2, 3), max_steps=100)
+    # Player 0 loiters against the top wall; player 1 mirrors. Nobody scores.
+    row = {s: _det(0) for s in game.states()}
+    col = {s: _det(0) for s in game.states()}
+    r = play_game(game, row, col, np.random.default_rng(0),
+                  start=(1, 0, 5, 0, 0))
+    assert r.winner is None
+    assert r.steps == 100
+
+
 def test_win_rates_sum_to_one(solved):
     game, result = solved
     rates = win_rates(game, result.row_policy, result.col_policy, n_games=50,
