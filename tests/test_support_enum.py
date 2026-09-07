@@ -47,6 +47,15 @@ def test_largest_sum_selection_avoids_the_bad_mixed_equilibrium():
     assert int((chosen.row > 1e-6).sum()) == 1  # a pure equilibrium
 
 
+def test_select_equilibrium_row_rule_and_errors():
+    eqs = all_equilibria(BOS_ROW, BOS_COL)
+    assert select_equilibrium(eqs, rule="row").row_value == pytest.approx(2.0)
+    with pytest.raises(ValueError):
+        select_equilibrium(eqs, rule="nonsense")
+    with pytest.raises(ValueError):
+        select_equilibrium([])
+
+
 def test_zero_sum_equilibria_all_share_the_game_value():
     rng = np.random.default_rng(1)
     for _ in range(20):

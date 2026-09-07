@@ -1,11 +1,12 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all report experiments figures a10 clean
+.PHONY: help lint test test-all coverage report experiments figures a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
 	@echo "make test         - fast test suite"
 	@echo "make test-all     - full suite including slow tests (~10 min)"
+	@echo "make coverage     - fast suite under coverage, report gaps"
 	@echo "make experiments  - regenerate experiments/*.csv (board sweep is slow)"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
@@ -19,6 +20,10 @@ test:
 
 test-all:
 	$(PY) -m pytest -q
+
+coverage:
+	$(PY) -m coverage run -m pytest -q -m "not slow"
+	$(PY) -m coverage report
 
 experiments:
 	$(PY) scripts/experiments.py baseline
@@ -43,4 +48,4 @@ a10:
 	$(PY) scripts/a10_competition.py --out results/
 
 clean:
-	rm -rf results/ .pytest_cache __pycache__ */__pycache__
+	rm -rf results/ .pytest_cache .ruff_cache .coverage htmlcov __pycache__ */__pycache__

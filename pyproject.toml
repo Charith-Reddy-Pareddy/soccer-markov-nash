@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = ["numpy>=1.26", "scipy>=1.11"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.6"]
+dev = ["pytest>=8.0", "ruff>=0.6", "coverage>=7.0"]
 
 [tool.setuptools]
 packages = ["soccer_nash"]
@@ -33,3 +33,10 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["soccer_nash"]
+
+[tool.coverage.run]
+source = ["soccer_nash"]
+
+[tool.coverage.report]
+skip_covered = true
+exclude_also = ["raise NotImplementedError", "if __name__ == .__main__.:"]

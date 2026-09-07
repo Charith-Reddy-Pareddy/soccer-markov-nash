@@ -3,7 +3,7 @@ import pytest
 
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
-from soccer_nash.simulate import play_game, win_rates
+from soccer_nash.simulate import GameResult, play_game, win_rates
 
 
 @pytest.fixture(scope="module")
@@ -76,3 +76,18 @@ def test_win_rates_sum_to_one(solved):
                       start=(5, 2, 0, 0, 0))
     assert rates["row_win"] + rates["tie"] + rates["row_loss"] == pytest.approx(1.0)
     assert rates["row_win"] == 1.0
+
+
+def test_game_result_tie_returns_are_zero():
+    tie = GameResult(trajectory=[], joint_actions=[], winner=None, steps=7)
+    assert tie.outcome_for_row == 0.0
+    assert tie.discounted_return(0.9) == 0.0
+
+
+def test_win_rates_counts_losses_and_discounts(solved):
+    game, result = solved
+    # Player 1 on the ball next to its goal -> player 0 loses every game.
+    rates = win_rates(game, result.row_policy, result.col_policy, n_games=20,
+                      start=(3, 2, 1, 2, 1), gamma=0.9)
+    assert rates["row_loss"] == 1.0
+    assert rates["discounted_return"] < 0.0
