@@ -1,0 +1,38 @@
+# Docs
+
+Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
+[report.html](report.html)) — the full answer to the research question.
+
+## Background and scope
+
+- [assumptions.md](assumptions.md) — the environment, the three claims, and
+  which A10 collision rules are quoted vs. interpreted.
+
+## The research questions
+
+- [geometry.md](geometry.md) — RQ3: which spatial configurations force mixing,
+  and the decision tree that predicts them.
+- [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
+- [numerics.md](numerics.md) — the value bracket, stage-game classification, and
+  how rounding under discounting misfires.
+- [findings.md](findings.md) — dated working notes (Q1–Q7).
+
+## A10 deliverables
+
+- [a10_part1.md](a10_part1.md) — successor states and transition rewards.
+- [a10_part2.md](a10_part2.md) — best response to the scripted opponent, imitated
+  by a bias-free policy network.
+- [a10_competition.md](a10_competition.md) — the two equilibrium networks and how
+  exploitable the approximation is.
+
+## Extensions
+
+- [selfplay.md](selfplay.md) — Nash-vs-Nash return and exploitability.
+- [shaping.md](shaping.md) — potential-based reward shaping leaves the
+  equilibrium fixed; a naive possession bonus does not.
+
+## Provenance
+
+- [review-checklist.md](review-checklist.md) — the 20 review points and where
+  each is addressed.
+- [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).
