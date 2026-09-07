@@ -9,12 +9,13 @@ Research code built on top of the CS 540 A10 soccer assignment
 > soccer Markov game, and under what state and reward settings does a pure Nash
 > equilibrium exist?
 
-**Full answer: [docs/report.md](docs/report.md)** (or open
-[docs/report.html](docs/report.html) in a browser). In short: under the A10 move
-rule a pure stationary equilibrium exists at every state and is found in 9
-sweeps with no LP; it fails only under Littman's random move *order*, and only
-on ~4% of states of a large enough board; the hybrid solver uses the pure
-saddle where one exists and the LP only where it does not.
+**Full answer: [the research report](https://claude.ai/code/artifact/8dd4c93e-704c-40c4-99ba-a4f97d519826)**
+([docs/report.md](docs/report.md) / [docs/report.html](docs/report.html) in the
+repo). In short: under the A10 move rule a pure stationary equilibrium exists at
+every state and is found in 9 sweeps with no LP; it fails only under Littman's
+random move *order*, and only on ~4% of states of a large enough board; the
+hybrid solver uses the pure saddle where one exists and the LP only where it
+does not.
 
 ## Plan
 
