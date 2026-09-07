@@ -9,7 +9,8 @@ assignment (<https://pages.cs.wisc.edu/~yw/CS540S26A10.html>).
 > necessary, can those configurations be characterized analytically, and can a
 > solver that checks for a pure equilibrium first exploit that structure?
 
-**Full answer: [docs/report.pdf](docs/report.pdf)** &mdash; Also as [docs/report.html](docs/report.html) (open in any browser) and
+**Full answer: [docs/report.pdf](docs/report.pdf)**, also as
+[docs/report.html](docs/report.html) (open in any browser) and
 [docs/report.md](docs/report.md).
 
 Two contributions:
