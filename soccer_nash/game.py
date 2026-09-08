@@ -23,6 +23,17 @@ Two resolution rules are supported:
 * ``move_order="coinflip"`` -- the A10 rule but a fair coin, not possession,
   decides who wins a contested square or a swap (each player with probability
   1/2). ``deterministic`` is this rule with the carrier always winning.
+
+Two reward objectives (``scoring=``):
+
+* ``"win"`` (default) -- the first goal ends the game, reward ``+1 / -1``. The
+  value is ``P(player 0 wins) - P(player 1 wins)`` under optimal play; the game
+  is a terminating zero-sum game and ``gamma < 1`` is only a solver device.
+* ``"rate"`` -- a goal scores ``+1 / -1`` and **play continues** from a restart:
+  the conceding team gets the ball at its own kickoff cell. The game runs to
+  ``max_steps``. The value is the *expected discounted goal difference*, so
+  ``gamma < 1`` is load-bearing, and conceding is no longer purely bad -- you
+  get the ball back. See ``docs/reward.md``.
 """
 
 from __future__ import annotations
@@ -82,12 +93,16 @@ class SoccerGame:
     p1_start: tuple[int, int] | None = None
     #: 4 -> {U, D, L, R}; 5 -> also STAND (Littman's fifth action)
     n_actions: int = 4
+    #: "win" -> first goal ends the game; "rate" -> goal resets, play continues
+    scoring: str = "win"
 
     def __post_init__(self) -> None:
         if self.move_order not in ("deterministic", "random", "coinflip"):
             raise ValueError(f"unknown move_order {self.move_order!r}")
         if self.n_actions not in (4, 5):
             raise ValueError(f"n_actions must be 4 or 5, got {self.n_actions}")
+        if self.scoring not in ("win", "rate"):
+            raise ValueError(f"scoring must be 'win' or 'rate', got {self.scoring!r}")
         for name, p in (("p0_start", self.p0_start), ("p1_start", self.p1_start)):
             if p is not None and not (
                 0 <= p[0] < self.width and 0 <= p[1] < self.height
@@ -152,10 +167,20 @@ class SoccerGame:
 
         return (_clamp(rx, 0, self.width - 1), _clamp(ry, 0, self.height - 1)), scored
 
-    @staticmethod
-    def _score_result(winner: int) -> tuple[State, tuple[int, int], bool]:
+    def _restart_state(self, conceding: int) -> State:
+        """Kickoff after a goal: both players at their start cells, the ball with
+        the team that just conceded."""
+        mid = self.height // 2
+        p0 = self.p0_start if self.p0_start is not None else (0, mid)
+        p1 = self.p1_start if self.p1_start is not None else (self.width - 1, mid)
+        return (p0[0], p0[1], p1[0], p1[1], conceding)
+
+    def _score_result(self, winner: int) -> tuple[State, tuple[int, int], bool]:
         reward = (1, -1) if winner == 0 else (-1, 1)
-        return (-1, -1, -1, -1, winner), reward, True
+        if self.scoring == "win":
+            return (-1, -1, -1, -1, winner), reward, True
+        # "rate": score the goal and play on from the restart
+        return self._restart_state(1 - winner), reward, False
 
     def _resolve_with_winner(
         self,
@@ -319,10 +344,10 @@ class A10SoccerGame(SoccerGame):
     move_order: str = "deterministic"
 
     def __post_init__(self) -> None:
-        if self.move_order != "deterministic":
+        if self.move_order != "deterministic" or self.scoring != "win":
             raise ValueError(
                 "A10SoccerGame is the exact assignment environment; use "
-                "SoccerGame(move_order=...) for research variants"
+                "SoccerGame(move_order=..., scoring=...) for research variants"
             )
         super().__post_init__()
 

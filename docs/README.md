@@ -13,6 +13,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   reproduction of his Figure 2 mixed equilibrium (`make littman`).
 - [mixing.md](mixing.md) — how shallow the mixed stage games are, their
   matching-pennies structure, and the value of mixing (`make mixing`).
+- [reward.md](reward.md) — a second reward objective (`scoring="rate"`: goal
+  reset, expected goal difference); the mixed region is invariant to it
+  (`make reward`).
 
 ## Background and scope
 
