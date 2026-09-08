@@ -32,7 +32,7 @@ almost every stage game is pure, so the LP is rare.
 
 Nash Q-iteration (`Q = R + beta * Nash(Q')`) solves a zero-sum Markov game by
 solving a matrix game at every state on every sweep. The matrix-game solve is
-the expensive step, and for the CS 540 A10 soccer game it is not obvious it is
+the expensive step, and for a soccer-style Markov game it is not obvious it is
 even needed: does the game actually require *mixed* strategies anywhere, or does
 a pure saddle point exist at every state? The original soccer game (Littman
 1994) was introduced precisely because it *does* need mixing "in the place where
@@ -203,6 +203,13 @@ two defender columns and vice versa -- covering **68 of 94** states; carrier
 other 26 are borderline near-pure saddles (22) or one 3x3 mix (4). All 94 share
 one value across every equilibrium (zero-sum interchangeability); 64 have a
 unique equilibrium.
+
+![One board per matching-pennies template: carrier and defender each with two
+probability-weighted arrows.](figures/gallery/templates.svg)
+
+Every policy and value surface in this report is drawn in `docs/gallery.html`
+(`make gallery`, from `soccer_nash/viz.py`): policy fans, the mixing map above,
+value heatmaps, and the same state under two resolution rules.
 
 The precise analytic condition for an unavoidable mixed stage game is a
 stochastic (½–½) resolution order **and** a goal mouth wider than one cell
