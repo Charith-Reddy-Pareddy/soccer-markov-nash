@@ -228,6 +228,28 @@ maximin)` -- averages `+0.13` at those states. It compounds along a path: at the
 centred kickoff a pure-strategy player secures only a draw where mixing is worth
 `+0.15` (`scripts/mixing.py`, [mixing.md](mixing.md)).
 
+#### The reward objective does not move the mixed region
+
+The default game rewards a *win* (first goal ends it). A second objective,
+`scoring="rate"` (`scripts/reward.py`, `make reward`), keeps playing: a goal
+scores `±1` and restarts with the ball to the conceding team, so the value is
+the expected discounted *goal difference*.
+
+| objective | no-saddle states | value range | V(kickoff) |
+|---|---|---|---|
+| win -- `P(win) − P(loss)` | 94 | `[−1.00, +1.00]` | +0.150 |
+| rate -- expected goal difference | 94 (**the same 94**) | `[−0.88, +0.88]` | +0.132 |
+
+The no-pure-saddle set is **identical** -- 0 states enter or leave. A mixed NE
+is an equilibrium of one stage game `M(s)`; changing how the horizon is scored
+rescales `M(s)` through `V(s′)` but does not cross the `maximin = minimax`
+boundary. The value *range* compresses because under `rate` a lost position is
+not a cliff: conceding restarts play with possession. Details:
+[reward.md](reward.md).
+
+![Two value heatmaps, win vs rate objective: same gradient, extremes pulled
+toward the kickoff value.](figures/gallery/reward_value.svg)
+
 #### Littman's fifth action
 
 Littman's 1994 soccer game adds a `stand` action, and his Figure 2 (a carrier
