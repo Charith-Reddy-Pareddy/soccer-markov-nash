@@ -309,7 +309,7 @@
       <b>RQ3 Mechanism</b> &mdash; which spatial configurations force mixing?
       <b>RQ4 Robustness</b> &mdash; how do discounting and tolerance affect the split?
     </div>
-    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 200+ tests &nbsp;|&nbsp; methods in <span class="mono">docs/methods.md</span> &nbsp;|&nbsp; open questions in <span class="mono">docs/discussion.md</span> &nbsp;|&nbsp; every policy drawn in <span class="mono">docs/gallery.html</span></p>
+    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 210+ tests &nbsp;|&nbsp; game family in <span class="mono">docs/design.md</span> &nbsp;|&nbsp; methods in <span class="mono">docs/methods.md</span> &nbsp;|&nbsp; every policy drawn in <span class="mono">docs/gallery.html</span></p>
   </header>
 
   <div class="hero fade">
@@ -472,6 +472,24 @@
       <figcaption class="fig-cap"><b>One policy fan per matching-pennies template.</b> Each covers a class of mixed states related by carrier-frame geometry; <span class="mono">p*</span>, <span class="mono">q*</span> are the equilibrium weights on the first support action. The carrier randomizes between two scoring lanes, the defender between covering them.</figcaption>
     </figure>
     <p><b>Why the mix is unavoidable.</b> A mixed stage game needs all three of: a stochastic (&frac12;&ndash;&frac12;) resolution order; a goal mouth wider than one cell, so the carrier has two scoring lanes; and a defender close enough to contest the forward cell but unable to cover both lanes in one move. The carrier climbs or drops, the defender guesses which &mdash; matching pennies. Drop any one clause &mdash; a single goal cell, deterministic resolution, or the coin-flip tie-break &mdash; and every stage game has a pure saddle. The full argument and one stage matrix per template are in <span class="mono">docs/templates.md</span>. For the single goal cell the theorem is partly proved (<span class="mono">docs/proof.md</span>): the defender has a closed-form optimal strategy &mdash; guard the one cell &mdash; and every stage game is dominance-solvable, machine-checked for all boards up to 11&times;5.</p>
+
+    <h3>Littman's fifth action</h3>
+    <p>Littman's 1994 soccer game has a fifth action, <span class="mono">stand</span>, and his Figure&nbsp;2 &mdash; a carrier pinned against its own goal by an adjacent defender &mdash; is the textbook "soccer needs mixing" example: the carrier must randomize between standing and moving. Adding <span class="mono">stand</span> to the random-order game (<span class="mono">n_actions=5</span>, <span class="mono">scripts/littman.py</span>) on Littman's 5&times;4 board:</p>
+    <div class="tbl-scroll">
+      <table>
+        <caption>Littman's board (5&times;4, 2-cell goals), random move order, discount 0.9</caption>
+        <thead><tr><th>action set</th><th class="num">no-saddle states</th><th class="num">stand in the mixed support</th><th class="num">V(kickoff)</th></tr></thead>
+        <tbody>
+          <tr><td>N, S, E, W</td><td class="num">56</td><td class="num">0</td><td class="num">+0.147</td></tr>
+          <tr><td>N, S, E, W, stand</td><td class="num">56</td><td class="num">48</td><td class="num">+0.172</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The fifth action does <em>not</em> move where mixing happens &mdash; 48 of the 56 no-pure-saddle states are shared, 8 swap in and 8 out at the margin &mdash; but it changes <em>what</em> the mix is: the carrier now hedges with <span class="mono">stand</span> in 48 of 56 states rather than with <span class="mono">retreat</span>, and every player is slightly better for the option (<span class="mono">V(kickoff) +0.147 &rarr; +0.172</span>). The Figure&nbsp;2 state is a clean matching-pennies matrix with equilibrium <span class="mono">(&frac12; climb, &frac12; hold)</span>. The deterministic game keeps a pure saddle at every state with five actions too.</p>
+    <figure>
+      <img src="figures/gallery/littman_stand.svg" alt="The same board state drawn twice: with four moves the carrier mixes climb and retreat; with the stand action added it mixes climb and hold, both at 50 percent." style="max-width:620px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Littman's Figure 2.</b> Same state, four moves (left) vs. five (right). The dashed ring is <span class="mono">stand</span>. Adding it turns the carrier's climb/retreat hedge into climb/hold &mdash; Littman's mixed policy.</figcaption>
+    </figure>
   </section>
 
   <section>
@@ -544,8 +562,9 @@
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    docs &mdash; design.md &middot; methods.md &middot; discussion.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; gallery.html<br>
     experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
