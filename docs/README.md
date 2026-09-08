@@ -11,6 +11,8 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   best answers the evidence supports.
 - [littman.md](littman.md) — Littman 1994, the fifth action (`stand`), and a
   reproduction of his Figure 2 mixed equilibrium (`make littman`).
+- [mixing.md](mixing.md) — how shallow the mixed stage games are, their
+  matching-pennies structure, and the value of mixing (`make mixing`).
 
 ## Background and scope
 
