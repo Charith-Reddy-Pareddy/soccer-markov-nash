@@ -7,6 +7,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 
 - [assumptions.md](assumptions.md) — the environment, the three claims, and
   which A10 collision rules are quoted vs. interpreted.
+- [questions-for-staff.md](questions-for-staff.md) — the specific things to
+  confirm with course staff (redacted parameters, the unspecified collision
+  sub-cases, the discount).
 
 ## The research questions
 
