@@ -37,7 +37,10 @@ Two contributions:
 |---|---|---|---|---|
 | `deterministic` (A10) | no | 0 / 2380 | yes | 0.000 |
 | `coinflip` tie-break | yes | 0 / 2380 | yes | 0.000 |
-| `random` (Littman) | yes | 94 / 2380 | no | 0.150 |
+| `random` (Littman) | yes | 94 / 2380 | no | 0.164 |
+
+`V(kickoff)` is at the A10 page's netID-specific start, `(0,1,6,3,0)`; the
+pure/mixed split does not depend on it.
 
 The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
 while calling the LP on only 3.95% of states (~25x fewer per sweep); mirror
@@ -82,7 +85,7 @@ depends on the machine and LP backend.
   exists.
 - **Random move order (Littman):** 3.95% of stage games on the 7x5 3-cell-goal
   board have no pure saddle, so no pure stationary equilibrium exists; the
-  `pure` solver then under-values the kickoff by 0.15. **Whether any state needs
+  `pure` solver then under-values the kickoff by 0.16. **Whether any state needs
   mixing is decided entirely by goal-mouth width** -- one cell: never; two or
   more: always ([docs/geometry.md](docs/geometry.md), phase diagram).
 - **Coinflip tie-break:** stochastic, yet its value function is identical to the

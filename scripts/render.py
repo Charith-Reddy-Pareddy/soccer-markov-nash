@@ -1,7 +1,7 @@
 """Render a soccer state (or the A10 Q8 trajectory) to an SVG file.
 
-    python scripts/render.py 0,2,6,2,0            # one state -> board.svg
-    python scripts/render.py 0,2,6,2,0 -o k.svg
+    python scripts/render.py                      # the A10 kickoff -> board.svg
+    python scripts/render.py 0,1,6,3,0 -o k.svg
     python scripts/render.py --trajectory         # the BR-vs-scripted win
 
 Player 0 is blue, player 1 is green.

@@ -328,15 +328,15 @@
       <rect x="680" y="72" width="6" height="156" fill="var(--p0)"/>
       <text x="26" y="154" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="end" transform="rotate(-90 26 154)">player 1 goal</text>
       <text x="700" y="150" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)" text-anchor="middle" transform="rotate(90 700 150)">player 0 goal</text>
-      <circle cx="85.7" cy="150" r="17" fill="var(--p0)"/>
-      <circle cx="85.7" cy="150" r="24" fill="none" stroke="var(--p0)" stroke-width="1.5" stroke-dasharray="3 4"/>
-      <text x="85.7" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">0</text>
-      <circle cx="110" cy="132" r="5.5" fill="var(--ember)" stroke="var(--paper)" stroke-width="1"/>
-      <circle cx="634.3" cy="150" r="17" fill="var(--p1)"/>
-      <text x="634.3" y="155" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">1</text>
-      <text x="40" y="298" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">state = (x0, y0, x1, y1, b) = (0, 2, 6, 2, 0)</text>
+      <circle cx="85.7" cy="202" r="17" fill="var(--p0)"/>
+      <circle cx="85.7" cy="202" r="24" fill="none" stroke="var(--p0)" stroke-width="1.5" stroke-dasharray="3 4"/>
+      <text x="85.7" y="207" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">0</text>
+      <circle cx="110" cy="184" r="5.5" fill="var(--ember)" stroke="var(--paper)" stroke-width="1"/>
+      <circle cx="634.3" cy="98" r="17" fill="var(--p1)"/>
+      <text x="634.3" y="103" font-family="'Barlow Semi Condensed', sans-serif" font-weight="700" font-size="16" fill="var(--paper)" text-anchor="middle">1</text>
+      <text x="40" y="298" font-family="'IBM Plex Mono', monospace" font-size="11" fill="var(--ink-faint)">state = (x0, y0, x1, y1, b) = (0, 1, 6, 3, 0)</text>
     </svg>
-    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2&thinsp;380 non-terminal states. Player&nbsp;0 (blue) carries the ball and attacks the right edge; player&nbsp;1 (green) the left. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
+    <p class="fig-cap"><b>The kickoff.</b> 7&times;5 grid, 2&thinsp;380 non-terminal states. Player&nbsp;0 (blue) carries the ball and attacks the right edge; player&nbsp;1 (green) the left. Start positions are the ones the A10 page assigns this netID. Actions <span class="mono">U D L R</span> are chosen simultaneously; reward is <span class="mono">+1 / &minus;1 / 0</span>, zero-sum.</p>
   </div>
 
   <section>
@@ -386,10 +386,11 @@
         <tbody>
           <tr><td>deterministic (exact A10)</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
           <tr><td>coinflip tie-break</td><td class="num">yes</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
-          <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380 (this config)</td><td class="no">no</td><td class="num">+0.150</td></tr>
+          <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380 (this config)</td><td class="no">no</td><td class="num">+0.164</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="fig-cap"><span class="mono">V(kickoff)</span> is at the A10 page's netID-specific start <span class="mono">(0,1,6,3,0)</span>; the no-pure-saddle count does not depend on it.</p>
     <div class="note">
       <span class="label">It is the move order, not the randomness</span>
       <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames.</p>
@@ -481,9 +482,9 @@
     <h2>Secondary validation &mdash; the policy plays correctly</h2>
     <ul class="plain">
       <li>Duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; no opponent beats the game value.</li>
-      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.149 &plusmn; 0.005</span> empirical discounted return over 5 seeds of 3&thinsp;000 games (vs. <span class="mono">+0.150</span> computed) in the random game.</li>
+      <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.162 &plusmn; 0.002</span> empirical discounted return over 5 seeds of 3&thinsp;000 games (vs. <span class="mono">+0.164</span> computed) in the random game.</li>
       <li>A best response to one assumed opponent is fragile: the Part&nbsp;2 policy has exploitability <span class="mono">0.43</span> &mdash; worse than random &mdash; which is the A10 competition's warning about non-equilibrium submissions.</li>
-      <li>A10 networks over 5 seeds (<span class="mono">experiments/a10_competition_seeds.csv</span>): the Part&nbsp;2 imitation net plays optimally at <span class="mono">0.990&nbsp;&plusmn;&nbsp;0.000</span> of states and wins Q8 every time; competition Network Second is exact, but Network First sits at a stubborn <span class="mono">0.28&nbsp;&plusmn;&nbsp;0.01</span> exploitability that does not wash out with re-seeding.</li>
+      <li>A10 networks over 5 seeds (<span class="mono">experiments/a10_competition_seeds.csv</span>): the Part&nbsp;2 imitation net plays optimally at <span class="mono">0.990&nbsp;&plusmn;&nbsp;0.000</span> of states and wins Q8 every time; competition Network Second is exact, but Network First sits at a <span class="mono">0.19&nbsp;&plusmn;&nbsp;0.02</span> exploitability from this kickoff that does not wash out with re-seeding.</li>
     </ul>
   </section>
 
@@ -501,7 +502,7 @@
           <tr><td>mean |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.13 &plusmn; 0.00</td></tr>
           <tr><td>action agreement</td><td class="yes">100%</td><td class="no">43% &plusmn; 2%</td></tr>
           <tr><td>pure/mixed classification</td><td class="yes">100%</td><td class="no">67% &plusmn; 2%</td></tr>
-          <tr><td>exploitability</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.43 &plusmn; 0.04</td></tr>
+          <tr><td>exploitability</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.44 &plusmn; 0.05</td></tr>
           <tr><td>convergence (epochs to plateau, of 600)</td><td class="yes">exact</td><td class="no">469 &plusmn; 31; 3/5 still creeping</td></tr>
           <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, ~35 s</td></tr>
         </tbody>

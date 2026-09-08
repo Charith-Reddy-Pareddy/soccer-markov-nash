@@ -21,10 +21,14 @@ from soccer_nash.experiment import run_config, standard_goal_rows, write_csv
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 
+# the A10 page's ID-specific kickoff on the 7x5 board (kickoff_value / duality_gap
+# are reported at this state; the pure/mixed split does not depend on it)
+A10 = {"p0_start": (0, 1), "p1_start": (6, 3)}
+
 
 def baseline() -> None:
     rows = [
-        run_config(move_order=mo, gamma=0.9, measure_exploitability=True)
+        run_config(move_order=mo, gamma=0.9, measure_exploitability=True, **A10)
         for mo in ("deterministic", "coinflip", "random")
     ]
     write_csv(OUT / "baseline.csv", rows)
@@ -36,7 +40,7 @@ def gamma_sweep() -> None:
     rows = []
     for mo in ("deterministic", "random"):
         for g in gammas:
-            rows.append(run_config(move_order=mo, gamma=g))
+            rows.append(run_config(move_order=mo, gamma=g, **A10))
     write_csv(OUT / "gamma_sweep.csv", rows)
     print("wrote experiments/gamma_sweep.csv")
 
@@ -44,7 +48,7 @@ def gamma_sweep() -> None:
 def tolerance_sweep() -> None:
     tols = [1e-12, 1e-10, 1e-8, 1e-6, 1e-4, 1e-3, 1e-2, 3e-2, 1e-1]
     rows = [
-        run_config(move_order="random", gamma=0.9, rel_tol=t) for t in tols
+        run_config(move_order="random", gamma=0.9, rel_tol=t, **A10) for t in tols
     ]
     write_csv(OUT / "tolerance_sweep.csv", rows)
     print("wrote experiments/tolerance_sweep.csv")

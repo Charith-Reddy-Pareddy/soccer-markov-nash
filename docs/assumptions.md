@@ -16,6 +16,8 @@ rather than quoted, and lists what to confirm with course staff.
 - "The game ends in a tie if no one scores in 100 steps."
 - Reward: `+1` win / `-1` loss / `0` otherwise, no discounting, for the Part 1
   evaluation.
+- Per this netID (shown after entering it on the page): player 0 (left) starts
+  at `[0, 1]`, player 1 (right) at `[6, 3]`, ball with player 0.
 
 ## Interpreted (not quoted)
 
@@ -25,7 +27,8 @@ something different.**
 
 | sub-case | what the A10 text says | this repo's reading |
 |---|---|---|
-| start positions, goal rows | parameterised by student ID, redacted on the public page | Littman geometry: player 0 left, player 1 right; goal mouth on rows `{1, 2, 3}`; `initial_state` = centre row, opposite ends. Configurable via `SoccerGame(width=, height=, goal_rows=)`. |
+| start positions | per netID: after entering the netID the A10 page shows player 0 at `[0, 1]`, player 1 at `[6, 3]` | used verbatim -- `A10SoccerGame().initial_state() = (0, 1, 6, 3, 0)`. A different netID gets different positions; pass `p0_start=` / `p1_start=`. |
+| goal rows / how a score triggers | not stated on the page | `goal_rows = {1, 2, 3}` (middle three of the 5); a carrier on a goal row that moves off its attacking edge scores. This is **load-bearing**: a one-row goal is never mixed, `>= 2` always is. Confirm with staff. |
 | carrier moves into a *stationary* opponent (not a shared empty square) | nothing explicit | treated as "trying to occupy the same square": the carrier is blocked, stays put, and possession passes to the stationary player (`_resolve_with_winner`, `t0 == t1 == pos[loser]` branch). |
 | non-carrier moves into the carrier | nothing explicit | same rule: the non-carrier is blocked and *takes* the ball (a bump = steal). |
 | out-of-bounds move | nothing explicit | clamped -- the player stays. Exception: a carrier moving into the opponent's goal edge on a goal row scores. |

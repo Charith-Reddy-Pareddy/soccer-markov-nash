@@ -29,7 +29,9 @@ from soccer_nash.simulate import win_rates
 
 def run(move_orders: list[str], gamma: float, n_games: int, seeds: int) -> None:
     for mo in move_orders:
-        game = SoccerGame(move_order=mo)
+        # the A10 ID-specific kickoff, so all three move orders compare at the
+        # same starting state
+        game = SoccerGame(move_order=mo, p0_start=(0, 1), p1_start=(6, 3))
         s0 = game.initial_state()
         nq = NashQIteration(game, gamma=gamma, mode="hybrid", tol=1e-10).run()
         v_nash = nq.values[s0]

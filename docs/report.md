@@ -253,8 +253,8 @@ satisfying:
 - Its duality gap `V0_br(s0) + V1_br(s0)` is `< 1e-9` for every move order -- no
   opponent beats the game value.
 - Nash vs. Nash reproduces the value: forced draws in the deterministic and
-  coin-flip games; a `+0.149 +/- 0.005` empirical discounted return over 5 seeds
-  of 3000 games (vs. `+0.150` computed) in the random game.
+  coin-flip games; a `+0.162 +/- 0.002` empirical discounted return over 5 seeds
+  of 3000 games (vs. `+0.164` computed) in the random game.
 - A best response to one assumed opponent is fragile: the Part 2
   best-response-to-the-scripted-opponent policy has exploitability `0.43` --
   worse than moving uniformly at random -- which is exactly the A10 competition's
@@ -264,9 +264,9 @@ satisfying:
   (`experiments/a10_competition_seeds.csv`): the Part 2 imitation network plays
   an optimal action at `0.990 +/- 0.000` of states and wins the Q8 rollout every
   time; the competition Network Second is exact (`1.000` optimal, `0`
-  exploitable) but Network First sits at `0.994` optimal and a stubborn
-  `0.28 +/- 0.01` exploitability -- one badly-fit state a best-responder can
-  exploit, and it does not wash out with re-seeding.
+  exploitable) but Network First sits at `0.994` optimal and a
+  `0.19 +/- 0.02` exploitability from this kickoff -- one badly-fit state a
+  best-responder can exploit, and it does not wash out with re-seeding.
 
 ## 8. Neural Nash-Q vs. the exact solver
 
@@ -283,7 +283,7 @@ biases (frozen target network, 600 epochs) to the exact stage matrices of the
 | mean `\|V - V_exact\|` | 0 | 0.13 +/- 0.00 |
 | action agreement | 100% | 43% +/- 2% |
 | pure/mixed classification agreement | 100% | 67% +/- 2% |
-| exploitability (duality gap) | `<1e-9` | 0.43 +/- 0.04 |
+| exploitability (duality gap) | `<1e-9` | 0.44 +/- 0.05 |
 | convergence (epochs to MSE plateau, of 600) | exact fixed point | 469 +/- 31; still creeping down at 600 in 3/5 seeds |
 | runtime | 9 sweeps, 0.3 s | 600 epochs, ~35 s |
 
@@ -339,6 +339,6 @@ the exact solver stays the ground truth rather than being replaced.
 and carry no seed. The randomised measurements are each run over 5 seeds and
 quoted as mean +/- sd: the neural Nash-Q metrics (`nash_dqn_seeds.csv`), the
 A10 imitation and competition networks (`a10_part2` / `a10_competition --seeds`),
-the random-game self-play return (`+0.149 +/- 0.005`), and the wall-clock
+the random-game self-play return (`+0.162 +/- 0.002`), and the wall-clock
 figures (median of 5 repeats). LP-call counts and mixed-state counts are
 deterministic.
