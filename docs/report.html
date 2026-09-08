@@ -392,6 +392,7 @@
         </tbody>
       </table>
     </div>
+    <p>The deterministic equilibrium is <b>constructive and memoryless</b>: each player's win attractor (states from which it forces a goal, <span class="mono">soccer_nash/attractor.py</span>) equals its <span class="mono">V* = &plusmn;1</span> set, and the pure profile "attractor move on your winning set, safety move elsewhere" realizes <span class="mono">V*</span> at every state (<span class="mono">scripts/positional.py</span>) &mdash; the game is positionally determined.</p>
     <p>The stationary <span class="mono">&gamma; &lt; 1</span> solve agrees and is faster &mdash; 0 no-pure-saddle stage games on the deterministic game at every <span class="mono">&gamma;</span> from 0.5 to 0.995, and <b>94 / 2380</b> on the random game at <span class="mono">&gamma; = 0.9</span> (<span class="mono">V(kickoff) = +0.164</span> at the netID start). The no-pure-saddle count never depends on the kickoff.</p>
     <div class="note">
       <span class="label">It is the move order, not the randomness</span>
@@ -521,14 +522,14 @@
     <ul class="plain">
       <li>The A10 page redacts the ID-specific start position and goal rows; this repo uses the standard Littman geometry (configurable). Across the phase-diagram sweep every one-cell-goal board has 0 mixed states and every wider-goal board has some; the exact <span class="mono">3.95%</span> is the 7&times;5 / 3-cell-goal case.</li>
       <li>Several collision sub-cases (carrier vs. stationary opponent, bump = steal, swap possession) are <em>interpreted</em> from the two stated A10 rules, not quoted. If course staff intended otherwise, Claim&nbsp;A must be re-measured. See <span class="mono">docs/assumptions.md</span>.</li>
-      <li><b>Claim A</b> (every converged stage game has a pure saddle) and <b>Claim B</b> (a stationary pure equilibrium exists) are established by enumeration. <b>Claim C</b> (the theoretical game necessarily has one, over all settings) is <em>not</em>, for the general goal mouth. For the single goal cell it is partly proved (<span class="mono">docs/proof.md</span>).</li>
+      <li><b>Claim A/B</b> (a pure equilibrium of the deterministic game) is established constructively &mdash; the explicit pure memoryless attractor/safety profile. <b>Claim C</b> (the theoretical game necessarily has one, over all rules and settings) is <em>not</em>, for the general goal mouth; for the single goal cell it is partly proved (<span class="mono">docs/proof.md</span>).</li>
       <li><span class="mono">random</span> and <span class="mono">coinflip</span> are different game definitions, isolating the collision rule and the tie-break respectively &mdash; not the A10 game.</li>
     </ul>
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
     experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>

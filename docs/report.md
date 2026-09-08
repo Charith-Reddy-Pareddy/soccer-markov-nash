@@ -115,10 +115,14 @@ induction (`run_finite_horizon`, `experiments/undiscounted.csv`):
 | `random` move order | 3 148 (404 states, some step) | +0.459 | no |
 
 For the deterministic A10 game **every stage game at every horizon has a pure
-saddle**, so playing a pure saddle action everywhere is an exact equilibrium
-(Claim A/B) -- and the discount was never load-bearing: the stationary
-`gamma < 1` solve agrees at every `gamma` from 0.5 to 0.995 (0 mixed stage
-games), with these counts:
+saddle**, and the equilibrium is *constructive and memoryless*: each player's
+win attractor (the states from which it forces a goal) coincides exactly with
+the `V* = +/-1` set, and the pure profile "attractor move on your winning set,
+safety move elsewhere" (`soccer_nash/attractor.py`, `scripts/positional.py`)
+realizes `V*` at every state -- the deterministic game is positionally
+determined. The discount was never load-bearing: the stationary `gamma < 1`
+solve agrees at every `gamma` from 0.5 to 0.995 (0 mixed stage games), with
+these counts:
 
 | move order | converged stage games with no pure saddle, `gamma = 0.9` | stationary pure eq? |
 |---|---|---|

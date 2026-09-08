@@ -18,29 +18,28 @@ games across its whole non-stationary horizon. `V*(kickoff) = 0` -- a forced
 draw. The gap is a **board-size-free** argument (the above are finite checks
 plus one player's strategy).
 
-**Best answer.** The single-cell game is a **reachability / safety game**:
-player 0 wants the ball to reach the one cell `T` (reachability), player 1 wants
-to prevent that forever (safety). Deterministic reachability games on finite
-graphs are *positionally determined* -- both players have optimal pure
-positional (memoryless) strategies, computed by an attractor fixpoint. Soccer is
-*concurrent* (simultaneous moves), which in general breaks positional
-determinacy (matching pennies is a concurrent reachability game with no pure
-value). But with a **single** target the concurrency collapses: on the one
-approach to `T`, a carrier that moves into the defender *loses the ball* -- a
-strict loss -- so the carrier never contests and the defender never needs to.
-The stage game degenerates to a turn-order-independent one, and the attractor
-strategy is optimal for both. The naive "race to `T`, sidestep" carrier rule
-failed on ~5% of states precisely because it is not the attractor strategy: near
-the draw boundary the value-preserving carrier move is sometimes "wait" or
-"retreat", not "advance".
+**What is now done.** For the **deterministic** game this is *solved*
+constructively (`soccer_nash/attractor.py`, [proof.md](proof.md)): each player's
+win attractor -- the concurrent controllable-predecessor fixpoint -- coincides
+exactly with the `V* = ±1` sets, and the pure memoryless profile "attractor move
+on your winning set, safety move elsewhere" realizes `V*` at every state (0
+mismatches, all boards tested, goal widths 1 and 3). The deterministic game is
+positionally determined.
 
-**To close it.** Prove the attractor strategy achieves `V*` for the single-cell
-transition structure -- an induction on the attractor rank, with the
-wall-clamping and the ball-loss-on-contact rule handled as the base cases. This
-is a cleaner object than the weak-dominance elimination and should generalize to
-any board. Related reading: reachability-game positional determinacy;
-de Alfaro-Henzinger-Kupferman on concurrent reachability; Filar & Vrieze,
-*Competitive Markov Decision Processes*.
+**What remains: the *random* single-cell game.** It is a stochastic reachability
+/ safety game -- player 0 wants the ball to reach the one cell `T`, player 1
+wants to prevent it forever. With a **single** target the concurrency that makes
+matching pennies collapses: on the one approach to `T`, a carrier that moves
+into the defender *loses the ball* -- a strict loss -- so the carrier never
+contests and the defender never needs to. The naive "race to `T`, sidestep"
+carrier rule failed on ~5% of states precisely because it is not a value-aware
+strategy: near the draw boundary the value-preserving carrier move is sometimes
+"wait" or "retreat". The clean object is a *stochastic* attractor (an MDP-style
+`P(reach T)` fixpoint) with a pure threshold strategy; showing it is optimal --
+by induction on the distance to `T`, with the ball-loss-on-contact rule as the
+base case -- would close the gap board-size-free. Related reading: concurrent
+reachability positional determinacy (de Alfaro-Henzinger-Kupferman); Filar &
+Vrieze, *Competitive Markov Decision Processes*.
 
 ---
 
