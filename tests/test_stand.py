@@ -94,6 +94,24 @@ def test_five_action_stage_matrix_is_five_by_five(solved_pair):
     assert m.shape == (5, 5)
 
 
+def test_policy_svg_draws_a_stand_ring(solved_pair):
+    import xml.etree.ElementTree as ET
+
+    solver, result = solved_pair[5]
+    game = solver.game
+    s = next(
+        st for st in result.no_saddle_states
+        if result.row_policy[st][4] > 0.1 or result.col_policy[st][4] > 0.1
+    )
+    from soccer_nash.viz import policy_svg
+
+    svg = policy_svg(game, s, result.row_policy, result.col_policy,
+                     result.values[s], title="stand")
+    ET.fromstring(svg)
+    assert "stroke-dasharray" in svg          # the STAND ring
+    assert "hold" in svg
+
+
 def test_deterministic_five_action_game_still_has_a_pure_saddle():
     g = SoccerGame(width=5, height=4, goal_rows=(1, 2), n_actions=5)
     result = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10).run()
