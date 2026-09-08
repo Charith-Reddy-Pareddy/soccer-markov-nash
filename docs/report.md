@@ -44,11 +44,13 @@ inherit it?
   move order, `coinflip` tie-break).
 - **Nash-Q** (`soccer_nash/nash_q.py`): the operator `Q = R + gamma * Nash(Q')`,
   where `Nash` is the minimax value of the stage game `M_s`. The A10 game itself
-  is *undiscounted* (`+1` / `-1` at a goal, `0` otherwise, tie after 100 steps);
-  `gamma < 1` is a contraction device for value iteration, and RQ4 shows the
-  results hold across `gamma` in `0.5-0.995`. `gamma = 0.9` throughout unless
-  noted. Freeze-then-iterate (policy iteration) freezes the stage strategies,
-  runs cheap linear evaluation sweeps, then re-solves.
+  is *undiscounted* (`+1` / `-1` at a goal, `0` otherwise, tie after 100 steps),
+  so its exact solution is 100-step backward induction (`run_finite_horizon`,
+  RQ1). `run()` with `gamma < 1` is a faster stationary approximation -- a
+  contraction device -- and RQ4 shows the pure/mixed split holds across `gamma`
+  in `0.5-0.995`; `gamma = 0.9` unless noted. Freeze-then-iterate (policy
+  iteration) freezes the stage strategies, runs cheap linear evaluation sweeps,
+  then re-solves.
 - **Stage solvers** (`soccer_nash/matrix_games.py`, `support_enum.py`):
   pure-saddle detection (`maximin == minimax`, O(A^2), no LP); the LP minimax
   value (`scipy` HiGHS); support enumeration -- *all* equilibria of a
@@ -101,20 +103,33 @@ Two further reductions:
 
 ### RQ1 -- Existence
 
-| move order | converged stage games with no pure saddle | stationary pure eq? |
-|---|---|---|
-| `deterministic` (exact A10) | 0 / 2380 | yes (Claim B) |
-| `coinflip` tie-break | 0 / 2380 | yes (Claim B) |
-| `random` move order | 94 / 2380 (this config) | no |
+The A10 game is undiscounted, so its exact solution is 100-step backward
+induction (`run_finite_horizon`, `experiments/undiscounted.csv`):
 
-For the implemented deterministic model every converged stage game has a pure
-saddle (Claim A); playing a pure saddle action everywhere is then a stationary
-pure-strategy equilibrium (Claim B). A **coin-flip tie-break** -- randomising
-who wins a contested square -- does not change this: its value function is
-bit-identical to the deterministic game's (`max |V_det - V_coin| = 0` at every
-gamma), because optimal play never enters a losing contest, so the coin is never
-flipped. Only Littman's **random move order**, where a ball-steal depends on who
-resolves first *and* on both players' targets, breaks it.
+| move order | mixed stage games (state x step, of 238 000) | V(kickoff) | pure equilibrium |
+|---|---|---|---|
+| `deterministic` (exact A10) | **0** | 0.000 | yes -- pure (non-stationary) |
+| `coinflip` tie-break | **0** | 0.000 | yes |
+| `random` move order | 3 148 (404 states, some step) | +0.459 | no |
+
+For the deterministic A10 game **every stage game at every horizon has a pure
+saddle**, so playing a pure saddle action everywhere is an exact equilibrium
+(Claim A/B) -- and the discount was never load-bearing: the stationary
+`gamma < 1` solve agrees at every `gamma` from 0.5 to 0.995 (0 mixed stage
+games), with these counts:
+
+| move order | converged stage games with no pure saddle, `gamma = 0.9` | stationary pure eq? |
+|---|---|---|
+| `deterministic` | 0 / 2380 | yes |
+| `coinflip` | 0 / 2380 | yes |
+| `random` | 94 / 2380 (this config) | no |
+
+A **coin-flip tie-break** -- randomising who wins a contested square -- does not
+change this: its value function is bit-identical to the deterministic game's
+(`max |V_det - V_coin| = 0`), because optimal play never enters a losing
+contest, so the coin is never flipped. Only Littman's **random move order**,
+where a ball-steal depends on who resolves first *and* on both players' targets,
+breaks it.
 
 ### RQ2 -- Efficiency
 

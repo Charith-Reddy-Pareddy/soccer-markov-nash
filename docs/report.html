@@ -342,7 +342,7 @@
   <section>
     <p class="kicker">Abstract</p>
     <ol class="answers">
-      <li><span class="n">1</span><span><b>For the implemented deterministic A10 model, every one of the 2&thinsp;380 converged stage games has a pure saddle.</b> Playing a pure saddle action everywhere is then a stationary pure-strategy equilibrium, found in 9 sweeps with no linear program.</span></li>
+      <li><span class="n">1</span><span><b>The deterministic A10 game &mdash; solved exactly, undiscounted, by 100-step backward induction &mdash; has a pure saddle at every one of its 238&thinsp;000 (state &times; step) stage games.</b> A pure equilibrium exists; the LP is never called; discounting was never load-bearing.</span></li>
       <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on 3.95% of states (this configuration).</span></li>
       <li><span class="n">3</span><span><b>Those mixed states are geometrically localised:</b> a decision tree predicts them from the state with precision 0.96, and 68 of 94 have a 2&times;2 matching-pennies support.</span></li>
       <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only 3.95% of states &mdash; ~25&times; fewer per sweep; mirror symmetry halves the work again.</span></li>
@@ -380,17 +380,19 @@
 
   <section>
     <h2>RQ1 &mdash; Existence</h2>
+    <p>The A10 game is undiscounted, so it is solved exactly by 100-step backward induction (<span class="mono">run_finite_horizon</span>, <span class="mono">experiments/undiscounted.csv</span>):</p>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th>move order</th><th class="num">stochastic</th><th class="num">converged stage games with no pure saddle</th><th>stationary pure eq?</th><th class="num">V(kickoff)</th></tr></thead>
+        <caption>exact undiscounted game &mdash; 238&thinsp;000 (state &times; step) stage games</caption>
+        <thead><tr><th>move order</th><th class="num">mixed stage games</th><th class="num">V(kickoff)</th><th>pure equilibrium?</th></tr></thead>
         <tbody>
-          <tr><td>deterministic (exact A10)</td><td class="num">no</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
-          <tr><td>coinflip tie-break</td><td class="num">yes</td><td class="num">0 / 2380</td><td class="yes">yes (Claim&nbsp;B)</td><td class="num">0</td></tr>
-          <tr><td>random move order</td><td class="num">yes</td><td class="num">94 / 2380 (this config)</td><td class="no">no</td><td class="num">+0.164</td></tr>
+          <tr><td>deterministic (exact A10)</td><td class="num">0</td><td class="num">0.000</td><td class="yes">yes &mdash; pure (non-stationary)</td></tr>
+          <tr><td>coinflip tie-break</td><td class="num">0</td><td class="num">0.000</td><td class="yes">yes</td></tr>
+          <tr><td>random move order</td><td class="num">3&thinsp;148 (404 states)</td><td class="num">+0.459</td><td class="no">no</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="fig-cap"><span class="mono">V(kickoff)</span> is at the A10 page's netID-specific start <span class="mono">(0,1,6,3,0)</span>; the no-pure-saddle count does not depend on it.</p>
+    <p>The stationary <span class="mono">&gamma; &lt; 1</span> solve agrees and is faster &mdash; 0 no-pure-saddle stage games on the deterministic game at every <span class="mono">&gamma;</span> from 0.5 to 0.995, and <b>94 / 2380</b> on the random game at <span class="mono">&gamma; = 0.9</span> (<span class="mono">V(kickoff) = +0.164</span> at the netID start). The no-pure-saddle count never depends on the kickoff.</p>
     <div class="note">
       <span class="label">It is the move order, not the randomness</span>
       <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames.</p>
@@ -527,7 +529,7 @@
   <footer>
     soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py<br>
     scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    experiments &mdash; baseline.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
+    experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>
 </div>

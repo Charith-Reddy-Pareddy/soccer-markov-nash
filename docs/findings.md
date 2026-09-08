@@ -21,12 +21,14 @@ Working notes. The polished write-up is [report.md](report.md).
 
 ## Q1: Can pure-strategy Nash equilibria solve the game?
 
-**Deterministic model: yes, for every enumerated state (Claim A).** All 2380
-converged stage games have a pure saddle (`maximin == minimax`), so `pure`,
-`hybrid` and `mixed` give identical value functions and value iteration
-converges in 9 sweeps with no LP. Playing a pure saddle action everywhere is a
-stationary pure-strategy equilibrium (Claim B). This is not a proof about the
-theoretical A10 game (Claim C) -- see `docs/assumptions.md`.
+**Deterministic model: yes, for every enumerated state (Claim A).** The A10 game
+is undiscounted; exact 100-step backward induction (`run_finite_horizon`) finds
+a pure saddle at every one of the 238 000 (state x step) stage games -- a pure
+(non-stationary) equilibrium. The stationary `gamma < 1` value iteration agrees:
+0 no-saddle stage games at every `gamma` from 0.5 to 0.995, converging in 9
+sweeps with no LP, and `pure` / `hybrid` / `mixed` give identical values. This
+is not a proof about the theoretical game over all rules (Claim C) -- see
+`docs/assumptions.md`.
 
 Intuition: deterministic transitions + a carrier that always wins contested
 squares means best responses are pure -- there is no guessing pressure.
