@@ -5,8 +5,14 @@ State: ``(x0, y0, x1, y1, b)`` where ``(x0, y0)`` is player 0's cell,
 
 Terminal states are encoded ``(-1, -1, -1, -1, winner)``.
 
-Both players pick an action from ``{U, D, L, R}`` simultaneously. Two resolution
-rules are supported:
+Both players pick an action simultaneously. The move set is ``{U, D, L, R}`` by
+default; ``n_actions=5`` adds ``STAND`` (stay put), which is Littman's (1994)
+fifth action and the one his Figure 2 mixed equilibrium randomizes over. STAND
+needs no special resolution code: a standing player simply targets its own cell,
+and the existing "move into an occupied cell fails / transfers the ball" logic
+does the rest.
+
+Two resolution rules are supported:
 
 * ``move_order="deterministic"`` -- the A10 rule: the carrier wins contested
   squares, swaps flip possession, a carrier blocked by a standing opponent
@@ -39,6 +45,7 @@ class Action(IntEnum):
     D = 1
     L = 2
     R = 3
+    STAND = 4
 
 
 # (dx, dy) per action. Up increases y.
@@ -47,11 +54,15 @@ _DELTA: dict[Action, tuple[int, int]] = {
     Action.D: (0, -1),
     Action.L: (-1, 0),
     Action.R: (1, 0),
+    Action.STAND: (0, 0),
 }
 
-# Joint-action order used by A10 Question 1: UU, UD, UL, UR, DU, ...
+#: the four movement actions -- the default move set
+MOVE_ACTIONS: tuple[Action, ...] = (Action.U, Action.D, Action.L, Action.R)
+
+# Joint-action order used by A10 Question 1: UU, UD, UL, UR, DU, ... (4x4 only).
 JOINT_ACTIONS: list[tuple[Action, Action]] = [
-    (a0, a1) for a0 in Action for a1 in Action
+    (a0, a1) for a0 in MOVE_ACTIONS for a1 in MOVE_ACTIONS
 ]
 
 
@@ -69,10 +80,14 @@ class SoccerGame:
     # kickoff positions; ``None`` -> the centre row at opposite ends
     p0_start: tuple[int, int] | None = None
     p1_start: tuple[int, int] | None = None
+    #: 4 -> {U, D, L, R}; 5 -> also STAND (Littman's fifth action)
+    n_actions: int = 4
 
     def __post_init__(self) -> None:
         if self.move_order not in ("deterministic", "random", "coinflip"):
             raise ValueError(f"unknown move_order {self.move_order!r}")
+        if self.n_actions not in (4, 5):
+            raise ValueError(f"n_actions must be 4 or 5, got {self.n_actions}")
         for name, p in (("p0_start", self.p0_start), ("p1_start", self.p1_start)):
             if p is not None and not (
                 0 <= p[0] < self.width and 0 <= p[1] < self.height
@@ -87,7 +102,13 @@ class SoccerGame:
 
     # ------------------------------------------------------------------ basics
     def actions(self) -> list[Action]:
-        return list(Action)
+        """The move set: ``[U, D, L, R]``, plus ``STAND`` when ``n_actions == 5``."""
+        return [Action(i) for i in range(self.n_actions)]
+
+    def joint_actions(self) -> list[tuple[Action, Action]]:
+        """Every ``(a0, a1)`` pair, row-major in the move set (A10 order for 4)."""
+        acts = self.actions()
+        return [(a0, a1) for a0 in acts for a1 in acts]
 
     def is_terminal(self, state: State) -> bool:
         return state[0] == -1

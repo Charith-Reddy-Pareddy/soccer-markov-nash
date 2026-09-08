@@ -38,7 +38,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from soccer_nash.game import JOINT_ACTIONS, SoccerGame, State
+from soccer_nash.game import SoccerGame, State
 from soccer_nash.matrix_games import (
     game_value,
     pure_bounds,
@@ -106,14 +106,16 @@ class NashQIteration:
         self._lp_calls = 0
         self._lp_cache: dict = {}
 
+        self._n = game.n_actions
+        self._joint = game.joint_actions()
         self._states: list[State] = list(game.states())
-        # Per state: a 4x4 grid of outcome lists [(prob, next_state, r0), ...],
+        # Per state: an n x n grid of outcome lists [(prob, next_state, r0), ...],
         # with any shaping reward folded into r0.
         self._out: dict[State, np.ndarray] = {}
         for s in self._states:
-            grid = np.empty((4, 4), dtype=object)
-            for k, (a0, a1) in enumerate(JOINT_ACTIONS):
-                i, j = divmod(k, 4)
+            grid = np.empty((self._n, self._n), dtype=object)
+            for k, (a0, a1) in enumerate(self._joint):
+                i, j = divmod(k, self._n)
                 outcomes = []
                 for prob, ns, (r0, _) in game.transitions(s, a0, a1):
                     if shaping is not None:
@@ -126,11 +128,11 @@ class NashQIteration:
     def _matrix(
         self, s: State, values: dict[State, float], gamma: float | None = None
     ) -> np.ndarray:
-        m = np.zeros((4, 4))
+        m = np.zeros((self._n, self._n))
         grid = self._out[s]
         gamma = self.gamma if gamma is None else gamma
-        for i in range(4):
-            for j in range(4):
+        for i in range(self._n):
+            for j in range(self._n):
                 acc = 0.0
                 for prob, ns, r0 in grid[i, j]:
                     if self.game.is_terminal(ns):
@@ -171,8 +173,8 @@ class NashQIteration:
         columns (``axis=1``); player 1's for a column is that column's maximum
         over the rows (``axis=0``).
         """
-        p = np.zeros(4)
-        q = np.zeros(4)
+        p = np.zeros(m.shape[0])
+        q = np.zeros(m.shape[1])
         p[int(np.argmax(m.min(axis=1)))] = 1.0
         q[int(np.argmin(m.max(axis=0)))] = 1.0
         return p, q
@@ -268,6 +270,8 @@ class NashQIteration:
         of a stochastic transition is not verified here."""
         if self.game.move_order != "deterministic":
             raise ValueError("run_symmetric() requires deterministic move order")
+        if self._n != 4:
+            raise ValueError("run_symmetric() is only wired for the 4-action game")
         from soccer_nash.symmetry import canonical_pairs
 
         self._lp_calls = 0
@@ -287,9 +291,9 @@ class NashQIteration:
             updated: dict[State, float] = {}
             for s in reps:
                 grid = self._out[s]
-                m = np.zeros((4, 4))
-                for i in range(4):
-                    for j in range(4):
+                m = np.zeros((self._n, self._n))
+                for i in range(self._n):
+                    for j in range(self._n):
                         acc = 0.0
                         for prob, ns, r0 in grid[i, j]:
                             acc += prob * (
@@ -327,8 +331,8 @@ class NashQIteration:
         self._lp_calls = 0
         self._lp_cache: dict = {}
         values: dict[State, float] = dict.fromkeys(self._states, 0.0)
-        row_policy = {s: np.full(4, 0.25) for s in self._states}
-        col_policy = {s: np.full(4, 0.25) for s in self._states}
+        row_policy = {s: np.full(self._n, 1 / self._n) for s in self._states}
+        col_policy = {s: np.full(self._n, 1 / self._n) for s in self._states}
         staleness_trace: list[float] = []
 
         outer = 0
@@ -403,8 +407,8 @@ class NashQIteration:
         with the equilibrium supports.
         """
         states = list(result.values)
-        row = np.zeros((len(states), 4))
-        col = np.zeros((len(states), 4))
+        row = np.zeros((len(states), self._n))
+        col = np.zeros((len(states), self._n))
         for i, s in enumerate(states):
             m = self._matrix(s, result.values)
             # Player 0 maximises its worst case over the row; player 1 minimises

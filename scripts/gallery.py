@@ -154,6 +154,32 @@ def build(width: int, height: int) -> list[tuple[str, str, str]]:
             ], cols=2),
         ))
 
+    # 7. Littman's fifth action: same state, four moves vs five (with stand)
+    lit4 = SoccerGame(width=5, height=4, goal_rows=(1, 2), move_order="random")
+    lit5 = SoccerGame(width=5, height=4, goal_rows=(1, 2), move_order="random",
+                      n_actions=5)
+    l4s, l4r = _solve(lit4)
+    l5s, l5r = _solve(lit5)
+    shared = sorted(set(l4r.no_saddle_states) & set(l5r.no_saddle_states))
+    lit_state = next(
+        (s for s in shared
+         if s[4] == 1 and l5r.col_policy[s][4] > 0.2
+         and abs(s[0] - s[2]) + abs(s[1] - s[3]) == 1),
+        shared[0],
+    )
+    figs.append((
+        "littman_stand",
+        "Littman's fifth action. The carrier is pinned near its own goal by an "
+        "adjacent defender. With four moves the mix is climb / retreat; adding "
+        "STAND, the equilibrium becomes climb / hold -- Littman's Figure 2.",
+        panel_svg([
+            policy_svg(lit4, lit_state, l4r.row_policy, l4r.col_policy,
+                       l4r.values[lit_state], title="four moves"),
+            policy_svg(lit5, lit_state, l5r.row_policy, l5r.col_policy,
+                       l5r.values[lit_state], title="+ stand (Littman Fig 2)"),
+        ], cols=2),
+    ))
+
     return figs
 
 

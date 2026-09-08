@@ -33,6 +33,8 @@ def win_attractor(game: SoccerGame, player: int) -> dict[State, int]:
     how many forced moves. Deterministic games only."""
     if game.move_order != "deterministic":
         raise ValueError("win_attractor needs deterministic move resolution")
+    if game.n_actions != 4:
+        raise ValueError("win_attractor is only wired for the 4-action game")
     states = list(game.states())
 
     def me_forces_into(s: State, good: set[State], strict_goal: bool) -> bool:

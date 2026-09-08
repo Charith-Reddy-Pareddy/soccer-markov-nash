@@ -1,9 +1,15 @@
-# Environment assumptions and A10 fidelity
+# The A10 geometry instance, and its interpreted rules
 
-The headline result -- "every stage game admits a pure saddle" -- is only as
-strong as the environment it is measured on. This page states exactly what the
-implemented environment does, marks every place the A10 text is *interpreted*
-rather than quoted, and lists what to confirm with course staff.
+The game family and the design rationale are in [design.md](design.md). This
+page is about one instance -- the CS 540 A10 geometry, `A10SoccerGame` -- which
+is where the "every stage game admits a pure saddle" result is measured. The
+headline result is only as strong as that environment, so this page marks every
+place the A10 text is *interpreted* rather than quoted, and what each
+interpretation would change.
+
+(These interpretations are also just transition-design choices; the family
+supports others. Nothing here blocks the research direction -- it is bookkeeping
+for the one instance that carries a numeric claim.)
 
 ## Quoted directly from the A10 page
 
@@ -41,15 +47,15 @@ The deterministic rule is `_resolve_with_winner(..., winner = b)` -- the carrier
 wins every contest. The `random` and `coinflip` variants change only *who* wins
 the contest, nothing else.
 
-## What to confirm with course staff
+## If the A10 semantics were meant differently
 
-> Are the deterministic collision semantics -- specifically (a)
-> carrier-vs-stationary-opponent, (b) non-carrier bump = steal, and (c) swap
-> possession -- exactly the intended A10 semantics? And what are the
-> ID-specific start position and goal rows?
-
-If (a)-(c) differ from the intended rule, the "pure saddle at every state"
-result must be re-measured; the solver and analysis are unaffected.
+The interpreted sub-cases (a) carrier-vs-stationary-opponent, (b) non-carrier
+bump = steal, (c) swap possession, and the goal rows, are choices consistent
+with the two quoted rules. If the intended rule differs, the "pure saddle at
+every state" number must be re-measured on that variant; the solver, the
+visualization, and the analysis are unaffected. The goal-row choice is the only
+load-bearing one -- a one-row goal is never mixed, `>= 2` always is -- and the
+phase diagram sweeps it explicitly, so the qualitative result holds either way.
 
 ## Three claims, kept separate
 

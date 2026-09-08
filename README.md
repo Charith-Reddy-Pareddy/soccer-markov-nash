@@ -1,7 +1,9 @@
 # When Does a Soccer Markov Game Need Mixed Strategies?
 
-A pure-first Nash-Q approach. Research code built on the CS 540 A10 soccer
-assignment (<https://pages.cs.wisc.edu/~yw/CS540S26A10.html>).
+A pure-first Nash-Q approach to a configurable family of two-player soccer
+Markov games. The environment, reward, and transition rules are design choices
+of this project (see [docs/design.md](docs/design.md)); Littman's 1994 soccer
+game and the CS&nbsp;540 A10 geometry are two instances of the family.
 
 ## Research question
 
@@ -19,7 +21,7 @@ Two contributions:
   game for a pure saddle, take its value when it exists, fall back to the LP
   only where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
 - **Structural** &mdash; a characterization of *when* a stage game is
-  intrinsically mixed. For the implemented deterministic A10 model every
+  intrinsically mixed. For the deterministic transition model every
   converged stage game has a pure saddle. Mixing appears only under Littman's
   random move *order*, only when the goal mouth is wider than one cell, and only
   where the defender can contest the carrier's forward cell but not cover every

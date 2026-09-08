@@ -218,6 +218,28 @@ to cover every scoring lane in a single move. Remove any one -- a one-cell goal,
 deterministic resolution, the coin-flip tie-break -- and every stage game has a
 pure saddle.
 
+#### Littman's fifth action
+
+Littman's 1994 soccer game adds a `stand` action, and his Figure 2 (a carrier
+pinned against its own goal) is the canonical "soccer needs mixing" example.
+Solving Littman's 5×4 board with `n_actions=5` (`scripts/littman.py`,
+`make littman`):
+
+| action set | no-saddle states | stand in the mixed support | V(kickoff) |
+|---|---|---|---|
+| N, S, E, W | 56 | 0 | +0.147 |
+| N, S, E, W, stand | 56 | 48 | +0.172 |
+
+The stand action does **not** move where mixing happens (48 of 56 no-pure-saddle
+states are shared) -- it changes *what* the mix is. The carrier hedges with
+`stand` rather than `retreat`, and every player is slightly better for the
+option. The Figure 2 state is a clean matching-pennies matrix with equilibrium
+`(½ climb, ½ hold)`. The deterministic game keeps a pure saddle everywhere with
+five actions too. Details: [littman.md](littman.md).
+
+![Littman Figure 2: the same state with four moves (climb/retreat mix) and five
+(climb/hold mix).](figures/gallery/littman_stand.svg)
+
 ### RQ4 -- Numerical robustness
 
 **A stage game falls into one of five classes** (`classify_stage_game`), and the
