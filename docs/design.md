@@ -18,25 +18,26 @@ space, not the definition of it.
 | `goal_rows` | `(1, 2, 3)` | which rows score on each edge | **the** switch: a 1-cell goal is never mixed, ≥ 2 always is |
 | `move_order` | `deterministic` | how simultaneous moves resolve | isolates the transition structure that creates matching pennies |
 | `n_actions` | 4 | `{N,S,E,W}` or `+ stand` | Littman's fifth action; changes the *content* of a mix, not its location ([littman.md](littman.md)) |
+| `scoring` | `win` | first goal ends it, or goal → reset and play on | the reward objective; the mixed region is invariant to it ([reward.md](reward.md)) |
 | `p0_start`, `p1_start` | centre row, opposite ends | kickoff | the pure/mixed split is kickoff-independent; only `V(kickoff)` moves |
 | `max_steps` | 100 | horizon before a tie | with the tie reward, this is the effective discount of the undiscounted game |
 
 ## Reward
 
-Zero-sum and sparse:
+Zero-sum and sparse. A carrier crossing its attacking edge on a goal row scores;
+`r0 = +1` for a player-0 goal, `−1` for a player-1 goal, `0` otherwise;
+`r1 = −r0`. Two objectives:
 
-```
-r0 =  +1   if player 0's carrier crosses the right edge on a goal row
-      -1   if player 1's carrier crosses the left edge on a goal row
-       0   otherwise, including a tie after max_steps
-r1 = -r0
-```
-
-**Undiscounted.** The game's value is the probability of a player-0 win minus a
-player-1 win under optimal play. `γ < 1` in the solver is a contraction device
-for value iteration; the exact undiscounted answer is 100-step backward
-induction (`run_finite_horizon`), and the pure/mixed split is checked to be
-stable across `γ ∈ [0.5, 0.995]` and across the two.
+- **`scoring="win"`** (default) -- the first goal ends the game. The value is
+  `P(player 0 wins) − P(player 1 wins)`; the game is undiscounted and
+  terminating, and `γ < 1` in the solver is only a contraction device (the exact
+  answer is 100-step backward induction, `run_finite_horizon`). The pure/mixed
+  split is stable across `γ ∈ [0.5, 0.995]`.
+- **`scoring="rate"`** -- a goal scores `±1` and **play continues** from a
+  restart (conceding team gets the ball at the centre). The value is the
+  *expected discounted goal difference*, `γ < 1` is load-bearing, and conceding
+  becomes a floor rather than a cliff. The no-pure-saddle region is **identical**
+  to `win`'s; the value range compresses. Full comparison in [reward.md](reward.md).
 
 **Optional shaping** (`soccer_nash/shaping.py`) is a *training* device, kept
 separate from the game's reward:
@@ -97,9 +98,10 @@ not force mixing; the coupling of the outcome to both players' actions does.
 
 ## What is a result vs. a choice
 
-- **Choices:** the reward shape, the three resolution rules, the collision
-  sub-cases, the board and goal defaults.
+- **Choices:** the reward objective (`win` / `rate`) and its restart rule, the
+  three resolution rules, the collision sub-cases, the board and goal defaults.
 - **Results, robust across the choices:** a deterministic transition model has a
-  pure memoryless equilibrium at every state (also with `STAND`); mixing under
-  the random rule is gated perfectly by goal width and is geometrically local;
-  the pure-first solver skips the LP on 96-100% of states.
+  pure memoryless equilibrium at every state (also with `STAND`, also under
+  `rate`); the no-pure-saddle region is identical under `win` and `rate`; mixing
+  under the random rule is gated perfectly by goal width and is geometrically
+  local; the pure-first solver skips the LP on 96-100% of states.

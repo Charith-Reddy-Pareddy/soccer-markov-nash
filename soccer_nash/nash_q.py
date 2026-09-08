@@ -272,6 +272,8 @@ class NashQIteration:
             raise ValueError("run_symmetric() requires deterministic move order")
         if self._n != 4:
             raise ValueError("run_symmetric() is only wired for the 4-action game")
+        if self.game.scoring != "win":
+            raise ValueError("run_symmetric() requires scoring='win'")
         from soccer_nash.symmetry import canonical_pairs
 
         self._lp_calls = 0
