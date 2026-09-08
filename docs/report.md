@@ -15,8 +15,10 @@ Two contributions:
    where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
 2. **Structural** -- a characterization of *when* a stage game is intrinsically
    mixed: it takes a stochastic resolution order, a goal mouth wider than one
-   cell, and interception geometry. The 94 mixed states of the 7x5 random game
-   reduce to a handful of matching-pennies templates ([templates.md](templates.md)).
+   cell, and interception geometry. The deterministic game has an explicit pure
+   memoryless equilibrium (`attractor.py`); the 94 mixed states of the 7x5
+   random game reduce to a handful of matching-pennies templates
+   ([templates.md](templates.md)).
 
 The two meet in RQ2: the hybrid is fast *because* the structural result says
 almost every stage game is pure, so the LP is rare.
