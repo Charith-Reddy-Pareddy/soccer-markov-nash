@@ -22,14 +22,48 @@ LABEL = "var(--ink-faint, #77817a)"
 PAPER = "var(--paper, #ffffff)"
 
 _PLAYER_COLOUR = (P0, P1)
-_CELL = 44
-_MARGIN = 30
+CELL = 44
+MARGIN = 30
+# kept as private aliases for the existing call sites in this module
+_CELL, _MARGIN = CELL, MARGIN
 
 
-def _cell_center(x: int, y: int, height: int) -> tuple[float, float]:
-    cx = _MARGIN + x * _CELL + _CELL / 2
-    cy = _MARGIN + (height - 1 - y) * _CELL + _CELL / 2
+def cell_center(x: int, y: int, height: int) -> tuple[float, float]:
+    """Pixel centre of grid cell ``(x, y)``; ``y`` increases upward on screen."""
+    cx = MARGIN + x * CELL + CELL / 2
+    cy = MARGIN + (height - 1 - y) * CELL + CELL / 2
     return cx, cy
+
+
+_cell_center = cell_center
+
+
+def board_frame(game: SoccerGame) -> list[str]:
+    """SVG elements for the empty board: the panel, grid lines, and goal mouths
+    (green on the left edge for player 1, blue on the right for player 0)."""
+    w, h = game.width, game.height
+    board_w, board_h = w * CELL, h * CELL
+    out = [
+        f'<rect x="{MARGIN}" y="{MARGIN}" width="{board_w}" height="{board_h}" '
+        f'fill="{BOARD}" stroke="{EDGE}" stroke-width="1.5"/>'
+    ]
+    for i in range(1, w):
+        gx = MARGIN + i * CELL
+        out.append(
+            f'<line x1="{gx}" y1="{MARGIN}" x2="{gx}" y2="{MARGIN + board_h}" '
+            f'stroke="{LINE}" stroke-width="1"/>'
+        )
+    for j in range(1, h):
+        gy = MARGIN + j * CELL
+        out.append(
+            f'<line x1="{MARGIN}" y1="{gy}" x2="{MARGIN + board_w}" y2="{gy}" '
+            f'stroke="{LINE}" stroke-width="1"/>'
+        )
+    for row in game.goal_rows:
+        gy = MARGIN + (h - 1 - row) * CELL
+        out.append(f'<rect x="{MARGIN - 6}" y="{gy}" width="6" height="{CELL}" fill="{P1}"/>')
+        out.append(f'<rect x="{MARGIN + board_w}" y="{gy}" width="6" height="{CELL}" fill="{P0}"/>')
+    return out
 
 
 def _player(cx: float, cy: float, label: str, colour: str, carrier: bool) -> str:
@@ -64,33 +98,8 @@ def board_svg(game: SoccerGame, state: State, caption: str | None = None) -> str
         f'role="img" aria-label="{w} by {h} soccer grid, '
         f'player 0 (blue) at {x0},{y0}, player 1 (green) at {x1},{y1}, '
         f'ball carried by player {b}.">',
-        f'<rect x="{_MARGIN}" y="{_MARGIN}" width="{board_w}" height="{board_h}" '
-        f'fill="{BOARD}" stroke="{EDGE}" stroke-width="1.5"/>',
+        *board_frame(game),
     ]
-
-    # interior grid lines
-    for i in range(1, w):
-        gx = _MARGIN + i * _CELL
-        out.append(
-            f'<line x1="{gx}" y1="{_MARGIN}" x2="{gx}" y2="{_MARGIN + board_h}" '
-            f'stroke="{LINE}" stroke-width="1"/>'
-        )
-    for j in range(1, h):
-        gy = _MARGIN + j * _CELL
-        out.append(
-            f'<line x1="{_MARGIN}" y1="{gy}" x2="{_MARGIN + board_w}" y2="{gy}" '
-            f'stroke="{LINE}" stroke-width="1"/>'
-        )
-
-    # goal mouths: player 1 attacks the left edge, player 0 the right edge
-    for row in game.goal_rows:
-        gy = _MARGIN + (h - 1 - row) * _CELL
-        out.append(
-            f'<rect x="{_MARGIN - 6}" y="{gy}" width="6" height="{_CELL}" fill="{P1}"/>'
-        )
-        out.append(
-            f'<rect x="{_MARGIN + board_w}" y="{gy}" width="6" height="{_CELL}" fill="{P0}"/>'
-        )
 
     cx0, cy0 = _cell_center(x0, y0, h)
     cx1, cy1 = _cell_center(x1, y1, h)
