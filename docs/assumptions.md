@@ -14,8 +14,10 @@ rather than quoted, and lists what to confirm with course staff.
 - "If the two players try to swap squares, they will swap, and the other player
   will get the ball."
 - "The game ends in a tie if no one scores in 100 steps."
-- Reward: `+1` win / `-1` loss / `0` otherwise, no discounting, for the Part 1
-  evaluation.
+- Reward: `+1` win / `-1` loss / `0` otherwise, **no discounting** -- that is the
+  game. (The page allows a self-designed discounted *training* reward, but that
+  is a training choice, not the game's definition.) The solver uses `gamma < 1`
+  purely as a contraction device and checks the results across `gamma`.
 - Per this netID (shown after entering it on the page): player 0 (left) starts
   at `[0, 1]`, player 1 (right) at `[6, 3]`, ball with player 0.
 

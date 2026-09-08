@@ -43,9 +43,12 @@ inherit it?
   additionally offers two research variants of the collision rule (`random`
   move order, `coinflip` tie-break).
 - **Nash-Q** (`soccer_nash/nash_q.py`): the operator `Q = R + gamma * Nash(Q')`,
-  where `Nash` is the minimax value of the stage game `M_s`. Value iteration
-  applies it every sweep; freeze-then-iterate (policy iteration) freezes the
-  stage strategies, runs cheap linear evaluation sweeps, then re-solves.
+  where `Nash` is the minimax value of the stage game `M_s`. The A10 game itself
+  is *undiscounted* (`+1` / `-1` at a goal, `0` otherwise, tie after 100 steps);
+  `gamma < 1` is a contraction device for value iteration, and RQ4 shows the
+  results hold across `gamma` in `0.5-0.995`. `gamma = 0.9` throughout unless
+  noted. Freeze-then-iterate (policy iteration) freezes the stage strategies,
+  runs cheap linear evaluation sweeps, then re-solves.
 - **Stage solvers** (`soccer_nash/matrix_games.py`, `support_enum.py`):
   pure-saddle detection (`maximin == minimax`, O(A^2), no LP); the LP minimax
   value (`scipy` HiGHS); support enumeration -- *all* equilibria of a
