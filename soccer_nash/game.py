@@ -24,6 +24,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import ClassVar
 
 import numpy as np
 
@@ -65,10 +66,24 @@ class SoccerGame:
     goal_rows: tuple[int, ...] = (1, 2, 3)
     max_steps: int = 100
     move_order: str = "deterministic"
+    # kickoff positions; ``None`` -> the centre row at opposite ends
+    p0_start: tuple[int, int] | None = None
+    p1_start: tuple[int, int] | None = None
 
     def __post_init__(self) -> None:
         if self.move_order not in ("deterministic", "random", "coinflip"):
             raise ValueError(f"unknown move_order {self.move_order!r}")
+        for name, p in (("p0_start", self.p0_start), ("p1_start", self.p1_start)):
+            if p is not None and not (
+                0 <= p[0] < self.width and 0 <= p[1] < self.height
+            ):
+                raise ValueError(f"{name} {p} is off the {self.width}x{self.height} board")
+        if (
+            self.p0_start is not None
+            and self.p1_start is not None
+            and tuple(self.p0_start) == tuple(self.p1_start)
+        ):
+            raise ValueError("p0_start and p1_start must differ")
 
     # ------------------------------------------------------------------ basics
     def actions(self) -> list[Action]:
@@ -93,9 +108,12 @@ class SoccerGame:
                         yield (x0, y0, x1, y1, 1)
 
     def initial_state(self) -> State:
-        """Default kickoff: carriers on the centre row at opposite ends."""
+        """Kickoff: the ball is with player 0. Positions default to the centre
+        row at opposite ends; set ``p0_start`` / ``p1_start`` to override."""
         mid = self.height // 2
-        return (0, mid, self.width - 1, mid, 0)
+        p0 = self.p0_start if self.p0_start is not None else (0, mid)
+        p1 = self.p1_start if self.p1_start is not None else (self.width - 1, mid)
+        return (p0[0], p0[1], p1[0], p1[1], 0)
 
     # ------------------------------------------------------------- transition
     def _target(
@@ -266,7 +284,16 @@ class A10SoccerGame(SoccerGame):
     The interpreted collision sub-cases are listed in ``docs/assumptions.md``.
     Research variants (`move_order` "random" / "coinflip") are *different game
     definitions* -- use ``SoccerGame`` for those, not this class.
+
+    On the standard 7x5 board the kickoff is the one the A10 page assigns this
+    student's netID (player 0 at (0, 1), player 1 at (6, 3)); a different netID
+    gets different positions, so pass ``p0_start`` / ``p1_start`` for yours. The
+    result "every stage game has a pure saddle" is over *all* states and does not
+    depend on the kickoff, but ``V(kickoff)`` and the Part 2 Q8 trajectory do.
     """
+
+    #: this student's ID-specific kickoff on the 7x5 board (A10 page)
+    A10_KICKOFF: ClassVar[tuple[tuple[int, int], tuple[int, int]]] = ((0, 1), (6, 3))
 
     move_order: str = "deterministic"
 
@@ -277,3 +304,13 @@ class A10SoccerGame(SoccerGame):
                 "SoccerGame(move_order=...) for research variants"
             )
         super().__post_init__()
+
+    def initial_state(self) -> State:
+        if (
+            (self.width, self.height) == (7, 5)
+            and self.p0_start is None
+            and self.p1_start is None
+        ):
+            (x0, y0), (x1, y1) = self.A10_KICKOFF
+            return (x0, y0, x1, y1, 0)
+        return super().initial_state()
