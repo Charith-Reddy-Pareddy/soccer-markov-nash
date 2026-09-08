@@ -218,6 +218,16 @@ to cover every scoring lane in a single move. Remove any one -- a one-cell goal,
 deterministic resolution, the coin-flip tie-break -- and every stage game has a
 pure saddle.
 
+#### How shallow, and worth how much
+
+Every one of the 94 no-pure-saddle stage games is within `0.07` of a pure saddle
+(`minimax − maximin`, median `0.029`), so the equilibria are shallow and the
+exact mixing weights are numerically delicate. The robust facts: 68 have a 2×2
+matching-pennies support, and the **value of mixing** -- `V(hybrid) − V(pure
+maximin)` -- averages `+0.13` at those states. It compounds along a path: at the
+centred kickoff a pure-strategy player secures only a draw where mixing is worth
+`+0.15` (`scripts/mixing.py`, [mixing.md](mixing.md)).
+
 #### Littman's fifth action
 
 Littman's 1994 soccer game adds a `stand` action, and his Figure 2 (a carrier
