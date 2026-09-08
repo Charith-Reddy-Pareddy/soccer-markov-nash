@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery templates proof positional a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman templates proof positional a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -15,6 +15,7 @@ help:
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
 	@echo "make gallery      - redraw the visualization gallery (docs/gallery.html)"
+	@echo "make littman      - reproduce Littman 1994 Figure 2 (the stand action)"
 	@echo "make templates    - print the mixed-state geometric templates"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
 	@echo "make positional   - the deterministic game's pure memoryless equilibrium"
@@ -62,6 +63,9 @@ figures:
 
 gallery:
 	$(PY) scripts/gallery.py
+
+littman:
+	$(PY) scripts/littman.py
 
 templates:
 	$(PY) scripts/templates.py

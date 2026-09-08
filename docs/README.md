@@ -3,15 +3,21 @@
 Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 [report.html](report.html)) — the full answer to the research question.
 
+- [design.md](design.md) — the game as a configurable family: every axis, the
+  reward, the three transition rules, and the reason each is there.
 - [methods.md](methods.md) — the solver, the state encoding, seeds, repeat
   counts, board ranges: how every number was produced.
 - [discussion.md](discussion.md) — four research-level open questions and the
   best answers the evidence supports.
+- [littman.md](littman.md) — Littman 1994, the fifth action (`stand`), and a
+  reproduction of his Figure 2 mixed equilibrium (`make littman`).
 
 ## Background and scope
 
-- [assumptions.md](assumptions.md) — the environment, the three claims, and
-  which A10 collision rules are quoted vs. interpreted.
+- [assumptions.md](assumptions.md) — the A10 geometry instance and which of its
+  collision rules are quoted vs. interpreted.
+- [gallery.html](gallery.html) — every policy and value surface, drawn
+  (`make gallery`, from `soccer_nash/viz.py`).
 
 ## The research questions
 
