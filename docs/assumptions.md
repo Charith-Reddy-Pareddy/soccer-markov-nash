@@ -61,10 +61,12 @@ The experiments in this repo establish different things:
   238 000 (state x step) stage games, `experiments/undiscounted.csv`), and the
   stationary `gamma < 1` value iteration at every `gamma` from 0.5 to 0.995
   (all 2380 states).
-- **Claim B (strongly supported).** The Markov game therefore has a pure-strategy
-  equilibrium: playing a pure saddle action is a best response to itself. It is
-  non-stationary in the exact undiscounted game and stationary in the `gamma < 1`
-  approximation; `hybrid` and `mixed` return the same value function.
+- **Claim B (established, constructive).** The deterministic Markov game has an
+  explicit **pure memoryless** equilibrium: each player's win-attractor strategy
+  on its forced-win set, a safety move elsewhere (`soccer_nash/attractor.py`,
+  `scripts/positional.py`). Verified to realize `V*` at every state, all boards
+  tested, goal widths 1 and 3 -- the deterministic game is positionally
+  determined.
 - **Claim C (not established here).** The *theoretical* A10 game -- with the
   exact intended semantics, over all reward and discount settings -- necessarily
   admits a pure-strategy equilibrium. This would need a proof, not enumeration,

@@ -67,20 +67,32 @@ class Certificate:
     guard_slack: float          # max amount the carrier beats V* against the guard
     iewds_failures: int         # stage games not solved by weak-dominance elimination
     kickoff_value: float
+    undiscounted_mixed_stage_games: int  # over the full backward-induction horizon
 
     @property
     def ok(self) -> bool:
-        return self.guard_slack < 1e-6 and self.iewds_failures == 0
+        return (
+            self.guard_slack < 1e-6
+            and self.iewds_failures == 0
+            and self.undiscounted_mixed_stage_games == 0
+        )
 
 
 def certify(width: int, height: int, gamma: float = 0.9) -> Certificate:
-    """Check both halves of the single-cell pure-saddle proof on one board."""
+    """Check the single-cell pure-saddle proof on one board.
+
+    Three checks: the defender's guard strategy secures ``V*`` (stationary,
+    ``gamma``); every stationary stage game is weak-dominance solvable; and the
+    *undiscounted* game (exact backward induction) has no mixed stage game at
+    any horizon.
+    """
     game = SoccerGame(
         width=width, height=height, goal_rows=(height // 2,), move_order="random"
     )
     solver = NashQIteration(game, gamma=gamma, mode="hybrid", tol=1e-12)
     result = solver.run()
     V = result.values
+    fh = solver.run_finite_horizon()
 
     def cont(ns: State) -> float:
         return 0.0 if game.is_terminal(ns) else gamma * V[ns]
@@ -105,4 +117,5 @@ def certify(width: int, height: int, gamma: float = 0.9) -> Certificate:
     return Certificate(
         width, height, gamma, len(solver._states),
         guard_slack, iewds_failures, V[game.initial_state()],
+        fh.mixed_stage_games,
     )

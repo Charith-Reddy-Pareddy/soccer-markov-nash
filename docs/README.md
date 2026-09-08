@@ -3,6 +3,11 @@
 Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 [report.html](report.html)) — the full answer to the research question.
 
+- [methods.md](methods.md) — the solver, the state encoding, seeds, repeat
+  counts, board ranges: how every number was produced.
+- [discussion.md](discussion.md) — four research-level open questions and the
+  best answers the evidence supports.
+
 ## Background and scope
 
 - [assumptions.md](assumptions.md) — the environment, the three claims, and

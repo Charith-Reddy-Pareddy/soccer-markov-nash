@@ -3,8 +3,10 @@
 *A pure-first Nash-Q approach: efficiency, numerical stability, and geometric
 structure.*
 
-A research report. Scope and caveats are in `docs/assumptions.md`; every table
-below regenerates from `experiments/*.csv` (`make experiments phase dqn`).
+A research report. Scope and caveats are in `docs/assumptions.md`; how every
+number was produced is in [methods.md](methods.md); the research-level open
+questions and their best answers are in [discussion.md](discussion.md). Every
+table regenerates from `experiments/*.csv` (`make experiments phase dqn`).
 
 Two contributions:
 
@@ -13,8 +15,10 @@ Two contributions:
    where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
 2. **Structural** -- a characterization of *when* a stage game is intrinsically
    mixed: it takes a stochastic resolution order, a goal mouth wider than one
-   cell, and interception geometry. The 94 mixed states of the 7x5 random game
-   reduce to a handful of matching-pennies templates ([templates.md](templates.md)).
+   cell, and interception geometry. The deterministic game has an explicit pure
+   memoryless equilibrium (`attractor.py`); the 94 mixed states of the 7x5
+   random game reduce to a handful of matching-pennies templates
+   ([templates.md](templates.md)).
 
 The two meet in RQ2: the hybrid is fast *because* the structural result says
 almost every stage game is pure, so the LP is rare.
@@ -113,10 +117,14 @@ induction (`run_finite_horizon`, `experiments/undiscounted.csv`):
 | `random` move order | 3 148 (404 states, some step) | +0.459 | no |
 
 For the deterministic A10 game **every stage game at every horizon has a pure
-saddle**, so playing a pure saddle action everywhere is an exact equilibrium
-(Claim A/B) -- and the discount was never load-bearing: the stationary
-`gamma < 1` solve agrees at every `gamma` from 0.5 to 0.995 (0 mixed stage
-games), with these counts:
+saddle**, and the equilibrium is *constructive and memoryless*: each player's
+win attractor (the states from which it forces a goal) coincides exactly with
+the `V* = +/-1` set, and the pure profile "attractor move on your winning set,
+safety move elsewhere" (`soccer_nash/attractor.py`, `scripts/positional.py`)
+realizes `V*` at every state -- the deterministic game is positionally
+determined. The discount was never load-bearing: the stationary `gamma < 1`
+solve agrees at every `gamma` from 0.5 to 0.995 (0 mixed stage games), with
+these counts:
 
 | move order | converged stage games with no pure saddle, `gamma = 0.9` | stationary pure eq? |
 |---|---|---|
@@ -316,22 +324,35 @@ the exact solver stays the ground truth rather than being replaced.
 
 ## 9. Beyond zero-sum, and open questions
 
+Four research-level questions and the best answers the evidence supports are in
+[discussion.md](discussion.md); in brief:
+
+- **The single-cell theorem's last step.** The defender's half is closed-form;
+  the whole thing is verified per finite board three ways (stationary,
+  undiscounted, dominance-solvable), all forced draws. A board-size-free proof
+  of the carrier's half is open -- likely via reachability-game positional
+  determinacy, which the single-target structure should make available even
+  though the game is concurrent.
+- **Is the goal-width dichotomy known?** "One target cell → positionally
+  determined; two or more → concurrent guessing" is adjacent to the
+  orderfield-property literature for stochastic games; not obviously stated in
+  this exact form for discrete soccer.
+- **Move order vs. randomness.** Fully answered: a tie-break coin (stochasticity
+  *independent* of the action profile) cannot create mixing here; the move order
+  (stochasticity *coupled* to the profile) can.
+- **Freeze-then-iterate thrashing.** Expected -- concurrent stochastic games
+  have no monotone strategy improvement, unlike turn-based ones.
+
+Also here:
+
 - **General-sum, done.** `soccer_nash/markov_game.py` solves 2-player
   general-sum Markov games by enumerating *all* stage equilibria
   (`support_enum.py`) and selecting one -- the notes' "largest sum of values"
-  rule, a no-op for zero-sum but decisive for Battle of the Sexes, where it
-  avoids the mixed equilibrium whose value is below either pure one. It keeps
-  the pure-first philosophy: check for a pure Nash before enumerating. The
-  soccer game itself is zero-sum, so this is an extension point rather than a
-  change to the main result.
+  rule, decisive for Battle of the Sexes. Pure-first throughout. The soccer game
+  itself is zero-sum, so this is an extension point.
 - **Function approximation, partial.** `soccer_nash/nash_dqn.py` fits a network
-  to the stage-game matrices (&sect;8). It trails the exact solver and only
-  handles the deterministic game; the exact solver should stay the ground truth
-  while any continuous-action work develops.
-- **A proof (partly done).** The single-cell pure-saddle theorem now has the
-  defender's optimal strategy in closed form and a dominance-solvability
-  certificate for every finite board (`docs/proof.md`); a board-size-free proof
-  of the carrier's half is open.
+  to the stage-game matrices (&sect;8); it trails the exact solver and only
+  handles the deterministic game.
 
 ## 10. Limitations
 

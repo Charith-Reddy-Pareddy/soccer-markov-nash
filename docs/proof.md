@@ -1,26 +1,68 @@
-# One goal cell ⟹ a pure saddle at every state
+# Pure equilibria of the soccer game
 
-`soccer_nash/onecell.py`, `soccer_nash/dominance.py`, `scripts/onecell_proof.py`.
+`soccer_nash/attractor.py`, `soccer_nash/onecell.py`, `soccer_nash/dominance.py`.
 
-This is the theorem [assumptions.md](assumptions.md) calls Claim C, in the one
-case where it is within reach. It is **not yet a proof for arbitrary board
-dimensions**; it is a proof for every finite board (a finite check), plus a
-closed-form optimal strategy for one of the two players and a hand argument for
-the easy regions. The remaining gap is stated explicitly at the end.
+Two results, from strongest to weakest:
+
+1. **The deterministic game has an explicit pure memoryless equilibrium**
+   (constructive, any goal width). See "The deterministic game" below.
+2. **The random-move-order game with one goal cell has a pure saddle at every
+   state** -- verified per finite board three ways, with the defender's optimal
+   strategy in closed form. This is [assumptions.md](assumptions.md)'s Claim C in
+   the one case within reach; a board-size-free proof of the carrier's half is
+   open (stated at the end).
+
+---
+
+## The deterministic game: a constructive equilibrium
+
+For each player, `win_attractor(game, player)` computes the set of states from
+which that player *forces* a goal against any opponent play -- the concurrent
+controllable-predecessor least fixpoint -- with a rank (minimum forced-win
+length). `positional_profile` then gives a **pure memoryless strategy per
+player**: the rank-reducing attractor move on the player's own winning set, and
+a *safety* move (one that keeps the game out of the opponent's attractor for
+every opponent reply) everywhere else.
+
+`verify_positional_equilibrium` checks that this profile realizes the exact
+undiscounted value `V*` at every state -- **0 mismatches** for every board
+`w x h` with `w in {3,5,7,9}`, `h in {3,5,7}`, `w*h <= 45`, at goal widths 1 and
+3 (`scripts/positional.py`). The win attractors coincide exactly with the
+`V* = +1` / `V* = -1` sets, the complement is the `V* = 0` draw region, and both
+strategies are memoryless.
+
+So the deterministic soccer game is **positionally determined**: a pure
+memoryless Markov-perfect equilibrium exists and is given in closed form. (This
+is why the *random* move order, not the goal width, is what forces mixing in the
+first place -- &sect;RQ1.)
+
+---
+
+## The random single-cell game
+
+The rest of this page is the harder claim: the *random*-move-order game with one
+goal cell. It is **not yet a proof for arbitrary board dimensions**; it is a
+proof for every finite board (a finite check), plus a closed-form optimal
+strategy for the defender and a hand argument for the easy regions.
 
 ## Statement
 
 > **Theorem.** For the random-move-order soccer game (Littman resolution) with
-> exactly one goal cell per side, every stage game of the Shapley
-> value-iteration fixed point `V*` has a pure-strategy saddle point:
-> `maximin(M_s) = minimax(M_s) = V*(s)` for every state `s`. Hence a pure
-> stationary (Markov-perfect) equilibrium exists, and the pure-first hybrid
-> solver never calls the LP.
+> exactly one goal cell per side, every stage game has a pure-strategy saddle
+> point: `maximin(M_s) = minimax(M_s) = V*(s)`. Hence a pure equilibrium exists
+> and the pure-first hybrid solver never calls the LP. The game is a **forced
+> draw** — `V*(kickoff) = 0` — under every resolution rule.
 
 Verified exactly (`scripts/onecell_proof.py`) for every board `w × h` with
-`w ∈ {3,5,7,9,11}`, `h ∈ {3,5,7}`, `w·h ≤ 55`, and every
-`γ ∈ {0.5, 0.7, 0.9, 0.95, 0.99}` — 0 exceptions, guard slack `0`, IEWDS
-failures `0`.
+`w ∈ {3,5,7,9,11}`, `h ∈ {3,5,7}`, `w·h ≤ 55`, three ways:
+
+1. **stationary**, `γ ∈ {0.5, 0.7, 0.9, 0.95, 0.99}` — guard slack `0`, IEWDS
+   failures `0`;
+2. **exact undiscounted** (100-step backward induction, `run_finite_horizon`) —
+   `0` mixed stage games across the whole non-stationary horizon;
+3. and `V*(kickoff) = 0` in every case.
+
+0 exceptions.
 
 ## Notation
 
