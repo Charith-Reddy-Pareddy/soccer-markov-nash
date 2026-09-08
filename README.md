@@ -27,6 +27,8 @@ Two contributions:
   to a few matching-pennies templates.
 
 - Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
+- How every number was produced: [docs/methods.md](docs/methods.md)
+- Research-level open questions and their best answers: [docs/discussion.md](docs/discussion.md)
 - Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/templates.md](docs/templates.md), [docs/mechanism.md](docs/mechanism.md)
 - Everything else: [docs/README.md](docs/README.md)
 - `make test` / `make experiments` / `make report` regenerate everything

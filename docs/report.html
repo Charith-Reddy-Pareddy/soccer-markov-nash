@@ -309,7 +309,7 @@
       <b>RQ3 Mechanism</b> &mdash; which spatial configurations force mixing?
       <b>RQ4 Robustness</b> &mdash; how do discounting and tolerance affect the split?
     </div>
-    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 150+ tests &nbsp;|&nbsp; tables from <span class="mono">experiments/*.csv</span> &nbsp;|&nbsp; scope in <span class="mono">docs/assumptions.md</span></p>
+    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 200+ tests &nbsp;|&nbsp; methods in <span class="mono">docs/methods.md</span> &nbsp;|&nbsp; open questions in <span class="mono">docs/discussion.md</span></p>
   </header>
 
   <div class="hero fade">
@@ -512,7 +512,7 @@
     </div>
     <p>Deterministic game only &mdash; <span class="mono">train_nash_dqn</span> rejects the stochastic variants, so the network never has to represent a genuinely mixed stage game. Even so it trails: it fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions &mdash; worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
     <ul class="plain">
-      <li><b>A proof (partly done).</b> The single-cell pure-saddle theorem now has the defender's optimal strategy in closed form and a dominance-solvability certificate for every finite board (<span class="mono">docs/proof.md</span>); the carrier's half, board-size-free, is open.</li>
+      <li><b>Four research questions</b> &mdash; the single-cell theorem's last step, whether the goal-width dichotomy is a known result, the move-order-vs-randomness distinction, and why freeze-then-iterate thrashes &mdash; are stated and answered as far as the evidence allows in <span class="mono">docs/discussion.md</span>.</li>
     </ul>
   </section>
 

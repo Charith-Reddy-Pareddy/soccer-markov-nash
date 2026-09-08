@@ -11,16 +11,21 @@ the easy regions. The remaining gap is stated explicitly at the end.
 ## Statement
 
 > **Theorem.** For the random-move-order soccer game (Littman resolution) with
-> exactly one goal cell per side, every stage game of the Shapley
-> value-iteration fixed point `V*` has a pure-strategy saddle point:
-> `maximin(M_s) = minimax(M_s) = V*(s)` for every state `s`. Hence a pure
-> stationary (Markov-perfect) equilibrium exists, and the pure-first hybrid
-> solver never calls the LP.
+> exactly one goal cell per side, every stage game has a pure-strategy saddle
+> point: `maximin(M_s) = minimax(M_s) = V*(s)`. Hence a pure equilibrium exists
+> and the pure-first hybrid solver never calls the LP. The game is a **forced
+> draw** — `V*(kickoff) = 0` — under every resolution rule.
 
 Verified exactly (`scripts/onecell_proof.py`) for every board `w × h` with
-`w ∈ {3,5,7,9,11}`, `h ∈ {3,5,7}`, `w·h ≤ 55`, and every
-`γ ∈ {0.5, 0.7, 0.9, 0.95, 0.99}` — 0 exceptions, guard slack `0`, IEWDS
-failures `0`.
+`w ∈ {3,5,7,9,11}`, `h ∈ {3,5,7}`, `w·h ≤ 55`, three ways:
+
+1. **stationary**, `γ ∈ {0.5, 0.7, 0.9, 0.95, 0.99}` — guard slack `0`, IEWDS
+   failures `0`;
+2. **exact undiscounted** (100-step backward induction, `run_finite_horizon`) —
+   `0` mixed stage games across the whole non-stationary horizon;
+3. and `V*(kickoff) = 0` in every case.
+
+0 exceptions.
 
 ## Notation
 
