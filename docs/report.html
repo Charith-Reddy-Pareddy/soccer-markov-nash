@@ -299,7 +299,7 @@
 
 <div class="wrap">
   <header>
-    <p class="kicker">CS 540 &middot; Multi-Agent Reinforcement Learning &middot; research report</p>
+    <p class="kicker">Multi-agent reinforcement learning &middot; research report</p>
     <h1>When Does Soccer Need Mixed&nbsp;Strategies?</h1>
     <p class="dek">A pure-first Nash&#8209;Q approach: where a two-player soccer Markov game does &mdash; and does not &mdash; need mixing, and how much LP work that saves.</p>
     <div class="rq">
@@ -309,7 +309,7 @@
       <b>RQ3 Mechanism</b> &mdash; which spatial configurations force mixing?
       <b>RQ4 Robustness</b> &mdash; how do discounting and tolerance affect the split?
     </div>
-    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 200+ tests &nbsp;|&nbsp; methods in <span class="mono">docs/methods.md</span> &nbsp;|&nbsp; open questions in <span class="mono">docs/discussion.md</span></p>
+    <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 200+ tests &nbsp;|&nbsp; methods in <span class="mono">docs/methods.md</span> &nbsp;|&nbsp; open questions in <span class="mono">docs/discussion.md</span> &nbsp;|&nbsp; every policy drawn in <span class="mono">docs/gallery.html</span></p>
   </header>
 
   <div class="hero fade">
@@ -393,11 +393,19 @@
       </table>
     </div>
     <p>The deterministic equilibrium is <b>constructive and memoryless</b>: each player's win attractor (states from which it forces a goal, <span class="mono">soccer_nash/attractor.py</span>) equals its <span class="mono">V* = &plusmn;1</span> set, and the pure profile "attractor move on your winning set, safety move elsewhere" realizes <span class="mono">V*</span> at every state (<span class="mono">scripts/positional.py</span>) &mdash; the game is positionally determined.</p>
+    <figure>
+      <img src="figures/gallery/value_landscape.svg" alt="Two 7 by 5 heatmaps of the game value. Left: player 0 carrying, swept over the board with player 1 at its goal mouth, values rising toward the attacking edge. Right: player 1's position swept, values near constant." style="max-width:640px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>The value surface</b> of the random-order game (&gamma; = 0.9). Left: <span class="mono">V*</span> by carrier position &mdash; a smooth gradient toward the attacking goal, saturating to <span class="mono">+1</span> on the two cells that score in one move. Right: <span class="mono">V*</span> by defender position with the carrier held near midfield &mdash; nearly flat, the defender's location barely moves the value.</figcaption>
+    </figure>
     <p>The stationary <span class="mono">&gamma; &lt; 1</span> solve agrees and is faster &mdash; 0 no-pure-saddle stage games on the deterministic game at every <span class="mono">&gamma;</span> from 0.5 to 0.995, and <b>94 / 2380</b> on the random game at <span class="mono">&gamma; = 0.9</span> (<span class="mono">V(kickoff) = +0.164</span> at the netID start). The no-pure-saddle count never depends on the kickoff.</p>
     <div class="note">
       <span class="label">It is the move order, not the randomness</span>
       <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames.</p>
     </div>
+    <figure>
+      <img src="figures/gallery/resolution_contrast.svg" alt="The same board state drawn twice. Under random move order both players' equilibrium strategies fan into two arrows (mixed). Under deterministic carrier-wins resolution each player has a single arrow (pure)." style="max-width:620px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>One state, two resolution rules.</b> Arrows are the equilibrium action distribution, sized by probability. Random order (Littman) makes the stage game matching pennies; deterministic carrier-wins collapses it to a pure best reply. Full set: <span class="mono">docs/gallery.html</span>.</figcaption>
+    </figure>
   </section>
 
   <section>
@@ -437,6 +445,10 @@
       <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:300px; margin:0 auto;">
       <figcaption class="fig-cap"><b>The gate.</b> Goal width 1 &rarr; <b>0</b> mixed states, on all 40 one-cell configs. Goal width &ge; 2 &rarr; mixing on all 87: whether a board mixes is a <em>perfect</em> function of goal width. The <em>fraction</em> (2.7&ndash;12%) is an OLS R&sup2; 0.64 in board area &mdash; a dilution effect &mdash; with goal width adding little and a negative coefficient. Every state is reachable from the kickoff.</figcaption>
     </figure>
+    <figure>
+      <img src="figures/gallery/mixing_maps.svg" alt="Three 7 by 5 boards. In each the defender is pinned at one cell and every carrier cell is shaded by how far its stage game is from having a pure saddle; only a few cells next to the defender are shaded." style="max-width:660px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Where the carrier has to guess.</b> Defender pinned at the green disc; each cell shaded by <span class="mono">minimax &minus; maximin</span> of the carrier's stage game (0 = pure saddle). Mixing is a local phenomenon &mdash; a handful of cells where the defender contests the forward lane.</figcaption>
+    </figure>
     <p>Geometry predicts the label (<span class="mono">scripts/geometry_model.py</span>): a depth-4 decision tree on carrier-frame features separates <span class="mono">mixed</span> from the rest with <b>precision 0.96, recall 0.91</b>. The dominant feature is <span class="mono">defender_can_intercept</span> &mdash; the defender within one move of the carrier's forward cell (<span class="mono">P(mixed) = 0.44</span> vs <span class="mono">0.002</span>).</p>
     <p>Beyond prediction, the 94 mixed states canonicalize under the board mirror to 47 pairs and cluster into <b>8 geometric templates</b> (<span class="mono">scripts/templates.py</span>, <span class="mono">docs/templates.md</span>).</p>
     <div class="tbl-scroll">
@@ -455,6 +467,10 @@
       </table>
     </div>
     <p>The <b>four 2&times;2-support templates are all verified matching pennies</b> &mdash; the carrier's best reply flips between the two defender columns and vice versa &mdash; covering <b>68 of 94</b> states: carrier {climb, advance} against defender {cover a lane, hold the forward cell}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
+    <figure>
+      <img src="figures/gallery/templates.svg" alt="Four boards, one per matching-pennies template, each showing the carrier and defender with two fanned arrows and their equilibrium probabilities." style="max-width:560px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>One policy fan per matching-pennies template.</b> Each covers a class of mixed states related by carrier-frame geometry; <span class="mono">p*</span>, <span class="mono">q*</span> are the equilibrium weights on the first support action. The carrier randomizes between two scoring lanes, the defender between covering them.</figcaption>
+    </figure>
     <p><b>Why the mix is unavoidable.</b> A mixed stage game needs all three of: a stochastic (&frac12;&ndash;&frac12;) resolution order; a goal mouth wider than one cell, so the carrier has two scoring lanes; and a defender close enough to contest the forward cell but unable to cover both lanes in one move. The carrier climbs or drops, the defender guesses which &mdash; matching pennies. Drop any one clause &mdash; a single goal cell, deterministic resolution, or the coin-flip tie-break &mdash; and every stage game has a pure saddle. The full argument and one stage matrix per template are in <span class="mono">docs/templates.md</span>. For the single goal cell the theorem is partly proved (<span class="mono">docs/proof.md</span>): the defender has a closed-form optimal strategy &mdash; guard the one cell &mdash; and every stage game is dominance-solvable, machine-checked for all boards up to 11&times;5.</p>
   </section>
 
