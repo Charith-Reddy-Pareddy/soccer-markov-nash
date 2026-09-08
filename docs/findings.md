@@ -73,10 +73,10 @@ Yes. On the random game the `pure` (maximin) solver is a strict lower bound:
 move_order = random, gamma = 0.9
           iters   V(kickoff)   saddle%
 pure        18      +0.000       97.8%
-hybrid      94      +0.150       96.0%     <- true minimax value
+hybrid      94      +0.164       96.0%     <- true minimax value
 ```
 
-The pure-only solver **under-values the kickoff by 0.15** and sits up to `0.37`
+The pure-only solver **under-values the kickoff by 0.16** and sits up to `0.37`
 below the true value elsewhere. Running the full LP (`mixed`) over the 7x5
 random game reproduces the `hybrid` value function to `4e-16` -- the LP is only
 doing work on the 94 no-saddle states (~8 min vs ~20 s).
@@ -98,20 +98,20 @@ See [shaping.md](shaping.md).
 - The duality gap `V0_br(s0) + V1_br(s0)` of the Nash Q policy is `< 1e-9` for
   every move order -- an optimal opponent cannot beat the equilibrium value.
 - Nash vs. Nash from the kickoff reproduces the value: forced draws in the
-  deterministic and coinflip games, a `+0.149 +/- 0.005` empirical discounted
-  return over 5 seeds (vs. `0.150` computed) in the random game.
+  deterministic and coinflip games, a `+0.162 +/- 0.002` empirical discounted
+  return over 5 seeds (vs. `0.164` computed) in the random game.
 - The Part 2 best-response-to-the-scripted-opponent policy has exploitability
-  `0.43` -- worse than moving uniformly at random (`0.39`). Best-responding to
+  `0.43` -- worse than moving uniformly at random (`0.37`). Best-responding to
   one assumed opponent is fragile; the Nash policy is the safe submission.
 
 ## Q6: A neural policy is only as safe as its worst state
 
 Fitting the Nash Q policy to a bias-free `5->99->99->4` network with
-partial-label training gets ~99% of states' action right, but a single state
-where the network prefers a losing move lets a best-responding opponent force a
-win. Trained Network First landed at exploitability ~0.3, Network Second at
-~0.0 -- re-seed until the exploitability number the script prints is near 0.
-See [a10_competition.md](a10_competition.md).
+partial-label training gets 99.4% of Network First's actions and 100% of
+Network Second's right. But a single mis-fit state lets a best-responder gain:
+over 5 seeds Network First's exploitability is `0.19 +/- 0.02` (from the A10
+kickoff), Network Second's `0.00`. It is stable across seeds -- a fit limit,
+not bad luck. See [a10_competition.md](a10_competition.md).
 
 ## Value iteration vs. policy iteration
 

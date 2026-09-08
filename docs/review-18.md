@@ -34,10 +34,10 @@ artifact that closes the point.
   width is a switch, not a dial, and board size only dilutes.
 - **5** -- every neural fit and every stochastic rollout now takes `--seeds`
   and reports mean +/- sd over seeds 0-4. DQN action agreement
-  `0.43 +/- 0.02`, exploitability `0.43 +/- 0.04` (`nash_dqn_seeds.csv`); A10
+  `0.43 +/- 0.02`, exploitability `0.44 +/- 0.05` (`nash_dqn_seeds.csv`); A10
   imitation net `0.990 +/- 0.000` optimal, 5/5 Q8 wins; A10 competition Network
-  First `0.28 +/- 0.01` exploitable / Second `0.00` (`a10_competition_seeds.csv`);
-  Nash-vs-Nash self-play `+0.149 +/- 0.005`. Exact DP results carry no seed.
+  First `0.19 +/- 0.02` exploitable / Second `0.00` (`a10_competition_seeds.csv`);
+  Nash-vs-Nash self-play `+0.162 +/- 0.002`. Exact DP results carry no seed.
 - **6** -- `benchmark.py` times the hybrid over 5 repeats and reports the
   median, plus `LP calls`, `states needing LP` (3.95%, exact and portable),
   `LP/state/sweep`. The report separates this from the wall-clock ratio.
@@ -50,5 +50,6 @@ artifact that closes the point.
 ## Still open (not part of this review)
 
 A board-size-free proof of the single-cell theorem's carrier half
-(`docs/proof.md`), and confirming the three interpreted A10 collision rules with
-course staff (`docs/assumptions.md`).
+(`docs/proof.md`), and confirming the goal geometry + the three unspecified
+collision sub-cases with course staff (`docs/assumptions.md`). The netID start
+positions `(0,1)` / `(6,3)` are now taken from the A10 page.

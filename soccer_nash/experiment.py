@@ -54,9 +54,12 @@ def run_config(
     rel_tol: float = 1e-6,
     tol: float = 1e-9,
     measure_exploitability: bool = False,
+    p0_start: tuple[int, int] | None = None,
+    p1_start: tuple[int, int] | None = None,
 ) -> dict:
     game = SoccerGame(
-        width=width, height=height, goal_rows=goal_rows, move_order=move_order
+        width=width, height=height, goal_rows=goal_rows, move_order=move_order,
+        p0_start=p0_start, p1_start=p1_start,
     )
     solver = NashQIteration(game, gamma=gamma, mode="hybrid", tol=tol)
 

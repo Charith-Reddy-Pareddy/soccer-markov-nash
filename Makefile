@@ -54,7 +54,7 @@ dqn:
 	$(PY) scripts/nash_dqn.py --seeds 5
 
 figures:
-	$(PY) scripts/render.py 0,2,6,2,0 -o docs/figures/kickoff.svg
+	$(PY) scripts/render.py -o docs/figures/kickoff.svg
 	$(PY) scripts/render.py --trajectory -o docs/figures/trajectory.svg
 
 templates:

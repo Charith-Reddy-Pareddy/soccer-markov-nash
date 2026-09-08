@@ -21,9 +21,15 @@ the scripted opponent:
    equally optimal actions, any of them counts, which lifts agreement from
    ~90% to ~99%.
 3. **Q8 rollout.** The trained network (argmax) plays player 0 against the
-   scripted opponent from the kickoff. The resulting trajectory is, by
+   scripted opponent from the kickoff (the A10 page's netID-specific start,
+   `(x0,y0,x1,y1,b) = (0,1,6,3,0)`). The resulting trajectory is, by
    construction, consistent with the network; the script asserts it is a win
    in <= 100 steps before writing anything.
+
+   The best-response Q8 trajectory (7 steps, `gamma^6`):
+   `(0,1,6,3,0) -> (1,1,5,3,0) -> (2,1,4,3,0) -> (3,1,3,3,0) -> (4,1,3,2,0) ->
+   (5,1,4,2,0) -> (6,1,5,2,0) -> score`. Player 0 stays on goal row 1 -- its
+   start row -- and runs straight to the edge.
 
 ```bash
 python scripts/a10_part2.py --out results/ --hidden 99 --gamma 0.9 --epochs 2500

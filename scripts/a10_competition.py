@@ -65,7 +65,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    game = SoccerGame(move_order=args.move_order)
+    game = SoccerGame(
+        move_order=args.move_order, p0_start=(0, 1), p1_start=(6, 3)
+    )
     solver = NashQIteration(game, gamma=args.gamma, mode="hybrid", tol=1e-10)
     nash = solver.run()
     s0 = game.initial_state()
