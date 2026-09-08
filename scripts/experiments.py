@@ -1,6 +1,7 @@
 """Regenerate the experiment CSVs under ``experiments/``.
 
     python scripts/experiments.py baseline
+    python scripts/experiments.py undiscounted
     python scripts/experiments.py gamma
     python scripts/experiments.py tolerance
     python scripts/experiments.py board          # slow (~10 min)
@@ -12,12 +13,15 @@ Every row comes from ``soccer_nash.experiment.run_config``.
 from __future__ import annotations
 
 import argparse
+import csv
 import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.experiment import run_config, standard_goal_rows, write_csv
+from soccer_nash.game import SoccerGame
+from soccer_nash.nash_q import NashQIteration
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 
@@ -43,6 +47,29 @@ def gamma_sweep() -> None:
             rows.append(run_config(move_order=mo, gamma=g, **A10))
     write_csv(OUT / "gamma_sweep.csv", rows)
     print("wrote experiments/gamma_sweep.csv")
+
+
+def undiscounted() -> None:
+    """The exact undiscounted game (backward induction, 100-step horizon)."""
+    rows = []
+    for mo in ("deterministic", "coinflip", "random"):
+        game = SoccerGame(move_order=mo, **A10)
+        r = NashQIteration(game, mode="hybrid").run_finite_horizon()
+        rows.append({
+            "move_order": mo,
+            "horizon": r.horizon,
+            "states": sum(1 for _ in game.states()),
+            "states_mixed_at_some_step": len(r.no_saddle_states),
+            "mixed_stage_games": r.mixed_stage_games,
+            "kickoff_value": round(r.values[game.initial_state()], 6),
+            "pure_equilibrium": r.pure_equilibrium_exists,
+        })
+        print(f"  {mo}: {rows[-1]}")
+    with (OUT / "undiscounted.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    print("wrote experiments/undiscounted.csv")
 
 
 def tolerance_sweep() -> None:
@@ -116,13 +143,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "which",
-        choices=["baseline", "gamma", "tolerance", "board", "goalmouth", "onecell", "all"],
+        choices=["baseline", "undiscounted", "gamma", "tolerance", "board",
+                 "goalmouth", "onecell", "all"],
         default="all",
         nargs="?",
     )
     args = parser.parse_args()
     jobs = {
         "baseline": baseline,
+        "undiscounted": undiscounted,
         "gamma": gamma_sweep,
         "tolerance": tolerance_sweep,
         "board": board_sweep,

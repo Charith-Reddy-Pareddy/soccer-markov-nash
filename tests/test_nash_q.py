@@ -202,3 +202,29 @@ def test_random_modes_agree_on_full_board(random_hybrid):
     mixed = NashQIteration(game, gamma=0.9, mode="mixed", tol=1e-8).run()
     worst = max(abs(hybrid.values[s] - mixed.values[s]) for s in hybrid.values)
     assert worst < 1e-5
+
+
+def test_finite_horizon_undiscounted_deterministic_is_all_pure():
+    game = SoccerGame(width=5, height=3, goal_rows=(1,))
+    r = NashQIteration(game, mode="hybrid").run_finite_horizon(horizon=20)
+    assert r.no_saddle_states == []
+    assert r.mixed_stage_games == 0
+    assert r.pure_equilibrium_exists
+    assert all(-1.0 - 1e-9 <= v <= 1.0 + 1e-9 for v in r.values.values())
+    # a stalemate from the centre -> value exactly 0 (no gamma^k decay)
+    assert r.values[game.initial_state()] == pytest.approx(0.0)
+
+
+def test_finite_horizon_scoring_state_reaches_plus_one():
+    game = SoccerGame(width=5, height=3, goal_rows=(1,))
+    r = NashQIteration(game, mode="hybrid").run_finite_horizon(horizon=5)
+    # player 0 on the goal cell with the ball, defender far -> wins outright
+    assert r.values[(4, 1, 0, 0, 0)] == pytest.approx(1.0)
+
+
+def test_finite_horizon_random_multicell_goal_needs_mixing():
+    # SMALL_RANDOM has a one-cell goal (never mixes); a two-cell goal does.
+    game = SoccerGame(width=3, height=4, goal_rows=(1, 2), move_order="random")
+    r = NashQIteration(game, mode="hybrid").run_finite_horizon(horizon=15)
+    assert r.mixed_stage_games > 0
+    assert not r.pure_equilibrium_exists

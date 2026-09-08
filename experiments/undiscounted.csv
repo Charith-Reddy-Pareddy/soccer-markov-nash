@@ -1,0 +1,4 @@
+move_order,horizon,states,states_mixed_at_some_step,mixed_stage_games,kickoff_value,pure_equilibrium
+deterministic,100,2380,0,0,0.0,True
+coinflip,100,2380,0,0,0.0,True
+random,100,2380,404,3148,0.459469,False

@@ -32,6 +32,7 @@ coverage:
 
 experiments:
 	$(PY) scripts/experiments.py baseline
+	$(PY) scripts/experiments.py undiscounted
 	$(PY) scripts/experiments.py gamma
 	$(PY) scripts/experiments.py tolerance
 	$(PY) scripts/experiments.py goalmouth

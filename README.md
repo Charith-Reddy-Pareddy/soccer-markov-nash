@@ -33,14 +33,19 @@ Two contributions:
 
 ## Results at a glance
 
-| move order | stochastic | stage games with no pure saddle | pure stationary eq? | V(kickoff) |
-|---|---|---|---|---|
-| `deterministic` (A10) | no | 0 / 2380 | yes | 0.000 |
-| `coinflip` tie-break | yes | 0 / 2380 | yes | 0.000 |
-| `random` (Littman) | yes | 94 / 2380 | no | 0.164 |
+The A10 game is undiscounted; its exact solution is 100-step backward induction
+(`experiments/undiscounted.csv`).
 
-`V(kickoff)` is at the A10 page's netID-specific start, `(0,1,6,3,0)`; the
-pure/mixed split does not depend on it.
+| move order | mixed stage games (state × step) | V(kickoff) | pure eq? |
+|---|---|---|---|
+| `deterministic` (A10) | **0** of 238 000 | 0.000 | yes (non-stationary) |
+| `coinflip` tie-break | **0** | 0.000 | yes |
+| `random` (Littman) | 3 148 (404 states) | +0.459 | no |
+
+The stationary `gamma < 1` solve agrees and is faster: 0 no-saddle stage games
+on the deterministic game at every `gamma` in 0.5–0.995; `94 / 2380` on the
+random game at `gamma = 0.9`. `V(kickoff)` is at the A10 netID start `(0,1,6,3,0)`;
+the mixed count does not depend on it.
 
 The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
 while calling the LP on only 3.95% of states (~25x fewer per sweep); mirror
@@ -80,9 +85,9 @@ depends on the machine and LP backend.
 
 ## Headline result
 
-- **Deterministic game (exact A10):** every stage game has a pure saddle;
-  `pure`, `hybrid` and `mixed` agree exactly. A pure stationary Nash equilibrium
-  exists.
+- **Deterministic game (exact A10):** solved exactly, undiscounted, by
+  backward induction -- every one of the 238 000 (state × step) stage games has
+  a pure saddle. A pure equilibrium exists; the discount was never load-bearing.
 - **Random move order (Littman):** 3.95% of stage games on the 7x5 3-cell-goal
   board have no pure saddle, so no pure stationary equilibrium exists; the
   `pure` solver then under-values the kickoff by 0.16. **Whether any state needs
