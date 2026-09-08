@@ -17,7 +17,13 @@ import numpy as np
 from soccer_nash.game import Action, SoccerGame, State
 
 # Left-right board flip swaps L and R; U and D are unchanged.
-_FLIP_ACTION = {Action.U: Action.U, Action.D: Action.D, Action.L: Action.R, Action.R: Action.L}
+_FLIP_ACTION = {
+    Action.U: Action.U,
+    Action.D: Action.D,
+    Action.L: Action.R,
+    Action.R: Action.L,
+    Action.STAND: Action.STAND,
+}
 _FLIP_INDEX = np.array([0, 1, 3, 2])  # applied to a length-4 action vector
 
 

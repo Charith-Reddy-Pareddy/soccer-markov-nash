@@ -72,6 +72,19 @@ def _action_fan(cx: float, cy: float, dist: np.ndarray, colour: str) -> list[str
     for a, p in enumerate(dist):
         if p < 0.02:
             continue
+        if a == 4:  # STAND -- a ring around the player, no arrow
+            out.append(
+                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="15" fill="none" '
+                f'stroke="{colour}" stroke-width="{1.6 + 2.2 * (p / top):.1f}" '
+                f'opacity="{0.4 + 0.55 * p:.2f}"/>'
+            )
+            if p < 0.985:
+                out.append(
+                    f'<text x="{cx:.1f}" y="{cy - 20:.1f}" text-anchor="middle" '
+                    f'font-family="ui-monospace,monospace" font-size="9" '
+                    f'fill="{colour}">stay {p * 100:.0f}%</text>'
+                )
+            continue
         dx, dy = _ARROW[a]
         start = 13                                  # clear the player disc
         length = start + 7 + 18 * p                 # 20..38 px
@@ -268,7 +281,7 @@ def value_map_svg(
 
 # ------------------------------------------------------- strategy_bars_svg
 
-_ACT = ("U", "D", "L", "R")
+_ACT = ("U", "D", "L", "R", "stay")
 
 
 def strategy_bars_svg(

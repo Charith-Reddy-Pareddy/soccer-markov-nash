@@ -24,8 +24,8 @@ from soccer_nash.geometry import features
 from soccer_nash.matrix_games import solve_zero_sum
 from soccer_nash.symmetry import mirror_state
 
-_ACTION_NAME = {0: "U", 1: "D", 2: "L", 3: "R"}
-_DELTA = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0)}
+_ACTION_NAME = {0: "U", 1: "D", 2: "L", 3: "R", 4: "STAND"}
+_DELTA = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0), 4: (0, 0)}
 
 
 # --------------------------------------------------------------------- symmetry
@@ -63,6 +63,9 @@ def describe_action(game: SoccerGame, state: State, mover: int, action: int) -> 
     forward = 1 if b == 0 else -1
     threat = (cx + forward, cy)
     ddx, ddy = _DELTA[action]
+
+    if (ddx, ddy) == (0, 0):
+        return "hold" if mover == b else "hold position"
 
     if mover == b:  # the carrier
         if ddx == forward:
