@@ -38,14 +38,13 @@ the contest, nothing else.
 
 ## What to confirm with course staff
 
-The specific questions to ask -- the redacted per-ID parameters, the three
-unspecified sub-cases of the "occupy the same square" rule, and the intended
-discount -- are written out in [questions-for-staff.md](questions-for-staff.md).
+> Are the deterministic collision semantics -- specifically (a)
+> carrier-vs-stationary-opponent, (b) non-carrier bump = steal, and (c) swap
+> possession -- exactly the intended A10 semantics? And what are the
+> ID-specific start position and goal rows?
 
-If the intended collision rule differs from this repo's reading, the "pure
-saddle at every state" result must be re-measured (`scripts/experiments.py
-baseline` after editing `soccer_nash/game.py`); the solver and analysis are
-unaffected.
+If (a)-(c) differ from the intended rule, the "pure saddle at every state"
+result must be re-measured; the solver and analysis are unaffected.
 
 ## Three claims, kept separate
 
