@@ -69,6 +69,20 @@ class NashQResult:
         return 1.0 - len(self.no_saddle_states) / total if total else 1.0
 
 
+@dataclass
+class FiniteHorizonResult:
+    """Backward induction for the undiscounted, horizon-capped game."""
+
+    values: dict[State, float]        # V with the full horizon remaining
+    no_saddle_states: list[State]     # states whose stage game is mixed at some step
+    mixed_stage_games: int            # total (state, step) pairs with no pure saddle
+    horizon: int
+
+    @property
+    def pure_equilibrium_exists(self) -> bool:
+        return not self.no_saddle_states
+
+
 class NashQIteration:
     def __init__(
         self,
@@ -107,10 +121,12 @@ class NashQIteration:
             self._out[s] = grid
 
     # ------------------------------------------------------------------ stage
-    def _matrix(self, s: State, values: dict[State, float]) -> np.ndarray:
+    def _matrix(
+        self, s: State, values: dict[State, float], gamma: float | None = None
+    ) -> np.ndarray:
         m = np.zeros((4, 4))
         grid = self._out[s]
-        gamma = self.gamma
+        gamma = self.gamma if gamma is None else gamma
         for i in range(4):
             for j in range(4):
                 acc = 0.0
@@ -202,6 +218,45 @@ class NashQIteration:
             mode=self.mode,
             gamma=self.gamma,
             matrix_game_solves=self._lp_calls,
+        )
+
+    def run_finite_horizon(self, horizon: int | None = None) -> FiniteHorizonResult:
+        """Solve the *undiscounted* game exactly by backward induction.
+
+        The A10 game is undiscounted -- `+1` / `-1` at a goal, `0` otherwise, a
+        tie after ``game.max_steps`` steps -- so its exact solution is backward
+        induction from `V = 0` at the horizon with `gamma = 1`. The value
+        function is non-stationary (it depends on the steps remaining); this
+        returns `V` with the full horizon left, the states whose stage game
+        lacks a pure saddle at *some* step, and the total number of such
+        (state, step) pairs. ``run()`` with `gamma < 1` is a faster stationary
+        approximation to the same qualitative answer.
+        """
+        self._lp_calls = 0
+        self._lp_cache = {}
+        h = self.game.max_steps if horizon is None else horizon
+        values: dict[State, float] = dict.fromkeys(self._states, 0.0)
+        ever_mixed: set[State] = set()
+        mixed_stage_games = 0
+
+        for _ in range(h):
+            updated: dict[State, float] = {}
+            for s in self._states:
+                m = self._matrix(s, values, gamma=1.0)
+                lo, hi = pure_bounds(m)
+                if hi - lo > _SADDLE_TOL:
+                    ever_mixed.add(s)
+                    mixed_stage_games += 1
+                    updated[s] = self._cached_game_value(m)
+                else:
+                    updated[s] = 0.5 * (lo + hi)
+            values = updated
+
+        return FiniteHorizonResult(
+            values=values,
+            no_saddle_states=sorted(ever_mixed),
+            mixed_stage_games=mixed_stage_games,
+            horizon=h,
         )
 
     def run_symmetric(self) -> NashQResult:
