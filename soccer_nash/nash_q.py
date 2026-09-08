@@ -23,11 +23,13 @@ no pure saddle. If that set is empty, playing a pure saddle action at every
 state is a stationary pure-strategy equilibrium of the Markov game (see
 ``docs/assumptions.md``, Claim B).
 
-``run()`` is value iteration -- it solves a matrix game at every state on every
-sweep. ``run_policy_iteration()`` is the "freeze then iterate" scheme: solve the
-stage games once, hold the strategies fixed for several cheap linear
-policy-evaluation sweeps, then re-solve. It reaches the same fixed point with
-far fewer (expensive) matrix-game solves.
+``run()`` is stationary value iteration with ``gamma < 1`` -- a matrix game at
+every state on every sweep. ``run_finite_horizon()`` solves the *undiscounted*
+game (the actual A10 game: +/-1 at a goal, tie after ``max_steps``) exactly by
+backward induction. ``run_policy_iteration()`` is the "freeze then iterate"
+scheme: solve the stage games once, hold the strategies fixed for several cheap
+linear policy-evaluation sweeps, then re-solve -- the same fixed point with far
+fewer matrix-game solves.
 """
 
 from __future__ import annotations
