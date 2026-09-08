@@ -1,0 +1,338 @@
+"""Policy and value visualizations for the soccer Markov game.
+
+Everything is inline SVG (no plotting library), themed via ``var(--x, #hex)`` so
+the same string renders in ``docs/report.html`` and as a standalone file.
+
+- :func:`policy_svg` -- a board with each player's action distribution drawn as
+  probability-weighted arrows: a pure policy is one bold arrow, a mixed policy
+  fans out, so mixing is visible at a glance.
+- :func:`mixing_map_svg` -- fix the defender, sweep the carrier over the board,
+  shade each cell by how badly its stage game needs mixing. This is the "where
+  does the carrier have to guess" picture.
+- :func:`value_map_svg` -- fix one player, sweep the other, shade by ``V*`` on a
+  blue (player 0 ahead) to orange (player 1 ahead) diverging scale.
+- :func:`strategy_bars_svg` -- a compact two-bar chart of a mixed equilibrium.
+- :func:`panel_svg` -- tile several of the above into one figure.
+"""
+
+from __future__ import annotations
+
+import math
+
+import numpy as np
+
+from soccer_nash.game import SoccerGame, State
+from soccer_nash.matrix_games import pure_bounds
+from soccer_nash.render import (
+    BALL,
+    CELL,
+    MARGIN,
+    P0,
+    P1,
+    PAPER,
+    board_frame,
+    cell_center,
+)
+
+_INK = "var(--ink, #19211c)"
+_FAINT = "var(--ink-faint, #77817a)"
+_EMBER = (169, 78, 24)      # mixing intensity ramp target
+_BLUE = (47, 107, 176)      # value ramp: player 0 ahead
+_WARM = (194, 90, 42)       # value ramp: player 1 ahead
+_ARROW = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0)}   # U D L R, y up
+
+
+def _marker(colour: str) -> str:
+    return (
+        f'<marker id="ah-{colour[-7:-1]}" viewBox="0 0 8 8" refX="6" refY="4" '
+        f'markerWidth="3.6" markerHeight="3.6" orient="auto">'
+        f'<path d="M0 0.5 L8 4 L0 7.5 z" fill="{colour}"/></marker>'
+    )
+
+
+def _lerp(a: tuple, b: tuple, t: float) -> str:
+    t = min(max(t, 0.0), 1.0)
+    r, g, bl = (round(a[i] + (b[i] - a[i]) * t) for i in range(3))
+    return f"#{r:02x}{g:02x}{bl:02x}"
+
+
+def _svg(w: float, h: float, body: list[str], label: str, pad: float = 0) -> str:
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'viewBox="{-pad:.0f} {-pad:.0f} {w + 2 * pad:.0f} {h + 2 * pad:.0f}" '
+        f'role="img" aria-label="{label}">\n' + "\n".join(body) + "\n</svg>"
+    )
+
+
+# --------------------------------------------------------------- policy_svg
+
+def _action_fan(cx: float, cy: float, dist: np.ndarray, colour: str) -> list[str]:
+    out = []
+    top = float(dist.max())
+    for a, p in enumerate(dist):
+        if p < 0.02:
+            continue
+        dx, dy = _ARROW[a]
+        start = 13                                  # clear the player disc
+        length = start + 7 + 18 * p                 # 20..38 px
+        sx, sy = cx + dx * start, cy - dy * start
+        ex, ey = cx + dx * length, cy - dy * length  # screen y is inverted
+        wgt = 1.8 + 2.4 * (p / top)
+        out.append(
+            f'<line x1="{sx:.1f}" y1="{sy:.1f}" x2="{ex:.1f}" y2="{ey:.1f}" '
+            f'stroke="{colour}" stroke-width="{wgt:.1f}" stroke-linecap="round" '
+            f'opacity="{0.4 + 0.55 * p:.2f}" marker-end="url(#ah-{colour[-7:-1]})"/>'
+        )
+        if p < 0.985:
+            lx, ly = cx + dx * (length + 11), cy - dy * (length + 11)
+            out.append(
+                f'<text x="{lx:.1f}" y="{ly + 3:.1f}" text-anchor="middle" '
+                f'font-family="ui-monospace,monospace" font-size="9" '
+                f'fill="{colour}">{p * 100:.0f}%</text>'
+            )
+    return out
+
+
+def policy_svg(
+    game: SoccerGame,
+    state: State,
+    row_policy: dict[State, np.ndarray],
+    col_policy: dict[State, np.ndarray],
+    value: float | None = None,
+    title: str | None = None,
+) -> str:
+    """Board with both players' action distributions as probability arrows."""
+    w, h = game.width, game.height
+    x0, y0, x1, y1, b = state
+    tw = w * CELL + 2 * MARGIN
+    th = h * CELL + 2 * MARGIN + 4
+
+    p0 = np.asarray(row_policy[state], dtype=float)
+    p1 = np.asarray(col_policy[state], dtype=float)
+    mixed0 = float((p0 > 0.02).sum()) > 1
+    mixed1 = float((p1 > 0.02).sum()) > 1
+
+    body = [f'<defs>{_marker(P0)}{_marker(P1)}</defs>', *board_frame(game)]
+    cx0, cy0 = cell_center(x0, y0, h)
+    cx1, cy1 = cell_center(x1, y1, h)
+    body.append(f'<circle cx="{cx0:.1f}" cy="{cy0:.1f}" r="11" fill="{P0}"/>')
+    body.append(f'<circle cx="{cx1:.1f}" cy="{cy1:.1f}" r="11" fill="{P1}"/>')
+    bx, by = (cx0, cy0) if b == 0 else (cx1, cy1)
+    body.append(
+        f'<circle cx="{bx + 10:.1f}" cy="{by - 10:.1f}" r="4.5" '
+        f'fill="{BALL}" stroke="{PAPER}" stroke-width="1.2"/>'
+    )
+    body += _action_fan(cx0, cy0, p0, P0)
+    body += _action_fan(cx1, cy1, p1, P1)
+
+    tag = "mixed" if (mixed0 or mixed1) else "pure"
+    sub = f"{tag} equilibrium" + (f" · V = {value:+.3f}" if value is not None else "")
+    body.append(
+        f'<text x="{MARGIN}" y="{th - 4}" font-family="ui-monospace,monospace" '
+        f'font-size="10" fill="{_FAINT}">{sub}</text>'
+    )
+    if title:
+        body.append(
+            f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
+            f'sans-serif" font-weight="600" font-size="13" fill="{_INK}">{title}</text>'
+        )
+    return _svg(tw, th, body, f"policy at state {state}: {tag}", pad=16)
+
+
+# ----------------------------------------------------------- mixing_map_svg
+
+def mixing_map_svg(
+    game: SoccerGame,
+    matrix_of,
+    defender_cell: tuple[int, int],
+    defender: int = 1,
+    title: str | None = None,
+) -> str:
+    """Fix ``defender`` at ``defender_cell``; shade every carrier cell by
+    ``minimax - maximin`` of its stage game (0 = pure saddle)."""
+    w, h = game.width, game.height
+    dx, dy = defender_cell
+    carrier = 1 - defender
+    tw = w * CELL + 2 * MARGIN
+    th = h * CELL + 2 * MARGIN + 16
+
+    gaps: dict[tuple[int, int], float] = {}
+    for cx in range(w):
+        for cy in range(h):
+            if (cx, cy) == (dx, dy):
+                continue
+            s = (cx, cy, dx, dy, carrier) if carrier == 0 else (dx, dy, cx, cy, carrier)
+            lo, hi = pure_bounds(np.asarray(matrix_of(s), dtype=float))
+            gaps[(cx, cy)] = max(hi - lo, 0.0)
+    hi_gap = max(gaps.values()) or 1.0
+
+    body = [*board_frame(game)]
+    for (cx, cy), gap in gaps.items():
+        px = MARGIN + cx * CELL
+        py = MARGIN + (h - 1 - cy) * CELL
+        if gap < 1e-7:
+            fill, txt = "#eef2ec", ""
+        else:
+            fill = _lerp((238, 242, 236), _EMBER, 0.25 + 0.75 * gap / hi_gap)
+            txt = f"{gap:.2f}".lstrip("0")
+        body.append(
+            f'<rect x="{px + 1}" y="{py + 1}" width="{CELL - 2}" height="{CELL - 2}" '
+            f'fill="{fill}"/>'
+        )
+        if txt:
+            body.append(
+                f'<text x="{px + CELL / 2:.0f}" y="{py + CELL / 2 + 3:.0f}" '
+                f'text-anchor="middle" font-family="ui-monospace,monospace" '
+                f'font-size="9" fill="{PAPER}">{txt}</text>'
+            )
+    ddx, ddy = cell_center(dx, dy, h)
+    dcol = P1 if defender == 1 else P0
+    body.append(f'<circle cx="{ddx:.1f}" cy="{ddy:.1f}" r="12" fill="{dcol}"/>')
+    body.append(
+        f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
+        f'font-size="10" fill="{_FAINT}">cells: minimax minus maximin of the '
+        f"carrier's stage game</text>"
+    )
+    if title:
+        body.append(
+            f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
+            f'sans-serif" font-weight="600" font-size="13" fill="{_INK}">{title}</text>'
+        )
+    return _svg(
+        tw, th, body, "map of where the carrier's stage game is mixed",
+        pad=20 if title else 6,
+    )
+
+
+# ------------------------------------------------------------ value_map_svg
+
+def value_map_svg(
+    game: SoccerGame,
+    values: dict[State, float],
+    other_cell: tuple[int, int],
+    mover: int = 0,
+    ball: int | None = None,
+    title: str | None = None,
+) -> str:
+    """Fix the non-``mover`` player at ``other_cell``; shade every ``mover``
+    cell by ``V*`` on a blue (player 0 ahead) / orange (player 1 ahead) scale."""
+    w, h = game.width, game.height
+    ox, oy = other_cell
+    b = mover if ball is None else ball
+    tw = w * CELL + 2 * MARGIN
+    th = h * CELL + 2 * MARGIN + 16
+
+    vs: dict[tuple[int, int], float] = {}
+    for mx in range(w):
+        for my in range(h):
+            if (mx, my) == (ox, oy):
+                continue
+            s = (mx, my, ox, oy, b) if mover == 0 else (ox, oy, mx, my, b)
+            if s in values:
+                vs[(mx, my)] = values[s]
+    span = max((abs(v) for v in vs.values()), default=1.0) or 1.0
+
+    body = [*board_frame(game)]
+    for (mx, my), v in vs.items():
+        px = MARGIN + mx * CELL
+        py = MARGIN + (h - 1 - my) * CELL
+        t = abs(v) / span
+        fill = _lerp((238, 242, 236), _BLUE if v > 0 else _WARM, 0.12 + 0.85 * t)
+        body.append(
+            f'<rect x="{px + 1}" y="{py + 1}" width="{CELL - 2}" '
+            f'height="{CELL - 2}" fill="{fill}"/>'
+        )
+        if abs(v) > 1e-6:
+            lab = f"{v:+.2f}".replace("0.", ".")
+            ink = PAPER if t > 0.4 else _INK
+            body.append(
+                f'<text x="{px + CELL / 2:.0f}" y="{py + CELL / 2 + 3:.0f}" '
+                f'text-anchor="middle" font-family="ui-monospace,monospace" '
+                f'font-size="8.5" fill="{ink}">{lab}</text>'
+            )
+    ocx, ocy = cell_center(ox, oy, h)
+    ocol = P1 if mover == 0 else P0
+    body.append(f'<circle cx="{ocx:.1f}" cy="{ocy:.1f}" r="12" fill="{ocol}"/>')
+    body.append(
+        f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
+        f'font-size="10" fill="{_FAINT}">V* by player {mover} position '
+        f'(blue = player 0 ahead)</text>'
+    )
+    if title:
+        body.append(
+            f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
+            f'sans-serif" font-weight="600" font-size="13" fill="{_INK}">{title}</text>'
+        )
+    return _svg(tw, th, body, "value map", pad=20 if title else 6)
+
+
+# ------------------------------------------------------- strategy_bars_svg
+
+_ACT = ("U", "D", "L", "R")
+
+
+def strategy_bars_svg(
+    row_p: np.ndarray, col_p: np.ndarray, value: float | None = None,
+    row_label: str = "player 0", col_label: str = "player 1",
+) -> str:
+    """Two stacked horizontal bars -- the row and column mixed strategies."""
+    row_p = np.asarray(row_p, dtype=float)
+    col_p = np.asarray(col_p, dtype=float)
+    w, bar_h, gap, left = 200, 20, 26, 66
+    th = 2 * (bar_h + gap) + 24
+    body = []
+    for k, (p, colour, lab) in enumerate(
+        [(row_p, P0, row_label), (col_p, P1, col_label)]
+    ):
+        y = 8 + k * (bar_h + gap)
+        body.append(
+            f'<text x="{left - 6}" y="{y + bar_h - 5}" text-anchor="end" '
+            f'font-family="ui-monospace,monospace" font-size="10" fill="{_FAINT}">{lab}</text>'
+        )
+        xoff = left
+        for a, prob in enumerate(p):
+            if prob < 1e-4:
+                continue
+            bw = prob * w
+            body.append(
+                f'<rect x="{xoff:.1f}" y="{y}" width="{bw:.1f}" height="{bar_h}" '
+                f'fill="{colour}" opacity="{0.35 + 0.6 * prob:.2f}"/>'
+            )
+            if bw > 16:
+                body.append(
+                    f'<text x="{xoff + bw / 2:.1f}" y="{y + bar_h - 6}" '
+                    f'text-anchor="middle" font-family="ui-monospace,monospace" '
+                    f'font-size="9" fill="{PAPER}">{_ACT[a]} {prob * 100:.0f}</text>'
+                )
+            xoff += bw
+    if value is not None:
+        body.append(
+            f'<text x="{left}" y="{th - 5}" font-family="ui-monospace,monospace" '
+            f'font-size="10" fill="{_INK}">value {value:+.3f}</text>'
+        )
+    return _svg(left + w + 8, th, body, "mixed strategy bars")
+
+
+# ------------------------------------------------------------- panel_svg
+
+def panel_svg(items: list[str], cols: int = 2, gap: int = 16) -> str:
+    """Tile SVG strings into a grid, each centred in a common cell."""
+    boxes = [_viewbox(s) for s in items]
+    cw = max(b[2] for b in boxes)
+    ch = max(b[3] for b in boxes)
+    rows = math.ceil(len(items) / cols)
+    body = []
+    for i, (svg, (mx, my, vw, vh)) in enumerate(zip(items, boxes)):
+        r, c = divmod(i, cols)
+        ox = c * (cw + gap) + (cw - vw) / 2 - mx
+        oy = r * (ch + gap) + (ch - vh) / 2 - my
+        inner = svg.split(">", 1)[1].rsplit("<", 1)[0]
+        body.append(f'<g transform="translate({ox:.1f} {oy:.1f})">{inner}</g>')
+    return _svg(
+        cols * cw + (cols - 1) * gap, rows * ch + (rows - 1) * gap, body, "panel"
+    )
+
+
+def _viewbox(svg: str) -> tuple[float, float, float, float]:
+    vb = svg.split('viewBox="', 1)[1].split('"', 1)[0].split()
+    return float(vb[0]), float(vb[1]), float(vb[2]), float(vb[3])

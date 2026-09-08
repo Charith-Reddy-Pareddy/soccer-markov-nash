@@ -26,6 +26,7 @@ Two contributions:
   scoring lane in one move (3.95% of states on the 7x5 3-cell-goal board). Those states reduce
   to a few matching-pennies templates.
 
+- Policies and values, drawn rather than tabulated: [docs/gallery.html](docs/gallery.html) (`make gallery`)
 - Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
 - How every number was produced: [docs/methods.md](docs/methods.md)
 - Research-level open questions and their best answers: [docs/discussion.md](docs/discussion.md)
@@ -67,6 +68,7 @@ depends on the machine and LP backend.
 | `soccer_nash/geometry.py`, `tree.py` | state features and the mixed-state decision tree |
 | `soccer_nash/symmetry.py` | mirror states, symmetric solve |
 | `soccer_nash/render.py` | draw a state as SVG (player 0 blue, player 1 green) |
+| `soccer_nash/viz.py` | policy fans, mixing maps, value heatmaps (`scripts/gallery.py`) |
 | `soccer_nash/a10.py`, `mlp.py`, `opponents.py`, `best_response.py` | A10 deliverables |
 | `soccer_nash/shaping.py`, `exploit.py`, `nash_dqn.py` | reward shaping, self-play, neural Nash-Q |
 | `scripts/` | one entry point per analysis; all write to `docs/` or `results/` |
