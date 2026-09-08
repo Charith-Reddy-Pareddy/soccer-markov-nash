@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 274 116" role="img" aria-label="mixed strategy bars">
+<text x="60" y="23" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">player 0</text>
+<rect x="66.0" y="8" width="100.0" height="20" fill="var(--p0, #2f6bb0)" opacity="0.65"/>
+<text x="116.0" y="22" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">U 50</text>
+<rect x="166.0" y="8" width="100.0" height="20" fill="var(--p0, #2f6bb0)" opacity="0.65"/>
+<text x="216.0" y="22" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">stay 50</text>
+<text x="60" y="69" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">player 1</text>
+<rect x="66.0" y="54" width="100.0" height="20" fill="var(--p1, #2f8a52)" opacity="0.65"/>
+<text x="116.0" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">U 50</text>
+<rect x="166.0" y="54" width="100.0" height="20" fill="var(--p1, #2f8a52)" opacity="0.65"/>
+<text x="216.0" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">stay 50</text>
+<text x="66" y="111" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">value -0.315</text>
+</svg>

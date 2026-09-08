@@ -76,13 +76,14 @@ def _action_fan(cx: float, cy: float, dist: np.ndarray, colour: str) -> list[str
             out.append(
                 f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="15" fill="none" '
                 f'stroke="{colour}" stroke-width="{1.6 + 2.2 * (p / top):.1f}" '
+                f'stroke-dasharray="2 2" '
                 f'opacity="{0.4 + 0.55 * p:.2f}"/>'
             )
             if p < 0.985:
                 out.append(
-                    f'<text x="{cx:.1f}" y="{cy - 20:.1f}" text-anchor="middle" '
+                    f'<text x="{cx:.1f}" y="{cy + 26:.1f}" text-anchor="middle" '
                     f'font-family="ui-monospace,monospace" font-size="9" '
-                    f'fill="{colour}">stay {p * 100:.0f}%</text>'
+                    f'fill="{colour}">hold {p * 100:.0f}%</text>'
                 )
             continue
         dx, dy = _ARROW[a]
