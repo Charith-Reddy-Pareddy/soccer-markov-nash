@@ -26,14 +26,15 @@ def main() -> None:
     boards = [(w, h) for w in (3, 5, 7, 9, 11) for h in (3, 5, 7) if w * h <= 55]
 
     print(f"{'board':>7}  {'gamma':>5}  {'states':>7}  {'guard slack':>12}  "
-          f"{'IEWDS fails':>11}  {'V(kickoff)':>10}")
+          f"{'IEWDS fails':>11}  {'undisc. mixed':>13}  {'V(kickoff)':>10}")
     all_ok = True
     for w, h in boards:
         for gamma in args.gammas:
             c = certify(w, h, gamma)
             all_ok &= c.ok
             print(f"{w}x{h:<4}  {gamma:>5}  {c.states:>7}  {c.guard_slack:>12.2e}  "
-                  f"{c.iewds_failures:>11}  {c.kickoff_value:>10.4f}"
+                  f"{c.iewds_failures:>11}  {c.undiscounted_mixed_stage_games:>13}  "
+                  f"{c.kickoff_value:>10.4f}"
                   + ("" if c.ok else "   <-- FAIL"))
 
     print("\n" + ("all boards certified: every single-cell stage game has a pure saddle"
