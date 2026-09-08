@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 274 116" role="img" aria-label="mixed strategy bars">
+<text x="60" y="23" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">player 0</text>
+<rect x="66.0" y="8" width="9.2" height="20" fill="var(--p0, #2f6bb0)" opacity="0.38"/>
+<rect x="75.2" y="8" width="190.8" height="20" fill="var(--p0, #2f6bb0)" opacity="0.92"/>
+<text x="170.6" y="22" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">L 95</text>
+<text x="60" y="69" text-anchor="end" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">player 1</text>
+<rect x="66.0" y="54" width="189.9" height="20" fill="var(--p1, #2f8a52)" opacity="0.92"/>
+<text x="160.9" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">D 95</text>
+<rect x="255.9" y="54" width="10.1" height="20" fill="var(--p1, #2f8a52)" opacity="0.38"/>
+<text x="66" y="111" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">value +0.078</text>
+</svg>

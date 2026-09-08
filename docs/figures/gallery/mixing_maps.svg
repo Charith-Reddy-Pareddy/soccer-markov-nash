@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1256 336" role="img" aria-label="panel">
+<g transform="translate(20.0 20.0)">
+<rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="31" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="163" width="42" height="42" fill="#b46739"/>
+<text x="184" y="187" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.04</text>
+<rect x="163" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="207" width="42" height="42" fill="#d9bfaa"/>
+<text x="228" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.00</text>
+<rect x="207" y="163" width="42" height="42" fill="#a94e18"/>
+<text x="228" y="187" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.05</text>
+<rect x="207" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="207" width="42" height="42" fill="#b16131"/>
+<text x="272" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.04</text>
+<rect x="251" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="31" width="42" height="42" fill="#eef2ec"/>
+<circle cx="272.0" cy="184.0" r="12" fill="var(--p1, #2f8a52)"/>
+<text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">cells: minimax minus maximin of the carrier's stage game</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">defender at (5, 1)</text>
+</g>
+<g transform="translate(444.0 20.0)">
+<rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="31" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="119" width="42" height="42" fill="#a94e18"/>
+<text x="96" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.03</text>
+<rect x="75" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="119" width="42" height="42" fill="#b87145"/>
+<text x="140" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.02</text>
+<rect x="119" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="31" width="42" height="42" fill="#eef2ec"/>
+<circle cx="184.0" cy="140.0" r="12" fill="var(--p1, #2f8a52)"/>
+<text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">cells: minimax minus maximin of the carrier's stage game</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">defender at (3, 2)</text>
+</g>
+<g transform="translate(868.0 20.0)">
+<rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="31" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="31" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="75" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="119" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="119" width="42" height="42" fill="#a94e18"/>
+<text x="184" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.05</text>
+<rect x="163" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="163" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="119" width="42" height="42" fill="#b76f43"/>
+<text x="228" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.04</text>
+<rect x="207" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="207" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="251" y="31" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="207" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="163" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="119" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="75" width="42" height="42" fill="#eef2ec"/>
+<rect x="295" y="31" width="42" height="42" fill="#eef2ec"/>
+<circle cx="272.0" cy="140.0" r="12" fill="var(--p1, #2f8a52)"/>
+<text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">cells: minimax minus maximin of the carrier's stage game</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">defender at (5, 2)</text>
+</g>
+</svg>

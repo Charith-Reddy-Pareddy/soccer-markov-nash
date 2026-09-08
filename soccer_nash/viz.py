@@ -45,7 +45,7 @@ _ARROW = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0)}   # U D L R, y up
 def _marker(colour: str) -> str:
     return (
         f'<marker id="ah-{colour[-7:-1]}" viewBox="0 0 8 8" refX="6" refY="4" '
-        f'markerWidth="4.5" markerHeight="4.5" orient="auto">'
+        f'markerWidth="3.6" markerHeight="3.6" orient="auto">'
         f'<path d="M0 0.5 L8 4 L0 7.5 z" fill="{colour}"/></marker>'
     )
 
@@ -77,7 +77,7 @@ def _action_fan(cx: float, cy: float, dist: np.ndarray, colour: str) -> list[str
         length = start + 7 + 18 * p                 # 20..38 px
         sx, sy = cx + dx * start, cy - dy * start
         ex, ey = cx + dx * length, cy - dy * length  # screen y is inverted
-        wgt = 2 + 4 * (p / top)
+        wgt = 1.8 + 2.4 * (p / top)
         out.append(
             f'<line x1="{sx:.1f}" y1="{sy:.1f}" x2="{ex:.1f}" y2="{ey:.1f}" '
             f'stroke="{colour}" stroke-width="{wgt:.1f}" stroke-linecap="round" '
@@ -105,7 +105,7 @@ def policy_svg(
     w, h = game.width, game.height
     x0, y0, x1, y1, b = state
     tw = w * CELL + 2 * MARGIN
-    th = h * CELL + 2 * MARGIN + 14
+    th = h * CELL + 2 * MARGIN + 4
 
     p0 = np.asarray(row_policy[state], dtype=float)
     p1 = np.asarray(col_policy[state], dtype=float)
@@ -136,7 +136,7 @@ def policy_svg(
             f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
             f'sans-serif" font-weight="600" font-size="13" fill="{_INK}">{title}</text>'
         )
-    return _svg(tw, th, body, f"policy at state {state}: {tag}", pad=30)
+    return _svg(tw, th, body, f"policy at state {state}: {tag}", pad=16)
 
 
 # ----------------------------------------------------------- mixing_map_svg
