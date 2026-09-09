@@ -44,8 +44,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   (`make proof`), and the gap that remains.
 - `experiments/phase_diagram.csv` + `figures/phase_diagram.svg` — the
   goal-width × board-size phase diagram (`make phase`).
-- [numerics.md](numerics.md) — the value bracket, stage-game classification, and
-  how rounding under discounting misfires.
+- [numerics.md](numerics.md) — why the LP returns pure strategies, the value
+  bracket, why 0.1-rounding is never safe, and value-iteration vs.
+  freeze-then-iterate — all with figures (`scripts/numerics.py --figures`).
 - [findings.md](findings.md) — dated working notes (Q1–Q7).
 
 ## A10 deliverables

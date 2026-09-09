@@ -8,12 +8,27 @@ import pytest
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.viz import (
+    bestreply_svg,
     mixing_map_svg,
     panel_svg,
     policy_svg,
     strategy_bars_svg,
     value_map_svg,
 )
+
+
+def test_bestreply_svg_flags_a_pure_saddle():
+    pure = np.array([[1.0, 2.0], [0.0, 3.0]])       # saddle at row 0, col 0
+    svg = bestreply_svg(pure)
+    ET.fromstring(svg)
+    assert "pure saddle" in svg
+
+
+def test_bestreply_svg_flags_a_matching_pennies_cycle():
+    rps = np.array([[0.0, -1, 1], [1, 0, -1], [-1, 1, 0]])
+    svg = bestreply_svg(rps, title="rps")
+    ET.fromstring(svg)
+    assert "must mix" in svg
 
 
 @pytest.fixture(scope="module")

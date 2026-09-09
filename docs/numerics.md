@@ -1,10 +1,31 @@
 # Numerical foundations for mixed Nash Q-iteration
 
 The research meeting named three unsolved problems for the discrete soccer
-solver. `soccer_nash/numerics.py` + `scripts/numerics.py` address all three for
-the zero-sum case, and turn up a fourth result about the game itself.
+solver, on top of the core puzzle -- *why does the LP return pure strategies
+when Littman's game is supposed to need mixed ones?* `soccer_nash/numerics.py` +
+`scripts/numerics.py` address all of them for the zero-sum case, and turn up a
+fourth result about the game itself.
 
-Run: `python scripts/numerics.py --move-orders deterministic random`
+Run: `python scripts/numerics.py --move-orders deterministic random --figures`
+
+## 0. Why the LP returns pure strategies
+
+It is the **collision rule**, not the solver. Under `deterministic` or
+`coinflip` resolution the contest outcome is fixed once the joint action is
+known, so the carrier has a weakly-dominant reply and every stage game has a
+pure saddle -- the LP is *right* to return pure. Littman's random *move order*
+makes a ball-steal depend on both players' targets at once, which turns the
+contested cell into a matching-pennies game with no pure saddle. Under
+`move_order="random"`, 94 of 2380 stage games (γ = 0.9) are genuinely mixed.
+
+![Rock-paper-scissors and a soccer stage game side by side; in both, player 0's
+best-reply row and player 1's best-reply column never coincide.](figures/gallery/rps_vs_soccer.svg)
+
+The blue bar marks player 0's best row per column, the green bar player 1's best
+column per row (the professor's O(A²) check -- no LP needed). In a pure-saddle
+game one cell has both; in rock-paper-scissors and in the soccer stage game at
+`(0, 1, 1, 1, 1)` -- carrier pinned against its own goal, defender adjacent --
+they cycle, and the game has no pure equilibrium.
 
 ## 1. The value of a stage game is three numbers
 
@@ -58,6 +79,17 @@ one of its 2380 stage games has a **non-strict** saddle: the pure equilibrium
 exists everywhere, yet is tie-ridden, which is why the LP sometimes returns a
 mix and why the scale-aware classifier is the honest tool.
 
+![Line chart: across every discount from 0.5 to 0.99, fixed 0.1-rounding wrongly
+collapses 60-100% of the mixed stage games, and their true minimax-maximin gap
+never reaches the 0.1 grain.](figures/gallery/discounting_trap.svg)
+
+**There is no discount at which fixed 0.1-rounding is safe.** At heavy
+discounting the genuine `gamma^k` gaps are tiny (median 0.002 at γ = 0.5); at
+light discounting the accumulated discount steps leave entries barely apart
+(all 102 mixed games flip at γ = 0.99). The scale-aware `classify_stage_game`
+tolerance is stable across the whole range: `604 / 1682 / 94` pure /
+degenerate / mixed at every `rel_tol` from `1e-12` to `1e-3`.
+
 ## 3. Value iteration vs. freeze-then-iterate
 
 Three schemes were on the table: value iteration (re-solve every stage game
@@ -81,6 +113,18 @@ rounds**, then snaps to `< 1e-8` and converges. The freeze trick cuts LP solves
 it is strictly worse (65 LP solves where value iteration needs 0, because
 intermediate value functions have non-strict saddles).
 
+![Line chart of digits of accuracy per iteration: value iteration climbs steadily
+to 9 digits; freeze-then-iterate is flat near zero for 16 rounds, then jumps to
+convergence.](figures/gallery/convergence.svg)
+
+Value iteration's Bellman residual (`NashQResult.residual_trace`) decays
+geometrically at rate ≈ γ. Freeze-then-iterate makes no progress at all until
+round 16, because the frozen stage saddle is a pure flip away from the true one
+and the linear evaluation sweeps just propagate the wrong continuation values --
+until `Q` crosses the threshold where the saddle flips and everything corrects
+at once. Concurrent stochastic games have no monotone policy-improvement
+guarantee ([discussion.md](discussion.md) §4); this is what that looks like.
+
 **Verdict: value iteration with the per-sweep cache wins here.** Freeze-then-
 iterate only pays off when the equilibrium solve dominates the backup -- larger
 action spaces, or general-sum games.
@@ -96,9 +140,8 @@ strategies:
 | 2x1 or 1x2 (one side pure) | 14 |
 | 3x2 / 2x3 / 3x3 | 12 |
 
-**68 of 94 reduce to a 2x2 matching-pennies mix.** The essential sub-game is the
-carrier choosing between {advance toward goal, hold / contest} and the defender
-choosing between {block, intercept} -- a "guess where the ball goes" game. That
-is why Littman's *random move order* creates the mixing and the deterministic
-A10 rule does not: the move-order coin makes the contested-square outcome depend
-on both players' hidden action choices at once.
+**68 of 94 reduce to a 2x2 matching-pennies mix** (section 0 shows one next to
+rock-paper-scissors). The essential sub-game is the carrier choosing between
+{advance toward goal, climb / hold} and the defender between {cover a lane, hold
+the forward cell} -- a "guess where the ball goes" game. [templates.md](templates.md)
+reduces all 94 to 8 geometric templates and prints a stage matrix for each.

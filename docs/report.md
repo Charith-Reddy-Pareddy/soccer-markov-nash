@@ -97,6 +97,15 @@ Two further reductions:
   this small (17.2 s vs 13.8 s). It pays off only where the equilibrium solve
   dominates (larger action spaces, general-sum).
 
+![Line chart of digits of accuracy per iteration: value iteration climbs
+steadily; freeze-then-iterate is flat for 16 rounds then jumps to
+convergence.](figures/gallery/convergence.svg)
+
+Value iteration's Bellman residual decays geometrically at rate ≈ γ.
+Freeze-then-iterate makes no progress until the frozen stage saddle flips --
+concurrent stochastic games have no monotone policy improvement
+([discussion.md](discussion.md) §4).
+
 ## 4. Research questions
 
 - **RQ1 -- Existence.** Under what transition structures does a pure-strategy
@@ -291,6 +300,17 @@ five actions too. Details: [littman.md](littman.md).
 
 ### RQ4 -- Numerical robustness
 
+**The soccer game contains rock-paper-scissors.** The pure/mixed check is the
+professor's O(A²) best-reply method: mark player 0's best row in each column and
+player 1's best column in each row; a cell with both is a pure saddle, and if
+none has both the best replies *cycle* and mixing is forced -- no LP needed. The
+stage game at `(0, 1, 1, 1, 1)` (carrier pinned against its own goal, defender
+adjacent -- Littman's Figure 2 geometry) has exactly the crossing structure of
+rock-paper-scissors.
+
+![Rock-paper-scissors and a soccer stage game side by side, best replies marked;
+in both the row and column best replies never coincide.](figures/gallery/rps_vs_soccer.svg)
+
 **A stage game falls into one of five classes** (`classify_stage_game`), and the
 count that matters -- "genuine mixed" -- is the one robust to how the line is
 drawn:
@@ -308,9 +328,12 @@ discounted bands is judged the same way as one at the goal. "Genuine mixed"
 is the only class that forces an LP.
 
 **The value is three numbers** (`value_bracket`): what the row player
-guarantees, gets, and can reach. With `scipy` HiGHS they agree to `1.1e-16` per
-stage game and `8.7e-10` accumulated -- the LP solution is a certified
-`1e-16`-equilibrium.
+guarantees (`min_j (pM)_j`), gets (`p^T M q`), and can reach (`max_i (Mq)_i`) --
+the quantities the professor flagged as never numerically identical. With `scipy`
+HiGHS they agree to `1.1e-16` per stage game and `8.7e-10` accumulated -- the LP
+solution is a certified `1e-16`-equilibrium, so the definitional ambiguity is
+not a practical problem. If it were, the row player takes the *guaranteed* value
+`min_j (pM)_j` -- always a safe lower bound on the true minimax.
 
 **Discounting mildly changes which states mix** (`experiments/gamma_sweep.csv`):
 the 7x5 random game's mixed count runs 122 -> 94 -> 102 as gamma goes
@@ -322,9 +345,16 @@ from 0.001 to 0.32.
 identical 604 / 1682 / 94 split for every `rel_tol` from `1e-12` to `1e-3`,
 degrading only as the tolerance approaches the actual `minimax - maximin` gaps
 (80 mixed at `1e-2`, 0 at `1e-1`). A fixed 0.1-rounding scheme -- proposed to
-force mixed-strategy indifference -- flips the pure-saddle status of **62**
-states, exactly the small-entry mixed region; the deterministic game is safe to
-round only because its values are clean `gamma^k` bands well above 0.1.
+force mixed-strategy indifference -- is **never safe**: across every discount
+from 0.5 to 0.99 it wrongly collapses 60-100% of the mixed stage games, because
+the genuine `minimax - maximin` gaps never reach the 0.1 grid (heavy discounting
+shrinks the `gamma^k` differences; light discounting leaves entries barely
+apart). The deterministic game is safe to round only because its values are
+clean `gamma^k` bands well above 0.1.
+
+![Line chart: fixed 0.1-rounding wrongly makes 60-100% of the mixed stage games
+look pure at every discount, and their true gap never reaches
+0.1.](figures/gallery/discounting_trap.svg)
 
 ## 6. Mechanistic explanation
 

@@ -36,21 +36,34 @@ Two contributions:
 - Everything else: [docs/README.md](docs/README.md)
 - `make test` / `make experiments` / `make report` regenerate everything
 
+## The core question: why does the LP solver return *pure* strategies?
+
+Littman introduced the soccer game *because* it needs mixed strategies "in the
+place where they had to have it" -- yet a discrete minimax-Q solver on the
+usual A10 formulation returns a pure strategy at every state. The reason is the
+**collision rule**, not the solver:
+
+| how a contested square resolves | mixed stage games | pure equilibrium? |
+|---|---|---|
+| `deterministic` -- the carrier wins the square (A10) | **0** of 238 000 (state × step) | yes, everywhere |
+| `coinflip` -- a fair coin, independent of the actions | **0** | yes |
+| `random` -- Littman's rule: the two moves in a random *order* | 3 148 over 404 states | **no** |
+
+Under any rule where the contest outcome is fixed once the joint action is
+known, the carrier has a weakly-dominant reply and every stage game has a pure
+saddle -- the LP is right to return pure. Littman's random *move order* makes a
+ball-steal depend on *both* players' targets at once, which turns the contested
+cell into a matching-pennies game. Switch `move_order="random"` and **94 of the
+2380 stage games** (γ = 0.9) have no pure saddle -- exactly the rock-paper-
+scissors structure Littman's paper is about ([docs/numerics.md](docs/numerics.md),
+[docs/mechanism.md](docs/mechanism.md)).
+
 ## Results at a glance
 
-The A10 game is undiscounted; its exact solution is 100-step backward induction
-(`experiments/undiscounted.csv`).
-
-| move order | mixed stage games (state × step) | V(kickoff) | pure eq? |
-|---|---|---|---|
-| `deterministic` (A10) | **0** of 238 000 | 0.000 | yes (non-stationary) |
-| `coinflip` tie-break | **0** | 0.000 | yes |
-| `random` (Littman) | 3 148 (404 states) | +0.459 | no |
-
+The A10 game is undiscounted; its exact solution is 100-step backward induction.
 The stationary `gamma < 1` solve agrees and is faster: 0 no-saddle stage games
 on the deterministic game at every `gamma` in 0.5–0.995; `94 / 2380` on the
-random game at `gamma = 0.9`. `V(kickoff)` is at the A10 netID start `(0,1,6,3,0)`;
-the mixed count does not depend on it.
+random game at `gamma = 0.9`. The mixed count does not depend on the kickoff.
 
 The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
 while calling the LP on only 3.95% of states (~25x fewer per sweep); mirror

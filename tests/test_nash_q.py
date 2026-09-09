@@ -16,6 +16,14 @@ def test_converges(hybrid_result):
     assert r.iterations < 100
 
 
+def test_residual_trace_decays_to_the_tolerance(hybrid_result):
+    _, r = hybrid_result
+    assert r.residual_trace is not None
+    assert len(r.residual_trace) == r.iterations
+    assert r.residual_trace[-1] < 1e-9
+    assert r.residual_trace[0] > r.residual_trace[-1]      # it actually decays
+
+
 def test_values_bounded(hybrid_result):
     _, r = hybrid_result
     v = np.array(list(r.values.values()))
