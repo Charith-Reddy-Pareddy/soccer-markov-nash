@@ -550,24 +550,24 @@
     <h2>Secondary validation &mdash; the policy plays correctly</h2>
 
     <h3>Littman's Table 3: minimax exploits <em>and</em> survives</h3>
-    <p>Littman's central experiment trains four policies and scores each against a random opponent, a hand-built one, and a <b>challenger</b> trained to beat it &mdash; his minimax policies held ~35&ndash;40% of games against their challenger, his Q-learning (deterministic) policies won <b>0%</b>. Reproduced here with the <em>exact</em> solver on his 5&times;4 / 5-action / random-order / goal-reset board (<span class="mono">scripts/tournament.py</span>, score = player-0 expected discounted goal difference):</p>
+    <p>Littman's central experiment trains four policies and scores each against a random opponent, a hand-built one ("simple rules for scoring and blocking", §6.2), and a <b>challenger</b> trained to beat it &mdash; his minimax policies held ~35&ndash;40% of games against their challenger, his Q-learning (deterministic) policies won <b>0%</b>. Reproduced here with the <em>exact</em> solver on his 5&times;4 / 5-action / random-order / goal-reset board (<span class="mono">scripts/tournament.py</span>, score = player-0 expected discounted goal difference; the hand-built opponent beats a random one ~76% of games):</p>
     <div class="tbl-scroll">
       <table>
         <caption>Littman's board, &gamma; = 0.9 &mdash; player-0 goal difference from the kickoff</caption>
         <thead><tr><th>player-0 policy</th><th class="num">vs. random</th><th class="num">vs. hand-built</th><th class="num">vs. its challenger</th><th class="num">robustness gap</th></tr></thead>
         <tbody>
-          <tr><td>minimax (Nash)</td><td class="num">+0.67</td><td class="num">+0.71</td><td class="num yes">+0.15</td><td class="num">+0.52</td></tr>
-          <tr><td>greedy vs. random</td><td class="num">+0.92</td><td class="num">+1.03</td><td class="num no">&minus;0.59</td><td class="num">+1.51</td></tr>
+          <tr><td>minimax (Nash)</td><td class="num">+0.67</td><td class="num">+0.28</td><td class="num yes">+0.15</td><td class="num">+0.52</td></tr>
+          <tr><td>greedy vs. random</td><td class="num">+0.92</td><td class="num">+0.68</td><td class="num no">&minus;0.59</td><td class="num">+1.51</td></tr>
           <tr><td>greedy self-play</td><td class="num">+0.05</td><td class="num">0.00</td><td class="num">&minus;0.00</td><td class="num">+0.05</td></tr>
-          <tr><td>hand-built (scripted)</td><td class="num">&minus;0.00</td><td class="num">0.00</td><td class="num no">&minus;1.03</td><td class="num">+1.03</td></tr>
+          <tr><td>hand-built</td><td class="num">+0.72</td><td class="num">0.00</td><td class="num no">&minus;0.68</td><td class="num">+1.39</td></tr>
         </tbody>
       </table>
     </div>
     <figure>
-      <img src="figures/gallery/tournament.svg" alt="Grouped bar chart. Against random and hand-built opponents the greedy-vs-random policy has the tallest bars; against the challenger it drops far below zero while the minimax policy stays positive." style="max-width:600px; margin:0 auto;">
-      <figcaption class="fig-cap"><b>Only minimax is in the top-left.</b> greedy/rand is the strongest policy against weak opponents and the weakest against a challenger &mdash; the rock-paper-scissors trap. minimax presses its advantage (<span class="mono">+0.67</span>) and still wins (<span class="mono">+0.15</span>) against the worst case, because the Nash policy has no exploitable row.</figcaption>
+      <img src="figures/gallery/tournament.svg" alt="Grouped bar chart. Against random and hand-built opponents the greedy-vs-random policy has the tallest bars; against the challenger only the minimax policy stays above zero while the greedy and hand-built policies drop below it." style="max-width:600px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Only minimax is in the top-left.</b> greedy/rand is the strongest policy against weak opponents and among the weakest against a challenger &mdash; the rock-paper-scissors trap. minimax presses its advantage (<span class="mono">+0.67</span>) and still wins (<span class="mono">+0.15</span>) against the worst case, because the Nash policy has no exploitable row.</figcaption>
     </figure>
-    <p>The mechanism is exactly Littman's "every deterministic offense has a perfect defense": the mixed states are matching-pennies stage games, a greedy policy commits to one row of each, and the challenger plays the column that beats it. The minimax policy randomizes with the weights that make the challenger indifferent. Full table (including the <span class="mono">P(win) &minus; P(loss)</span> view) in <span class="mono">docs/tournament.md</span>.</p>
+    <p>The mechanism is exactly Littman's "every deterministic offense has a perfect defense": the mixed states are matching-pennies stage games; the greedy <em>and</em> the hand-built policy each commit to one row of each, and the challenger plays the column that beats it. The minimax policy randomizes with the weights that make the challenger indifferent. Full table (including the <span class="mono">P(win) &minus; P(loss)</span> view) in <span class="mono">docs/tournament.md</span>.</p>
 
     <h3>Other checks</h3>
     <ul class="plain">

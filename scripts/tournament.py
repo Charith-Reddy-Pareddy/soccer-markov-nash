@@ -15,7 +15,8 @@ actions, random move order, goal-reset scoring, gamma 0.9):
 - minimax     -- the exact Nash (minimax-Q fixed point) policy
 - greedy/rand -- best response to a uniform-random opponent (Littman's QR)
 - greedy/self -- the deterministic maximin-security policy (Littman's QQ-ish)
-- hand-built  -- the scripted chase/score policy
+- hand-built  -- Littman's "simple rules for scoring and blocking" policy
+                 (soccer_nash/opponents.py handbuilt_policy)
 
 scored against random / hand-built / a per-policy best-response challenger. The
 score is player 0's exact expected discounted goal difference from the kickoff.
@@ -40,7 +41,7 @@ from soccer_nash.evaluate import policy_value
 from soccer_nash.exploit import best_response_to, onehot_policy, uniform_policy
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
-from soccer_nash.opponents import part2_opponent
+from soccer_nash.opponents import handbuilt_policy
 from soccer_nash.viz import P0, P1, grouped_bars_svg
 
 CSV = pathlib.Path("experiments/tournament.csv")
@@ -51,7 +52,8 @@ BOARD = {"width": 5, "height": 4, "goal_rows": (1, 2),
 
 
 def scripted_policy(game, me):
-    return onehot_policy(materialize(game, part2_opponent, me), game.n_actions)
+    """Littman's hand-built policy (deterministic scoring + blocking rules)."""
+    return onehot_policy(materialize(game, handbuilt_policy, me), game.n_actions)
 
 
 def build_policies(game):
@@ -98,6 +100,15 @@ def run(scoring: str):
 def main() -> None:
     print("Littman soccer (5x4, 2-cell goals, 5 actions, random order), "
           f"gamma {GAMMA}\n")
+
+    # sanity: the hand-built opponent should be a competent policy, not a
+    # punching bag -- Littman's beat a random opponent 99.5%.
+    g = SoccerGame(scoring="win", **BOARD)
+    hb = scripted_policy(g, 0)
+    v = policy_value(g, hb, uniform_policy(g), gamma=GAMMA)[g.initial_state()]
+    print(f"hand-built vs random: P(win) - P(loss) = {v:+.3f}  "
+          f"(~{50 + 50 * v:.0f}% wins) -- competent, deterministic\n")
+
     all_rows = []
     for scoring in ("rate", "win"):
         _game, table, opps = run(scoring)

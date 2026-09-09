@@ -151,14 +151,16 @@ It is the whole game. Reproducing Littman's Table 3 exactly
 ([tournament.md](tournament.md)): a **greedy** policy that commits to a pure
 action at every state beats a random opponent by `+0.92` goal difference but
 *loses* `−0.59` to a challenger trained against it — from dominant to beaten.
-The **minimax** policy beats the same weak opponent by `+0.67` and still wins
+Littman's own **hand-built** policy (which beats a random opponent ~76% of the
+time) collapses the same way: `+0.72 → −0.68`. The **minimax** policy beats the
+weak opponents (`+0.67` vs. random, `+0.28` vs. hand-built) and still wins
 `+0.15` against its worst case. Of the four policies tested, minimax is the only
-one that both presses an advantage and survives a strong opponent; the others do
-one or neither.
+one that both presses an advantage and survives a strong opponent.
 
-The reason is the matching-pennies structure of the mixed states: a greedy
-policy plays one row of each, and the challenger plays the column that beats it,
-every time — "every deterministic offense has a perfect defense" (Littman).
+The reason is the matching-pennies structure of the mixed states: any
+deterministic policy plays one row of each, and the challenger plays the column
+that beats it, every time — "every deterministic offense has a perfect defense"
+(Littman).
 Solving the LP on the 3.95% of states that need it is not a numerical nicety;
 it is the difference between a policy that can be exploited to a loss and one
 that cannot be exploited at all.

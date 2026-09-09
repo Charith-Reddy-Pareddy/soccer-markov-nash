@@ -1,37 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 466 248" role="img" aria-label="grouped bar chart">
 <text x="46" y="-4" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Minimax holds up; greedy collapses to its challenger</text>
 <line x1="46" y1="22" x2="46" y2="172" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
-<line x1="46" y1="97.0" x2="422" y2="97.0" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
-<text x="40" y="175.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">-1.0</text>
-<text x="40" y="100.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">+0.0</text>
-<text x="40" y="25.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">+1.0</text>
+<line x1="46" y1="108.5" x2="422" y2="108.5" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
+<text x="40" y="175.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">-0.7</text>
+<text x="40" y="100.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">+0.1</text>
+<text x="40" y="25.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">+0.9</text>
 <text x="100" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">random</text>
-<rect x="46.0" y="48.6" width="24.8" height="48.4" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
-<text x="58.4" y="45.6" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.66</text>
-<rect x="73.8" y="29.9" width="24.8" height="67.1" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="86.1" y="26.9" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+0.92</text>
-<rect x="101.5" y="93.4" width="24.8" height="3.6" fill="var(--ember, #a94e18)" opacity="0.9"/>
-<text x="113.9" y="90.4" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.05</text>
-<rect x="129.2" y="97.0" width="24.8" height="0.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
-<text x="141.6" y="106.3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">-0.00</text>
+<rect x="46.0" y="46.1" width="24.8" height="62.4" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
+<text x="58.4" y="43.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.66</text>
+<rect x="73.8" y="22.0" width="24.8" height="86.5" fill="var(--p1, #2f8a52)" opacity="0.9"/>
+<text x="86.1" y="19.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+0.92</text>
+<rect x="101.5" y="103.8" width="24.8" height="4.7" fill="var(--ember, #a94e18)" opacity="0.9"/>
+<text x="113.9" y="100.8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.05</text>
+<rect x="129.2" y="41.4" width="24.8" height="67.1" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
+<text x="141.6" y="38.4" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">+0.72</text>
 <text x="234" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">hand-built</text>
-<rect x="180.0" y="45.6" width="24.8" height="51.4" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
-<text x="192.4" y="42.6" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.71</text>
-<rect x="207.8" y="22.0" width="24.8" height="75.0" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="220.1" y="19.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+1.03</text>
-<rect x="235.5" y="97.0" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
-<text x="247.9" y="94.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.00</text>
-<rect x="263.2" y="97.0" width="24.8" height="0.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
-<text x="275.6" y="94.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">+0.00</text>
+<rect x="180.0" y="81.9" width="24.8" height="26.6" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
+<text x="192.4" y="78.9" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.28</text>
+<rect x="207.8" y="45.0" width="24.8" height="63.5" fill="var(--p1, #2f8a52)" opacity="0.9"/>
+<text x="220.1" y="42.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+0.68</text>
+<rect x="235.5" y="108.5" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
+<text x="247.9" y="105.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.00</text>
+<rect x="263.2" y="108.5" width="24.8" height="0.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
+<text x="275.6" y="105.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">+0.00</text>
 <text x="368" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">challenger</text>
-<rect x="314.0" y="86.1" width="24.8" height="10.9" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
-<text x="326.4" y="83.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.15</text>
-<rect x="341.8" y="97.0" width="24.8" height="42.9" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="354.1" y="148.9" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">-0.59</text>
-<rect x="369.5" y="97.0" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
-<text x="381.9" y="106.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">-0.00</text>
-<rect x="397.2" y="97.0" width="24.8" height="75.0" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
-<text x="409.6" y="181.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">-1.03</text>
+<rect x="314.0" y="94.5" width="24.8" height="14.0" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
+<text x="326.4" y="91.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.15</text>
+<rect x="341.8" y="108.5" width="24.8" height="55.3" fill="var(--p1, #2f8a52)" opacity="0.9"/>
+<text x="354.1" y="172.8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">-0.59</text>
+<rect x="369.5" y="108.5" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
+<text x="381.9" y="117.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">-0.00</text>
+<rect x="397.2" y="108.5" width="24.8" height="63.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
+<text x="409.6" y="181.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">-0.68</text>
 <rect x="46" y="196" width="9" height="9" fill="var(--p0, #2f6bb0)"/>
 <text x="59" y="204" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink, #19211c)">minimax</text>
 <rect x="105" y="196" width="9" height="9" fill="var(--p1, #2f8a52)"/>

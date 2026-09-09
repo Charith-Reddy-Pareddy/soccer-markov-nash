@@ -1,12 +1,18 @@
 import pytest
 
 from soccer_nash.game import Action, SoccerGame
-from soccer_nash.opponents import always_left, part2_opponent
+from soccer_nash.opponents import always_left, handbuilt_policy, part2_opponent
 
 
 @pytest.fixture
 def game():
     return SoccerGame()
+
+
+@pytest.fixture
+def littman():
+    return SoccerGame(width=5, height=4, goal_rows=(1, 2),
+                      move_order="random", n_actions=5, scoring="rate")
 
 
 def _manhattan(a, b):
@@ -48,6 +54,40 @@ def test_returns_a_legal_action_everywhere(game):
     for s in game.states():
         for me in (0, 1):
             assert part2_opponent(game, s, me) in set(Action)
+
+
+def test_handbuilt_scores_off_the_edge(littman):
+    # player 0 with the ball on a goal row at its goal column -> step off the edge
+    assert handbuilt_policy(littman, (4, 2, 1, 2, 0), me=0) == Action.R
+    # player 1 symmetric
+    assert handbuilt_policy(littman, (3, 2, 0, 1, 1), me=1) == Action.L
+
+
+def test_handbuilt_gets_onto_a_goal_row_first(littman):
+    # player 0 with the ball off the goal rows -> move toward one (row 0 -> up)
+    assert handbuilt_policy(littman, (2, 0, 4, 2, 0), me=0) == Action.U
+
+
+def test_handbuilt_stands_on_the_carriers_forward_cell(littman):
+    # player 1 defends; carrier (player 0) at (2,2) wants (3,2); defender there
+    a = handbuilt_policy(littman, (2, 2, 3, 2, 0), me=1)
+    assert a == Action.STAND
+
+
+def test_handbuilt_is_legal_everywhere(littman):
+    for s in list(littman.states())[::97]:
+        for me in (0, 1):
+            assert handbuilt_policy(littman, s, me) in set(littman.actions())
+
+
+def test_handbuilt_beats_a_random_opponent(littman):
+    from soccer_nash.best_response import materialize
+    from soccer_nash.evaluate import policy_value
+    from soccer_nash.exploit import onehot_policy, uniform_policy
+
+    hb = onehot_policy(materialize(littman, handbuilt_policy, 0), 5)
+    v = policy_value(littman, hb, uniform_policy(littman), gamma=0.9)
+    assert v[littman.initial_state()] > 0.4      # a competent bot, not a stooge
 
 
 def test_chaser_move_reduces_distance(game):
