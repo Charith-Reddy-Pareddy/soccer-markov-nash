@@ -37,6 +37,7 @@ from soccer_nash.render import (
 _INK = "var(--ink, #19211c)"
 _FAINT = "var(--ink-faint, #77817a)"
 _EMBER = (169, 78, 24)      # mixing intensity ramp target
+_EMBER_HEX = f"#{_EMBER[0]:02x}{_EMBER[1]:02x}{_EMBER[2]:02x}"
 _BLUE = (47, 107, 176)      # value ramp: player 0 ahead
 _WARM = (194, 90, 42)       # value ramp: player 1 ahead
 _ARROW = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0)}   # U D L R, y up
@@ -394,6 +395,103 @@ def strategy_bars_svg(
             f'font-size="10" fill="{_INK}">value {value:+.3f}</text>'
         )
     return _svg(left + w + 8, th, body, "mixed strategy bars")
+
+
+# -------------------------------------------------------------- line_chart_svg
+
+def line_chart_svg(
+    series: list[tuple[str, str, list[tuple[float, float]]]],
+    x_label: str = "",
+    y_label: str = "",
+    title: str | None = None,
+    vline: float | None = None,
+) -> str:
+    """A small multi-series line chart. ``series`` is ``(name, colour, points)``
+    with ``points`` a list of ``(x, y)``. ``vline`` draws a dashed marker at an
+    x value (e.g. a threshold)."""
+    pw, ph, ml, mt, mr = 300, 170, 44, 18, 78
+    xs = [x for _n, _c, pts in series for x, _y in pts]
+    ys = [y for _n, _c, pts in series for _x, y in pts]
+    x0, x1 = min(xs), max(xs)
+    y0, y1 = min(0.0, min(ys)), max(ys)
+    xr = x1 - x0 or 1.0
+    yr = y1 - y0 or 1.0
+
+    def sx(x: float) -> float:
+        return ml + (x - x0) / xr * pw
+
+    def sy(y: float) -> float:
+        return mt + ph - (y - y0) / yr * ph
+
+    body = [
+        f'<line x1="{ml}" y1="{mt}" x2="{ml}" y2="{mt + ph}" '
+        f'stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>',
+        f'<line x1="{ml}" y1="{mt + ph}" x2="{ml + pw}" y2="{mt + ph}" '
+        f'stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>',
+    ]
+    for frac in (0.0, 0.5, 1.0):
+        yv = y0 + frac * yr
+        gy = sy(yv)
+        body.append(
+            f'<line x1="{ml}" y1="{gy:.1f}" x2="{ml + pw}" y2="{gy:.1f}" '
+            f'stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>'
+        )
+        body.append(
+            f'<text x="{ml - 6}" y="{gy + 3:.1f}" text-anchor="end" '
+            f'font-family="ui-monospace,monospace" font-size="8.5" '
+            f'fill="{_FAINT}">{yv:.0f}</text>'
+        )
+    for xv in (x0, (x0 + x1) / 2, x1):
+        body.append(
+            f'<text x="{sx(xv):.1f}" y="{mt + ph + 12:.1f}" text-anchor="middle" '
+            f'font-family="ui-monospace,monospace" font-size="8.5" '
+            f'fill="{_FAINT}">{xv:.1f}</text>'
+        )
+    if vline is not None:
+        vx = sx(vline)
+        body.append(
+            f'<line x1="{vx:.1f}" y1="{mt}" x2="{vx:.1f}" y2="{mt + ph}" '
+            f'stroke="{_EMBER_HEX}" stroke-width="1.2" stroke-dasharray="3 3"/>'
+        )
+    for name, colour, pts in series:
+        d = " ".join(
+            f"{'M' if i == 0 else 'L'}{sx(x):.1f} {sy(y):.1f}"
+            for i, (x, y) in enumerate(pts)
+        )
+        body.append(
+            f'<path d="{d}" fill="none" stroke="{colour}" stroke-width="2" '
+            f'stroke-linejoin="round"/>'
+        )
+        for x, y in pts:
+            body.append(
+                f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="2.4" fill="{colour}"/>'
+            )
+        lx, ly = pts[-1]
+        body.append(
+            f'<text x="{sx(lx) + 4:.1f}" y="{sy(ly) + 3:.1f}" '
+            f'font-family="ui-monospace,monospace" font-size="9" '
+            f'fill="{colour}">{name}</text>'
+        )
+    if x_label:
+        body.append(
+            f'<text x="{ml + pw / 2:.0f}" y="{mt + ph + 26:.0f}" '
+            f'text-anchor="middle" font-family="ui-monospace,monospace" '
+            f'font-size="9" fill="{_FAINT}">{x_label}</text>'
+        )
+    if y_label:
+        body.append(
+            f'<text x="12" y="{mt + ph / 2:.0f}" text-anchor="middle" '
+            f'font-family="ui-monospace,monospace" font-size="9" fill="{_FAINT}" '
+            f'transform="rotate(-90 12 {mt + ph / 2:.0f})">{y_label}</text>'
+        )
+    if title:
+        body.insert(
+            0,
+            f'<text x="{ml}" y="-4" font-family="Barlow Semi Condensed,sans-serif" '
+            f'font-weight="600" font-size="13" fill="{_INK}">{title}</text>',
+        )
+    return _svg(ml + pw + mr, mt + ph + 34, body, "line chart",
+                pad=14 if title else 4)
 
 
 # ------------------------------------------------------------- panel_svg

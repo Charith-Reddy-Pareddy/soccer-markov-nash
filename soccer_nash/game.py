@@ -23,6 +23,10 @@ Two resolution rules are supported:
 * ``move_order="coinflip"`` -- the A10 rule but a fair coin, not possession,
   decides who wins a contested square or a swap (each player with probability
   1/2). ``deterministic`` is this rule with the carrier always winning.
+* ``move_order="blend"`` -- with probability ``blend`` resolve by Littman's
+  random order, otherwise deterministically. ``blend`` sweeps continuously from
+  the deterministic game (0) to the random game (1); it is the knob that turns
+  matching-pennies stage games on.
 
 Two reward objectives (``scoring=``):
 
@@ -95,10 +99,14 @@ class SoccerGame:
     n_actions: int = 4
     #: "win" -> first goal ends the game; "rate" -> goal resets, play continues
     scoring: str = "win"
+    #: only for move_order="blend": P(resolve by random order) vs deterministic
+    blend: float = 0.5
 
     def __post_init__(self) -> None:
-        if self.move_order not in ("deterministic", "random", "coinflip"):
+        if self.move_order not in ("deterministic", "random", "coinflip", "blend"):
             raise ValueError(f"unknown move_order {self.move_order!r}")
+        if not 0.0 <= self.blend <= 1.0:
+            raise ValueError(f"blend must be in [0, 1], got {self.blend}")
         if self.n_actions not in (4, 5):
             raise ValueError(f"n_actions must be 4 or 5, got {self.n_actions}")
         if self.scoring not in ("win", "rate"):
@@ -281,19 +289,26 @@ class SoccerGame:
             return [(1.0, ns, reward)]
 
         if self.move_order == "random":
-            branches = [
-                self._resolve_sequential(p0, p1, a0, a1, b, first)
+            weighted = [
+                (0.5, self._resolve_sequential(p0, p1, a0, a1, b, first))
                 for first in (0, 1)
             ]
-        else:  # coinflip
-            branches = [
-                self._resolve_with_winner(p0, p1, a0, a1, b, winner)
+        elif self.move_order == "coinflip":
+            weighted = [
+                (0.5, self._resolve_with_winner(p0, p1, a0, a1, b, winner))
                 for winner in (0, 1)
+            ]
+        else:  # blend: mix deterministic resolution with random move order
+            weighted = [
+                (1.0 - self.blend, self._resolve_deterministic(p0, p1, a0, a1, b)),
+                (self.blend / 2, self._resolve_sequential(p0, p1, a0, a1, b, 0)),
+                (self.blend / 2, self._resolve_sequential(p0, p1, a0, a1, b, 1)),
             ]
 
         merged: dict[tuple[State, tuple[int, int]], float] = {}
-        for ns, reward, _ in branches:
-            merged[(ns, reward)] = merged.get((ns, reward), 0.0) + 0.5
+        for prob, (ns, reward, _) in weighted:
+            if prob > 0.0:
+                merged[(ns, reward)] = merged.get((ns, reward), 0.0) + prob
         return [(prob, ns, reward) for (ns, reward), prob in merged.items()]
 
     def step(
