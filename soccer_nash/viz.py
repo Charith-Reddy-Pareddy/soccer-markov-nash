@@ -280,6 +280,75 @@ def value_map_svg(
     return _svg(tw, th, body, "value map", pad=20 if title else 6)
 
 
+# --------------------------------------------------------- occupancy_map_svg
+
+_VISIT = (32, 74, 122)   # occupancy ramp target (deep blue)
+
+
+def occupancy_map_svg(
+    game: SoccerGame,
+    dist: dict[State, float],
+    mixed_states: set[State] | None = None,
+    ball: int = 0,
+    title: str | None = None,
+) -> str:
+    """Marginalise ``dist`` over the carrier's cell (for ball owner ``ball``) and
+    shade each cell by how much equilibrium time is spent there. Cells that hold
+    a no-pure-saddle state carry an amber dot."""
+    w, h = game.width, game.height
+    mixed_states = mixed_states or set()
+    tw = w * CELL + 2 * MARGIN
+    th = h * CELL + 2 * MARGIN + 16
+
+    carrier_cell = 0 if ball == 0 else 2
+    occ: dict[tuple[int, int], float] = {}
+    has_mixed: set[tuple[int, int]] = set()
+    for s, m in dist.items():
+        if s[4] != ball:
+            continue
+        cell = (s[carrier_cell], s[carrier_cell + 1])
+        occ[cell] = occ.get(cell, 0.0) + m
+        if s in mixed_states:
+            has_mixed.add(cell)
+    hi = max(occ.values(), default=1.0) or 1.0
+
+    body = [*board_frame(game)]
+    for cx in range(w):
+        for cy in range(h):
+            px = MARGIN + cx * CELL
+            py = MARGIN + (h - 1 - cy) * CELL
+            m = occ.get((cx, cy), 0.0)
+            if m > 1e-9:
+                fill = _lerp((238, 242, 236), _VISIT, 0.12 + 0.88 * (m / hi) ** 0.5)
+                body.append(
+                    f'<rect x="{px + 1}" y="{py + 1}" width="{CELL - 2}" '
+                    f'height="{CELL - 2}" fill="{fill}"/>'
+                )
+                if m * 100 >= 0.5:
+                    body.append(
+                        f'<text x="{px + CELL / 2:.0f}" y="{py + CELL / 2 + 3:.0f}" '
+                        f'text-anchor="middle" font-family="ui-monospace,monospace" '
+                        f'font-size="8.5" fill="{PAPER if m / hi > 0.25 else _INK}">'
+                        f'{m * 100:.0f}</text>'
+                    )
+            if (cx, cy) in has_mixed and occ.get((cx, cy), 0.0) * 100 >= 0.5:
+                body.append(
+                    f'<circle cx="{px + CELL - 7:.0f}" cy="{py + 7:.0f}" r="3.2" '
+                    f'fill="{BALL}" stroke="{PAPER}" stroke-width="0.8"/>'
+                )
+    body.append(
+        f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
+        f'font-size="10" fill="{_FAINT}">equilibrium time by carrier cell '
+        f'(% ; amber = a mixed state sits here)</text>'
+    )
+    if title:
+        body.append(
+            f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
+            f'sans-serif" font-weight="600" font-size="13" fill="{_INK}">{title}</text>'
+        )
+    return _svg(tw, th, body, "occupancy map", pad=20 if title else 6)
+
+
 # ------------------------------------------------------- strategy_bars_svg
 
 _ACT = ("U", "D", "L", "R", "stay")
