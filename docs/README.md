@@ -16,6 +16,10 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [reward.md](reward.md) — a second reward objective (`scoring="rate"`: goal
   reset, expected goal difference); the mixed region is invariant to it
   (`make reward`).
+- [blend.md](blend.md) — sweeping the move-resolution rule from deterministic to
+  random; mixing switches on sharply above `blend = 0.5` (`make blend`).
+- [occupancy.md](occupancy.md) — the mixed states carry ~40% of the equilibrium
+  path despite being 4% of the state space (`make occupancy`).
 
 ## Background and scope
 
