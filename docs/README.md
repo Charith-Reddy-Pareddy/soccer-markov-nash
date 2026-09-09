@@ -12,6 +12,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [advisor.md](advisor.md) — how the research-meeting feedback maps to the repo.
 - [littman.md](littman.md) — Littman 1994, the fifth action (`stand`), and a
   reproduction of his Figure 2 mixed equilibrium (`make littman`).
+- [tournament.md](tournament.md) — Littman's Table 3, reproduced exactly:
+  minimax exploits *and* survives its challenger; greedy policies do one or the
+  other, never both (`make tournament`).
 - [mixing.md](mixing.md) — how shallow the mixed stage games are, their
   matching-pennies structure, and the value of mixing (`make mixing`).
 - [reward.md](reward.md) — a second reward objective (`scoring="rate"`: goal
