@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 450 250" role="img" aria-label="line chart">
+<text x="44" y="-4" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Back up p M q in the frozen sweep</text>
+<line x1="44" y1="18" x2="44" y2="188" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
+<line x1="44" y1="188" x2="344" y2="188" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
+<line x1="44" y1="188.0" x2="344" y2="188.0" stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>
+<text x="38" y="191.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0</text>
+<line x1="44" y1="103.0" x2="344" y2="103.0" stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>
+<text x="38" y="106.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0</text>
+<line x1="44" y1="18.0" x2="344" y2="18.0" stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>
+<text x="38" y="21.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">1</text>
+<text x="44.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">1.0</text>
+<text x="194.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">21.5</text>
+<text x="344.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">42.0</text>
+<path d="M44.0 60.5 L51.3 18.0 L58.6 18.0 L66.0 18.0 L73.3 18.0 L80.6 18.0 L87.9 18.0 L95.2 18.0 L102.5 18.0 L109.9 18.0 L117.2 18.0 L124.5 18.0 L131.8 18.0 L139.1 18.0 L146.4 18.0 L153.8 18.0 L161.1 188.0 L168.4 188.0 L175.7 188.0 L183.0 188.0 L190.3 188.0" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="60.5" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="51.3" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="58.6" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="66.0" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="73.3" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="80.6" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="87.9" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="95.2" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="102.5" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="109.9" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="117.2" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="124.5" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="131.8" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="139.1" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="146.4" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="153.8" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="161.1" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="168.4" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="175.7" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="183.0" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="190.3" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<text x="194.3" y="191.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">p M q</text>
+<path d="M44.0 60.5 L51.3 18.0 L58.6 18.0 L66.0 18.0 L73.3 18.0 L80.6 18.0 L87.9 18.0 L95.2 18.0 L102.5 18.0 L109.9 18.0 L117.2 18.0 L124.5 18.0 L131.8 18.0 L139.1 31.4 L146.4 31.6 L153.8 26.9 L161.1 26.9 L168.4 26.9 L175.7 26.9 L183.0 26.9 L190.3 26.9 L197.7 61.6 L205.0 26.9 L212.3 188.0 L219.6 26.9 L226.9 26.9 L234.2 26.9 L241.6 26.9 L248.9 188.0 L256.2 26.9 L263.5 26.9 L270.8 188.0 L278.1 188.0 L285.5 26.9 L292.8 188.0 L300.1 188.0 L307.4 188.0 L314.7 26.9 L322.0 188.0 L329.4 188.0 L336.7 188.0 L344.0 188.0" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="60.5" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="51.3" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="58.6" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="66.0" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="73.3" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="80.6" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="87.9" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="95.2" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="102.5" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="109.9" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="117.2" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="124.5" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="131.8" cy="18.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="139.1" cy="31.4" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="146.4" cy="31.6" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="153.8" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="161.1" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="168.4" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="175.7" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="183.0" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="190.3" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="197.7" cy="61.6" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="205.0" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="212.3" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="219.6" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="226.9" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="234.2" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="241.6" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="248.9" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="256.2" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="263.5" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="270.8" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="278.1" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="285.5" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="292.8" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="300.1" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="307.4" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="314.7" cy="26.9" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="322.0" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="329.4" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="336.7" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<circle cx="344.0" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
+<text x="348.0" y="191.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">min(pM)</text>
+<path d="M44.0 60.5 L51.3 18.0 L58.6 18.0 L66.0 18.0 L73.3 18.0 L80.6 18.0 L87.9 18.0 L95.2 18.0 L102.5 18.0 L109.9 18.0 L117.2 18.0 L124.5 18.0 L131.8 18.0 L139.1 18.0 L146.4 31.4 L153.8 26.9 L161.1 26.9 L168.4 26.9 L175.7 31.4 L183.0 26.9 L190.3 36.7 L197.7 26.9 L205.0 26.9 L212.3 36.7 L219.6 26.9 L226.9 26.9 L234.2 26.9 L241.6 26.9 L248.9 188.0 L256.2 26.9 L263.5 26.9 L270.8 26.9 L278.1 188.0 L285.5 26.9 L292.8 26.9 L300.1 26.9 L307.4 188.0 L314.7 26.9 L322.0 188.0 L329.4 188.0 L336.7 188.0" fill="none" stroke="var(--ember, #a94e18)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="60.5" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="51.3" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="58.6" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="66.0" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="73.3" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="80.6" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="87.9" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="95.2" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="102.5" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="109.9" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="117.2" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="124.5" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="131.8" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="139.1" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="146.4" cy="31.4" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="153.8" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="161.1" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="168.4" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="175.7" cy="31.4" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="183.0" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="190.3" cy="36.7" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="197.7" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="205.0" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="212.3" cy="36.7" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="219.6" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="226.9" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="234.2" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="241.6" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="248.9" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="256.2" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="263.5" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="270.8" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="278.1" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="285.5" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="292.8" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="300.1" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="307.4" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="314.7" cy="26.9" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="322.0" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="329.4" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="336.7" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<text x="340.7" y="191.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--ember, #a94e18)">max(Mq)</text>
+<text x="194" y="214" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">outer round</text>
+<text x="12" y="103" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)" transform="rotate(-90 12 103)">frozen-strategy staleness</text>
+</svg>

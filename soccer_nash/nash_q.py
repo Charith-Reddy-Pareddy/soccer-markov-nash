@@ -330,10 +330,25 @@ class NashQIteration:
         )
 
     def run_policy_iteration(
-        self, eval_sweeps: int = 50, max_outer: int = 200
+        self, eval_sweeps: int = 50, max_outer: int = 200,
+        eval_value: str = "mid",
     ) -> NashQResult:
         """Freeze the stage-game strategies, run cheap linear evaluation sweeps,
-        then re-solve. Same fixed point, far fewer matrix-game solves."""
+        then re-solve. Same fixed point, far fewer matrix-game solves.
+
+        ``eval_value`` picks which of the three stage-game quantities the
+        evaluation sweep backs up while the frozen ``(p, q)`` are still stale --
+        the choice the professor flagged as an open question:
+
+        * ``"mid"`` -- ``p M q`` (what both get if both mix). Unbiased at the
+          equilibrium, noisy while the strategies are wrong.
+        * ``"lower"`` -- ``min_j (p M)_j`` (what the row player *guarantees*
+          against any column). A pessimistic contraction: converges from below.
+        * ``"upper"`` -- ``max_i (M q)_i`` (what the row player could reach if it
+          best-responded to ``q``). Optimistic: converges from above.
+        """
+        if eval_value not in ("mid", "lower", "upper"):
+            raise ValueError(f"unknown eval_value {eval_value!r}")
         self._lp_calls = 0
         self._lp_cache: dict = {}
         values: dict[State, float] = dict.fromkeys(self._states, 0.0)
@@ -364,7 +379,13 @@ class NashQIteration:
                 updated: dict[State, float] = {}
                 for s in self._states:
                     m = self._matrix(s, values)
-                    v = float(row_policy[s] @ m @ col_policy[s])
+                    p, q = row_policy[s], col_policy[s]
+                    if eval_value == "mid":
+                        v = float(p @ m @ q)
+                    elif eval_value == "lower":
+                        v = float((p @ m).min())
+                    else:  # upper
+                        v = float((m @ q).max())
                     eval_delta = max(eval_delta, abs(v - values[s]))
                     updated[s] = v
                 values = updated

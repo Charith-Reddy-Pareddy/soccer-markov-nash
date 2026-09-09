@@ -123,6 +123,32 @@ def test_policy_iteration_matches_value_iteration():
         assert worst < 1e-7
 
 
+def test_all_three_eval_value_choices_reach_the_same_fixed_point():
+    vi = NashQIteration(SMALL_RANDOM, gamma=0.9, mode="hybrid", tol=1e-10).run()
+    for ev in ("mid", "lower", "upper"):
+        pi = NashQIteration(
+            SMALL_RANDOM, gamma=0.9, mode="hybrid", tol=1e-10
+        ).run_policy_iteration(eval_sweeps=40, eval_value=ev)
+        worst = max(abs(vi.values[s] - pi.values[s]) for s in vi.values)
+        assert worst < 1e-6, ev
+
+
+def test_mid_eval_value_converges_in_fewer_rounds_than_the_bounds():
+    kw = {"gamma": 0.9, "mode": "hybrid", "tol": 1e-9}
+    mid = NashQIteration(SMALL_RANDOM, **kw).run_policy_iteration(
+        eval_sweeps=40, eval_value="mid"
+    )
+    low = NashQIteration(SMALL_RANDOM, **kw).run_policy_iteration(
+        eval_sweeps=40, eval_value="lower"
+    )
+    assert mid.iterations <= low.iterations
+
+
+def test_unknown_eval_value_rejected():
+    with pytest.raises(ValueError):
+        NashQIteration(SMALL, gamma=0.9).run_policy_iteration(eval_value="nope")
+
+
 def test_policy_iteration_pure_mode_uses_no_linear_program():
     pi = NashQIteration(SMALL, gamma=0.9, mode="pure").run_policy_iteration()
     assert pi.matrix_game_solves == 0

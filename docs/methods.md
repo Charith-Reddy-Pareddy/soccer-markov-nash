@@ -61,6 +61,18 @@ each stage matrix into five cases -- exact / numerically-indistinguishable /
 strict / degenerate saddle, or genuine mixed -- with a tolerance that scales
 with the matrix entries. Only "genuine mixed" forces the LP.
 
+### Speed-ups (none in Littman's paper)
+
+Littman's minimax-Q solves an LP at every `(s, a, o)` update. This solver adds:
+
+| trick | effect | where |
+|---|---|---|
+| **precompute the outcome table** -- build every stage game's transition list once in `__init__`, then look up `s'` during the recursion | the professor's "solve once for every `s`" -- turns per-entry transition work into a dict lookup | `NashQIteration.__init__` (`_out`) |
+| **pure-first** -- the `O(A²)` best-reply check before any LP; use the saddle value when one exists | `~25×` fewer LP calls (3.95% vs 100% of states) | `_stage_value`, `matrix_games.pure_saddle_points` |
+| **LP-result memoization** -- key the LP value on `round(M, 11).tobytes()` | near convergence most stage matrices repeat sweep-to-sweep, so `~10 000` LP calls become `~9 700` -- a further few percent | `_cached_game_value` (`_lp_cache`) |
+| **mirror symmetry** -- solve one state per board-flip/player-swap pair, reconstruct the other by `V(mirror(s)) = -V(s)` | `2×` on the deterministic game (`0.33 s → 0.23 s`) | `run_symmetric`, `symmetry.py` |
+| **`eval_value="mid"`** -- back up `p M q` (not `min(pM)` / `max(Mq)`) in the frozen policy-iteration sweep | `2×` fewer outer rounds than the bounds ([numerics.md](numerics.md) §3) | `run_policy_iteration` |
+
 ## The experiments
 
 All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via

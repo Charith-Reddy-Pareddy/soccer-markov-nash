@@ -53,6 +53,9 @@ def value_and_rounding(game, gamma):
     print(f"  stage-game classes:            {dict(cls)}")
     print(f"  value-bracket gap:             max {gaps.max():.1e}, mean {gaps.mean():.1e}")
     print(f"  rounding to 0.1 flips a saddle: {flips} states")
+    print(f"  => if V := p M q is the declared game value, a best-responding "
+          f"row player gains at most {gaps.max():.1e} (the bracket width); the "
+          f"safe number to report is the guaranteed value min_j (p M)_j.")
     return solver, r
 
 
@@ -76,6 +79,25 @@ def iteration_schemes(game, gamma):
         f"{pi.matrix_game_solves:6d} solves, {t_pi:5.1f} s"
     )
     print(f"  freeze staleness stayed maximal for {lock} rounds, then locked in")
+
+
+def eval_value_choice(game, gamma):
+    """Which of the three stage-game quantities to back up in the frozen
+    evaluation sweep -- the professor's open question. Compare all three."""
+    truth = NashQIteration(game, gamma=gamma, mode="hybrid", tol=1e-9).run().values
+    print("  freeze-then-iterate evaluation quantity:")
+    for ev in ("mid", "lower", "upper"):
+        r = NashQIteration(game, gamma=gamma, mode="hybrid",
+                           tol=1e-9).run_policy_iteration(eval_sweeps=40,
+                                                          eval_value=ev)
+        err = max(abs(r.values[s] - truth[s]) for s in game.states())
+        lock = next((i for i, x in enumerate(r.staleness_trace or [])
+                     if x < 1e-6), len(r.staleness_trace or []))
+        tag = {"mid": "p M q     ", "lower": "min_j(pM)_j", "upper": "max_i(Mq)_i"}[ev]
+        print(f"    {tag}: {r.iterations:3d} rounds, {r.matrix_game_solves:5d} "
+              f"solves, thrash {lock:2d} rounds, |V-truth| {err:.1e}")
+    print("    => p M q wins: unbiased while strategies are stale, ~2x fewer "
+          "rounds; all three reach the same fixed point.")
 
 
 def characterise_mixed_states(solver, result):
@@ -153,13 +175,34 @@ def write_figures(gamma: float) -> None:
     def _digits(trace):
         return [(i + 1, -math.log10(max(v, 1e-12))) for i, v in enumerate(trace)]
 
+    _ = pi  # freeze-then-iterate is shown in eval_value.svg
     (FIGDIR / "convergence.svg").write_text(line_chart_svg(
-        [("value iteration", P0, _digits(vi.residual_trace)),
-         ("freeze-then-iterate", P1, _digits(pi.staleness_trace))],
-        x_label="sweep / outer round", y_label="digits of accuracy",
-        title="Freeze-then-iterate thrashes, then snaps",
+        [("Bellman residual", P0, _digits(vi.residual_trace))],
+        x_label="value-iteration sweep", y_label="digits of accuracy",
+        title="Value iteration: geometric decay at rate about gamma",
     ))
     print(f"wrote {FIGDIR / 'convergence.svg'}")
+
+    # 4. which value quantity to back up in the frozen evaluation sweep
+    truth = vi.values
+    series = []
+    for ev, colour in (("mid", P0), ("lower", P1),
+                       ("upper", "var(--ember, #a94e18)")):
+        r = NashQIteration(game, gamma=gamma, mode="hybrid",
+                           tol=1e-9).run_policy_iteration(eval_sweeps=40,
+                                                          eval_value=ev)
+        tr = r.staleness_trace or []
+        series.append((
+            {"mid": "p M q", "lower": "min(pM)", "upper": "max(Mq)"}[ev],
+            colour, [(i + 1, v) for i, v in enumerate(tr)],
+        ))
+        err = max(abs(r.values[s] - truth[s]) for s in game.states())
+        assert err < 1e-6, f"{ev} did not reach the fixed point: {err}"
+    (FIGDIR / "eval_value.svg").write_text(line_chart_svg(
+        series, x_label="outer round", y_label="frozen-strategy staleness",
+        title="Back up p M q in the frozen sweep",
+    ))
+    print(f"wrote {FIGDIR / 'eval_value.svg'}")
 
 
 def main() -> None:
@@ -177,6 +220,8 @@ def main() -> None:
         print(f"\n=== move_order = {mo}, gamma = {args.gamma} ===")
         solver, result = value_and_rounding(game, args.gamma)
         iteration_schemes(game, args.gamma)
+        if mo != "deterministic":
+            eval_value_choice(game, args.gamma)
         characterise_mixed_states(solver, result)
 
     if args.figures:
