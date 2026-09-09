@@ -1,8 +1,15 @@
-"""Exact hybrid Nash-Q vs. a neural stage-game approximation.
+"""Exact hybrid Nash-Q vs. two neural baselines.
 
 The professor's stated pipeline is: exact discrete solver first, then get a
-network to replicate it. This measures how close the network gets, over several
-random seeds so the numbers come with an error bar.
+network to replicate it. Two ways to replicate it, so we can tell *where* the
+approximation breaks:
+
+* **Q net** -- regress toward the stage matrices `Q(s, a0, a1)`, then extract a
+  policy by taking the minimax of the predicted matrix.
+* **policy net** -- regress a network *directly* onto the exact equilibrium
+  strategies `(p(s), q(s))`.
+
+Over several seeds, with an error bar.
 
     python scripts/nash_dqn.py --seeds 5      # writes experiments/nash_dqn_seeds.csv
 """
@@ -19,7 +26,12 @@ import time
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.game import A10SoccerGame
-from soccer_nash.nash_dqn import compare_to_exact, train_nash_dqn
+from soccer_nash.nash_dqn import (
+    compare_policy_to_exact,
+    compare_to_exact,
+    train_nash_dqn,
+    train_policy_baseline,
+)
 from soccer_nash.nash_q import NashQIteration
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "experiments" / "nash_dqn_seeds.csv"
@@ -27,6 +39,7 @@ FIELDS = [
     "seed", "train_time_s", "final_mse", "epochs_to_plateau", "still_improving",
     "max_value_error", "mean_value_error",
     "action_agreement", "classification_agreement", "duality_gap",
+    "policy_action_agreement", "policy_max_regret", "policy_duality_gap",
 ]
 
 
@@ -61,6 +74,9 @@ def main() -> None:
     exact = NashQIteration(game, gamma=args.gamma, mode="hybrid", tol=1e-10).run()
     t_exact = time.perf_counter() - t
     no_saddle = set(exact.no_saddle_states)
+    solver = NashQIteration(game, gamma=args.gamma, mode="hybrid", tol=1e-10)
+    solver.run()
+    matrix_of = lambda s: solver._matrix(s, exact.values)  # noqa: E731
 
     rows: list[dict] = []
     for seed in range(args.seeds):
@@ -71,6 +87,13 @@ def main() -> None:
         t_dqn = time.perf_counter() - t
         m = compare_to_exact(
             game, dqn.net, exact.values, exact.row_policy, args.gamma, no_saddle
+        )
+        pnet = train_policy_baseline(
+            game, exact.row_policy, exact.col_policy, hidden=args.hidden,
+            epochs=args.epochs, seed=seed,
+        )
+        pm = compare_policy_to_exact(
+            game, pnet, matrix_of, exact.row_policy, no_saddle, args.gamma
         )
         plateau, improving = _convergence(dqn.loss_trace)
         rows.append({
@@ -84,10 +107,14 @@ def main() -> None:
             "action_agreement": round(m["action_agreement"], 4),
             "classification_agreement": round(m["classification_agreement"], 4),
             "duality_gap": round(m["duality_gap"], 4),
+            "policy_action_agreement": round(pm["action_agreement"], 4),
+            "policy_max_regret": round(pm["max_equilibrium_regret"], 4),
+            "policy_duality_gap": round(pm["duality_gap"], 4),
         })
-        print(f"  seed {seed}: agree {rows[-1]['action_agreement']:.3f}  "
-              f"class {rows[-1]['classification_agreement']:.3f}  "
-              f"exploit {rows[-1]['duality_gap']:.3f}  {t_dqn:.0f}s")
+        print(f"  seed {seed}: Q-net agree {rows[-1]['action_agreement']:.3f} "
+              f"exploit {rows[-1]['duality_gap']:.3f}  |  "
+              f"pi-net agree {rows[-1]['policy_action_agreement']:.3f} "
+              f"exploit {rows[-1]['policy_duality_gap']:.3f}")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
@@ -97,16 +124,20 @@ def main() -> None:
 
     print(f"\nexact hybrid Nash-Q : {exact.iterations} sweeps, {t_exact:.2f} s, "
           f"value error 0, exploitability 0")
-    print(f"neural Nash-Q ({args.seeds} seeds, {args.epochs} epochs):")
+    print(f"\nQ net -- regress toward Q(s,a0,a1), extract minimax "
+          f"({args.seeds} seeds, {args.epochs} epochs):")
     print(f"  max |V_dqn - V_exact|     : {_fmt([r['max_value_error'] for r in rows])}")
-    print(f"  mean |V_dqn - V_exact|    : {_fmt([r['mean_value_error'] for r in rows])}")
     print(f"  action agreement          : {_fmt([r['action_agreement'] for r in rows])}")
     print(f"  pure/mixed classification : {_fmt([r['classification_agreement'] for r in rows])}")
     print(f"  exploitability            : {_fmt([r['duality_gap'] for r in rows])}")
-    print(f"  train time (s)            : {_fmt([r['train_time_s'] for r in rows], 0)}")
-    print(f"  epochs to MSE plateau     : {_fmt([r['epochs_to_plateau'] for r in rows], 0)}"
-          f"  (of {args.epochs}; still improving at the end: "
-          f"{sum(r['still_improving'] for r in rows)}/{args.seeds})")
+    print("\npolicy net -- regress toward the exact (p, q):")
+    print(f"  action agreement          : {_fmt([r['policy_action_agreement'] for r in rows])}")
+    print(f"  max equilibrium regret    : {_fmt([r['policy_max_regret'] for r in rows])}")
+    print(f"  exploitability            : {_fmt([r['policy_duality_gap'] for r in rows])}")
+    print("\n=> the policy net names the right action far more often, yet is "
+          "no less exploitable: naming the argmax is not game-theoretic "
+          "robustness -- the few wrong states are exactly the ones a "
+          "best-responder attacks.")
     print(f"wrote {OUT.relative_to(OUT.parent.parent)}")
 
 

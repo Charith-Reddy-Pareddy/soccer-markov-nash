@@ -69,6 +69,7 @@ figures:
 
 gallery:
 	$(PY) scripts/gallery.py
+	$(PY) scripts/story.py
 
 littman:
 	$(PY) scripts/littman.py

@@ -33,16 +33,18 @@ def _minimax(m: np.ndarray) -> float:
 
 
 class _QNet:
-    """5 -> h -> h -> 16 ReLU regressor with biases (linear output), Adam."""
+    """5 -> h -> h -> out ReLU regressor with biases (linear output), Adam.
+    ``out=16`` for a 4x4 Q matrix, ``out=8`` for two 4-vectors of policy logits."""
 
-    def __init__(self, h: int = 96, seed: int = 0):
+    def __init__(self, h: int = 96, seed: int = 0, out: int = 16):
         rng = np.random.default_rng(seed)
+        self.out = out
         self.W1 = rng.normal(0, np.sqrt(2 / 5), (5, h))
         self.b1 = np.zeros(h)
         self.W2 = rng.normal(0, np.sqrt(2 / h), (h, h))
         self.b2 = np.zeros(h)
-        self.W3 = rng.normal(0, np.sqrt(2 / h), (h, 16)) * 0.1
-        self.b3 = np.zeros(16)
+        self.W3 = rng.normal(0, np.sqrt(2 / h), (h, out)) * 0.1
+        self.b3 = np.zeros(out)
         self._opt = [[np.zeros_like(w), np.zeros_like(w)] for w in self._w()]
         self._t = 0
 
@@ -63,6 +65,13 @@ class _QNet:
 
     def matrix(self, state: State) -> np.ndarray:
         return self.predict(np.array(state, float))[0].reshape(4, 4)
+
+    def policy(self, state: State) -> tuple[np.ndarray, np.ndarray]:
+        """Two length-4 strategies from an ``out=8`` net (softmax per head)."""
+        z = self.predict(np.array(state, float))[0]
+        p = np.exp(z[:4] - z[:4].max())
+        q = np.exp(z[4:] - z[4:].max())
+        return p / p.sum(), q / q.sum()
 
     def step(self, X, target, lr=2e-3):
         out, (x, z1, a1, z2, a2) = self._forward(X)
@@ -205,5 +214,72 @@ def compare_to_exact(
         "mean_value_error": mean_verr / n,
         "action_agreement": agree / n,
         "classification_agreement": class_agree / n,
+        "duality_gap": gap,
+    }
+
+
+def train_policy_baseline(
+    game: SoccerGame,
+    exact_row_policy,
+    exact_col_policy,
+    hidden: int = 64,
+    epochs: int = 400,
+    lr: float = 3e-3,
+    batch_size: int = 256,
+    seed: int = 0,
+) -> _QNet:
+    """A network trained *directly* on the exact equilibrium strategies -- the
+    third baseline the meeting asked for: does the neural failure come from the
+    value approximation or from extracting a policy out of it?"""
+    if game.move_order != "deterministic":
+        raise ValueError("nash_dqn expects the deterministic game")
+    states = list(game.states())
+    X = np.array(states, float)
+    y = np.array([
+        np.concatenate([exact_row_policy[s], exact_col_policy[s]]) for s in states
+    ])
+    net = _QNet(hidden, seed, out=8)
+    rng = np.random.default_rng(seed)
+    n = len(states)
+    for epoch in range(epochs):
+        lr_e = lr * 0.5 * (1 + np.cos(np.pi * epoch / max(epochs - 1, 1)))
+        perm = rng.permutation(n)
+        for b in range(0, n, batch_size):
+            idx = perm[b : b + batch_size]
+            net.step(X[idx], y[idx], lr=lr_e)
+    return net
+
+
+def compare_policy_to_exact(
+    game: SoccerGame,
+    net: _QNet,
+    exact_matrix_of,
+    exact_row_policy,
+    exact_no_saddle: set | None = None,
+    gamma: float = 0.9,
+):
+    """Score a policy network against the exact solver: how often it names the
+    right action, whether its strategy is close to a Nash of the *exact* stage
+    game (equilibrium regret), and its overall exploitability."""
+    from soccer_nash.exploit import duality_gap
+    from soccer_nash.numerics import epsilon_equilibrium
+
+    exact_no_saddle = exact_no_saddle or set()
+    states = list(game.states())
+    agree = 0
+    regret = 0.0
+    row_pol: dict[State, np.ndarray] = {}
+    col_pol: dict[State, np.ndarray] = {}
+    for s in states:
+        p, q = net.policy(s)
+        row_pol[s], col_pol[s] = p, q
+        if np.argmax(p) == int(np.argmax(exact_row_policy[s])):
+            agree += 1
+        regret = max(regret, epsilon_equilibrium(exact_matrix_of(s), p, q))
+    gap = duality_gap(game, row_pol, col_pol, gamma=gamma)
+    n = len(states)
+    return {
+        "action_agreement": agree / n,
+        "max_equilibrium_regret": regret,
         "duality_gap": gap,
     }
