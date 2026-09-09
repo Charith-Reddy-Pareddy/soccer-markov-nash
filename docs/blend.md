@@ -37,9 +37,17 @@ Two things stand out, on both boards:
    count relaxes to its 94 (7×5) / 56 (5×4).
 
 This sharpens [discussion.md](discussion.md) §3: it is not just that Littman's
-random *order* (rather than an action-independent coin) creates mixing -- the
-random order also has to **outweigh** any deterministic component of the
-resolution rule. A minority of random-order resolution is washed out.
+random *order* (rather than the tested action-independent coin) creates mixing --
+here the random order also has to **outweigh** the deterministic component of
+the resolution rule. A minority of random-order resolution is washed out.
+
+**What this is and is not.** `blend` interpolates *two particular* transition
+mechanisms, `P = (1−p)·P_det + p·P_random`. The statement is: *in this
+interpolation family*, mixing first appears sharply above `p ≈ 0.5`. That is a
+property of this family, **not** a theorem and **not** a universal threshold for
+mixing arbitrary transition rules. Whether `p_c = 0.5` has a structural
+explanation -- and whether the overshoot is a genuine phase transition with a
+critical exponent -- is open ([discussion.md](discussion.md) §7).
 
 The deterministic-limit value `V(kickoff) = 0` (a forced draw) holds for all
 `blend ≤ 0.5` and rises smoothly once mixing turns on.
