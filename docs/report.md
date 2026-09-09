@@ -218,6 +218,18 @@ to cover every scoring lane in a single move. Remove any one -- a one-cell goal,
 deterministic resolution, the coin-flip tie-break -- and every stage game has a
 pure saddle.
 
+Interpolating the resolution rule (`move_order="blend"`: random order with
+probability `blend`, else deterministic) shows the onset is a **sharp
+threshold**, not a ramp: 0 no-pure-saddle stage games for `blend ≤ 0.5`, dozens
+at `blend = 0.52`, and an overshoot to ~1.5× the fully-random count near
+`blend ≈ 0.7` (`scripts/blend.py`, [blend.md](blend.md)). The random order has to
+*outweigh* the deterministic tie-break, not merely be present.
+
+The mixed states are also where the game is actually played: under the Nash
+policy only 456 of 2380 states are reachable from the kickoff, and the 94
+no-pure-saddle states carry **41%** of the discounted occupancy
+(`soccer_nash/occupancy.py`, [occupancy.md](occupancy.md)).
+
 #### How shallow, and worth how much
 
 Every one of the 94 no-pure-saddle stage games is within `0.07` of a pure saddle
