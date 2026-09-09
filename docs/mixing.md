@@ -16,7 +16,24 @@ value function swings a reported `p*` -- so this page does not quote per-state
 weights. The structural facts below are robust (they use `>` comparisons, not
 the LP vertex).
 
-## 2. The support is matching pennies
+## 2. Existence is not the same as amount
+
+The carrier's **mixing entropy** (`mixing_entropy`, `numerics.py`): 0 for a pure
+strategy, 1 bit for an even 2-way / matching-pennies mix, more for a genuinely
+spread strategy.
+
+- **median 0.55 bits** over the 94 states -- most are near-pure hedges
+  (≈ 87/13), where the carrier mostly commits and randomises a little.
+- **26 of 94** reach `≥ 0.9` bits -- a near-even split. These are the states
+  with genuine indifference, the ones with the largest `minimax − maximin`
+  gaps.
+- max 1.27 bits -- one 3-action mix.
+
+So the mixed region is 94 states, but the **strongly-mixed core is ~26**. The
+"value of mixing" (§3) and the entropy agree: the shallow states are shallow
+because the carrier barely has to randomise there.
+
+## 3. The support is matching pennies
 
 | support | states | structure |
 |---|---|---|
@@ -27,7 +44,7 @@ This is the same 68 / 94 the geometric templates cover
 ([templates.md](templates.md)); the carrier randomizes between two scoring lanes
 (climb / advance) and the defender between covering them.
 
-## 3. The value of mixing
+## 4. The value of mixing
 
 `V(hybrid) − V(pure maximin)` -- how much a player gives up by being unable to
 mix:

@@ -18,15 +18,18 @@ game and the CS&nbsp;540 A10 geometry are two instances of the family.
 Two contributions:
 
 - **Algorithmic** &mdash; a pure-first hybrid Nash-Q backup: check each stage
-  game for a pure saddle, take its value when it exists, fall back to the LP
-  only where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
-- **Structural** &mdash; a characterization of *when* a stage game is
-  intrinsically mixed. For the deterministic transition model every
-  converged stage game has a pure saddle. Mixing appears only under Littman's
-  random move *order*, only when the goal mouth is wider than one cell, and only
-  where the defender can contest the carrier's forward cell but not cover every
-  scoring lane in one move (3.95% of states on the 7x5 3-cell-goal board). Those states reduce
-  to a few matching-pennies templates.
+  game for a pure saddle (`O(A²)`, no LP), take its value when it exists, fall
+  back to the LP only where it does not. Exact everywhere; **it eliminates LP
+  work on 96&ndash;100% of stage games** (a property of the game). The observed
+  wall-clock speedup is reported separately.
+- **Empirical structural characterization** &mdash; where the mixed region is
+  and what switches it on, over the tested parameter grid (not a theorem). For a
+  deterministic transition model every converged stage game has a pure saddle.
+  Mixing appears under Littman's random move *order*, with a multi-cell goal
+  mouth and a defender that cannot cover both scoring lanes; **across the tested
+  boards, a one-cell goal produced no mixed stage games while every tested goal
+  width &ge; 2 produced some.** 68 of 94 mixed states (7&times;5) reduce to
+  2&times;2 matching pennies; the strongly-mixed core is ~26.
 
 - Policies and values, drawn rather than tabulated: [docs/gallery.html](docs/gallery.html) (`make gallery`)
 - Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)

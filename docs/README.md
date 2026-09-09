@@ -15,8 +15,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [tournament.md](tournament.md) — Littman's Table 3, reproduced exactly:
   minimax exploits *and* survives its challenger; greedy policies do one or the
   other, never both (`make tournament`).
-- [mixing.md](mixing.md) — how shallow the mixed stage games are, their
-  matching-pennies structure, and the value of mixing (`make mixing`).
+- [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
+  (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
+  structure, and the value of mixing (`make mixing`).
 - [reward.md](reward.md) — a second reward objective (`scoring="rate"`: goal
   reset, expected goal difference); the mixed region is invariant to it
   (`make reward`).

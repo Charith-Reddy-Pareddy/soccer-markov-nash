@@ -45,11 +45,15 @@ Vrieze, *Competitive Markov Decision Processes*.
 
 ## 2. Is "one goal cell ⟹ pure, two or more ⟹ mixed" a known result?
 
-**What is established.** The phase diagram (127 board/goal-width configs,
-`--analyze`) shows goal-mouth width is a **binary switch** for whether *any*
-state needs mixing -- perfectly, independent of board size -- and the *fraction*
-that mix is a board-area dilution effect, not a goal-width effect. Verified
-undiscounted and at every `γ` tested.
+**What is established (empirically, over the tested grid).** The phase diagram
+(127 configs: `3 ≤ W ≤ 11`, `3 ≤ H ≤ 9`, `W·H ≤ 45`, all legal goal widths)
+shows that across the tested boards, a one-cell goal produced **no** mixed stage
+game and every goal width `≥ 2` produced **at least one**. The precise claim: a
+multi-cell goal is *necessary* for the mixed region in the studied family and,
+across our tested boards, *sufficient* for at least one mixed state to exist. It
+is not a proof that every multi-cell board must have one, nor that every state
+on such a board is mixed. The *fraction* that mix is a board-area dilution
+effect. Verified undiscounted and at every `γ` tested.
 
 **Best answer.** This looks like the game-theory distinction between a
 **single-target** and a **multi-target** pursuit game. One target: the evader
@@ -80,16 +84,19 @@ value function **bit-identical** to the deterministic game (`max |V_det -
 V_coin| = 0` at every `γ`, discounted and not). Littman's random *move order*
 (apply the two moves in a uniformly random sequence) does force mixing.
 
-**The distinction.** Stochasticity that is **independent of the joint action** --
-a tie-break coin flipped only when a contest is already unavoidable -- cannot
-create a mixed equilibrium in a game that has pure saddles under the
-deterministic limit: optimal play simply never enters a contest it might lose,
-so the coin is never flipped on the equilibrium path. Stochasticity that is
-**coupled to the joint action** -- the move order, which decides whether a move
-"into the other player's current cell" succeeds, and that depends on *both*
-players' targets at once -- can, because it makes the stage-game payoff itself a
-function of the action profile in a matching-pennies pattern. This is a clean
-one-line characterization and the project verifies both halves.
+**The distinction, as far as the evidence supports it.** In *this* soccer
+family: the one coin-flip collision variant tested -- a coin flipped only when a
+contest is already unavoidable -- does not create any new mixed stage game,
+because optimal play never enters a contest it might lose, so the coin is never
+flipped on the equilibrium path. The random move *order* does, because it
+decides whether a move "into the other player's current cell" succeeds and that
+depends on *both* players' targets at once -- making the stage-game payoff a
+function of the action profile in a matching-pennies pattern.
+
+This is **not** a general theorem that action-independent stochastic transitions
+can never create mixing -- stochastic transitions can certainly alter strategic
+values and equilibrium structure in other games. It is a statement about this
+one tie-break mechanism versus this one move-order mechanism, both verified here.
 
 ---
 
@@ -122,8 +129,8 @@ game needs a mixed Nash equilibrium, and which do not.**
 
 | parameter | effect on the no-pure-saddle region | evidence |
 |---|---|---|
-| **move-resolution rule** | **determines it.** deterministic / coinflip / `blend ≤ 0.5` → **0** mixed; random / `blend > 0.5` → mixing, with a sharp threshold and an overshoot | [blend.md](blend.md), §3 |
-| **goal-mouth width** | **binary switch.** 1 cell → 0 mixed on every board; ≥ 2 → mixing on every board | phase diagram, §2 |
+| **move-resolution rule** | **the strongest lever.** deterministic / the tested coinflip / `blend ≤ 0.5` → **0** mixed; random / `blend > 0.5` → mixing, sharp onset + overshoot *in this interpolation family* | [blend.md](blend.md), §3 |
+| **goal-mouth width** | **the switch, on the tested grid.** 1 cell → 0 mixed on all 40 tested configs; ≥ 2 → at least one mixed on all 87. Necessary; sufficient across the tested boards | phase diagram, §2 |
 | board size | scales the *fraction* only (area dilution, R² 0.64); does not create or remove mixing | phase diagram |
 | discount `γ` | shifts *which* states mix by a few percent (94 at 0.9, 122 at 0.5, 102 at 0.995); the region is otherwise stable | RQ4 |
 | **kickoff position** | **no effect** on the region; only `V(kickoff)` moves | RQ1 |

@@ -18,9 +18,12 @@ Three problems come up once a stage game genuinely needs mixed strategies:
    that scales with the entries instead, and :func:`rounding_changes_saddle`
    shows where fixed rounding would flip the answer.
 
-3. **Where does the game "have to" mix?** :func:`essential_subgame` strips
-   iteratively strictly dominated actions; :func:`is_matching_pennies` checks
-   whether what remains is a no-pure-saddle square game.
+3. **Where does the game "have to" mix, and how much?** :func:`essential_subgame`
+   strips iteratively strictly dominated actions; :func:`is_matching_pennies`
+   checks whether what remains is a no-pure-saddle square game;
+   :func:`mixing_entropy` measures *how* mixed a strategy is (0 = pure, 1 bit =
+   an even 2-way mix); :func:`epsilon_equilibrium` measures how far a strategy
+   pair is from a Nash.
 """
 
 from __future__ import annotations
@@ -58,6 +61,33 @@ def value_bracket(
         mid=float(p @ M @ q),
         upper=float((M @ q).max()),
     )
+
+
+def epsilon_equilibrium(M: np.ndarray, p: np.ndarray, q: np.ndarray) -> float:
+    """How much either player can gain by deviating from ``(p, q)``.
+
+    ``r_row = max_i (M q)_i - p^T M q`` (row player's best deviation),
+    ``r_col = p^T M q - min_j (p^T M)_j`` (column player's), and
+    ``eps = max(r_row, r_col)``. ``0`` exactly at a Nash equilibrium; a clean
+    equilibrium-quality number for the LP, the pure-first hybrid, and the neural
+    approximation alike -- more general than exploitability, which needs a full
+    best-response solve.
+    """
+    b = value_bracket(M, p, q)
+    return max(b.upper - b.mid, b.mid - b.lower)
+
+
+def mixing_entropy(p: np.ndarray, base: float = 2.0, tol: float = 1e-9) -> float:
+    """Shannon entropy of a strategy, in bits by default. ``0`` for a pure
+    strategy; ``1`` for an even 2-way mix (matching pennies); higher for a
+    genuinely spread mixed strategy. Distinguishes a near-pure hedge from real
+    randomisation."""
+    p = np.asarray(p, dtype=float)
+    p = p[p > tol]
+    if len(p) <= 1:
+        return 0.0
+    p = p / p.sum()
+    return float(-(p * (np.log(p) / np.log(base))).sum())
 
 
 def certified_value(M: np.ndarray) -> tuple[float, float]:

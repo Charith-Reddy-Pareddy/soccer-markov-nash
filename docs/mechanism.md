@@ -1,17 +1,21 @@
-# Why a one-cell goal forces pure strategies -- an argument
+# Why a one-cell goal forces pure strategies -- the argument (a conjecture)
 
-The phase-diagram sweep establishes empirically (`experiments/phase_diagram.csv`,
-`scripts/phase_diagram.py --analyze`):
+The phase-diagram sweep establishes **empirically, over the tested grid**
+(`experiments/phase_diagram.csv`, `scripts/phase_diagram.py --analyze`;
+127 configs, `3 ≤ W ≤ 11`, `3 ≤ H ≤ 9`, `W·H ≤ 45`, all discounts 0.5–0.99):
 
-- **Single-cell goal:** 0 stage games need mixed strategies, on every board with
-  `width <= 11`, `height <= 9`, and every discount from 0.5 to 0.99.
-- **Two-or-more-cell goal:** always some mixed states; the fraction is a
-  board-area dilution effect, not a goal-width effect.
+- **Single-cell goal:** 0 stage games needed mixed strategies, on all 40 tested
+  one-cell configs.
+- **Two-or-more-cell goal:** at least one mixed state on all 87 tested
+  wider-goal configs; the fraction is a board-area dilution effect.
 
-This page sketches *why*, and [proof.md](proof.md) takes the single-cell case
-most of the way to a theorem (the defender's optimal strategy in closed form,
-dominance-solvability per board). Claim C for the general goal mouth in
-`docs/assumptions.md` stays open.
+So: a multi-cell goal is *necessary* for the mixed region in the studied family
+and, across the tested boards, *sufficient* for at least one mixed state. This
+page sketches *why* the single-cell case comes out pure, and [proof.md](proof.md)
+takes it most of the way to a per-board theorem (the defender's optimal strategy
+in closed form, dominance-solvability per finite board). A board-size-free proof
+is **not** being pursued as a deliverable, per the meeting feedback -- this is
+conjecture plus machine-checked evidence.
 
 ## Setup
 
@@ -77,6 +81,9 @@ the defender to be *between*.
   (`soccer_nash/dominance.py`), machine-checked for all boards up to 11x5 and all
   discounts 0.5-0.99.
 
-Together these prove the theorem for every finite board. The remaining gap is a
-board-size-free argument for the carrier's half (`maximin(M_s) = V*(s)` via a
-closed-form carrier strategy, or a termination proof for the elimination).
+Together these settle each *finite* board that was checked. A board-size-free
+argument for the carrier's half (`maximin(M_s) = V*(s)` via a closed-form
+carrier strategy, or a termination proof for the elimination) would make it a
+theorem — but per the meeting feedback that is **not** a project deliverable.
+The value of this section is the *mechanism* it names: one target ⟹ no guess ⟹
+pure; two targets + interception geometry ⟹ crossing best replies ⟹ mixed.

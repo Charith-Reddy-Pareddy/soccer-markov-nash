@@ -1,14 +1,17 @@
 """How mixed are the mixed stage games, and what is mixing worth?
 
 "No pure saddle" is not "50/50". This script solves the random-order game and
-reports three things about its no-pure-saddle states:
+reports, for its no-pure-saddle states:
 
 1. **How close to a saddle they are** -- the ``minimax - maximin`` gap. On the
    default board every one is under 0.07: these are shallow, not wild, mixes.
-2. **Their support structure** -- 2x2 vs wider, and how many 2x2 supports are
+2. **How mixed the equilibrium is** -- the carrier's mixing entropy (0 = pure,
+   1 bit = an even 2-way / matching-pennies mix). Distinguishes a near-pure
+   hedge from genuine randomisation.
+3. **Their support structure** -- 2x2 vs wider, and how many 2x2 supports are
    *structurally* matching pennies (best replies cross, a robust `>` test that
    does not depend on the LP vertex).
-3. **The value of mixing** -- ``V(hybrid) - V(pure maximin)`` at each state and
+4. **The value of mixing** -- ``V(hybrid) - V(pure maximin)`` at each state and
    at the kickoff. A player forced to play pure strategies gives this up.
 
     python scripts/mixing.py                 # 7x5, 3-cell goal, gamma 0.9
@@ -30,6 +33,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from soccer_nash.game import SoccerGame
 from soccer_nash.matrix_games import pure_bounds
 from soccer_nash.nash_q import NashQIteration
+from soccer_nash.numerics import mixing_entropy
 from soccer_nash.templates import equilibrium_support, matching_pennies_pattern
 
 CSV = pathlib.Path("experiments/mixing.csv")
@@ -64,15 +68,18 @@ def main() -> None:
             sub.shape == (2, 2)
             and matching_pennies_pattern(sub).is_matching_pennies
         )
+        carrier_p = hres.row_policy[s] if s[4] == 0 else hres.col_policy[s]
         rows.append({
             "state": s,
             "gap": float(hi - lo),
+            "entropy": mixing_entropy(carrier_p),
             "support": (len(ri), len(ci)),
             "matching_pennies": is_mp,
             "value_of_mixing": float(hres.values[s] - pres.values[s]),
         })
 
     gap = np.array([r["gap"] for r in rows])
+    ent = np.array([r["entropy"] for r in rows])
     vom = np.array([r["value_of_mixing"] for r in rows])
     two_by_two = sum(r["support"] == (2, 2) for r in rows)
     mp = sum(r["matching_pennies"] for r in rows)
@@ -83,10 +90,13 @@ def main() -> None:
     print("1. distance to a pure saddle (minimax - maximin)")
     print(f"     median {np.median(gap):.3f}   max {gap.max():.3f}   "
           f"all < 0.1: {bool((gap < 0.1).all())}")
-    print("\n2. support structure")
+    print("\n2. how mixed the carrier's equilibrium is (entropy, bits)")
+    print(f"     median {np.median(ent):.2f}   max {ent.max():.2f}   "
+          f"near-even (>= 0.9 bits): {int((ent >= 0.9).sum())} / {len(rows)}")
+    print("\n3. support structure")
     print(f"     2x2 support: {two_by_two} / {len(rows)}")
     print(f"     structurally matching pennies (crossing best replies): {mp}")
-    print("\n3. value of mixing  (V hybrid - V pure maximin)")
+    print("\n4. value of mixing  (V hybrid - V pure maximin)")
     print(f"     at the mixed states: mean {vom.mean():+.3f}  "
           f"median {np.median(vom):+.3f}  max {vom.max():.3f}")
     print(f"     at the kickoff {s0}: "
@@ -96,11 +106,11 @@ def main() -> None:
     CSV.parent.mkdir(exist_ok=True)
     with CSV.open("w", newline="") as fh:
         wr = csv.writer(fh)
-        wr.writerow(["x0", "y0", "x1", "y1", "b", "gap",
+        wr.writerow(["x0", "y0", "x1", "y1", "b", "gap", "entropy_bits",
                      "row_support", "col_support", "matching_pennies",
                      "value_of_mixing"])
         for r in rows:
-            wr.writerow([*r["state"], f"{r['gap']:.4f}",
+            wr.writerow([*r["state"], f"{r['gap']:.4f}", f"{r['entropy']:.4f}",
                          r["support"][0], r["support"][1],
                          int(r["matching_pennies"]),
                          f"{r['value_of_mixing']:.4f}"])

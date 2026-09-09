@@ -304,10 +304,10 @@
     <p class="dek">A pure-first Nash&#8209;Q approach: where a two-player soccer Markov game does &mdash; and does not &mdash; need mixing, and how much LP work that saves.</p>
     <div class="rq">
       <span class="label">Four questions</span>
-      <b>RQ1 Existence</b> &mdash; under what transition structures does a pure equilibrium exist at every state?
-      <b>RQ2 Efficiency</b> &mdash; how much work does checking for a pure saddle first eliminate?
-      <b>RQ3 Mechanism</b> &mdash; which spatial configurations force mixing?
-      <b>RQ4 Robustness</b> &mdash; how do discounting and tolerance affect the split?
+      <b>RQ1</b> &mdash; when does the soccer Markov game admit pure versus mixed stage equilibria?
+      <b>RQ2</b> &mdash; can pure-saddle detection reduce Nash-Q computation without changing the exact value?
+      <b>RQ3</b> &mdash; what spatial and transition structures characterize the mixed-equilibrium states?
+      <b>RQ4</b> &mdash; how sensitive are classification and computation to discounting, tolerance, and reward formulation?
     </div>
     <p class="byline">repo &middot; soccer-markov-nash &nbsp;|&nbsp; 210+ tests &nbsp;|&nbsp; game family in <span class="mono">docs/design.md</span> &nbsp;|&nbsp; methods in <span class="mono">docs/methods.md</span> &nbsp;|&nbsp; every policy drawn in <span class="mono">docs/gallery.html</span></p>
   </header>
@@ -340,17 +340,43 @@
   </div>
 
   <section>
+    <p class="kicker">Position relative to Littman&nbsp;(1994)</p>
+    <p>Littman <b>already established</b> that the soccer Markov game can require mixed strategies &mdash; his Figure&nbsp;2 gives a state where any deterministic offensive choice is blocked indefinitely and only randomising between <span class="mono">stand</span> and <span class="mono">move</span> guarantees an opening. This project does not rediscover that. It asks: <b>where does mixing appear, why does it appear, and what parameter switches it on?</b> Littman demonstrated the phenomenon in a <em>particular</em> soccer Markov game; we investigate which structural features determine when mixed equilibria arise, and whether their computational cost can be avoided except where mixing is genuinely necessary (<span class="mono">docs/littman.md</span> reproduces his Figure&nbsp;2 and Table&nbsp;3).</p>
+  </section>
+
+  <section>
     <p class="kicker">Abstract</p>
     <ol class="answers">
-      <li><span class="n">1</span><span><b>With deterministic move resolution &mdash; solved exactly, undiscounted, by 100-step backward induction &mdash; every one of the 238&thinsp;000 (state &times; step) stage games has a pure saddle.</b> A pure equilibrium exists; the LP is never called; discounting was never load-bearing. It is also positionally determined, with an explicit pure memoryless profile.</span></li>
-      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when it is the majority rule (a sharp threshold at <span class="mono">blend = 0.5</span>), only when the goal mouth exceeds one cell, and even then on 3.95% of states (7&times;5, 3-cell goal).</span></li>
-      <li><span class="n">3</span><span><b>Those mixed states are geometrically localised</b> (a decision tree predicts them at precision 0.96) and <b>structurally uniform</b>: 68 of 94 have a 2&times;2 matching-pennies support. The region is invariant to the kickoff and to the reward objective &mdash; it depends only on the resolution rule and the goal width.</span></li>
-      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only 3.95% of states &mdash; ~25&times; fewer per sweep &mdash; though those states carry 41% of the equilibrium-path occupancy; mirror symmetry halves the work again.</span></li>
+      <li><span class="n">1</span><span><b>The soccer game returns pure strategies until the collision rule couples the ball-steal to both players' actions.</b> Deterministic or coin-flip resolution &rarr; a pure saddle at every one of the 238&thinsp;000 (state&times;step) stage games (also positionally determined). Littman's random <em>move order</em> &rarr; mixing, but only when it is the majority rule (sharp threshold at <span class="mono">blend&nbsp;&asymp;&nbsp;0.5</span> in this interpolation family) and only with a multi-cell goal.</span></li>
+      <li><span class="n">2</span><span><b>The pure-first hybrid eliminates LP work on almost every stage game</b> &mdash; 100% of states on the deterministic game, 96.05% on the random one &mdash; matching the all-LP value function to <span class="mono">4e&minus;16</span>. That is a property of the game; the wall-clock speedup is reported separately.</span></li>
+      <li><span class="n">3</span><span><b>Empirical structural characterization:</b> across the tested boards the mixed states combine stochastic move order, a multi-cell goal mouth, and a defender with insufficient one-step coverage; 68 of 94 reduce to 2&times;2 matching pennies, and the strongly-mixed core is ~26 (entropy&nbsp;&ge;&nbsp;0.9&nbsp;bits). Invariant to the kickoff and the reward objective; carries 41% of the equilibrium-path occupancy at 4% of the state space.</span></li>
+      <li><span class="n">4</span><span><b>Even a policy network that names the exact-optimal action 99.9% of the time is more exploitable than a mediocre value network</b> &mdash; "name the right action" is not "play a Nash". The exact solver stays the ground truth.</span></li>
     </ol>
   </section>
 
   <section>
     <h2>Method</h2>
+
+    <div class="note">
+      <span class="label">Contributions and hypothesis</span>
+      <p><b>1. Algorithmic:</b> a pure-first hybrid Nash-Q backup &mdash; check for a pure saddle (<span class="mono">O(A&sup2;)</span>), use it, LP only where it fails; exact everywhere; eliminates LP work on 96&ndash;100% of stage games. <b>2. Empirical structural characterization</b> (over the tested parameter grid, not a theorem) of where the mixed region is and what switches it on.</p>
+      <p><b>Hypothesis:</b> mixed equilibria are not distributed arbitrarily &mdash; they arise from a specific interaction between goal-mouth geometry and stochastic move-order coupling, and because most states keep pure saddles a pure-first solver gets the exact value while substantially cutting LP usage.</p>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <caption>objective definitions &mdash; related but not interchangeable</caption>
+        <thead><tr><th>where</th><th>objective</th></tr></thead>
+        <tbody>
+          <tr><td>A10 Part&nbsp;1 / exact</td><td>undiscounted, finite 100-step horizon (<span class="mono">run_finite_horizon</span>, non-stationary <span class="mono">V</span>)</td></tr>
+          <tr><td>stationary Nash-Q</td><td>discounted infinite-horizon fixed point, <span class="mono">&gamma; &lt; 1</span> (<span class="mono">run()</span>) &mdash; a contraction proxy for the above</td></tr>
+          <tr><td><span class="mono">scoring="rate"</span></td><td>continuing discounted: a goal resets, value = expected discounted goal difference</td></tr>
+          <tr><td>Littman replication</td><td>Littman's discount / draw interpretation, <span class="mono">&gamma; = 0.9</span> &equiv; 0.1 per-step draw probability</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Unless a section says otherwise, results are the stationary discounted fixed point at <span class="mono">&gamma; = 0.9</span>; RQ4 shows the pure/mixed classification is stable across <span class="mono">&gamma; &isin; [0.5, 0.995]</span> and matches the exact undiscounted answer.</p>
+
     <p>The game is zero-sum, so at every state the stage game is a payoff matrix <span class="mono">M(s)[a&#8320;, a&#8321;] = E[R + &gamma;V(s&prime;)]</span> and the Shapley&nbsp;(1953) fixed point is the minimax value:</p>
     <div class="formula">V(s) = val(M(s)) = max&#8345; min&#8342;&#8323; (p&#7488;M)[a&#8321;]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= min&#8346; max&#8336;&#8320; (Mq)[a&#8320;]</div>
     <p>The <span class="mono">Q = R + &beta;&thinsp;Nash(Q&prime;)</span> update is this operator. The A10 game is <em>undiscounted</em> (&plusmn;1 at a goal, tie after 100 steps); <span class="mono">&gamma; &lt; 1</span> is a contraction device for value iteration and RQ4 shows the split holds across <span class="mono">&gamma;</span>. Three stage backups: <b>pure</b> (the maximin security value &mdash; a fast lower bound, not a Nash value when it is below the minimax), <b>mixed</b> (the LP minimax value, via <span class="mono">scipy</span> HiGHS), and <b>hybrid</b> (the pure saddle value where <span class="mono">maximin = minimax</span>, the LP elsewhere &mdash; exact everywhere). Support enumeration (<span class="mono">support_enum.py</span>) finds <em>all</em> equilibria, including of general-sum games.</p>
@@ -379,7 +405,15 @@
   </section>
 
   <section>
-    <h2>RQ1 &mdash; Existence</h2>
+    <p class="kicker">Results</p>
+    <figure>
+      <img src="figures/gallery/story.svg" alt="Summary diagram: goal width branches to pure-only versus candidate mixed states; a stochastic move order plus a defender that cannot cover both lanes produces crossing best replies, a 2x2 matching-pennies stage game, and a mixed equilibrium where the LP is needed. Beside it, the pure / hybrid / mixed triangle and the result that deterministic gives pure = hybrid = mixed while random order gives pure below hybrid = mixed; and 3.95 percent of states carry 41 percent of the equilibrium path." style="max-width:680px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>The whole story.</b> Left: the mechanism chain &mdash; goal width, then stochastic move order and interception geometry, produce crossing best replies and a matching-pennies stage game where the LP is needed. Right: the three backups, the experimental result, and the occupancy headline.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>RQ1 &mdash; pure versus mixed, by collision rule</h2>
     <p>The A10 game is undiscounted, so it is solved exactly by 100-step backward induction (<span class="mono">run_finite_horizon</span>, <span class="mono">experiments/undiscounted.csv</span>):</p>
     <div class="tbl-scroll">
       <table>
@@ -400,7 +434,8 @@
     <p>The stationary <span class="mono">&gamma; &lt; 1</span> solve agrees and is faster &mdash; 0 no-pure-saddle stage games on the deterministic game at every <span class="mono">&gamma;</span> from 0.5 to 0.995, and <b>94 / 2380</b> on the random game at <span class="mono">&gamma; = 0.9</span> (<span class="mono">V(kickoff) = +0.164</span> at the netID start). The no-pure-saddle count never depends on the kickoff.</p>
     <div class="note">
       <span class="label">It is the move order, not the randomness &mdash; and it has to be the majority</span>
-      <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames. Interpolating the two (<span class="mono">move_order="blend"</span>, resolve by random order with probability <span class="mono">blend</span>) shows the onset is <b>sharp</b>: <b>0</b> mixed stage games for <span class="mono">blend &le; 0.5</span>, dozens at <span class="mono">blend = 0.52</span>, and an <em>overshoot</em> to ~1.5&times; the fully-random count near <span class="mono">blend &asymp; 0.7</span> before it relaxes (<span class="mono">scripts/blend.py</span>, <span class="mono">docs/blend.md</span>). A minority of random-order resolution is washed out by the deterministic tie-break.</p>
+      <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames. Interpolating the two (<span class="mono">move_order="blend"</span>, resolve by random order with probability <span class="mono">blend</span>) shows the onset is <b>sharp</b>: <b>0</b> mixed stage games for <span class="mono">blend &le; 0.5</span>, dozens at <span class="mono">blend = 0.52</span>, and an <em>overshoot</em> to ~1.5&times; the fully-random count near <span class="mono">blend &asymp; 0.7</span> before it relaxes (<span class="mono">scripts/blend.py</span>, <span class="mono">docs/blend.md</span>).</p>
+      <p><em>Scope of this claim:</em> in this particular soccer family, this one coin-flip collision variant does not create new mixed stage games, whereas random move ordering does &mdash; and only when it is the majority rule in the <span class="mono">P = (1&minus;p)P_det + p&thinsp;P_random</span> interpolation. This is <em>not</em> a statement about all action-independent stochastic transitions, which can certainly alter equilibrium structure in other games. Whether <span class="mono">p_c &asymp; 0.5</span> is structural is open.</p>
     </div>
     <figure>
       <img src="figures/gallery/blend.svg" alt="Line chart: no-pure-saddle state count versus the blend parameter. Flat at zero until blend 0.5, then a sharp jump to a peak and a decline toward the fully-random value." style="max-width:440px; margin:0 auto;">
@@ -426,7 +461,7 @@
         </tbody>
       </table>
     </div>
-    <p>The hybrid solves an LP on only the <b>3.95%</b> of states lacking a pure saddle &mdash; a ~25&times; per-sweep reduction &mdash; and matches the all-LP value to <span class="mono">4e&minus;16</span>. The wall-clock ratio (~13&nbsp;s vs ~8&nbsp;min) is larger but less portable: it also reflects matrix construction and the LP backend. <b>Mirror symmetry</b> (<span class="mono">run_symmetric</span>, deterministic dynamics only): every state has a distinct board-flip&#8209;plus&#8209;player&#8209;swap mirror, so the 2&thinsp;380 states are 1&thinsp;190 pairs &mdash; reconstruct one from the other by <span class="mono">V(mirror(s)) = &minus;V(s)</span>, cutting the deterministic solve 0.33&nbsp;s &rarr; 0.23&nbsp;s.</p>
+    <p><b>The portable claim: the hybrid eliminates LP work on almost every stage game</b> &mdash; 100% of states on the deterministic game, <b>96.05%</b> on the random one &mdash; and matches the all-LP value to <span class="mono">4e&minus;16</span>. That is a property of the game, not the machine. The observed wall-clock ratio (~13&nbsp;s vs ~8&nbsp;min) is reported separately: it also reflects matrix construction and the LP backend. <b>Mirror symmetry</b> (<span class="mono">run_symmetric</span>, deterministic dynamics only): every state has a distinct board-flip&#8209;plus&#8209;player&#8209;swap mirror, so the 2&thinsp;380 states are 1&thinsp;190 pairs &mdash; reconstruct one from the other by <span class="mono">V(mirror(s)) = &minus;V(s)</span> (and the equilibrium <em>policies</em> are equivariant too, where unique: <span class="mono">verify_policy_equivariance</span> returns 0 for the random game's 56 mixed states).</p>
     <div class="note">
       <span class="label">3.95% of states, but 41% of the equilibrium path</span>
       <p>The LP-call rate counts the whole state space. Under the Nash policy from the kickoff only <b>456 of 2&thinsp;380</b> states are ever reached, and the 94 no-pure-saddle states carry <b>41%</b> of the discounted occupancy &mdash; a 2&times; over-representation on the path, 10&times; vs. the raw count (<span class="mono">soccer_nash/occupancy.py</span>, <span class="mono">docs/occupancy.md</span>). The carrier's optimal march to goal runs straight through the contested band; four of the eight most-visited states are mixed. The mixed structure is rare to <em>store</em> and common to <em>use</em>.</p>
@@ -459,11 +494,11 @@
   </section>
 
   <section>
-    <h2>RQ3 &mdash; Mechanism</h2>
-    <p><b>Goal-mouth width, not board size, is the gate.</b> The phase diagram sweeps every board with <span class="mono">width &le; 11</span>, <span class="mono">height &le; 9</span>, <span class="mono">width&middot;height &le; 45</span> against goal widths 1 to <span class="mono">height&minus;2</span> (<span class="mono">scripts/phase_diagram.py --analyze</span>, <span class="mono">experiments/phase_diagram.csv</span>).</p>
+    <h2>RQ3 &mdash; what characterizes the mixed states</h2>
+    <p><b>Across the tested family, a one-cell goal produced no mixed stage games while every tested goal width &ge; 2 produced some.</b> The phase diagram sweeps <b>127 configurations</b> &mdash; boards with <span class="mono">3 &le; width &le; 11</span>, <span class="mono">3 &le; height &le; 9</span>, <span class="mono">width&middot;height &le; 45</span>, against goal widths <span class="mono">1</span> to <span class="mono">height&minus;2</span> (<span class="mono">scripts/phase_diagram.py --analyze</span>). Precisely: a multi-cell goal is <em>necessary</em> for the mixed region in the studied family, and across the tested boards <em>sufficient</em> for at least one mixed state &mdash; not a proof that every such board must have one, nor that every state is mixed.</p>
     <figure>
-      <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:300px; margin:0 auto;">
-      <figcaption class="fig-cap"><b>The gate.</b> Goal width 1 &rarr; <b>0</b> mixed states, on all 40 one-cell configs. Goal width &ge; 2 &rarr; mixing on all 87: whether a board mixes is a <em>perfect</em> function of goal width. The <em>fraction</em> (2.7&ndash;12%) is an OLS R&sup2; 0.64 in board area &mdash; a dilution effect &mdash; with goal width adding little and a negative coefficient. Every state is reachable from the kickoff.</figcaption>
+      <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns) over 127 configurations (3<=W<=11, 3<=H<=9, W*H<=45). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:300px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>The gate (127 configs, <span class="mono">3&le;W&le;11</span>, <span class="mono">3&le;H&le;9</span>, <span class="mono">W&middot;H&le;45</span>).</b> Goal width 1 &rarr; <b>0</b> mixed stage games on all 40 tested one-cell configs. Goal width &ge; 2 &rarr; at least one on all 87 tested wider-goal configs. The <em>fraction</em> (2.7&ndash;12%) is an OLS R&sup2; 0.64 in board area &mdash; a dilution effect &mdash; goal width adding little with a negative coefficient.</figcaption>
     </figure>
     <figure>
       <img src="figures/gallery/mixing_maps.svg" alt="Three 7 by 5 boards. In each the defender is pinned at one cell and every carrier cell is shaded by how far its stage game is from having a pure saddle; only a few cells next to the defender are shaded." style="max-width:660px; margin:0 auto;">
@@ -491,11 +526,13 @@
       <img src="figures/gallery/templates.svg" alt="Four boards, one per matching-pennies template, each showing the carrier and defender with two fanned arrows and their equilibrium probabilities." style="max-width:560px; margin:0 auto;">
       <figcaption class="fig-cap"><b>One policy fan per matching-pennies template.</b> Each covers a class of mixed states related by carrier-frame geometry; <span class="mono">p*</span>, <span class="mono">q*</span> are the equilibrium weights on the first support action. The carrier randomizes between two scoring lanes, the defender between covering them.</figcaption>
     </figure>
-    <p><b>Why the mix is unavoidable.</b> A mixed stage game needs all three of: a stochastic (&frac12;&ndash;&frac12;) resolution order; a goal mouth wider than one cell, so the carrier has two scoring lanes; and a defender close enough to contest the forward cell but unable to cover both lanes in one move. The carrier climbs or drops, the defender guesses which &mdash; matching pennies. Drop any one clause &mdash; a single goal cell, deterministic resolution, or the coin-flip tie-break &mdash; and every stage game has a pure saddle. The full argument and one stage matrix per template are in <span class="mono">docs/templates.md</span>. For the single goal cell the theorem is partly proved (<span class="mono">docs/proof.md</span>): the defender has a closed-form optimal strategy &mdash; guard the one cell &mdash; and every stage game is dominance-solvable, machine-checked for all boards up to 11&times;5.</p>
+    <p><b>The candidate mechanism</b> (empirical, not proved): a stage game requires mixing when a <b>stochastic (&frac12;&ndash;&frac12;) resolution order</b> meets a <b>multi-cell goal</b> and a <b>defender that can contest the forward cell but not cover both lanes</b>. Then the carrier's "which lane" reply flips with the defender's cover and vice versa &mdash; <em>crossing best replies</em>, hence no pure saddle:</p>
+    <p class="formula">geometric condition &rArr; crossing best replies &rArr; no pure saddle</p>
+    <p>Drop any one clause &mdash; a one-cell goal, deterministic resolution, the coin-flip tie-break &mdash; and every tested stage game has a pure saddle. <span class="mono">docs/mechanism.md</span> gives the argument for the single-cell case; making the forward implication a theorem for the general goal mouth is the natural next step. <em>Supporting theory only</em> (per the meeting feedback, not a deliverable): for a single goal cell the defender's optimal strategy is closed-form and machine-verified, and every single-cell stage game is dominance-solvable, checked for all boards up to 11&times;5 &mdash; conjecture plus evidence, not a board-size-free proof.</p>
 
     <div class="note">
-      <span class="label">Shallow mixes, but they compound</span>
-      <p>Every one of the 94 no-pure-saddle stage games sits within <span class="mono">0.07</span> of a pure saddle (<span class="mono">minimax &minus; maximin</span>, median <span class="mono">0.029</span>) &mdash; the equilibria are shallow, and the exact mixing weights are numerically delicate. What is robust: 68 have a 2&times;2 support and all 68 are structurally matching pennies, and the <em>value of mixing</em> &mdash; <span class="mono">V(hybrid) &minus; V(pure maximin)</span> &mdash; is <span class="mono">+0.13</span> on average at those states. It compounds along a path: at the centred kickoff a pure-strategy player secures only a draw (<span class="mono">0.000</span>) where mixing is worth <span class="mono">+0.15</span> (<span class="mono">scripts/mixing.py</span>, <span class="mono">docs/mixing.md</span>).</p>
+      <span class="label">Existence is not the same as amount</span>
+      <p>Every one of the 94 no-pure-saddle stage games sits within <span class="mono">0.07</span> of a pure saddle (<span class="mono">minimax &minus; maximin</span>, median <span class="mono">0.029</span>), and the carrier's <b>mixing entropy</b> has median <span class="mono">0.55</span> bits &mdash; most are near-pure hedges (&asymp; 87/13), not real randomisation. Only <b>26 of 94</b> reach <span class="mono">&ge; 0.9</span> bits (a near-even split); those are the states with genuine indifference. So the mixed region is 94 states, but the <em>strongly</em>-mixed core is ~26. Robust structure: 68 have a 2&times;2 matching-pennies support; the <em>value of mixing</em> (<span class="mono">V(hybrid) &minus; V(pure maximin)</span>) averages <span class="mono">+0.13</span> there and compounds &mdash; at the centred kickoff a pure player secures only a draw where mixing is worth <span class="mono">+0.15</span> (<span class="mono">scripts/mixing.py</span>).</p>
     </div>
 
     <h3>The reward objective does not move the mixed region</h3>
@@ -571,7 +608,7 @@
   </section>
 
   <section>
-    <h2>Secondary validation &mdash; the policy plays correctly</h2>
+    <h2>Supporting evidence &mdash; the policy plays correctly</h2>
 
     <h3>Littman's Table 3: minimax exploits <em>and</em> survives</h3>
     <p>Littman's central experiment trains four policies and scores each against a random opponent, a hand-built one ("simple rules for scoring and blocking", §6.2), and a <b>challenger</b> trained to beat it &mdash; his minimax policies held ~35&ndash;40% of games against their challenger, his Q-learning (deterministic) policies won <b>0%</b>. Reproduced here with the <em>exact</em> solver on his 5&times;4 / 5-action / random-order / goal-reset board (<span class="mono">scripts/tournament.py</span>, score = player-0 expected discounted goal difference; the hand-built opponent beats a random one ~76% of games):</p>
@@ -603,29 +640,27 @@
   </section>
 
   <section>
-    <h2>Beyond zero-sum, and open questions</h2>
-    <ul class="plain">
-      <li><b>General-sum &mdash; extension point.</b> <span class="mono">markov_game.py</span> solves 2-player general-sum Markov games by enumerating <em>all</em> stage equilibria (<span class="mono">support_enum.py</span>) and selecting one &mdash; the notes' "largest sum of values", a no-op for zero-sum but decisive for Battle of the Sexes, where it avoids the mixed equilibrium whose value is below either pure one. Pure-first throughout. The soccer game is zero-sum, so this does not touch the main result.</li>
-      <li><b>Function approximation &mdash; partial.</b> A network fit to the stage matrices (<span class="mono">nash_dqn.py</span>, 5&rarr;96&rarr;96&rarr;16 with biases, 600 epochs) trails the exact solver, over <b>5 seeds</b> (<span class="mono">experiments/nash_dqn_seeds.csv</span>):</li>
-    </ul>
+    <h2>Exploratory &mdash; function approximation and general-sum</h2>
+    <p>These are groundwork for the eventual continuous-action work, not equal-weight contributions. The exact solver is the point of both: it is the ground truth they are measured against.</p>
+
+    <h3>Two neural baselines, and where the approximation breaks</h3>
+    <p>On the deterministic game (5 seeds, <span class="mono">experiments/nash_dqn_seeds.csv</span>): a <b>Q net</b> regresses toward the stage matrices <span class="mono">Q(s, a&#8320;, a&#8321;)</span> and extracts a policy by minimax; a <b>policy net</b> regresses <em>directly</em> onto the exact equilibrium strategies.</p>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th></th><th>exact hybrid Nash-Q</th><th>neural Nash-Q (mean&nbsp;&plusmn;&nbsp;sd)</th></tr></thead>
+        <thead><tr><th>5 seeds</th><th>exact</th><th>Q net (mean&nbsp;&plusmn;&nbsp;sd)</th><th>policy net</th></tr></thead>
         <tbody>
-          <tr><td>max |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.55 &plusmn; 0.02</td></tr>
-          <tr><td>mean |V &minus; V_exact|</td><td class="yes">0</td><td class="no">0.13 &plusmn; 0.00</td></tr>
-          <tr><td>action agreement</td><td class="yes">100%</td><td class="no">43% &plusmn; 2%</td></tr>
-          <tr><td>pure/mixed classification</td><td class="yes">100%</td><td class="no">67% &plusmn; 2%</td></tr>
-          <tr><td>exploitability</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.44 &plusmn; 0.05</td></tr>
-          <tr><td>convergence (epochs to plateau, of 600)</td><td class="yes">exact</td><td class="no">469 &plusmn; 31; 3/5 still creeping</td></tr>
-          <tr><td>runtime</td><td>9 sweeps, 0.3 s</td><td>600 epochs, ~35 s</td></tr>
+          <tr><td>max <span class="mono">|V &minus; V_exact|</span></td><td class="yes">0</td><td class="no">0.55 &plusmn; 0.02</td><td>&mdash;</td></tr>
+          <tr><td>action agreement</td><td class="yes">100%</td><td class="no">43% &plusmn; 2%</td><td class="no">99.9% &plusmn; 0.0%</td></tr>
+          <tr><td>pure/mixed classification</td><td class="yes">100%</td><td class="no">67% &plusmn; 2%</td><td>&mdash;</td></tr>
+          <tr><td>max equilibrium regret <span class="mono">&epsilon;_NE</span></td><td class="yes">0</td><td>&mdash;</td><td class="no">0.46 &plusmn; 0.02</td></tr>
+          <tr><td>exploitability (duality gap)</td><td class="yes">&lt;1e&minus;9</td><td class="no">0.44 &plusmn; 0.05</td><td class="no">0.84 &plusmn; 0.00</td></tr>
         </tbody>
       </table>
     </div>
-    <p>Deterministic game only &mdash; <span class="mono">train_nash_dqn</span> rejects the stochastic variants, so the network never has to represent a genuinely mixed stage game. Even so it trails: it fits the ~1&thinsp;000 zero-value states easily (small <em>mean</em> error) but misses the <span class="mono">&gamma;&#7503;</span> bands and contested regions &mdash; worst-state error <span class="mono">0.55</span>, policy about as exploitable as random play, mis-calls <em>whether</em> a state needs mixing a third of the time. Keep the exact solver as ground truth.</p>
-    <ul class="plain">
-      <li><b>Four research questions</b> &mdash; the single-cell theorem's last step, whether the goal-width dichotomy is a known result, the move-order-vs-randomness distinction, and why freeze-then-iterate thrashes &mdash; are stated and answered as far as the evidence allows in <span class="mono">docs/discussion.md</span>.</li>
-    </ul>
+    <p><b>The policy net names the exact-optimal action at 99.9% of states and is <em>more</em> exploitable than the mediocre Q net</b> (duality gap 0.84 vs 0.44). Two reasons: the ~0.1% of states where it is wrong are exactly the ones a best-responder attacks (the rock-paper-scissors trap again), and a softmax head necessarily smears what should be pure strategies, manufacturing exploitable near-indifference. So the failure is not primarily value approximation &mdash; it is that "name the right action" is not the same as "play a Nash". Even on a small discrete game where the exact solution is a 0.3 s computation, a straightforward neural approximation does not preserve game-theoretic robustness. Keep the exact solver as ground truth.</p>
+
+    <h3>General-sum &mdash; a sanity check, not a second paper</h3>
+    <p><span class="mono">markov_game.py</span> extends pure-first beyond zero-sum: enumerate <em>all</em> stage equilibria (<span class="mono">support_enum.py</span>), select one by "largest sum of values". On Battle of the Sexes this correctly avoids the mixed equilibrium whose value is below either pure one; the soccer game is zero-sum, so it does not touch the main result. Left as future work.</p>
   </section>
 
   <section id="limitations">
@@ -635,12 +670,32 @@
       <li>Several collision sub-cases (carrier vs. stationary opponent, bump = steal, swap possession) are <em>interpreted</em> from the two stated A10 rules, not quoted. If course staff intended otherwise, Claim&nbsp;A must be re-measured. See <span class="mono">docs/assumptions.md</span>.</li>
       <li><b>Claim A/B</b> (a pure equilibrium of the deterministic game) is established constructively &mdash; the explicit pure memoryless attractor/safety profile. <b>Claim C</b> (the theoretical game necessarily has one, over all rules and settings) is <em>not</em>, for the general goal mouth; for the single goal cell it is partly proved (<span class="mono">docs/proof.md</span>).</li>
       <li><span class="mono">random</span> and <span class="mono">coinflip</span> are different game definitions, isolating the collision rule and the tie-break respectively &mdash; not the A10 game.</li>
+      <li>The goal-width result is <b>empirical over the tested grid</b>: a multi-cell goal is necessary for the mixed region in the studied family and sufficient for at least one mixed state on the tested boards &mdash; not a theorem.</li>
     </ul>
+  </section>
+
+  <section>
+    <h2>What weight each experiment carries</h2>
+    <p><b>Core.</b> Pure vs. mixed by collision rule (RQ1); the pure-first hybrid, exact, LP eliminated on 96&ndash;100% (RQ2); the phase diagram &mdash; goal width, not board size (RQ3); geometry &rarr; templates &rarr; 2&times;2 matching pennies (RQ3); numerical robustness &mdash; the three value numbers, the rounding trap, the classifier (RQ4).</p>
+    <p><b>Strong supporting evidence.</b> Occupancy (4% of states, 41% of the path); Littman Table&nbsp;3 reproduced; the reward-objective comparison (region invariant, value range not); symmetry (value <em>and</em> policy equivariance); the <span class="mono">blend</span> interpolation.</p>
+    <p><b>Future / exploratory.</b> The two neural baselines; the general-sum extension; freeze-then-iterate and the <span class="mono">eval_value</span> choice; the single-cell dominance / attractor machinery.</p>
+  </section>
+
+  <section>
+    <h2>Related work</h2>
+    <ul class="plain">
+      <li><b>A. Markov games and minimax-Q.</b> Littman (1994) &mdash; the two-player zero-sum Markov game, minimax by LP, soccer <em>because</em> its optimal policy can be probabilistic. The baseline this project builds on.</li>
+      <li><b>B. Concurrent / reachability games.</b> de&nbsp;Alfaro&ndash;Henzinger&ndash;Kupferman on positional determinacy &mdash; the frame for the attractor result and the single-cell argument.</li>
+      <li><b>C. Stochastic games and stationary equilibria.</b> Shapley (1953); Filar &amp; Vrieze; the orderfield-property literature &mdash; the frame for "one target cell vs. many".</li>
+      <li><b>D. Strategy improvement.</b> Hoffman&ndash;Karp, Condon for turn-based games; the <em>absence</em> of a monotone guarantee for concurrent games explains the freeze-then-iterate thrash.</li>
+      <li><b>E. Reward shaping.</b> Ng&ndash;Harada&ndash;Russell potential-based shaping &mdash; the frame for the PBRS-leaves-the-equilibrium-exact result.</li>
+    </ul>
+    <p><em>Prior work:</em> mixed strategies can be necessary in soccer (A); pure-first enumeration before LP (the meeting). <em>This project adds:</em> an empirical map of where the mixed region is, what switches it on, how much of the equilibrium path it covers, and a hybrid solver that pays LP cost only there.</p>
   </section>
 
   <footer>
     soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; occupancy.py &middot; evaluate.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; blend.py &middot; occupancy.py &middot; tournament.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; story.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; blend.py &middot; occupancy.py &middot; tournament.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
     docs &mdash; design.md &middot; advisor.md &middot; methods.md &middot; discussion.md &middot; numerics.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; tournament.md &middot; mixing.md &middot; reward.md &middot; blend.md &middot; occupancy.md &middot; gallery.html<br>
     experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9

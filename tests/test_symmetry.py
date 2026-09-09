@@ -8,6 +8,7 @@ from soccer_nash.symmetry import (
     flip_action,
     flip_distribution,
     mirror_state,
+    verify_policy_equivariance,
 )
 
 
@@ -64,3 +65,17 @@ def test_run_symmetric_matches_run(game):
 def test_run_symmetric_rejects_stochastic_move_order():
     with pytest.raises(ValueError):
         NashQIteration(SoccerGame(move_order="random")).run_symmetric()
+
+
+def test_equilibrium_policies_are_mirror_equivariant_where_unique():
+    # The random game's mixed states all have a unique equilibrium.
+    g = SoccerGame(width=5, height=4, goal_rows=(1, 2), move_order="random")
+    r = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10).run()
+    assert verify_policy_equivariance(g, r.row_policy, r.col_policy) == 0.0
+
+
+def test_flip_distribution_handles_the_stand_action():
+    assert np.array_equal(
+        flip_distribution([0.1, 0.2, 0.3, 0.35, 0.05]),
+        [0.1, 0.2, 0.35, 0.3, 0.05],
+    )

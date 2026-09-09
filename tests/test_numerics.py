@@ -5,12 +5,38 @@ from soccer_nash.matrix_games import solve_zero_sum
 from soccer_nash.numerics import (
     certified_value,
     classify_stage_game,
+    epsilon_equilibrium,
     essential_subgame,
     is_matching_pennies,
+    mixing_entropy,
     rounding_changes_saddle,
     support_shape,
     value_bracket,
 )
+
+
+def test_mixing_entropy_scale():
+    assert mixing_entropy([1.0, 0.0, 0.0]) == 0.0
+    assert mixing_entropy([0.5, 0.5]) == pytest.approx(1.0)
+    assert mixing_entropy([0.25, 0.25, 0.25, 0.25]) == pytest.approx(2.0)
+    assert 0.0 < mixing_entropy([0.9, 0.1]) < 0.6      # a near-pure hedge
+
+
+def test_epsilon_equilibrium_is_zero_at_a_nash():
+    _v, p, q = solve_zero_sum(RPS)
+    assert epsilon_equilibrium(RPS, p, q) == pytest.approx(0.0, abs=1e-9)
+    # a pure strategy in RPS is maximally exploitable
+    e = np.eye(3)
+    assert epsilon_equilibrium(RPS, e[0], e[0]) == pytest.approx(1.0)
+
+
+def test_epsilon_equilibrium_matches_the_bracket_half_widths():
+    M = np.array([[2.0, -1.0], [0.0, 1.0]])
+    p, q = np.array([0.6, 0.4]), np.array([0.7, 0.3])
+    b = value_bracket(M, p, q)
+    assert epsilon_equilibrium(M, p, q) == pytest.approx(
+        max(b.upper - b.mid, b.mid - b.lower)
+    )
 
 MATCHING_PENNIES = np.array([[1.0, -1.0], [-1.0, 1.0]])
 RPS = np.array([[0.0, -1.0, 1.0], [1.0, 0.0, -1.0], [-1.0, 1.0, 0.0]])
