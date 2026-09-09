@@ -342,10 +342,10 @@
   <section>
     <p class="kicker">Abstract</p>
     <ol class="answers">
-      <li><span class="n">1</span><span><b>The deterministic A10 game &mdash; solved exactly, undiscounted, by 100-step backward induction &mdash; has a pure saddle at every one of its 238&thinsp;000 (state &times; step) stage games.</b> A pure equilibrium exists; the LP is never called; discounting was never load-bearing.</span></li>
-      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when the goal mouth is more than one cell wide, and even then on 3.95% of states (this configuration).</span></li>
-      <li><span class="n">3</span><span><b>Those mixed states are geometrically localised:</b> a decision tree predicts them from the state with precision 0.96, and 68 of 94 have a 2&times;2 matching-pennies support.</span></li>
-      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only 3.95% of states &mdash; ~25&times; fewer per sweep; mirror symmetry halves the work again.</span></li>
+      <li><span class="n">1</span><span><b>With deterministic move resolution &mdash; solved exactly, undiscounted, by 100-step backward induction &mdash; every one of the 238&thinsp;000 (state &times; step) stage games has a pure saddle.</b> A pure equilibrium exists; the LP is never called; discounting was never load-bearing. It is also positionally determined, with an explicit pure memoryless profile.</span></li>
+      <li><span class="n">2</span><span><b>A coin-flip tie-break does not change this;</b> Littman's random <em>move order</em> does &mdash; but only when it is the majority rule (a sharp threshold at <span class="mono">blend = 0.5</span>), only when the goal mouth exceeds one cell, and even then on 3.95% of states (7&times;5, 3-cell goal).</span></li>
+      <li><span class="n">3</span><span><b>Those mixed states are geometrically localised</b> (a decision tree predicts them at precision 0.96) and <b>structurally uniform</b>: 68 of 94 have a 2&times;2 matching-pennies support. The region is invariant to the kickoff and to the reward objective &mdash; it depends only on the resolution rule and the goal width.</span></li>
+      <li><span class="n">4</span><span><b>The pure-first hybrid solver</b> matches the all-LP value function to <span class="mono">4e&minus;16</span> while calling the LP on only 3.95% of states &mdash; ~25&times; fewer per sweep &mdash; though those states carry 41% of the equilibrium-path occupancy; mirror symmetry halves the work again.</span></li>
     </ol>
   </section>
 
@@ -399,9 +399,13 @@
     </figure>
     <p>The stationary <span class="mono">&gamma; &lt; 1</span> solve agrees and is faster &mdash; 0 no-pure-saddle stage games on the deterministic game at every <span class="mono">&gamma;</span> from 0.5 to 0.995, and <b>94 / 2380</b> on the random game at <span class="mono">&gamma; = 0.9</span> (<span class="mono">V(kickoff) = +0.164</span> at the netID start). The no-pure-saddle count never depends on the kickoff.</p>
     <div class="note">
-      <span class="label">It is the move order, not the randomness</span>
-      <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames.</p>
+      <span class="label">It is the move order, not the randomness &mdash; and it has to be the majority</span>
+      <p>The deterministic and coin-flip value functions are <em>identical</em> (<span class="mono">max |V_det &minus; V_coin| = 0</span> at every &gamma;): optimal play never enters a losing contest, so the coin is never flipped. Only Littman's random move order &mdash; where a ball-steal depends on who resolves first <em>and</em> on both players' targets &mdash; creates matching-pennies subgames. Interpolating the two (<span class="mono">move_order="blend"</span>, resolve by random order with probability <span class="mono">blend</span>) shows the onset is <b>sharp</b>: <b>0</b> mixed stage games for <span class="mono">blend &le; 0.5</span>, dozens at <span class="mono">blend = 0.52</span>, and an <em>overshoot</em> to ~1.5&times; the fully-random count near <span class="mono">blend &asymp; 0.7</span> before it relaxes (<span class="mono">scripts/blend.py</span>, <span class="mono">docs/blend.md</span>). A minority of random-order resolution is washed out by the deterministic tie-break.</p>
     </div>
+    <figure>
+      <img src="figures/gallery/blend.svg" alt="Line chart: no-pure-saddle state count versus the blend parameter. Flat at zero until blend 0.5, then a sharp jump to a peak and a decline toward the fully-random value." style="max-width:440px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>A threshold, not a ramp.</b> No-pure-saddle stage games vs. the fraction of moves resolved by random order (5&times;4 board). Nothing until the random rule is the majority; then a jump and an overshoot.</figcaption>
+    </figure>
     <figure>
       <img src="figures/gallery/resolution_contrast.svg" alt="The same board state drawn twice. Under random move order both players' equilibrium strategies fan into two arrows (mixed). Under deterministic carrier-wins resolution each player has a single arrow (pure)." style="max-width:620px; margin:0 auto;">
       <figcaption class="fig-cap"><b>One state, two resolution rules.</b> Arrows are the equilibrium action distribution, sized by probability. Random order (Littman) makes the stage game matching pennies; deterministic carrier-wins collapses it to a pure best reply. Full set: <span class="mono">docs/gallery.html</span>.</figcaption>
@@ -423,6 +427,10 @@
       </table>
     </div>
     <p>The hybrid solves an LP on only the <b>3.95%</b> of states lacking a pure saddle &mdash; a ~25&times; per-sweep reduction &mdash; and matches the all-LP value to <span class="mono">4e&minus;16</span>. The wall-clock ratio (~13&nbsp;s vs ~8&nbsp;min) is larger but less portable: it also reflects matrix construction and the LP backend. <b>Mirror symmetry</b> (<span class="mono">run_symmetric</span>, deterministic dynamics only): every state has a distinct board-flip&#8209;plus&#8209;player&#8209;swap mirror, so the 2&thinsp;380 states are 1&thinsp;190 pairs &mdash; reconstruct one from the other by <span class="mono">V(mirror(s)) = &minus;V(s)</span>, cutting the deterministic solve 0.33&nbsp;s &rarr; 0.23&nbsp;s.</p>
+    <div class="note">
+      <span class="label">3.95% of states, but 41% of the equilibrium path</span>
+      <p>The LP-call rate counts the whole state space. Under the Nash policy from the kickoff only <b>456 of 2&thinsp;380</b> states are ever reached, and the 94 no-pure-saddle states carry <b>41%</b> of the discounted occupancy &mdash; a 2&times; over-representation on the path, 10&times; vs. the raw count (<span class="mono">soccer_nash/occupancy.py</span>, <span class="mono">docs/occupancy.md</span>). The carrier's optimal march to goal runs straight through the contested band; four of the eight most-visited states are mixed. The mixed structure is rare to <em>store</em> and common to <em>use</em>.</p>
+    </div>
 
     <h3>Freeze-then-iterate, and its staleness</h3>
     <div class="tbl-scroll">
@@ -585,9 +593,9 @@
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    docs &mdash; design.md &middot; methods.md &middot; discussion.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; mixing.md &middot; reward.md &middot; gallery.html<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; occupancy.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; blend.py &middot; occupancy.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    docs &mdash; design.md &middot; advisor.md &middot; methods.md &middot; discussion.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; mixing.md &middot; reward.md &middot; blend.md &middot; occupancy.md &middot; gallery.html<br>
     experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>

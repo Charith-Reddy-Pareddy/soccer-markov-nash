@@ -16,7 +16,8 @@ space, not the definition of it.
 |---|---|---|---|
 | `width`, `height` | 7 × 5 | board size | tests whether mixing scales with the state space (it does not) |
 | `goal_rows` | `(1, 2, 3)` | which rows score on each edge | **the** switch: a 1-cell goal is never mixed, ≥ 2 always is |
-| `move_order` | `deterministic` | how simultaneous moves resolve | isolates the transition structure that creates matching pennies |
+| `move_order` | `deterministic` | how simultaneous moves resolve (`deterministic` / `random` / `coinflip` / `blend`) | isolates the transition structure that creates matching pennies |
+| `blend` | 0.5 | for `move_order="blend"`: P(resolve by random order) | a continuous knob; mixing switches on sharply above 0.5 ([blend.md](blend.md)) |
 | `n_actions` | 4 | `{N,S,E,W}` or `+ stand` | Littman's fifth action; changes the *content* of a mix, not its location ([littman.md](littman.md)) |
 | `scoring` | `win` | first goal ends it, or goal → reset and play on | the reward objective; the mixed region is invariant to it ([reward.md](reward.md)) |
 | `p0_start`, `p1_start` | centre row, opposite ends | kickoff | the pure/mixed split is kickoff-independent; only `V(kickoff)` moves |
@@ -52,10 +53,10 @@ separate from the game's reward:
 
 ## Transition rules
 
-A joint action `(a0, a1)` is resolved by one of three rules. All three share the
-same primitives -- clamp at walls, a carrier crossing its attacking edge on a
-goal row scores -- and differ only in **who wins a contested cell and what
-happens to the ball**.
+A joint action `(a0, a1)` is resolved by one of four rules. All share the same
+primitives -- clamp at walls, a carrier crossing its attacking edge on a goal
+row scores -- and differ only in **who wins a contested cell and what happens to
+the ball**. `blend` interpolates the first two ([blend.md](blend.md)).
 
 ### `deterministic` -- the carrier always wins
 
@@ -87,6 +88,14 @@ contest. This isolates *stochastic transitions* from *stochastic move order*:
 `coinflip` is stochastic yet its value function is identical to `deterministic`
 at every `γ`, and it keeps a pure equilibrium everywhere. Randomness alone does
 not force mixing; the coupling of the outcome to both players' actions does.
+
+### `blend` -- the knob between the first two
+
+Resolve by `random` with probability `blend`, by `deterministic` otherwise.
+Sweeping `blend` (`scripts/blend.py`) shows mixing is not gradual: it switches
+on **sharply once the random component is the majority** (`blend > 0.5`) and
+overshoots the fully-random count just past the threshold. A minority of
+random-order resolution is washed out by the deterministic tie-break.
 
 ## Instances
 

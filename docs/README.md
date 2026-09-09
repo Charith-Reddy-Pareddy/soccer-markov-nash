@@ -7,8 +7,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   reward, the three transition rules, and the reason each is there.
 - [methods.md](methods.md) — the solver, the state encoding, seeds, repeat
   counts, board ranges: how every number was produced.
-- [discussion.md](discussion.md) — four research-level open questions and the
-  best answers the evidence supports.
+- [discussion.md](discussion.md) — research-level open questions, the best
+  answers the evidence supports, and what the mixed region depends on.
+- [advisor.md](advisor.md) — how the research-meeting feedback maps to the repo.
 - [littman.md](littman.md) — Littman 1994, the fifth action (`stand`), and a
   reproduction of his Figure 2 mixed equilibrium (`make littman`).
 - [mixing.md](mixing.md) — how shallow the mixed stage games are, their
@@ -16,6 +17,10 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [reward.md](reward.md) — a second reward objective (`scoring="rate"`: goal
   reset, expected goal difference); the mixed region is invariant to it
   (`make reward`).
+- [blend.md](blend.md) — sweeping the move-resolution rule from deterministic to
+  random; mixing switches on sharply above `blend = 0.5` (`make blend`).
+- [occupancy.md](occupancy.md) — the mixed states carry ~40% of the equilibrium
+  path despite being 4% of the state space (`make occupancy`).
 
 ## Background and scope
 

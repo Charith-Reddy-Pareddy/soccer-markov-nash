@@ -3,10 +3,12 @@
 *A pure-first Nash-Q approach: efficiency, numerical stability, and geometric
 structure.*
 
-A research report. Scope and caveats are in `docs/assumptions.md`; how every
-number was produced is in [methods.md](methods.md); the research-level open
-questions and their best answers are in [discussion.md](discussion.md). Every
-table regenerates from `experiments/*.csv` (`make experiments phase dqn`).
+A research report on a configurable family of two-player soccer Markov games
+([design.md](design.md)). Scope and caveats are in `docs/assumptions.md`; how
+every number was produced is in [methods.md](methods.md); the open questions and
+what the mixed region depends on are in [discussion.md](discussion.md); the
+meeting-feedback map is [advisor.md](advisor.md). Every table regenerates from
+`experiments/*.csv`.
 
 Two contributions:
 
@@ -14,11 +16,14 @@ Two contributions:
    for a pure saddle, take its value when it exists, fall back to the LP only
    where it does not. Exact, and it skips the LP on 96&ndash;100% of states.
 2. **Structural** -- a characterization of *when* a stage game is intrinsically
-   mixed: it takes a stochastic resolution order, a goal mouth wider than one
-   cell, and interception geometry. The deterministic game has an explicit pure
-   memoryless equilibrium (`attractor.py`); the 94 mixed states of the 7x5
-   random game reduce to a handful of matching-pennies templates
-   ([templates.md](templates.md)).
+   mixed: it takes a stochastic resolution order (and it must be the *majority*
+   rule -- a sharp threshold, [blend.md](blend.md)), a goal mouth wider than one
+   cell, and interception geometry. The region is invariant to the kickoff and
+   to the reward objective ([discussion.md](discussion.md) §5). The deterministic
+   game has an explicit pure memoryless equilibrium (`attractor.py`); the 94
+   mixed states of the 7x5 random game reduce to a handful of matching-pennies
+   templates ([templates.md](templates.md)) and carry 41% of the equilibrium
+   path despite being 4% of the states ([occupancy.md](occupancy.md)).
 
 The two meet in RQ2: the hybrid is fast *because* the structural result says
 almost every stage game is pure, so the LP is rare.
@@ -217,6 +222,18 @@ stochastic (½–½) resolution order **and** a goal mouth wider than one cell
 to cover every scoring lane in a single move. Remove any one -- a one-cell goal,
 deterministic resolution, the coin-flip tie-break -- and every stage game has a
 pure saddle.
+
+Interpolating the resolution rule (`move_order="blend"`: random order with
+probability `blend`, else deterministic) shows the onset is a **sharp
+threshold**, not a ramp: 0 no-pure-saddle stage games for `blend ≤ 0.5`, dozens
+at `blend = 0.52`, and an overshoot to ~1.5× the fully-random count near
+`blend ≈ 0.7` (`scripts/blend.py`, [blend.md](blend.md)). The random order has to
+*outweigh* the deterministic tie-break, not merely be present.
+
+The mixed states are also where the game is actually played: under the Nash
+policy only 456 of 2380 states are reachable from the kickoff, and the 94
+no-pure-saddle states carry **41%** of the discounted occupancy
+(`soccer_nash/occupancy.py`, [occupancy.md](occupancy.md)).
 
 #### How shallow, and worth how much
 
