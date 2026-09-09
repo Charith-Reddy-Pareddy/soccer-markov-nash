@@ -1,0 +1,308 @@
+{
+  "claim": "single goal cell => pure saddle everywhere; goal width >= 2 => a provably saddle-free stage game; invariant to gamma, action set, and reward objective.",
+  "gamma": 0.9,
+  "single_cell": {
+    "gamma": 0.9,
+    "boards": [
+      {
+        "board": "5x3",
+        "reachable_states": 420,
+        "mixed_states": 0,
+        "worst_certificate_verify": 0.0,
+        "min_pure_bound_gap": null,
+        "min_matching_pennies_margin": null,
+        "max_equilibrium_residual": 0.0,
+        "all_mixed_have_2x2_core": true,
+        "onecell_guard_slack": 0.0,
+        "onecell_iewds_failures": 0,
+        "onecell_undiscounted_mixed": 0,
+        "ok": true
+      },
+      {
+        "board": "7x3",
+        "reachable_states": 840,
+        "mixed_states": 0,
+        "worst_certificate_verify": 0.0,
+        "min_pure_bound_gap": null,
+        "min_matching_pennies_margin": null,
+        "max_equilibrium_residual": 0.0,
+        "all_mixed_have_2x2_core": true,
+        "onecell_guard_slack": 0.0,
+        "onecell_iewds_failures": 0,
+        "onecell_undiscounted_mixed": 0,
+        "ok": true
+      },
+      {
+        "board": "5x5",
+        "reachable_states": 1200,
+        "mixed_states": 0,
+        "worst_certificate_verify": 0.0,
+        "min_pure_bound_gap": null,
+        "min_matching_pennies_margin": null,
+        "max_equilibrium_residual": 0.0,
+        "all_mixed_have_2x2_core": true,
+        "onecell_guard_slack": 0.0,
+        "onecell_iewds_failures": 0,
+        "onecell_undiscounted_mixed": 0,
+        "ok": true
+      },
+      {
+        "board": "7x5",
+        "reachable_states": 2380,
+        "mixed_states": 0,
+        "worst_certificate_verify": 0.0,
+        "min_pure_bound_gap": null,
+        "min_matching_pennies_margin": null,
+        "max_equilibrium_residual": 0.0,
+        "all_mixed_have_2x2_core": true,
+        "onecell_guard_slack": 0.0,
+        "onecell_iewds_failures": 0,
+        "onecell_undiscounted_mixed": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  "wider_goal": {
+    "gamma": 0.9,
+    "boards": [
+      {
+        "board": "5x4",
+        "goal_rows": [
+          1,
+          2
+        ],
+        "reachable_states": 760,
+        "mixed_states": 56,
+        "worst_certificate_verify": 3.3306690738754696e-16,
+        "min_pure_bound_gap": 0.0015781290150318483,
+        "min_matching_pennies_margin": 0.0015781290150318483,
+        "max_equilibrium_residual": 3.3306690738754696e-16,
+        "all_mixed_have_2x2_core": true,
+        "ok": true
+      },
+      {
+        "board": "6x5",
+        "goal_rows": [
+          1,
+          2,
+          3
+        ],
+        "reachable_states": 1740,
+        "mixed_states": 70,
+        "worst_certificate_verify": 1.942890293094024e-16,
+        "min_pure_bound_gap": 0.0007383010222673791,
+        "min_matching_pennies_margin": 0.0007383010222673791,
+        "max_equilibrium_residual": 1.942890293094024e-16,
+        "all_mixed_have_2x2_core": true,
+        "ok": true
+      },
+      {
+        "board": "7x5",
+        "goal_rows": [
+          1,
+          2,
+          3
+        ],
+        "reachable_states": 2380,
+        "mixed_states": 94,
+        "worst_certificate_verify": 1.1102230246251565e-16,
+        "min_pure_bound_gap": 0.003834470422488967,
+        "min_matching_pennies_margin": 0.004720242044522163,
+        "max_equilibrium_residual": 1.1102230246251565e-16,
+        "all_mixed_have_2x2_core": true,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  "robustness": {
+    "checks": [
+      {
+        "config": "single-cell 5x3, gamma=0.5",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, gamma=0.9",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, gamma=0.995",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, 4 actions",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, 5 actions",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, win scoring",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, rate scoring",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "single-cell 5x3, undiscounted (backward induction)",
+        "mixed": 0,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, gamma=0.5",
+        "mixed": 56,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, gamma=0.9",
+        "mixed": 56,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, gamma=0.995",
+        "mixed": 60,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, 4 actions",
+        "mixed": 56,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, 5 actions",
+        "mixed": 56,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, win scoring",
+        "mixed": 56,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, rate scoring",
+        "mixed": 56,
+        "ok": true
+      },
+      {
+        "config": "wider 5x4, undiscounted (backward induction)",
+        "mixed": 5488,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  "perturbation": {
+    "perturbation": 1e-06,
+    "genuine_mixed_flips": 0,
+    "sharp_saddle_flips": 0,
+    "borderline_label_unstable": 86,
+    "min_genuine_gap": 0.0015781290150318483,
+    "safety_ratio": 1578.1290150318484,
+    "ok": true
+  },
+  "all_checks_pass": true,
+  "worked_example": {
+    "state": [
+      3,
+      2,
+      4,
+      3,
+      1
+    ],
+    "certificate": {
+      "kind": "mixed",
+      "maximin": -0.10153475549999996,
+      "minimax": -0.09138127994999996,
+      "gap": 0.010153475549999999,
+      "row_minima": [
+        -0.1920406818464524,
+        -0.1920406818464524,
+        -0.13374486766228608,
+        -0.10153475549999996
+      ],
+      "col_maxima": [
+        -0.09138127994999996,
+        0.390109853406096,
+        0.05054873275374637,
+        -0.09138127994999996
+      ],
+      "best_reply_cycle": [
+        [
+          3,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ]
+      ],
+      "iewds_shape": [
+        3,
+        3
+      ],
+      "iewds_gap": 0.010153475549999999,
+      "core": {
+        "rows": [
+          3,
+          0
+        ],
+        "cols": [
+          1,
+          2
+        ],
+        "submatrix": [
+          [
+            0.390109853406096,
+            -0.10153475549999996
+          ],
+          [
+            -0.1920406818464524,
+            0.05054873275374637
+          ]
+        ],
+        "margin": 0.15208348825374635
+      },
+      "row_strategy": [
+        0.060532144623610964,
+        0.0,
+        0.0,
+        0.939467855376389
+      ],
+      "col_strategy": [
+        0.0,
+        0.0,
+        0.09332133016866202,
+        0.9066786698313379
+      ],
+      "value": -0.09232881579416094,
+      "equilibrium_residual": 0.0,
+      "support": [
+        2,
+        2
+      ],
+      "entropy": 0.32955372265160315
+    }
+  }
+}

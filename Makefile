@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy tournament numerics templates proof positional a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy tournament numerics templates proof verify positional a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -24,6 +24,7 @@ help:
 	@echo "make numerics     - numerical-robustness analysis + figures"
 	@echo "make templates    - print the mixed-state geometric templates"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
+	@echo "make verify       - goal-width mixed-equilibrium certificate + robustness (~90 s)"
 	@echo "make positional   - the deterministic game's pure memoryless equilibrium"
 
 lint:
@@ -97,6 +98,9 @@ templates:
 
 proof:
 	$(PY) scripts/onecell_proof.py
+
+verify:
+	$(PY) scripts/verify_mechanism.py
 
 positional:
 	$(PY) scripts/positional.py
