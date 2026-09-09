@@ -356,21 +356,23 @@ not merely numerically satisfying:
 
 **Littman's Table 3, reproduced exactly** (`scripts/tournament.py`,
 [tournament.md](tournament.md)). Four player-0 policies scored on Littman's board
-(5×4, 5 actions, random order, goal reset, γ = 0.9), against a random opponent, a
-scripted one, and a per-policy best-response challenger:
+(5×4, 5 actions, random order, goal reset, γ = 0.9), against a random opponent,
+Littman's hand-built "scoring and blocking" policy (§6.2, which beats a random
+opponent ~76% of games), and a per-policy best-response challenger:
 
 | policy | vs. random | vs. hand-built | vs. challenger | robustness gap |
 |---|---|---|---|---|
-| minimax (Nash) | +0.67 | +0.71 | **+0.15** | +0.52 |
-| greedy vs. random | **+0.92** | +1.03 | **−0.59** | +1.51 |
+| minimax (Nash) | +0.67 | +0.28 | **+0.15** | +0.52 |
+| greedy vs. random | **+0.92** | +0.68 | **−0.59** | +1.51 |
 | greedy self-play | +0.05 | 0.00 | −0.00 | +0.05 |
-| hand-built | −0.00 | 0.00 | −1.03 | +1.03 |
+| hand-built | +0.72 | 0.00 | **−0.68** | +1.39 |
 
 Only the minimax policy both presses an advantage against a weak opponent *and*
-stays ahead of its challenger; greedy policies do exactly one. This is Littman's
-"every deterministic offense has a perfect defense, like rock-paper-scissors" --
-the mixed states are matching-pennies stage games, and a greedy policy hands the
-challenger a column to punish.
+stays ahead of its challenger; every deterministic policy -- greedy or
+hand-built -- does exactly one. This is Littman's "every deterministic offense
+has a perfect defense, like rock-paper-scissors": the mixed states are
+matching-pennies stage games, and a deterministic policy hands the challenger a
+column to punish.
 
 - Its duality gap `V0_br(s0) + V1_br(s0)` is `< 1e-9` for every move order -- no
   opponent beats the game value.
