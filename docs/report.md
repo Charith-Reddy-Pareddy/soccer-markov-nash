@@ -307,6 +307,28 @@ unique equilibrium.
 ![One board per matching-pennies template: carrier and defender each with two
 probability-weighted arrows.](figures/gallery/templates.svg)
 
+**A per-stage-game certificate.** `soccer_nash/certificate.py` re-derives the
+pure/mixed label from the stage matrix with `O(A^2)` arithmetic and no LP, and
+`scripts/verify_mechanism.py` (`make verify`) runs it over the reachable state
+space. For a single goal cell every stage game gets a saddle-cell certificate
+(0 mixed, cross-checked against `onecell.certify`); for every wider goal, **each
+mixed stage game gets a certificate that an independent checker re-verifies to
+`~1e-16`**: the `maximin < minimax` gap (the LP-free proof that no pure saddle
+exists), a closed best-reply cycle, the exact equilibrium with
+`epsilon_equilibrium < 1e-15`, and a **2x2 matching-pennies submatrix — present
+in all 94 of the 7x5 mixed states and all 56 of the 5x4 ones**, a strictly
+stronger statement than the 68-of-94 support count above. The switch is checked
+invariant across `gamma in {0.5, 0.9, 0.995}`, 4 vs 5 actions, `win` vs `rate`
+scoring, and exact undiscounted backward induction (16/16 configs), and a
+`+/-1e-6` perturbation of every stage matrix flips no genuine classification
+(smallest gap `~4e-3`). [result.md](result.md) is the precise scope-limited
+statement, the certificate description, and the prior-work positioning;
+`experiments/mechanism_certificate.json` is the machine output.
+
+![A mixed stage game's 2x2 matching-pennies core drawn as a payoff matrix: each
+player's best reply flips with the other's choice, so the best replies cycle and
+no cell is a pure saddle.](figures/gallery/mechanism.svg)
+
 Every policy and value surface in this report is drawn in `docs/gallery.html`
 (`make gallery`, from `soccer_nash/viz.py`): policy fans, the mixing map above,
 value heatmaps, and the same state under two resolution rules.
@@ -321,9 +343,11 @@ versa — *crossing best replies*, hence no pure saddle:
 > geometric condition ⟹ crossing best replies ⟹ no pure saddle
 
 Drop any one clause — a one-cell goal, deterministic resolution, the coin-flip
-tie-break — and every tested stage game has a pure saddle. `docs/mechanism.md`
-gives the argument for the single-cell case; making the forward implication a
-theorem for the general goal mouth is the natural next step (§ open questions).
+tie-break — and every tested stage game has a pure saddle. Each tested config is
+now machine-certified in both directions ([result.md](result.md),
+`make verify`); `docs/mechanism.md` gives the interpretable argument for the
+single-cell case. What is *not* settled is a board-size-free theorem for
+arbitrary `W, H` (§ open questions).
 
 Interpolating the resolution rule (`move_order="blend"`: random order with
 probability `blend`, else deterministic) shows the onset is a **sharp
@@ -664,6 +688,9 @@ Not all of the experiments are equal-weight contributions.
 enumeration before LP (the meeting). *What this project adds:* an empirical map
 of where the mixed region is, what parameter switches it on, how much of the
 equilibrium path it covers, and a hybrid solver that pays LP cost only there.
+[result.md §6](result.md) states the goal-width result against Littman (1994),
+the ordered-field property, concurrent reachability games, and pursuit-evasion
+in detail.
 
 ## 13. Package map
 
@@ -673,7 +700,7 @@ The code groups conceptually as:
 core        game.py  markov_game.py
 equilibrium matrix_games.py  nash_q.py  support_enum.py  numerics.py
 analysis    geometry.py  tree.py  templates.py  occupancy.py  reachability.py
-            symmetry.py  attractor.py  dominance.py  onecell.py
+            symmetry.py  attractor.py  dominance.py  onecell.py  certificate.py
 learning    nash_dqn.py  mlp.py
 evaluation  exploit.py  evaluate.py  simulate.py  opponents.py  best_response.py
 render      render.py  viz.py
