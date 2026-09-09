@@ -350,6 +350,97 @@ def occupancy_map_svg(
     return _svg(tw, th, body, "occupancy map", pad=20 if title else 6)
 
 
+# -------------------------------------------------------- grouped_bars_svg
+
+def grouped_bars_svg(
+    categories: list[str],
+    series: list[tuple[str, str, list[float]]],
+    y_label: str = "",
+    title: str | None = None,
+    baseline: float = 0.0,
+) -> str:
+    """A grouped bar chart. ``categories`` label the x groups; ``series`` is
+    ``(name, colour, values)`` with one value per category. Bars can go below
+    ``baseline`` (drawn downward)."""
+    n_cat = len(categories)
+    n_ser = len(series)
+    group_w, gap, bar_gap = 108, 26, 3
+    bar_w = (group_w - (n_ser - 1) * bar_gap) / n_ser
+    ph, ml, mt = 150, 46, 22
+    pw = n_cat * group_w + (n_cat - 1) * gap
+    allv = [v for _n, _c, vs in series for v in vs] + [baseline]
+    lo, hi = min(allv), max(allv)
+    span = (hi - lo) or 1.0
+
+    def sy(v: float) -> float:
+        return mt + ph - (v - lo) / span * ph
+
+    y_base = sy(baseline)
+    body = [
+        f'<line x1="{ml}" y1="{mt}" x2="{ml}" y2="{mt + ph}" '
+        f'stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>',
+        f'<line x1="{ml}" y1="{y_base:.1f}" x2="{ml + pw}" y2="{y_base:.1f}" '
+        f'stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>',
+    ]
+    for frac in (0.0, 0.5, 1.0):
+        yv = lo + frac * span
+        gy = sy(yv)
+        body.append(
+            f'<text x="{ml - 6}" y="{gy + 3:.1f}" text-anchor="end" '
+            f'font-family="ui-monospace,monospace" font-size="8.5" '
+            f'fill="{_FAINT}">{yv:+.1f}</text>'
+        )
+    for ci, cat in enumerate(categories):
+        gx = ml + ci * (group_w + gap)
+        body.append(
+            f'<text x="{gx + group_w / 2:.0f}" y="{mt + ph + 14:.0f}" '
+            f'text-anchor="middle" font-family="ui-monospace,monospace" '
+            f'font-size="9" fill="{_FAINT}">{cat}</text>'
+        )
+        for si, (_name, colour, vals) in enumerate(series):
+            v = vals[ci]
+            bx = gx + si * (bar_w + bar_gap)
+            top = min(sy(v), y_base)
+            hgt = abs(sy(v) - y_base)
+            body.append(
+                f'<rect x="{bx:.1f}" y="{top:.1f}" width="{bar_w:.1f}" '
+                f'height="{max(hgt, 0.5):.1f}" fill="{colour}" '
+                f'opacity="0.9"/>'
+            )
+            body.append(
+                f'<text x="{bx + bar_w / 2:.1f}" '
+                f'y="{(top - 3) if v >= baseline else (top + hgt + 9):.1f}" '
+                f'text-anchor="middle" font-family="ui-monospace,monospace" '
+                f'font-size="8" fill="{colour}">{v:+.2f}</text>'
+            )
+    lx = ml
+    for name, colour, _vals in series:
+        body.append(
+            f'<rect x="{lx:.0f}" y="{mt + ph + 24:.0f}" width="9" height="9" '
+            f'fill="{colour}"/>'
+        )
+        body.append(
+            f'<text x="{lx + 13:.0f}" y="{mt + ph + 32:.0f}" '
+            f'font-family="ui-monospace,monospace" font-size="9" '
+            f'fill="{_INK}">{name}</text>'
+        )
+        lx += 16 + len(name) * 6.2
+    if y_label:
+        body.append(
+            f'<text x="12" y="{mt + ph / 2:.0f}" text-anchor="middle" '
+            f'font-family="ui-monospace,monospace" font-size="9" fill="{_FAINT}" '
+            f'transform="rotate(-90 12 {mt + ph / 2:.0f})">{y_label}</text>'
+        )
+    if title:
+        body.insert(
+            0,
+            f'<text x="{ml}" y="-4" font-family="Barlow Semi Condensed,sans-serif" '
+            f'font-weight="600" font-size="13" fill="{_INK}">{title}</text>',
+        )
+    return _svg(ml + pw + 12, mt + ph + 44, body, "grouped bar chart",
+                pad=16 if title else 8)
+
+
 # ------------------------------------------------------- strategy_bars_svg
 
 _ACT = ("U", "D", "L", "R", "stay")

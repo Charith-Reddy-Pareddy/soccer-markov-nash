@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy templates proof positional a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy tournament templates proof positional a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -20,6 +20,7 @@ help:
 	@echo "make reward       - the win vs rate reward objectives (goal reset)"
 	@echo "make blend        - sweep the move-resolution rule (deterministic -> random)"
 	@echo "make occupancy    - equilibrium-path occupancy of the mixed states"
+	@echo "make tournament   - reproduce Littman 1994 Table 3 (minimax vs greedy robustness)"
 	@echo "make templates    - print the mixed-state geometric templates"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
 	@echo "make positional   - the deterministic game's pure memoryless equilibrium"
@@ -82,6 +83,9 @@ blend:
 
 occupancy:
 	$(PY) scripts/occupancy.py
+
+tournament:
+	$(PY) scripts/tournament.py
 
 templates:
 	$(PY) scripts/templates.py

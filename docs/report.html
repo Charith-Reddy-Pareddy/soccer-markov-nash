@@ -548,6 +548,28 @@
 
   <section>
     <h2>Secondary validation &mdash; the policy plays correctly</h2>
+
+    <h3>Littman's Table 3: minimax exploits <em>and</em> survives</h3>
+    <p>Littman's central experiment trains four policies and scores each against a random opponent, a hand-built one, and a <b>challenger</b> trained to beat it &mdash; his minimax policies held ~35&ndash;40% of games against their challenger, his Q-learning (deterministic) policies won <b>0%</b>. Reproduced here with the <em>exact</em> solver on his 5&times;4 / 5-action / random-order / goal-reset board (<span class="mono">scripts/tournament.py</span>, score = player-0 expected discounted goal difference):</p>
+    <div class="tbl-scroll">
+      <table>
+        <caption>Littman's board, &gamma; = 0.9 &mdash; player-0 goal difference from the kickoff</caption>
+        <thead><tr><th>player-0 policy</th><th class="num">vs. random</th><th class="num">vs. hand-built</th><th class="num">vs. its challenger</th><th class="num">robustness gap</th></tr></thead>
+        <tbody>
+          <tr><td>minimax (Nash)</td><td class="num">+0.67</td><td class="num">+0.71</td><td class="num yes">+0.15</td><td class="num">+0.52</td></tr>
+          <tr><td>greedy vs. random</td><td class="num">+0.92</td><td class="num">+1.03</td><td class="num no">&minus;0.59</td><td class="num">+1.51</td></tr>
+          <tr><td>greedy self-play</td><td class="num">+0.05</td><td class="num">0.00</td><td class="num">&minus;0.00</td><td class="num">+0.05</td></tr>
+          <tr><td>hand-built (scripted)</td><td class="num">&minus;0.00</td><td class="num">0.00</td><td class="num no">&minus;1.03</td><td class="num">+1.03</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure>
+      <img src="figures/gallery/tournament.svg" alt="Grouped bar chart. Against random and hand-built opponents the greedy-vs-random policy has the tallest bars; against the challenger it drops far below zero while the minimax policy stays positive." style="max-width:600px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Only minimax is in the top-left.</b> greedy/rand is the strongest policy against weak opponents and the weakest against a challenger &mdash; the rock-paper-scissors trap. minimax presses its advantage (<span class="mono">+0.67</span>) and still wins (<span class="mono">+0.15</span>) against the worst case, because the Nash policy has no exploitable row.</figcaption>
+    </figure>
+    <p>The mechanism is exactly Littman's "every deterministic offense has a perfect defense": the mixed states are matching-pennies stage games, a greedy policy commits to one row of each, and the challenger plays the column that beats it. The minimax policy randomizes with the weights that make the challenger indifferent. Full table (including the <span class="mono">P(win) &minus; P(loss)</span> view) in <span class="mono">docs/tournament.md</span>.</p>
+
+    <h3>Other checks</h3>
     <ul class="plain">
       <li>Duality gap <span class="mono">V0_br(s&#8320;) + V1_br(s&#8320;) &lt; 1e&minus;9</span> for every move order &mdash; no opponent beats the game value.</li>
       <li>Nash vs. Nash reproduces the value: forced draws in the deterministic and coin-flip games; <span class="mono">+0.162 &plusmn; 0.002</span> empirical discounted return over 5 seeds of 3&thinsp;000 games (vs. <span class="mono">+0.164</span> computed) in the random game.</li>
@@ -594,8 +616,8 @@
 
   <footer>
     soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; occupancy.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
-    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; blend.py &middot; occupancy.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    docs &mdash; design.md &middot; advisor.md &middot; methods.md &middot; discussion.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; mixing.md &middot; reward.md &middot; blend.md &middot; occupancy.md &middot; gallery.html<br>
+    scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; blend.py &middot; occupancy.py &middot; tournament.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
+    docs &mdash; design.md &middot; advisor.md &middot; methods.md &middot; discussion.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; tournament.md &middot; mixing.md &middot; reward.md &middot; blend.md &middot; occupancy.md &middot; gallery.html<br>
     experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>

@@ -129,6 +129,7 @@ game needs a mixed Nash equilibrium, and which do not.**
 | **kickoff position** | **no effect** on the region; only `V(kickoff)` moves | RQ1 |
 | **reward objective** (`win` vs `rate`) | **no effect** -- the identical 94 states; only the value *range* changes | [reward.md](reward.md) |
 | the `stand` action | barely -- 48 of 56 no-saddle states shared with the 4-action game; changes the *content* of the mix, not its location | [littman.md](littman.md) |
+| the training opponent (learning) | none for an exact solver: minimax-Q's update is opponent-independent, so "trained vs random" and "trained vs self" give the same Nash policy | [tournament.md](tournament.md) |
 
 The pattern: a mixed Nash equilibrium is a property of the **stage game
 `M(s)`**, and only the two parameters that reshape `M(s)`'s *strategic* structure
@@ -141,6 +142,26 @@ the *stage game* is a matching-pennies game.
 
 Occupancy ([occupancy.md](occupancy.md)) adds the practical footnote: the mixed
 states are 4% of the space but 41% of the equilibrium path.
+
+---
+
+## 6. Does the mixed policy actually matter, or is it a technicality?
+
+It is the whole game. Reproducing Littman's Table 3 exactly
+([tournament.md](tournament.md)): a **greedy** policy that commits to a pure
+action at every state beats a random opponent by `+0.92` goal difference but
+*loses* `−0.59` to a challenger trained against it — from dominant to beaten.
+The **minimax** policy beats the same weak opponent by `+0.67` and still wins
+`+0.15` against its worst case. Of the four policies tested, minimax is the only
+one that both presses an advantage and survives a strong opponent; the others do
+one or neither.
+
+The reason is the matching-pennies structure of the mixed states: a greedy
+policy plays one row of each, and the challenger plays the column that beats it,
+every time — "every deterministic offense has a perfect defense" (Littman).
+Solving the LP on the 3.95% of states that need it is not a numerical nicety;
+it is the difference between a policy that can be exploited to a loss and one
+that cannot be exploited at all.
 
 ## How the experiments were run
 
