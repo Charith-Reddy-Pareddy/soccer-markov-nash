@@ -39,6 +39,10 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   and the decision tree that predicts them.
 - [templates.md](templates.md) — the 94 mixed states reduced to 8 geometric
   templates, with the stage matrix and matching-pennies proof for each.
+- [result.md](result.md) — the goal-width switch stated precisely: single cell →
+  pure everywhere, goal ≥ 2 cells → a provably saddle-free stage game; the
+  per-stage-game certificate, the robustness envelope, and the prior-work
+  positioning (`make verify`).
 - [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
 - [proof.md](proof.md) — the single-cell pure-saddle theorem: the defender's
   closed-form optimal strategy, the dominance-solvability certificate
