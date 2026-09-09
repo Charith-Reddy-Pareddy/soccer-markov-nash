@@ -1,8 +1,8 @@
 # Discussion and open questions
 
-Four questions the project raised, with the best answer its evidence supports
-and what would settle each. These are research-level, not assignment
-deliverables.
+Questions the project raised, with the best answer its evidence supports and
+what would settle each. These are research-level, not assignment deliverables.
+For how the meeting feedback maps to the repo, see [advisor.md](advisor.md).
 
 ---
 
@@ -114,6 +114,33 @@ wins on a game this size, and why freeze-then-iterate only pays off where the
 equilibrium *solve* (not the matrix construction) dominates the cost.
 
 ---
+
+## 5. What the mixed-strategy region depends on
+
+Pulling the sweeps together -- **which parameters change whether/where a stage
+game needs a mixed Nash equilibrium, and which do not.**
+
+| parameter | effect on the no-pure-saddle region | evidence |
+|---|---|---|
+| **move-resolution rule** | **determines it.** deterministic / coinflip / `blend ≤ 0.5` → **0** mixed; random / `blend > 0.5` → mixing, with a sharp threshold and an overshoot | [blend.md](blend.md), §3 |
+| **goal-mouth width** | **binary switch.** 1 cell → 0 mixed on every board; ≥ 2 → mixing on every board | phase diagram, §2 |
+| board size | scales the *fraction* only (area dilution, R² 0.64); does not create or remove mixing | phase diagram |
+| discount `γ` | shifts *which* states mix by a few percent (94 at 0.9, 122 at 0.5, 102 at 0.995); the region is otherwise stable | RQ4 |
+| **kickoff position** | **no effect** on the region; only `V(kickoff)` moves | RQ1 |
+| **reward objective** (`win` vs `rate`) | **no effect** -- the identical 94 states; only the value *range* changes | [reward.md](reward.md) |
+| the `stand` action | barely -- 48 of 56 no-saddle states shared with the 4-action game; changes the *content* of the mix, not its location | [littman.md](littman.md) |
+
+The pattern: a mixed Nash equilibrium is a property of the **stage game
+`M(s)`**, and only the two parameters that reshape `M(s)`'s *strategic* structure
+-- the resolution rule (which couples the payoff to both actions) and the goal
+width (which gives the carrier two threats) -- move the region. Parameters that
+only rescale or shift `M(s)` uniformly (the objective, the kickoff, the
+discount) leave it where it is. This is the concrete form of "mixed NEs do not
+depend on the transition function / the horizon": they depend only on whether
+the *stage game* is a matching-pennies game.
+
+Occupancy ([occupancy.md](occupancy.md)) adds the practical footnote: the mixed
+states are 4% of the space but 41% of the equilibrium path.
 
 ## How the experiments were run
 

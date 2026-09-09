@@ -7,8 +7,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   reward, the three transition rules, and the reason each is there.
 - [methods.md](methods.md) — the solver, the state encoding, seeds, repeat
   counts, board ranges: how every number was produced.
-- [discussion.md](discussion.md) — four research-level open questions and the
-  best answers the evidence supports.
+- [discussion.md](discussion.md) — research-level open questions, the best
+  answers the evidence supports, and what the mixed region depends on.
+- [advisor.md](advisor.md) — how the research-meeting feedback maps to the repo.
 - [littman.md](littman.md) — Littman 1994, the fifth action (`stand`), and a
   reproduction of his Figure 2 mixed equilibrium (`make littman`).
 - [mixing.md](mixing.md) — how shallow the mixed stage games are, their
