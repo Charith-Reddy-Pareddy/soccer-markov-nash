@@ -45,10 +45,14 @@ weak duality guarantees the true minimax value lies in `[lower, upper]`, so
 | deterministic | `0` | `0` |
 | random | `1.1e-16` | duality gap `8.7e-10` |
 
-**With `scipy`'s HiGHS solver the three numbers agree to machine precision.**
-The concern ("the first player can do the max thing") is real for older
-vertex/simplex solvers but not a practical problem here -- the LP solution is a
-certified `1e-16`-equilibrium at every stage.
+**With `scipy`'s HiGHS solver the three numbers agree to machine precision**, so
+"the first player can do the max thing" -- gaming the gap between `mid` and
+`upper` -- buys at most `1.1e-16`. If the gap were real (an older
+vertex/simplex solver, or drift accumulated through value iteration), the fix is
+to standardise on the **guaranteed value** `lower = min_j (pM)_j`: it is always
+a valid lower bound on the true minimax (weak duality), so a player who reports
+it is never claiming more than it can defend. Report the pair `[lower, upper]`
+as the certificate and `lower` as the single number.
 
 ## 2. Rounding to force indifference is scale-blind
 
@@ -113,9 +117,8 @@ rounds**, then snaps to `< 1e-8` and converges. The freeze trick cuts LP solves
 it is strictly worse (65 LP solves where value iteration needs 0, because
 intermediate value functions have non-strict saddles).
 
-![Line chart of digits of accuracy per iteration: value iteration climbs steadily
-to 9 digits; freeze-then-iterate is flat near zero for 16 rounds, then jumps to
-convergence.](figures/gallery/convergence.svg)
+![Line chart: value iteration's Bellman residual climbs to 9 digits of accuracy
+over about 100 sweeps.](figures/gallery/convergence.svg)
 
 Value iteration's Bellman residual (`NashQResult.residual_trace`) decays
 geometrically at rate ≈ γ. Freeze-then-iterate makes no progress at all until
@@ -124,6 +127,31 @@ and the linear evaluation sweeps just propagate the wrong continuation values --
 until `Q` crosses the threshold where the saddle flips and everything corrects
 at once. Concurrent stochastic games have no monotone policy-improvement
 guarantee ([discussion.md](discussion.md) §4); this is what that looks like.
+
+### Which value quantity to back up in the frozen sweep
+
+The professor's specific open question: in freeze-then-iterate, the frozen
+`(p, q)` do not match the current `Q`, so which of the three stage-game
+quantities should the evaluation sweep use? `run_policy_iteration(eval_value=...)`
+runs all three (`mid` = `p M q`, `lower` = `min_j (pM)_j`, `upper` =
+`max_i (Mq)_i`):
+
+| back up | outer rounds | LP solves | thrash rounds | reaches the fixed point? |
+|---|---|---|---|---|
+| **`p M q`** | **21** | **1 879** | 16 | yes |
+| `min_j (pM)_j` | 42 | 4 100 | 28 | yes |
+| `max_i (Mq)_i` | 41 | 4 001 | 28 | yes |
+
+![Line chart of frozen-strategy staleness per outer round for the three choices;
+p M q settles to zero by round 16, the two bounds keep spiking until round 28.](figures/gallery/eval_value.svg)
+
+**Back up `p M q`.** All three reach the *same* fixed point -- zero-sum
+equilibria are interchangeable, so the frozen strategies always converge to a
+Nash and the value with them -- but `p M q` is the *unbiased* estimate while the
+strategies are stale, whereas `min_j (pM)_j` is systematically pessimistic and
+`max_i (Mq)_i` optimistic. The bias pushes the value function away from the
+fixed point and stretches the thrash phase from 16 rounds to 28, doubling the
+work.
 
 **Verdict: value iteration with the per-sweep cache wins here.** Freeze-then-
 iterate only pays off when the equilibrium solve dominates the backup -- larger

@@ -75,12 +75,23 @@ inherit it?
 
 ## 3. The pure-first hybrid algorithm
 
-At each state, mark the best responses along rows and columns (`O(A^2)`); if one
-entry is both a row and a column best response, its value is the Nash value --
-use it. Only when no such entry exists solve the LP. On the deterministic A10
-game a pure saddle exists at every state, so the LP is never called; on the
-random variant it is called on 3.95% of states, and the value function matches
-the all-LP solution to `4e-16`.
+Littman's minimax-Q solves an LP at every `(s, a, o)` update. This solver adds
+five speed-ups, none in the paper:
+
+- **Precompute the outcome table.** Build every stage game's transition list
+  once (`NashQIteration.__init__`), then look up `s'` during the recursion --
+  the professor's "solve once for every `s`".
+- **Pure-first.** At each state, mark the best responses along rows and columns
+  (`O(A^2)`); if one entry is both a row and a column best response, its value
+  *is* the Nash value -- use it, no LP. On the deterministic game a pure saddle
+  exists at every state (LP never called); on the random variant the LP runs on
+  3.95% of states, and the value function matches the all-LP solution to `4e-16`
+  -- a **~25x** reduction in LP calls.
+- **LP-result memoization.** Key the LP value on `round(M, 11).tobytes()`; near
+  convergence the same stage matrices repeat sweep-to-sweep, trimming a further
+  few percent (`~10 000 -> ~9 700` calls).
+- **Back up `p M q`** in freeze-then-iterate (below), not the bounds -- 2x fewer
+  outer rounds.
 
 Two further reductions:
 
@@ -97,9 +108,20 @@ Two further reductions:
   this small (17.2 s vs 13.8 s). It pays off only where the equilibrium solve
   dominates (larger action spaces, general-sum).
 
-![Line chart of digits of accuracy per iteration: value iteration climbs
-steadily; freeze-then-iterate is flat for 16 rounds then jumps to
-convergence.](figures/gallery/convergence.svg)
+![Line chart: value iteration's Bellman residual climbs to 9 digits over about
+100 sweeps.](figures/gallery/convergence.svg)
+
+**Which value quantity to back up in the frozen sweep** (the professor's
+specific question). The frozen `(p, q)` don't match the current `Q`, so does the
+evaluation sweep use `p^T M q`, `min_j (pM)_j`, or `max_i (Mq)_i`? All three
+reach the same fixed point, but `p^T M q` converges in **half the rounds** (21
+vs 41-42) -- it is the unbiased estimate while the strategies are stale, where
+the two bounds are systematically pessimistic / optimistic and stretch the
+thrash phase from 16 rounds to 28 (`run_policy_iteration(eval_value=...)`,
+[numerics.md](numerics.md) §3).
+
+![Staleness per outer round for the three backup choices; p-M-q locks in near
+round 16, the two bounds near round 28.](figures/gallery/eval_value.svg)
 
 Value iteration's Bellman residual decays geometrically at rate ≈ γ.
 Freeze-then-iterate makes no progress until the frozen stage saddle flips --

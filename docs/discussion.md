@@ -165,6 +165,45 @@ Solving the LP on the 3.95% of states that need it is not a numerical nicety;
 it is the difference between a policy that can be exploited to a loss and one
 that cannot be exploited at all.
 
+---
+
+## 7. New questions the recent sweeps raise
+
+These came out of the runs, not the meeting -- the "notice something new" the
+professor asked for.
+
+1. **The blend overshoot.** Sweeping the resolution rule from deterministic to
+   random ([blend.md](blend.md)), the no-pure-saddle count does not rise
+   monotonically -- it *overshoots* to ~1.5× the fully-random value just past
+   `blend = 0.5`, then relaxes. Is the peak location (`blend ≈ 0.6–0.7`)
+   universal or board-dependent? Is `blend = 0.5` a genuine phase transition
+   (order parameter: the mixed fraction; is there a critical exponent)?
+
+2. **Occupancy-weighted solving.** The mixed states are 4% of the space but 41%
+   of the discounted occupancy ([occupancy.md](occupancy.md)). The professor
+   noted you can drop never-reached Nash; the sharper version is a
+   *prioritized* solver that spends LP effort in proportion to occupancy (or
+   Bellman residual). Does it beat uniform value iteration in wall-clock, and
+   does it still certify the off-path values a best-responder could deviate to?
+
+3. **Is `p M q` provably the right backup?** In freeze-then-iterate, `p M q`
+   converges 2× faster than `min_j(pM)` or `max_i(Mq)` (§6 above). Is that a
+   theorem -- the middle quantity is the unique unbiased linear functional of a
+   stale strategy pair -- or an artifact of this game's shallow gaps?
+
+4. **How far does reward-invariance go?** The no-pure-saddle set is identical
+   under `win` and `rate` ([reward.md](reward.md)). Is it identical under *every*
+   potential-based shaping (`F = γφ(s') − φ(s)`), which leaves the equilibrium
+   fixed by construction? Under any strictly monotone re-scaling of `V`? A clean
+   statement would be "the mixed region is a function of the stage-game
+   *ordinal* structure, not its cardinal values."
+
+5. **The one open proof.** For the single goal cell, a board-size-free argument
+   that the carrier's closed-form strategy secures `V*` is still missing
+   ([proof.md](proof.md)). The professor de-prioritised formal proofs; a
+   *machine-checked* induction on the stochastic attractor rank would be a
+   middle path.
+
 ## How the experiments were run
 
 See [methods.md](methods.md) for the solver, the state encoding, seeds, repeat

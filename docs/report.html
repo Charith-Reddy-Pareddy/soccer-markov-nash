@@ -445,8 +445,16 @@
     </div>
     <p>5&times; fewer LP solves &mdash; but the frozen strategies' distance to the current Nash stays <em>maximal</em> (a full pure-strategy flip) for <b>16 outer rounds</b>, then collapses to <span class="mono">&lt; 1e&minus;8</span>. The thrashing eats the saving; on the deterministic game it is strictly worse. Value iteration with the per-sweep Nash cache wins here.</p>
     <figure>
-      <img src="figures/gallery/convergence.svg" alt="Line chart of digits of accuracy per iteration. Value iteration climbs steadily to nine digits; freeze-then-iterate is flat near zero for sixteen rounds, then jumps to convergence." style="max-width:440px; margin:0 auto;">
-      <figcaption class="fig-cap"><b>The 16-round stall, drawn.</b> Value iteration's Bellman residual decays geometrically at rate &asymp; &gamma;. Freeze-then-iterate makes <em>no</em> progress until the frozen stage saddle flips, then converges at once &mdash; concurrent stochastic games have no monotone policy improvement (<span class="mono">docs/discussion.md</span> &sect;4).</figcaption>
+      <img src="figures/gallery/convergence.svg" alt="Line chart: value iteration's Bellman residual climbs steadily to nine digits of accuracy over about 100 sweeps." style="max-width:420px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Value iteration converges cleanly.</b> The Bellman residual decays geometrically at rate &asymp; &gamma; &mdash; 108 sweeps to <span class="mono">1e&minus;9</span>. Freeze-then-iterate, by contrast, makes <em>no</em> progress until the frozen stage saddle flips (next figure) &mdash; concurrent stochastic games have no monotone policy improvement (<span class="mono">docs/discussion.md</span> &sect;4).</figcaption>
+    </figure>
+    <div class="note">
+      <span class="label">Which value quantity to back up in the frozen sweep</span>
+      <p>The professor's specific question: the frozen <span class="mono">(p, q)</span> don't match the current <span class="mono">Q</span>, so does the evaluation sweep back up <span class="mono">p&#7488;Mq</span>, <span class="mono">min&#8342;(pM)&#8342;</span>, or <span class="mono">max&#7522;(Mq)&#7522;</span>? All three reach the <em>same</em> fixed point (zero-sum equilibria are interchangeable), but <b><span class="mono">p&#7488;Mq</span> converges in half the rounds</b> (21 vs 41&ndash;42) &mdash; it is the unbiased estimate while the strategies are stale, where the two bounds are systematically pessimistic / optimistic and stretch the thrash phase from 16 rounds to 28 (<span class="mono">run_policy_iteration(eval_value=...)</span>, <span class="mono">docs/numerics.md</span> &sect;3).</p>
+    </div>
+    <figure>
+      <img src="figures/gallery/eval_value.svg" alt="Line chart of frozen-strategy staleness per outer round for the three backup choices; p-transpose-M-q settles to zero by round 16, the two bounds keep spiking until round 28." style="max-width:440px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Back up <span class="mono">p&#7488;Mq</span>.</b> Staleness of the frozen strategies per outer round. The middle quantity settles by round&nbsp;16; the pessimistic <span class="mono">min&#8342;(pM)&#8342;</span> and optimistic <span class="mono">max&#7522;(Mq)&#7522;</span> keep flipping until round&nbsp;28.</figcaption>
     </figure>
   </section>
 
