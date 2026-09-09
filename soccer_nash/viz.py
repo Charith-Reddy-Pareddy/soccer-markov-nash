@@ -488,6 +488,91 @@ def strategy_bars_svg(
     return _svg(left + w + 8, th, body, "mixed strategy bars")
 
 
+# --------------------------------------------------------------- bestreply_svg
+
+def bestreply_svg(
+    M: np.ndarray,
+    row_labels: list[str] | None = None,
+    col_labels: list[str] | None = None,
+    title: str | None = None,
+) -> str:
+    """A payoff matrix with best replies highlighted -- the professor's O(A^2)
+    pure-equilibrium check, drawn. Player 0 (rows, maximiser) gets a blue tick
+    on its best row per column; player 1 (columns, minimiser) a green tick on
+    its best column per row. A cell with both is a pure saddle (boxed); if none
+    has both, the best replies cycle (curved amber arrows) and the game is
+    matching pennies -- mixing is forced."""
+    M = np.asarray(M, dtype=float)
+    nr, nc = M.shape
+    cw, ch, lm, tm = 54, 34, 40, 26
+    row_labels = row_labels or [f"r{i}" for i in range(nr)]
+    col_labels = col_labels or [f"c{j}" for j in range(nc)]
+
+    row_best = {j: int(np.argmax(M[:, j])) for j in range(nc)}   # player 0
+    col_best = {i: int(np.argmin(M[i, :])) for i in range(nr)}   # player 1
+    saddles = [(i, j) for j in range(nc) for i in range(nr)
+               if row_best[j] == i and col_best[i] == j]
+
+    body = []
+    for j, lab in enumerate(col_labels):
+        body.append(
+            f'<text x="{lm + j * cw + cw / 2:.0f}" y="{tm - 8:.0f}" '
+            f'text-anchor="middle" font-family="ui-monospace,monospace" '
+            f'font-size="9" fill="{P1}">{lab}</text>'
+        )
+    for i, lab in enumerate(row_labels):
+        body.append(
+            f'<text x="{lm - 6:.0f}" y="{tm + i * ch + ch / 2 + 3:.0f}" '
+            f'text-anchor="end" font-family="ui-monospace,monospace" '
+            f'font-size="9" fill="{P0}">{lab}</text>'
+        )
+    for i in range(nr):
+        for j in range(nc):
+            x, y = lm + j * cw, tm + i * ch
+            body.append(
+                f'<rect x="{x}" y="{y}" width="{cw}" height="{ch}" '
+                f'fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>'
+            )
+            body.append(
+                f'<text x="{x + cw / 2:.0f}" y="{y + ch / 2 + 4:.0f}" '
+                f'text-anchor="middle" font-family="ui-monospace,monospace" '
+                f'font-size="10" fill="{_INK}">{M[i, j]:+.2f}</text>'
+            )
+            if row_best[j] == i:
+                body.append(
+                    f'<rect x="{x + 1}" y="{y + 1}" width="4" height="{ch - 2}" '
+                    f'fill="{P0}"/>'
+                )
+            if col_best[i] == j:
+                body.append(
+                    f'<rect x="{x + 1}" y="{y + 1}" width="{cw - 2}" height="4" '
+                    f'fill="{P1}"/>'
+                )
+    for i, j in saddles:
+        x, y = lm + j * cw, tm + i * ch
+        body.append(
+            f'<rect x="{x}" y="{y}" width="{cw}" height="{ch}" fill="none" '
+            f'stroke="{_INK}" stroke-width="2.5"/>'
+        )
+    sub = (
+        f"pure saddle: {row_labels[saddles[0][0]]} / {col_labels[saddles[0][1]]}"
+        if saddles else "best replies cycle -> must mix"
+    )
+    th = tm + nr * ch + 22
+    body.append(
+        f'<text x="{lm}" y="{th - 6}" font-family="ui-monospace,monospace" '
+        f'font-size="9.5" fill="{_EMBER_HEX if not saddles else _FAINT}">{sub}</text>'
+    )
+    if title:
+        body.insert(
+            0,
+            f'<text x="{lm}" y="-4" font-family="Barlow Semi Condensed,sans-serif" '
+            f'font-weight="600" font-size="13" fill="{_INK}">{title}</text>',
+        )
+    width = max(lm + nc * cw + 8, lm + 172)   # room for the caption
+    return _svg(width, th, body, "best-reply matrix", pad=14 if title else 4)
+
+
 # -------------------------------------------------------------- line_chart_svg
 
 def line_chart_svg(

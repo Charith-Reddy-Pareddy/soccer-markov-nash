@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 178" role="img" aria-label="panel">
+<g transform="translate(14.0 14.0)">
+<text x="40" y="-4" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">rock-paper-scissors</text>
+<text x="67" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">rock</text>
+<text x="121" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">paper</text>
+<text x="175" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">scis</text>
+<text x="34" y="46" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">rock</text>
+<text x="34" y="80" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">paper</text>
+<text x="34" y="114" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">scis</text>
+<rect x="40" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+0.00</text>
+<rect x="94" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-1.00</text>
+<rect x="95" y="27" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<rect x="148" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="175" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+1.00</text>
+<rect x="149" y="27" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<rect x="40" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+1.00</text>
+<rect x="41" y="61" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<rect x="94" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+0.00</text>
+<rect x="148" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="175" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-1.00</text>
+<rect x="149" y="61" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<rect x="40" y="94" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-1.00</text>
+<rect x="41" y="95" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<rect x="94" y="94" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+1.00</text>
+<rect x="95" y="95" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<rect x="148" y="94" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="175" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+0.00</text>
+<text x="40" y="144" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">best replies cycle -> must mix</text>
+</g>
+<g transform="translate(270.0 31.0)">
+<text x="40" y="-4" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">soccer: carrier pinned  (0, 1, 1, 1, 1)</text>
+<text x="67" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">cover</text>
+<text x="121" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold</text>
+<text x="34" y="46" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">climb</text>
+<text x="34" y="80" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">advance</text>
+<rect x="40" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+0.33</text>
+<rect x="41" y="27" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<rect x="94" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+0.37</text>
+<rect x="95" y="27" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<rect x="40" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">+0.40</text>
+<rect x="41" y="61" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<rect x="94" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-0.09</text>
+<rect x="95" y="61" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<text x="40" y="110" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">best replies cycle -> must mix</text>
+</g>
+</svg>

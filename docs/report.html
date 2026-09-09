@@ -444,6 +444,10 @@
       </table>
     </div>
     <p>5&times; fewer LP solves &mdash; but the frozen strategies' distance to the current Nash stays <em>maximal</em> (a full pure-strategy flip) for <b>16 outer rounds</b>, then collapses to <span class="mono">&lt; 1e&minus;8</span>. The thrashing eats the saving; on the deterministic game it is strictly worse. Value iteration with the per-sweep Nash cache wins here.</p>
+    <figure>
+      <img src="figures/gallery/convergence.svg" alt="Line chart of digits of accuracy per iteration. Value iteration climbs steadily to nine digits; freeze-then-iterate is flat near zero for sixteen rounds, then jumps to convergence." style="max-width:440px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>The 16-round stall, drawn.</b> Value iteration's Bellman residual decays geometrically at rate &asymp; &gamma;. Freeze-then-iterate makes <em>no</em> progress until the frozen stage saddle flips, then converges at once &mdash; concurrent stochastic games have no monotone policy improvement (<span class="mono">docs/discussion.md</span> &sect;4).</figcaption>
+    </figure>
   </section>
 
   <section>
@@ -525,11 +529,19 @@
 
   <section>
     <h2>RQ4 &mdash; Numerical robustness</h2>
+
+    <h3>The soccer game contains rock-paper-scissors</h3>
+    <p>The pure/mixed check is the professor's O(A&sup2;) best-reply method: mark player 0's best row in each column and player 1's best column in each row; a cell with both is a pure saddle, and if none has both the best replies <em>cycle</em> and the game needs mixing &mdash; no LP required.</p>
+    <figure>
+      <img src="figures/gallery/rps_vs_soccer.svg" alt="Rock-paper-scissors and a soccer stage game drawn side by side as payoff matrices with best replies marked; in both, player 0's best-reply row and player 1's best-reply column never coincide." style="max-width:560px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Same structure.</b> Left: rock-paper-scissors. Right: the stage game at <span class="mono">(0, 1, 1, 1, 1)</span> &mdash; carrier pinned against its own goal, defender adjacent (Littman's Figure&nbsp;2 geometry). Blue bar = player 0's best row per column; green bar = player 1's best column per row. They cross both ways &mdash; matching pennies, no pure equilibrium.</figcaption>
+    </figure>
+
     <h3>The value is three numbers</h3>
-    <p><span class="mono">value_bracket</span> returns what the row player guarantees (<span class="mono">min&#8342;(pM)&#8342;</span>), gets (<span class="mono">p&#7488;Mq</span>), and can reach (<span class="mono">max&#7522;(Mq)&#7522;</span>). The true value is bracketed, so the width certifies the LP error.</p>
+    <p><span class="mono">value_bracket</span> returns what the row player guarantees (<span class="mono">min&#8342;(pM)&#8342;</span>), gets (<span class="mono">p&#7488;Mq</span>), and can reach (<span class="mono">max&#7522;(Mq)&#7522;</span>) &mdash; the three quantities the professor flagged as never numerically identical. The true value is bracketed, so the width certifies the LP error.</p>
     <div class="note">
       <span class="label">Finding</span>
-      <p>With <span class="mono">scipy</span>'s HiGHS the three agree to <span class="mono">1.1e&minus;16</span> per stage game, <span class="mono">8.7e&minus;10</span> accumulated. The concern is real for older vertex/simplex solvers &mdash; a non-issue here.</p>
+      <p>With <span class="mono">scipy</span>'s HiGHS the three agree to <span class="mono">1.1e&minus;16</span> per stage game, <span class="mono">8.7e&minus;10</span> accumulated &mdash; the definitional ambiguity is not a practical problem. If it were (an older vertex solver, or accumulated drift), the row player should take the <em>guaranteed</em> value <span class="mono">min&#8342;(pM)&#8342;</span>: it is always a safe lower bound on the true minimax.</p>
     </div>
     <h3>Discounting and tolerance</h3>
     <div class="tbl-scroll">
@@ -544,6 +556,10 @@
       </table>
     </div>
     <p>Discounting mildly shifts which states mix; the classification is otherwise robust across nine orders of magnitude of tolerance, breaking only as the tolerance approaches the real <span class="mono">minimax &minus; maximin</span> gaps. Fixed 0.1-rounding &mdash; proposed to force indifference &mdash; misclassifies 62 states, exactly the small-entry mixed region.</p>
+    <figure>
+      <img src="figures/gallery/discounting_trap.svg" alt="Line chart: across every discount from 0.5 to 0.99, fixed 0.1-rounding wrongly makes 60 to 100 percent of the mixed stage games look pure, and their true gap never reaches the 0.1 grid." style="max-width:440px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>There is no safe discount.</b> The genuine <span class="mono">minimax &minus; maximin</span> gaps (green) never reach the 0.1 rounding grid at any <span class="mono">&gamma;</span>: heavy discounting shrinks the <span class="mono">&gamma;&#7503;</span> value differences, light discounting leaves entries barely apart. Fixed 0.1-rounding wrongly collapses 60&ndash;100% of the mixed games (blue). The scale-aware <span class="mono">rel_tol</span> classifier is stable across the whole range.</figcaption>
+    </figure>
   </section>
 
   <section>
@@ -615,9 +631,9 @@
   </section>
 
   <footer>
-    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; occupancy.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
+    soccer_nash &mdash; game.py &middot; matrix_games.py &middot; support_enum.py &middot; nash_q.py &middot; markov_game.py &middot; numerics.py &middot; dominance.py &middot; attractor.py &middot; geometry.py &middot; symmetry.py &middot; tree.py &middot; templates.py &middot; onecell.py &middot; reachability.py &middot; occupancy.py &middot; evaluate.py &middot; best_response.py &middot; exploit.py &middot; mlp.py &middot; nash_dqn.py &middot; opponents.py &middot; shaping.py &middot; simulate.py &middot; experiment.py &middot; render.py &middot; viz.py<br>
     scripts &mdash; experiments.py &middot; analyze.py &middot; numerics.py &middot; equilibria.py &middot; geometry_model.py &middot; templates.py &middot; phase_diagram.py &middot; onecell_proof.py &middot; positional.py &middot; benchmark.py &middot; policy_iteration.py &middot; selfplay.py &middot; nash_dqn.py &middot; render.py &middot; gallery.py &middot; littman.py &middot; mixing.py &middot; reward.py &middot; blend.py &middot; occupancy.py &middot; tournament.py &middot; a10_part1.py &middot; a10_part2.py &middot; a10_competition.py<br>
-    docs &mdash; design.md &middot; advisor.md &middot; methods.md &middot; discussion.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; tournament.md &middot; mixing.md &middot; reward.md &middot; blend.md &middot; occupancy.md &middot; gallery.html<br>
+    docs &mdash; design.md &middot; advisor.md &middot; methods.md &middot; discussion.md &middot; numerics.md &middot; assumptions.md &middot; templates.md &middot; proof.md &middot; geometry.md &middot; mechanism.md &middot; littman.md &middot; tournament.md &middot; mixing.md &middot; reward.md &middot; blend.md &middot; occupancy.md &middot; gallery.html<br>
     experiments &mdash; baseline.csv &middot; undiscounted.csv &middot; gamma_sweep.csv &middot; tolerance_sweep.csv &middot; board_sweep.csv &middot; goal_mouth_sweep.csv &middot; one_cell_goal.csv &middot; phase_diagram.csv &middot; nash_dqn_seeds.csv<br>
     env: 7&times;5 grid, 2&thinsp;380 states, zero-sum &plusmn;1, &gamma; = 0.9
   </footer>

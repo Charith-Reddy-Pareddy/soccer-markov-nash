@@ -60,6 +60,7 @@ class NashQResult:
     gamma: float
     matrix_game_solves: int = 0  # LP calls (0 for a purely pure/saddle run)
     staleness_trace: list[float] | None = None  # policy iteration only
+    residual_trace: list[float] | None = None  # max Bellman update per sweep
 
     @property
     def pure_equilibrium_exists(self) -> bool:
@@ -201,6 +202,7 @@ class NashQIteration:
         values: dict[State, float] = dict.fromkeys(self._states, 0.0)
 
         iterations = 0
+        residual_trace: list[float] = []
         for iterations in range(1, self.max_iters + 1):
             delta = 0.0
             updated: dict[State, float] = {}
@@ -209,6 +211,7 @@ class NashQIteration:
                 delta = max(delta, abs(nv - values[s]))
                 updated[s] = nv
             values = updated
+            residual_trace.append(delta)
             if delta < self.tol:
                 break
 
@@ -222,6 +225,7 @@ class NashQIteration:
             mode=self.mode,
             gamma=self.gamma,
             matrix_game_solves=self._lp_calls,
+            residual_trace=residual_trace,
         )
 
     def run_finite_horizon(self, horizon: int | None = None) -> FiniteHorizonResult:
