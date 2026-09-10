@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 832 336" role="img" aria-label="panel">
-<g transform="translate(20.0 20.0)">
+<g transform="translate(20.0 20.0)"><clipPath id="pnl0"><rect x="-20.0" y="-20.0" width="408.0" height="336.0"/></clipPath><g clip-path="url(#pnl0)">
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -83,10 +83,9 @@
 <rect x="295" y="75" width="42" height="42" fill="#afbec9"/>
 <text x="316" y="99" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink, #19211c)">1</text>
 <rect x="295" y="31" width="42" height="42" fill="#d4ddde"/>
-<text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">equilibrium time by carrier cell (% ; amber = a mixed state sits here)</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">player 0 carrying</text>
-</g>
-<g transform="translate(444.0 20.0)">
+</g></g>
+<g transform="translate(444.0 20.0)"><clipPath id="pnl1"><rect x="-20.0" y="-20.0" width="408.0" height="336.0"/></clipPath><g clip-path="url(#pnl1)">
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -161,7 +160,6 @@
 <rect x="295" y="119" width="42" height="42" fill="#829ab0"/>
 <rect x="295" y="75" width="42" height="42" fill="#adbdc8"/>
 <rect x="295" y="31" width="42" height="42" fill="#c2ced4"/>
-<text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">equilibrium time by carrier cell (% ; amber = a mixed state sits here)</text>
-<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">player 1 carrying</text>
-</g>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">player 1 carrying — amber dot = a mixed state</text>
+</g></g>
 </svg>
