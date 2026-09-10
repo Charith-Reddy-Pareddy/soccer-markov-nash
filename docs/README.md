@@ -23,6 +23,9 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   (`make reward`).
 - [blend.md](blend.md) — sweeping the move-resolution rule from deterministic to
   random; mixing switches on sharply above `blend = 0.5` (`make blend`).
+- [tackle.md](tackle.md) — the project's own `tackle` collision rule (a
+  commit-to-the-challenge duel) and the rule-fingerprint panel comparing every
+  collision rule's mixed region (`make tackle`).
 - [occupancy.md](occupancy.md) — the mixed states carry ~40% of the equilibrium
   path despite being 4% of the state space (`make occupancy`).
 

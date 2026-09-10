@@ -15,9 +15,11 @@ space, not the definition of it.
 | parameter | default | what it controls | why it is an axis |
 |---|---|---|---|
 | `width`, `height` | 7 × 5 | board size | tests whether mixing scales with the state space (it does not) |
-| `goal_rows` | `(1, 2, 3)` | which rows score on each edge | **the** switch: a 1-cell goal is never mixed, ≥ 2 always is |
-| `move_order` | `deterministic` | how simultaneous moves resolve (`deterministic` / `random` / `coinflip` / `blend`) | isolates the transition structure that creates matching pennies |
+| `goal_rows` | `(1, 2, 3)` | which rows score on each edge | the switch **for the random move order**: a 1-cell goal is never mixed there, ≥ 2 always is ([generalize.md](generalize.md)) |
+| `move_order` | `deterministic` | how simultaneous moves resolve (`deterministic` / `random` / `coinflip` / `blend` / `tackle`) | isolates the transition structure that creates matching pennies |
 | `blend` | 0.5 | for `move_order="blend"`: P(resolve by random order) | a continuous knob; mixing switches on sharply above 0.5 ([blend.md](blend.md)) |
+| `slip` | 0.0 | each player takes a random move with this probability, on top of `move_order` | action-independent noise; creates mixing at any goal width, so the goal-width switch is move-order specific ([generalize.md](generalize.md)) |
+| `tackle_prob` | 0.5 | for `move_order="tackle"`: P(a committed challenge wins the ball) | this project's own collision rule; "dive in or contain" is a gamble ([tackle.md](tackle.md)) |
 | `n_actions` | 4 | `{N,S,E,W}` or `+ stand` | Littman's fifth action; changes the *content* of a mix, not its location ([littman.md](littman.md)) |
 | `scoring` | `win` | first goal ends it, or goal → reset and play on | the reward objective; the mixed region is invariant to it ([reward.md](reward.md)) |
 | `p0_start`, `p1_start` | centre row, opposite ends | kickoff | the pure/mixed split is kickoff-independent; only `V(kickoff)` moves |
@@ -53,10 +55,11 @@ separate from the game's reward:
 
 ## Transition rules
 
-A joint action `(a0, a1)` is resolved by one of four rules. All share the same
-primitives -- clamp at walls, a carrier crossing its attacking edge on a goal
-row scores -- and differ only in **who wins a contested cell and what happens to
-the ball**. `blend` interpolates the first two ([blend.md](blend.md)).
+A joint action `(a0, a1)` is resolved by one of five rules, and `slip` layers
+action-independent noise on any of them. All share the same primitives -- clamp
+at walls, a carrier crossing its attacking edge on a goal row scores -- and
+differ only in **who wins a contested cell and what happens to the ball**.
+`blend` interpolates the first two ([blend.md](blend.md)).
 
 ### `deterministic` -- the carrier always wins
 
@@ -96,6 +99,24 @@ Sweeping `blend` (`scripts/blend.py`) shows mixing is not gradual: it switches
 on **sharply once the random component is the majority** (`blend > 0.5`) and
 overshoots the fully-random count just past the threshold. A minority of
 random-order resolution is washed out by the deterministic tie-break.
+
+### `tackle` -- this project's own collision rule
+
+The defender commits to a challenge by moving onto the carrier's cell; the
+challenge then wins the ball with probability `tackle_prob` (carrier shoved
+back) or fails and bounces the defender away. Unlike Littman's rule, the guess
+here does not need a multi-cell goal -- the "dive in or contain" duel is a
+matching-pennies subgame on any square where a challenge is reachable
+([tackle.md](tackle.md)). Built to answer the meeting ask for the project's own
+transition model.
+
+### `slip` -- action-independent movement noise
+
+Each player independently takes a uniform-random move instead of its chosen one
+with probability `slip`, on top of `move_order`. This is the test that Littman's
+move order, not stochasticity in general, is what makes the goal-width switch:
+`slip > 0` produces mixed stage games at any goal width, deterministic
+resolution included ([generalize.md](generalize.md)).
 
 ## Instances
 
