@@ -19,7 +19,7 @@ contested cell into a matching-pennies game with no pure saddle. Under
 `move_order="random"`, 94 of 2380 stage games (γ = 0.9) are genuinely mixed.
 
 ![Rock-paper-scissors and a soccer stage game side by side; in both, player 0's
-best-reply row and player 1's best-reply column never coincide.](figures/gallery/rps_vs_soccer.svg)
+best-reply row and player 1's best-reply column never coincide.](figures/png/rps_vs_soccer.png)
 
 The blue bar marks player 0's best row per column, the green bar player 1's best
 column per row (the professor's O(A²) check -- no LP needed). In a pure-saddle
@@ -85,7 +85,7 @@ mix and why the scale-aware classifier is the honest tool.
 
 ![Line chart: across every discount from 0.5 to 0.99, fixed 0.1-rounding wrongly
 collapses 60-100% of the mixed stage games, and their true minimax-maximin gap
-never reaches the 0.1 grain.](figures/gallery/discounting_trap.svg)
+never reaches the 0.1 grain.](figures/png/discounting_trap.png)
 
 **There is no discount at which fixed 0.1-rounding is safe.** At heavy
 discounting the genuine `gamma^k` gaps are tiny (median 0.002 at γ = 0.5); at
@@ -118,7 +118,7 @@ it is strictly worse (65 LP solves where value iteration needs 0, because
 intermediate value functions have non-strict saddles).
 
 ![Line chart: value iteration's Bellman residual climbs to 9 digits of accuracy
-over about 100 sweeps.](figures/gallery/convergence.svg)
+over about 100 sweeps.](figures/png/convergence.png)
 
 Value iteration's Bellman residual (`NashQResult.residual_trace`) decays
 geometrically at rate ≈ γ. Freeze-then-iterate makes no progress at all until
@@ -143,7 +143,7 @@ runs all three (`mid` = `p M q`, `lower` = `min_j (pM)_j`, `upper` =
 | `max_i (Mq)_i` | 41 | 4 001 | 28 | yes |
 
 ![Line chart of frozen-strategy staleness per outer round for the three choices;
-p M q settles to zero by round 16, the two bounds keep spiking until round 28.](figures/gallery/eval_value.svg)
+p M q settles to zero by round 16, the two bounds keep spiking until round 28.](figures/png/eval_value.png)
 
 **Back up `p M q`.** All three reach the *same* fixed point -- zero-sum
 equilibria are interchangeable, so the frozen strategies always converge to a

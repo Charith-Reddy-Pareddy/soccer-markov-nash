@@ -53,7 +53,7 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [proof.md](proof.md) — the single-cell pure-saddle theorem: the defender's
   closed-form optimal strategy, the dominance-solvability certificate
   (`make proof`), and the gap that remains.
-- `experiments/phase_diagram.csv` + `figures/phase_diagram.svg` — the
+- `experiments/phase_diagram.csv` + `figures/png/phase_diagram.png` — the
   goal-width × board-size phase diagram (`make phase`).
 - [numerics.md](numerics.md) — why the LP returns pure strategies, the value
   bracket, why 0.1-rounding is never safe, and value-iteration vs.
