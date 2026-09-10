@@ -31,7 +31,7 @@ def _succ(game: SoccerGame, s: State, a_me: int, a_op: int, me: int) -> State:
 def win_attractor(game: SoccerGame, player: int) -> dict[State, int]:
     """``{state: rank}`` -- states from which ``player`` forces a goal, and in
     how many forced moves. Deterministic games only."""
-    if game.move_order != "deterministic":
+    if game.move_order != "deterministic" or game.slip > 0.0:
         raise ValueError("win_attractor needs deterministic move resolution")
     if game.n_actions != 4:
         raise ValueError("win_attractor is only wired for the 4-action game")

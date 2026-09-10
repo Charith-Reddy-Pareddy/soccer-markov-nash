@@ -41,9 +41,20 @@ be the converged stage game (player 0 maximises, player 1 minimises).
 > 3. **Invariance.** The 0-vs-positive count of no-pure-saddle stage games is
 >    unchanged across `gamma in {0.5, 0.9, 0.995}`, the 4- and 5-action move
 >    sets (Littman's `STAND` included), the `win` and `rate` reward objectives,
->    and the exact undiscounted game solved by backward induction.
+>    and the exact undiscounted game solved by backward induction. It is also
+>    unchanged across board size, board aspect ratio, and goal placement
+>    (contiguous or with gaps) -- verified on boards up to `11x5` and `9x7`
+>    ([generalize.md](generalize.md)).
 
 ### What is *not* claimed
+
+- **Not a statement about stochastic transitions in general -- only about the
+  random move order.** Add action-independent movement noise
+  (`SoccerGame(slip=p)`: each player takes a random move with probability `p`)
+  and mixed stage games appear even under deterministic resolution and even with
+  a single goal cell. The goal-width switch is specific to Littman's move-order
+  mechanism, where the unresolved coin only bites where the carrier has two
+  lanes ([generalize.md](generalize.md) part B).
 
 - Not that *every* multi-cell board has a mixed state for *all* `W, H` -- only
   that it does on every board in the tested grid, and that a multi-cell goal is
@@ -149,6 +160,16 @@ concrete:
   which couples the ball-steal outcome to *both* players' concurrent choices --
   that turns the two-lane geometry into a matching-pennies stage game.
 
+- **What is common to both.** A stage game needs mixing when the transition puts
+  the outcome on a coin neither player controls. The random move order supplies
+  that coin only where the carrier has two lanes and the defender is between
+  them, so mixing tracks the goal width. Action-independent movement noise
+  (`slip`) supplies the same coin on every square, so under `slip` mixing
+  appears at any goal width ([generalize.md](generalize.md)). Reading the `2x2`
+  cores of the `7x5` mixed states: the carrier's crossing pair is almost always
+  a vertical move -- it is picking which goal row to head for -- and the
+  defender's pair mirrors it.
+
 ---
 
 ## 5. Reproduction
@@ -156,6 +177,7 @@ concrete:
 ```
 make verify        # scripts/verify_mechanism.py -> experiments/mechanism_certificate.json
                    #                                 docs/figures/gallery/mechanism.svg
+make generalize    # scripts/generalize.py: board scale, goal shape, slip, mechanism
 make proof         # scripts/onecell_proof.py: the single-cell closed-form certificate
 make phase         # scripts/phase_diagram.py: the 127-config wide sweep (~8 min)
 ```

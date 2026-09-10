@@ -272,7 +272,7 @@ class NashQIteration:
         reconstructs the other by ``V(mirror(s)) = -V(s)``. Same fixed point,
         half the stage-game work. Deterministic move order only -- the mirror
         of a stochastic transition is not verified here."""
-        if self.game.move_order != "deterministic":
+        if self.game.move_order != "deterministic" or self.game.slip > 0.0:
             raise ValueError("run_symmetric() requires deterministic move order")
         if self._n != 4:
             raise ValueError("run_symmetric() is only wired for the 4-action game")
