@@ -162,9 +162,11 @@ def mixing_map_svg(
     defender_cell: tuple[int, int],
     defender: int = 1,
     title: str | None = None,
+    caption: str | None = "cells: minimax minus maximin of the carrier's stage game",
 ) -> str:
     """Fix ``defender`` at ``defender_cell``; shade every carrier cell by
-    ``minimax - maximin`` of its stage game (0 = pure saddle)."""
+    ``minimax - maximin`` of its stage game (0 = pure saddle). ``caption=None``
+    drops the footnote -- use it when tiling several maps into one panel."""
     w, h = game.width, game.height
     dx, dy = defender_cell
     carrier = 1 - defender
@@ -203,11 +205,11 @@ def mixing_map_svg(
     ddx, ddy = cell_center(dx, dy, h)
     dcol = P1 if defender == 1 else P0
     body.append(f'<circle cx="{ddx:.1f}" cy="{ddy:.1f}" r="12" fill="{dcol}"/>')
-    body.append(
-        f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
-        f'font-size="10" fill="{_FAINT}">cells: minimax minus maximin of the '
-        f"carrier's stage game</text>"
-    )
+    if caption:
+        body.append(
+            f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
+            f'font-size="10" fill="{_FAINT}">{caption}</text>'
+        )
     if title:
         body.append(
             f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
@@ -292,6 +294,8 @@ def occupancy_map_svg(
     mixed_states: set[State] | None = None,
     ball: int = 0,
     title: str | None = None,
+    caption: str | None = "equilibrium time by carrier cell "
+    "(% ; amber = a mixed state sits here)",
 ) -> str:
     """Marginalise ``dist`` over the carrier's cell (for ball owner ``ball``) and
     shade each cell by how much equilibrium time is spent there. Cells that hold
@@ -337,11 +341,11 @@ def occupancy_map_svg(
                     f'<circle cx="{px + CELL - 7:.0f}" cy="{py + 7:.0f}" r="3.2" '
                     f'fill="{BALL}" stroke="{PAPER}" stroke-width="0.8"/>'
                 )
-    body.append(
-        f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
-        f'font-size="10" fill="{_FAINT}">equilibrium time by carrier cell '
-        f'(% ; amber = a mixed state sits here)</text>'
-    )
+    if caption:
+        body.append(
+            f'<text x="{MARGIN}" y="{th - 5}" font-family="ui-monospace,monospace" '
+            f'font-size="10" fill="{_FAINT}">{caption}</text>'
+        )
     if title:
         body.append(
             f'<text x="{MARGIN}" y="-6" font-family="Barlow Semi Condensed,'
@@ -570,6 +574,8 @@ def bestreply_svg(
             f'font-weight="600" font-size="13" fill="{_INK}">{title}</text>',
         )
     width = max(lm + nc * cw + 8, lm + 172)   # room for the caption
+    if title:
+        width = max(width, lm + len(title) * 6.6)   # room for the title
     return _svg(width, th, body, "best-reply matrix", pad=14 if title else 4)
 
 
@@ -684,7 +690,14 @@ def panel_svg(items: list[str], cols: int = 2, gap: int = 16) -> str:
         ox = c * (cw + gap) + (cw - vw) / 2 - mx
         oy = r * (ch + gap) + (ch - vh) / 2 - my
         inner = svg.split(">", 1)[1].rsplit("<", 1)[0]
-        body.append(f'<g transform="translate({ox:.1f} {oy:.1f})">{inner}</g>')
+        # clip each tile to its own viewBox so a wide caption cannot bleed
+        # into the neighbouring panel
+        body.append(
+            f'<g transform="translate({ox:.1f} {oy:.1f})">'
+            f'<clipPath id="pnl{i}"><rect x="{mx:.1f}" y="{my:.1f}" '
+            f'width="{vw:.1f}" height="{vh:.1f}"/></clipPath>'
+            f'<g clip-path="url(#pnl{i})">{inner}</g></g>'
+        )
     return _svg(
         cols * cw + (cols - 1) * gap, rows * ch + (rows - 1) * gap, body, "panel"
     )
