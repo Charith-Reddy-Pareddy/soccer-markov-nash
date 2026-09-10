@@ -28,6 +28,13 @@ Two resolution rules are supported:
   the deterministic game (0) to the random game (1); it is the knob that turns
   matching-pennies stage games on.
 
+``slip`` adds a second, orthogonal kind of stochasticity: each player
+independently takes a uniform-random move instead of its chosen one with
+probability ``slip``, on top of whatever ``move_order`` does. Unlike the random
+move order, this noise does not depend on either player's action, so it is a
+test of whether *any* transition randomness creates mixed stage games or only
+the kind coupled to both choices (see ``docs/generalize.md``).
+
 Two reward objectives (``scoring=``):
 
 * ``"win"`` (default) -- the first goal ends the game, reward ``+1 / -1``. The
@@ -101,12 +108,18 @@ class SoccerGame:
     scoring: str = "win"
     #: only for move_order="blend": P(resolve by random order) vs deterministic
     blend: float = 0.5
+    #: action-independent movement noise: each player independently takes a
+    #: uniform-random *move* action instead of its chosen one with this
+    #: probability, applied on top of ``move_order``. 0 disables it.
+    slip: float = 0.0
 
     def __post_init__(self) -> None:
         if self.move_order not in ("deterministic", "random", "coinflip", "blend"):
             raise ValueError(f"unknown move_order {self.move_order!r}")
         if not 0.0 <= self.blend <= 1.0:
             raise ValueError(f"blend must be in [0, 1], got {self.blend}")
+        if not 0.0 <= self.slip < 1.0:
+            raise ValueError(f"slip must be in [0, 1), got {self.slip}")
         if self.n_actions not in (4, 5):
             raise ValueError(f"n_actions must be 4 or 5, got {self.n_actions}")
         if self.scoring not in ("win", "rate"):
@@ -280,7 +293,33 @@ class SoccerGame:
         """All ``(probability, next_state, (r0, r1))`` outcomes of a joint action."""
         if self.is_terminal(state):
             raise ValueError("transitions() called on a terminal state")
+        if self.slip > 0.0:
+            return self._slip_transitions(state, a0, a1)
+        return self._resolve_transitions(state, a0, a1)
 
+    def _slip_transitions(
+        self, state: State, a0: Action, a1: Action
+    ) -> list[Outcome]:
+        """``_resolve_transitions`` with each player's action independently
+        replaced by a uniform-random move with probability ``slip`` -- noise
+        that does not depend on either player's choice."""
+        s, k = self.slip, len(MOVE_ACTIONS)
+
+        def spread(a: Action) -> dict[Action, float]:
+            d = dict.fromkeys(MOVE_ACTIONS, s / k)
+            d[a] = d.get(a, 0.0) + (1.0 - s)
+            return d
+
+        merged: dict[tuple[State, tuple[int, int]], float] = {}
+        for b0, w0 in spread(a0).items():
+            for b1, w1 in spread(a1).items():
+                for prob, ns, reward in self._resolve_transitions(state, b0, b1):
+                    merged[(ns, reward)] = merged.get((ns, reward), 0.0) + w0 * w1 * prob
+        return [(prob, ns, reward) for (ns, reward), prob in merged.items()]
+
+    def _resolve_transitions(
+        self, state: State, a0: Action, a1: Action
+    ) -> list[Outcome]:
         x0, y0, x1, y1, b = state
         p0, p1 = (x0, y0), (x1, y1)
 
@@ -359,10 +398,10 @@ class A10SoccerGame(SoccerGame):
     move_order: str = "deterministic"
 
     def __post_init__(self) -> None:
-        if self.move_order != "deterministic" or self.scoring != "win":
+        if self.move_order != "deterministic" or self.scoring != "win" or self.slip:
             raise ValueError(
                 "A10SoccerGame is the exact assignment environment; use "
-                "SoccerGame(move_order=..., scoring=...) for research variants"
+                "SoccerGame(move_order=..., scoring=..., slip=...) for research variants"
             )
         super().__post_init__()
 
