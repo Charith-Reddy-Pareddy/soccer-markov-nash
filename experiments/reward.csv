@@ -1,5 +1,7 @@
 move_order,scoring,states,mixed,v_min,v_max,v_kickoff
 deterministic,win,2380,0,-1.0000,1.0000,0.0000
 deterministic,rate,2380,0,-1.0000,1.0000,0.0000
+deterministic,territory,2380,69,-1.0000,1.0000,-0.1576
 random,win,2380,94,-1.0000,1.0000,0.1501
 random,rate,2380,94,-0.8810,0.8810,0.1323
+random,territory,2380,112,-1.0000,1.0000,0.0001
