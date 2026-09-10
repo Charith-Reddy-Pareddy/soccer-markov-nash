@@ -43,6 +43,10 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   pure everywhere, goal ≥ 2 cells → a provably saddle-free stage game; the
   per-stage-game certificate, the robustness envelope, and the prior-work
   positioning (`make verify`).
+- [generalize.md](generalize.md) — how far the switch holds: it survives board
+  scale, aspect ratio, and goal placement, but action-independent movement noise
+  (`slip`) breaks it, so the switch is specific to Littman's move-order rule
+  (`make generalize`).
 - [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
 - [proof.md](proof.md) — the single-cell pure-saddle theorem: the defender's
   closed-form optimal strategy, the dominance-solvability certificate

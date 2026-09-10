@@ -349,6 +349,20 @@ now machine-certified in both directions ([result.md](result.md),
 single-cell case. What is *not* settled is a board-size-free theorem for
 arbitrary `W, H` (§ open questions).
 
+*How far the goal-width switch generalizes* (`scripts/generalize.py`,
+[generalize.md](generalize.md)). It survives board scale (checked to `11×5` and
+`9×7`), aspect ratio, and goal placement — non-contiguous goal cells like
+`(1, 3)` or `(0, 2, 4)` still produce mixed stage games, so adjacency does not
+matter, only that the carrier has two cells the defender cannot cover at once.
+It does **not** survive a change of transition family: adding action-independent
+movement noise (`SoccerGame(slip=p)`) produces mixed stage games even under
+deterministic resolution and even with a single goal cell. So the switch is a
+property of Littman's move-order rule, where the unresolved coin only bites
+where the carrier has two lanes; `slip` supplies that coin everywhere. Reading
+the `2×2` cores of the `7×5` mixed states, the carrier's crossing pair is a
+vertical move in 90 of 94 — it is choosing which goal row to head for, and the
+defender is guessing it.
+
 Interpolating the resolution rule (`move_order="blend"`: random order with
 probability `blend`, else deterministic) shows the onset is a **sharp
 threshold**, not a ramp: 0 no-pure-saddle stage games for `blend ≤ 0.5`, dozens
