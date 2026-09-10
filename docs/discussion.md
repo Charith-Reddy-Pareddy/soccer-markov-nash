@@ -133,18 +133,21 @@ game needs a mixed Nash equilibrium, and which do not.**
 | board size | scales the *fraction* only (area dilution, R² 0.64); does not create or remove mixing | phase diagram |
 | discount `γ` | shifts *which* states mix by a few percent (94 at 0.9, 122 at 0.5, 102 at 0.995); the region is otherwise stable | RQ4 |
 | **kickoff position** | **no effect** on the region; only `V(kickoff)` moves | RQ1 |
-| **reward objective** (`win` vs `rate`) | **no effect** -- the identical 94 states; only the value *range* changes | [reward.md](reward.md) |
+| **horizon scoring** (`win` vs `rate`) | **no effect** -- the identical 94 states; only the value *range* changes | [reward.md](reward.md) |
+| **dense per-step reward** (`scoring="territory"`) | **moves it** -- 39 in / 21 out at reward 0.05, and it gives the *deterministic* game 69 mixed stage games (0 under `win`/`rate`) | [reward.md](reward.md) |
 | the `stand` action | barely -- 48 of 56 no-saddle states shared with the 4-action game; changes the *content* of the mix, not its location | [littman.md](littman.md) |
 | the training opponent (learning) | none for an exact solver: minimax-Q's update is opponent-independent, so "trained vs random" and "trained vs self" give the same Nash policy | [tournament.md](tournament.md) |
 
 The pattern: a mixed Nash equilibrium is a property of the **stage game
-`M(s)`**, and only the two parameters that reshape `M(s)`'s *strategic* structure
--- the resolution rule (which couples the payoff to both actions) and the goal
-width (which gives the carrier two threats) -- move the region. Parameters that
-only rescale or shift `M(s)` uniformly (the objective, the kickoff, the
-discount) leave it where it is. This is the concrete form of "mixed NEs do not
-depend on the transition function / the horizon": they depend only on whether
-the *stage game* is a matching-pennies game.
+`M(s)`**. Anything that adds a term to `M(s)` depending on *both* players'
+actions can move the region -- the resolution rule (couples the transition
+outcome to both actions), a dense per-step reward like `territory` (couples the
+immediate reward to both actions), and the goal width (gives the carrier two
+threats to split). Anything that only rescales `M(s)` through the continuation
+value `V(s′)` -- the horizon scoring (`win` ↔ `rate`), the kickoff, the discount
+-- leaves it where it is. This is the precise form of "mixed NEs do not depend
+on the horizon" and its limit: they *do* depend on any reward with action
+coupling.
 
 Occupancy ([occupancy.md](occupancy.md)) adds the practical footnote: the mixed
 states are 4% of the space but 41% of the equilibrium path.
@@ -197,12 +200,16 @@ professor asked for.
    theorem -- the middle quantity is the unique unbiased linear functional of a
    stale strategy pair -- or an artifact of this game's shallow gaps?
 
-4. **How far does reward-invariance go?** The no-pure-saddle set is identical
-   under `win` and `rate` ([reward.md](reward.md)). Is it identical under *every*
-   potential-based shaping (`F = γφ(s') − φ(s)`), which leaves the equilibrium
-   fixed by construction? Under any strictly monotone re-scaling of `V`? A clean
-   statement would be "the mixed region is a function of the stage-game
-   *ordinal* structure, not its cardinal values."
+4. **Reward-invariance -- where is the line?** The no-pure-saddle set is
+   identical under `win` and `rate` (horizon rescaling) and moves under
+   `territory` (a dense per-step reward): 39 in / 21 out, and it gives the
+   *deterministic* game 69 mixed stage games where `win`/`rate` give 0
+   ([reward.md](reward.md)). The conjecture: the region is invariant to any
+   change that only rescales `M(s)` through `V(s′)` -- potential-based shaping
+   (`F = γφ(s') − φ(s)`), any monotone re-scaling of `V` -- and moves under any
+   reward with a term depending on *both* actions. A clean statement would be
+   "the mixed region is a function of the stage games' *ordinal* structure, and
+   only action-coupled terms perturb it."
 
 5. **The one open proof.** For the single goal cell, a board-size-free argument
    that the carrier's closed-form strategy secures `V*` is still missing

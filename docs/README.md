@@ -17,9 +17,10 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
 - [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
   (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
   structure, and the value of mixing (`make mixing`).
-- [reward.md](reward.md) — a second reward objective (`scoring="rate"`: goal
-  reset, expected goal difference); the mixed region is invariant to it
-  (`make reward`).
+- [reward.md](reward.md) — three reward objectives: `win`, `rate` (goal reset),
+  and `territory` (dense final-third reward). `win` ↔ `rate` leave the mixed
+  region identical; `territory` moves it, and gives the deterministic game
+  matching-pennies stage games (`make reward`).
 - [blend.md](blend.md) — sweeping the move-resolution rule from deterministic to
   random; mixing switches on sharply above `blend = 0.5` (`make blend`).
 - [tackle.md](tackle.md) — the project's own `tackle` collision rule (a
