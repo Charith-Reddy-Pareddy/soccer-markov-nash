@@ -72,9 +72,10 @@ def main() -> None:
     FIG.parent.mkdir(parents=True, exist_ok=True)
     FIG.write_text(panel_svg([
         occupancy_map_svg(game, dist, mixed, ball=0,
-                          title="player 0 carrying"),
+                          title="player 0 carrying", caption=None),
         occupancy_map_svg(game, dist, mixed, ball=1,
-                          title="player 1 carrying"),
+                          title="player 1 carrying — amber dot = a mixed state",
+                          caption=None),
     ], cols=2))
     print(f"wrote {FIG}")
 

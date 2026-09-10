@@ -74,7 +74,7 @@ def fingerprints() -> list[str]:
         s, r = _solve(g)
         panels.append(mixing_map_svg(
             g, lambda st, s=s, r=r: s._matrix(st, r.values),
-            defender_cell=(4, 1), defender=1, title=label,
+            defender_cell=(4, 1), defender=1, title=label, caption=None,
         ))
     return panels
 
