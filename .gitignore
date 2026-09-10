@@ -25,3 +25,6 @@ env/
 results/
 *.npz
 *.pkl
+
+# figure rasterizer scratch
+.png-wrap/

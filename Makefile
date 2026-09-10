@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -14,6 +14,7 @@ help:
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
+	@echo "make png          - rasterize every docs/figures/*.svg to docs/figures/png/ (for slides)"
 	@echo "make gallery      - redraw the visualization gallery (docs/gallery.html)"
 	@echo "make littman      - reproduce Littman 1994 Figure 2 (the stand action)"
 	@echo "make mixing       - how mixed the mixed states are, and the value of mixing"
@@ -69,6 +70,9 @@ dqn:
 figures:
 	$(PY) scripts/render.py -o docs/figures/kickoff.svg
 	$(PY) scripts/render.py --trajectory -o docs/figures/trajectory.svg
+
+png:
+	$(PY) scripts/figures_png.py
 
 gallery:
 	$(PY) scripts/gallery.py
