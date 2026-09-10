@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 450 250" role="img" aria-label="line chart">
+<text x="44" y="-4" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The tackle duel forces mixing at any goal width</text>
+<line x1="44" y1="18" x2="44" y2="188" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
+<line x1="44" y1="188" x2="344" y2="188" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1"/>
+<line x1="44" y1="188.0" x2="344" y2="188.0" stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>
+<text x="38" y="191.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0</text>
+<line x1="44" y1="103.0" x2="344" y2="103.0" stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>
+<text x="38" y="106.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">7</text>
+<line x1="44" y1="18.0" x2="344" y2="18.0" stroke="var(--rule, #cdd8ce)" stroke-width="0.6"/>
+<text x="38" y="21.0" text-anchor="end" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">14</text>
+<text x="44.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.0</text>
+<text x="194.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.5</text>
+<text x="344.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.9</text>
+<path d="M44.0 188.0 L77.3 123.9 L127.3 123.9 L210.7 98.2 L294.0 104.6 L344.0 85.4" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="77.3" cy="123.9" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="127.3" cy="123.9" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="210.7" cy="98.2" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="294.0" cy="104.6" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<circle cx="344.0" cy="85.4" r="2.4" fill="var(--p0, #2f6bb0)"/>
+<text x="348.0" y="88.4" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">2-cell goal</text>
+<path d="M44.0 188.0 L77.3 98.2 L127.3 95.0 L210.7 56.5 L294.0 34.1 L344.0 18.0" fill="none" stroke="var(--ember, #a94e18)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="77.3" cy="98.2" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="127.3" cy="95.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="210.7" cy="56.5" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="294.0" cy="34.1" r="2.4" fill="var(--ember, #a94e18)"/>
+<circle cx="344.0" cy="18.0" r="2.4" fill="var(--ember, #a94e18)"/>
+<text x="348.0" y="21.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--ember, #a94e18)">1-cell goal</text>
+<text x="194" y="214" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">tackle_prob</text>
+<text x="12" y="103" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)" transform="rotate(-90 12 103)">% stage games mixed</text>
+</svg>

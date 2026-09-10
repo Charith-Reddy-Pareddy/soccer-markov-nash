@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize positional a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -26,6 +26,7 @@ help:
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
 	@echo "make verify       - goal-width mixed-equilibrium certificate + robustness (~90 s)"
 	@echo "make generalize   - how far the goal-width switch holds: scale, goal shape, slip (~9 min)"
+	@echo "make tackle       - the project's own 'tackle' collision rule + rule-fingerprint panel"
 	@echo "make positional   - the deterministic game's pure memoryless equilibrium"
 
 lint:
@@ -105,6 +106,9 @@ verify:
 
 generalize:
 	$(PY) scripts/generalize.py
+
+tackle:
+	$(PY) scripts/tackle.py
 
 positional:
 	$(PY) scripts/positional.py

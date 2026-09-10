@@ -354,14 +354,22 @@ arbitrary `W, H` (§ open questions).
 `9×7`), aspect ratio, and goal placement — non-contiguous goal cells like
 `(1, 3)` or `(0, 2, 4)` still produce mixed stage games, so adjacency does not
 matter, only that the carrier has two cells the defender cannot cover at once.
-It does **not** survive a change of transition family: adding action-independent
+It does **not** survive a change of transition family. Adding action-independent
 movement noise (`SoccerGame(slip=p)`) produces mixed stage games even under
-deterministic resolution and even with a single goal cell. So the switch is a
-property of Littman's move-order rule, where the unresolved coin only bites
-where the carrier has two lanes; `slip` supplies that coin everywhere. Reading
-the `2×2` cores of the `7×5` mixed states, the carrier's crossing pair is a
-vertical move in 90 of 94 — it is choosing which goal row to head for, and the
-defender is guessing it.
+deterministic resolution and even with a single goal cell, and so does this
+project's own `tackle` rule — the defender commits to a challenge that wins the
+ball with probability `tackle_prob` or bounces off ([tackle.md](tackle.md)). So
+the switch is a property of Littman's move-order rule, where the unresolved coin
+only bites where the carrier has two lanes; `slip` and `tackle` supply that coin
+everywhere. Reading the `2×2` cores of the `7×5` mixed states, the carrier's
+crossing pair is a vertical move in 90 of 94 — it is choosing which goal row to
+head for, and the defender is guessing it.
+
+![Six small boards, one per collision rule (deterministic, coinflip, random,
+blend, slip, tackle), the defender pinned at the goal mouth and every carrier
+cell shaded by how far its stage game is from a pure saddle. Deterministic and
+coinflip are blank; random and blend light a thin band by the goal; slip and
+tackle light a broad region around the defender.](figures/gallery/rule_fingerprints.svg)
 
 Interpolating the resolution rule (`move_order="blend"`: random order with
 probability `blend`, else deterministic) shows the onset is a **sharp

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -14 240 144" role="img" aria-label="best-reply matrix">
+<text x="40" y="-4" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Dive in or contain: the tackle guess</text>
+<text x="67" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">defender 0</text>
+<text x="121" y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">defender 2</text>
+<text x="34" y="46" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">carrier 1</text>
+<text x="34" y="80" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">carrier 0</text>
+<rect x="40" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-0.03</text>
+<rect x="41" y="27" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<rect x="94" y="26" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="47" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-0.05</text>
+<rect x="95" y="27" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<rect x="40" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="67" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-0.03</text>
+<rect x="41" y="61" width="52" height="4" fill="var(--p1, #2f8a52)"/>
+<rect x="94" y="60" width="54" height="34" fill="var(--tint, #eef2ec)" stroke="var(--rule, #cdd8ce)"/>
+<text x="121" y="81" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink, #19211c)">-0.02</text>
+<rect x="95" y="61" width="4" height="32" fill="var(--p0, #2f6bb0)"/>
+<text x="40" y="110" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">best replies cycle -> must mix</text>
+</svg>
