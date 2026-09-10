@@ -27,6 +27,14 @@ Two resolution rules are supported:
   random order, otherwise deterministically. ``blend`` sweeps continuously from
   the deterministic game (0) to the random game (1); it is the knob that turns
   matching-pennies stage games on.
+* ``move_order="tackle"`` -- a collision rule of this project's own design (not
+  Littman's). The defender *commits to a challenge* by moving onto the carrier's
+  cell; the challenge is then a duel that wins the ball with probability
+  ``tackle_prob`` (the carrier is shoved back a cell) and otherwise fails (the
+  defender is bounced back, the carrier keeps the ball but is held up unless it
+  was already running clear). Everything else resolves deterministically. The
+  "dive in or contain" decision is a genuine gamble, so this rule has its own
+  mixed-strategy region -- see ``docs/tackle.md``.
 
 ``slip`` adds a second, orthogonal kind of stochasticity: each player
 independently takes a uniform-random move instead of its chosen one with
@@ -108,16 +116,22 @@ class SoccerGame:
     scoring: str = "win"
     #: only for move_order="blend": P(resolve by random order) vs deterministic
     blend: float = 0.5
+    #: only for move_order="tackle": P(a committed challenge wins the ball)
+    tackle_prob: float = 0.5
     #: action-independent movement noise: each player independently takes a
     #: uniform-random *move* action instead of its chosen one with this
     #: probability, applied on top of ``move_order``. 0 disables it.
     slip: float = 0.0
 
     def __post_init__(self) -> None:
-        if self.move_order not in ("deterministic", "random", "coinflip", "blend"):
+        if self.move_order not in (
+            "deterministic", "random", "coinflip", "blend", "tackle"
+        ):
             raise ValueError(f"unknown move_order {self.move_order!r}")
         if not 0.0 <= self.blend <= 1.0:
             raise ValueError(f"blend must be in [0, 1], got {self.blend}")
+        if not 0.0 <= self.tackle_prob <= 1.0:
+            raise ValueError(f"tackle_prob must be in [0, 1], got {self.tackle_prob}")
         if not 0.0 <= self.slip < 1.0:
             raise ValueError(f"slip must be in [0, 1), got {self.slip}")
         if self.n_actions not in (4, 5):
@@ -257,6 +271,57 @@ class SoccerGame:
     ) -> tuple[State, tuple[int, int], bool]:
         return self._resolve_with_winner(p0, p1, a0, a1, b, winner=b)
 
+    def _resolve_tackle(
+        self,
+        p0: tuple[int, int],
+        p1: tuple[int, int],
+        a0: Action,
+        a1: Action,
+        b: int,
+    ) -> list[tuple[float, tuple[State, tuple[int, int], bool]]]:
+        """This project's own collision rule (see the module docstring).
+
+        A *challenge* is the defender moving onto the carrier's current cell.
+        With no challenge the turn resolves deterministically. A challenge is a
+        duel: it wins the ball with probability ``tackle_prob`` (carrier shoved
+        one cell along the defender's approach, defender takes the vacated cell)
+        and otherwise fails (defender bounced back to its own cell; the carrier
+        keeps the ball and completes its move only if it was running clear).
+        """
+        carrier, defender = (0, 1) if b == 0 else (1, 0)
+        pos = {0: p0, 1: p1}
+        acts = {0: a0, 1: a1}
+
+        d_to, _ = self._target(defender, pos[defender], acts[defender], has_ball=False)
+        if d_to != pos[carrier]:  # not a challenge
+            return [(1.0, self._resolve_deterministic(p0, p1, a0, a1, b))]
+
+        c_from = pos[carrier]
+        c_to, scored = self._target(carrier, c_from, acts[carrier], has_ball=True)
+        if scored:  # the carrier scores before the challenge lands
+            return [(1.0, self._score_result(carrier))]
+
+        ddx, ddy = _DELTA[acts[defender]]
+        shoved = (
+            _clamp(c_from[0] + ddx, 0, self.width - 1),
+            _clamp(c_from[1] + ddy, 0, self.height - 1),
+        )
+        won = dict(pos)
+        won[defender] = c_from if shoved != c_from else pos[defender]
+        won[carrier] = shoved
+        win_state = (won[0][0], won[0][1], won[1][0], won[1][1], defender)
+
+        lost = dict(pos)
+        if c_to not in (c_from, pos[defender]):  # carrier was already running clear
+            lost[carrier] = c_to
+        lost_state = (lost[0][0], lost[0][1], lost[1][0], lost[1][1], b)
+
+        q = self.tackle_prob
+        return [
+            (q, (win_state, (0, 0), False)),
+            (1.0 - q, (lost_state, (0, 0), False)),
+        ]
+
     def _resolve_sequential(
         self,
         p0: tuple[int, int],
@@ -337,6 +402,8 @@ class SoccerGame:
                 (0.5, self._resolve_with_winner(p0, p1, a0, a1, b, winner))
                 for winner in (0, 1)
             ]
+        elif self.move_order == "tackle":
+            weighted = self._resolve_tackle(p0, p1, a0, a1, b)
         else:  # blend: mix deterministic resolution with random move order
             weighted = [
                 (1.0 - self.blend, self._resolve_deterministic(p0, p1, a0, a1, b)),
