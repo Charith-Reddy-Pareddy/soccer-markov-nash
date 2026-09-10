@@ -21,7 +21,8 @@ space, not the definition of it.
 | `slip` | 0.0 | each player takes a random move with this probability, on top of `move_order` | action-independent noise; creates mixing at any goal width, so the goal-width switch is move-order specific ([generalize.md](generalize.md)) |
 | `tackle_prob` | 0.5 | for `move_order="tackle"`: P(a committed challenge wins the ball) | this project's own collision rule; "dive in or contain" is a gamble ([tackle.md](tackle.md)) |
 | `n_actions` | 4 | `{N,S,E,W}` or `+ stand` | Littman's fifth action; changes the *content* of a mix, not its location ([littman.md](littman.md)) |
-| `scoring` | `win` | first goal ends it, or goal → reset and play on | the reward objective; the mixed region is invariant to it ([reward.md](reward.md)) |
+| `scoring` | `win` | `win` / `rate` (goal → reset) / `territory` (+ dense per-step reward) | the reward objective; invariant under `win` ↔ `rate`, moves under `territory` ([reward.md](reward.md)) |
+| `territory_reward` | 0.02 | for `scoring="territory"`: per-step reward for the ball in the attacking final third | a dense reward that couples to both actions; it moves the mixed region ([reward.md](reward.md)) |
 | `p0_start`, `p1_start` | centre row, opposite ends | kickoff | the pure/mixed split is kickoff-independent; only `V(kickoff)` moves |
 | `max_steps` | 100 | horizon before a tie | with the tie reward, this is the effective discount of the undiscounted game |
 
@@ -40,7 +41,13 @@ Zero-sum and sparse. A carrier crossing its attacking edge on a goal row scores;
   restart (conceding team gets the ball at the centre). The value is the
   *expected discounted goal difference*, `γ < 1` is load-bearing, and conceding
   becomes a floor rather than a cliff. The no-pure-saddle region is **identical**
-  to `win`'s; the value range compresses. Full comparison in [reward.md](reward.md).
+  to `win`'s; the value range compresses.
+- **`scoring="territory"`** -- `win` plus a dense per-step reward
+  (`± territory_reward`) for holding the ball in the opponent's final third. A
+  real objective, not shaping. Unlike `rate`, it **moves the mixed region** --
+  the per-step term is added directly to `M(s)` and depends on both players'
+  actions -- and it gives the *deterministic* game matching-pennies stage games.
+  Full comparison in [reward.md](reward.md).
 
 **Optional shaping** (`soccer_nash/shaping.py`) is a *training* device, kept
 separate from the game's reward:
@@ -51,7 +58,8 @@ separate from the game's reward:
   seeding the ~1000 zero-value states.
 - `StepPossessionBonus` -- a small per-step reward for holding the ball. **Not**
   potential-based: it changes the solution (`V(kickoff): 0 → +0.5`). Included as
-  a cautionary example, not used in the main results.
+  a cautionary example, not used in the main results. `scoring="territory"` is
+  the same idea promoted to a real objective and studied properly ([reward.md](reward.md)).
 
 ## Transition rules
 
@@ -128,8 +136,9 @@ resolution included ([generalize.md](generalize.md)).
 
 ## What is a result vs. a choice
 
-- **Choices:** the reward objective (`win` / `rate`) and its restart rule, the
-  three resolution rules, the collision sub-cases, the board and goal defaults.
+- **Choices:** the reward objective (`win` / `rate` / `territory`) and its
+  restart rule, the resolution rules, the collision sub-cases, the board and
+  goal defaults.
 - **Results, robust across the choices:** a deterministic transition model has a
   pure memoryless equilibrium at every state (also with `STAND`, also under
   `rate`); the no-pure-saddle region is identical under `win` and `rate`; mixing

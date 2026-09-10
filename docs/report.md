@@ -41,7 +41,8 @@ necessary. `docs/littman.md` reproduces his Figure 2 and his Table 3.
    are localized to states combining a *stochastic move order*, a *multi-cell
    goal mouth*, and a *defender with insufficient one-step coverage*, and most
    such states reduce to matching-pennies-like 2×2 supports. The region is
-   invariant to the kickoff and to the reward objective
+   invariant to the kickoff and to how the horizon is scored (`win` vs `rate`),
+   but not to a dense per-step reward that couples to both actions
    ([discussion.md](discussion.md) §5); it carries 41% of the equilibrium-path
    occupancy despite being 4% of the state space ([occupancy.md](occupancy.md)).
    This is an empirical characterization over the tested parameter grid, not a
@@ -65,6 +66,7 @@ interchangeable, so:
 | A10 Part 1 / exact | **undiscounted, finite 100-step horizon** — `run_finite_horizon`, non-stationary `V` |
 | stationary Nash-Q | **discounted infinite-horizon fixed point**, `γ < 1` (`run()`); a contraction proxy for the above |
 | `scoring="rate"` variant | **continuing discounted** objective — a goal resets, value = expected discounted goal difference ([reward.md](reward.md)) |
+| `scoring="territory"` variant | `win` **plus a dense per-step reward** for the ball in the opponent's final third — the reward-side analogue of a stochastic transition ([reward.md](reward.md)) |
 | Littman replication | Littman's **discount / draw** interpretation, `γ = 0.9` ≡ a 0.1 per-step draw probability |
 
 Unless a section says otherwise, results are the stationary discounted fixed
@@ -400,27 +402,40 @@ states. It compounds along a path: at the centred kickoff a pure-strategy player
 secures only a draw where mixing is worth `+0.15` (`scripts/mixing.py`,
 [mixing.md](mixing.md)).
 
-#### The reward objective does not move the mixed region
+#### Which reward objectives move the mixed region
 
-The default game rewards a *win* (first goal ends it). A second objective,
-`scoring="rate"` (`scripts/reward.py`, `make reward`), keeps playing: a goal
-scores `±1` and restarts with the ball to the conceding team, so the value is
-the expected discounted *goal difference*.
+Three objectives on the same dynamics (`scripts/reward.py`, `make reward`,
+[reward.md](reward.md)): `win` (first goal ends it), `rate` (goal scores `±1`
+and play continues from a restart, value = expected discounted goal
+difference), and `territory` (this project's own -- `win` plus a dense per-step
+reward for holding the ball in the opponent's final third). 7×5, 3-cell goal,
+random order, `γ = 0.9`:
 
-| objective | no-saddle states | value range | V(kickoff) |
-|---|---|---|---|
-| win -- `P(win) − P(loss)` | 94 | `[−1.00, +1.00]` | +0.150 |
-| rate -- expected goal difference | 94 (**the same 94**) | `[−0.88, +0.88]` | +0.132 |
+| objective | no-saddle states | shared with `win` | value range | V(kickoff) |
+|---|---|---|---|---|
+| `win` | 94 | -- | `[−1.00, +1.00]` | +0.150 |
+| `rate` | 94 | **94 (0 in, 0 out)** | `[−0.88, +0.88]` | +0.132 |
+| `territory` (0.05) | 112 | 73 (39 in, 21 out) | `[−1.00, +1.00]` | +0.000 |
 
-The no-pure-saddle set is **identical** -- 0 states enter or leave. A mixed NE
-is an equilibrium of one stage game `M(s)`; changing how the horizon is scored
-rescales `M(s)` through `V(s′)` but does not cross the `maximin = minimax`
-boundary. The value *range* compresses because under `rate` a lost position is
-not a cliff: conceding restarts play with possession. Details:
-[reward.md](reward.md).
+**`win` and `rate` give the identical region.** A mixed NE is an equilibrium of
+one stage game `M(s)`; changing how the *horizon* is scored rescales `M(s)`
+through `V(s′)` but does not cross the `maximin = minimax` boundary. The value
+*range* compresses under `rate` because conceding restarts play with possession.
 
-![Two value heatmaps, win vs rate objective: same gradient, extremes pulled
-toward the kickoff value.](figures/png/reward_value.png)
+**`territory` moves it** -- the per-step reward is added *directly* to
+`M(s)[a0, a1]`, and it depends on where the ball ends up, i.e. on *both*
+players' actions. That action-coupled term crosses the boundary: 39 states
+enter, 21 leave at `territory_reward = 0.05`, and the drift grows with the
+reward. Sharper still, `territory` gives the **deterministic** game 69 genuinely
+mixed stage games where `win` and `rate` give 0 -- coupling the immediate reward
+to both actions does what Littman's move order does by coupling the transition.
+`slip` / `tackle` are the transition-side versions of the same effect
+([generalize.md](generalize.md), [tackle.md](tackle.md)); `territory` is the
+reward-side one.
+
+![Three value heatmaps, win / rate / territory. Win and rate have the same
+gradient with the rate extremes pulled toward the kickoff value; territory's
+surface is warped upward across the attacking third.](figures/png/reward_value.png)
 
 #### Littman's fifth action
 
@@ -621,9 +636,12 @@ ones that matter most:
   claimed and is a question for the professor / a literature pass.
 - **The `blend` threshold.** Is `p_c ≈ 0.5` structural, and is the overshoot a
   phase transition? ([blend.md](blend.md), [discussion.md](discussion.md) §7)
-- **How far does reward-invariance go?** The mixed region is identical under
-  `win` and `rate`; is it identical under any potential shaping, or any monotone
-  rescaling of `V`? ([discussion.md](discussion.md) §7)
+- **Reward-invariance, precisely.** The mixed region is identical under `win`
+  and `rate` (horizon rescaling) but moves under `territory` (a dense per-step
+  reward). The conjecture: it is invariant to any change that only rescales
+  `M(s)` through `V(s′)` — potential-based shaping, monotone rescaling of `V` —
+  and moves under any reward with a term depending on both actions
+  ([reward.md](reward.md), [discussion.md](discussion.md) §7).
 - **Move order vs. randomness** — answered for this family (§ RQ1, RQ3): the
   tie-break coin does not create mixing here; the move order does.
 - **Freeze-then-iterate thrashing** — answered (§ RQ2): concurrent stochastic
