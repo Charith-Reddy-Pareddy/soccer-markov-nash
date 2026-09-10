@@ -407,7 +407,7 @@
   <section>
     <p class="kicker">Results</p>
     <figure>
-      <img src="figures/gallery/story.svg" alt="Summary diagram: goal width branches to pure-only versus candidate mixed states; a stochastic move order plus a defender that cannot cover both lanes produces crossing best replies, a 2x2 matching-pennies stage game, and a mixed equilibrium where the LP is needed. Beside it, the pure / hybrid / mixed triangle and the result that deterministic gives pure = hybrid = mixed while random order gives pure below hybrid = mixed; and 3.95 percent of states carry 41 percent of the equilibrium path." style="max-width:680px; margin:0 auto;">
+      <img src="figures/png/story.png" alt="Summary diagram: goal width branches to pure-only versus candidate mixed states; a stochastic move order plus a defender that cannot cover both lanes produces crossing best replies, a 2x2 matching-pennies stage game, and a mixed equilibrium where the LP is needed. Beside it, the pure / hybrid / mixed triangle and the result that deterministic gives pure = hybrid = mixed while random order gives pure below hybrid = mixed; and 3.95 percent of states carry 41 percent of the equilibrium path." style="max-width:680px; margin:0 auto;">
       <figcaption class="fig-cap"><b>The whole story.</b> Left: the mechanism chain &mdash; goal width, then stochastic move order and interception geometry, produce crossing best replies and a matching-pennies stage game where the LP is needed. Right: the three backups, the experimental result, and the occupancy headline.</figcaption>
     </figure>
   </section>
@@ -428,7 +428,7 @@
     </div>
     <p>The deterministic equilibrium is <b>constructive and memoryless</b>: each player's win attractor (states from which it forces a goal, <span class="mono">soccer_nash/attractor.py</span>) equals its <span class="mono">V* = &plusmn;1</span> set, and the pure profile "attractor move on your winning set, safety move elsewhere" realizes <span class="mono">V*</span> at every state (<span class="mono">scripts/positional.py</span>) &mdash; the game is positionally determined.</p>
     <figure>
-      <img src="figures/gallery/value_landscape.svg" alt="Two 7 by 5 heatmaps of the game value. Left: player 0 carrying, swept over the board with player 1 at its goal mouth, values rising toward the attacking edge. Right: player 1's position swept, values near constant." style="max-width:640px; margin:0 auto;">
+      <img src="figures/png/value_landscape.png" alt="Two 7 by 5 heatmaps of the game value. Left: player 0 carrying, swept over the board with player 1 at its goal mouth, values rising toward the attacking edge. Right: player 1's position swept, values near constant." style="max-width:640px; margin:0 auto;">
       <figcaption class="fig-cap"><b>The value surface</b> of the random-order game (&gamma; = 0.9). Left: <span class="mono">V*</span> by carrier position &mdash; a smooth gradient toward the attacking goal, saturating to <span class="mono">+1</span> on the two cells that score in one move. Right: <span class="mono">V*</span> by defender position with the carrier held near midfield &mdash; nearly flat, the defender's location barely moves the value.</figcaption>
     </figure>
     <p>The stationary <span class="mono">&gamma; &lt; 1</span> solve agrees and is faster &mdash; 0 no-pure-saddle stage games on the deterministic game at every <span class="mono">&gamma;</span> from 0.5 to 0.995, and <b>94 / 2380</b> on the random game at <span class="mono">&gamma; = 0.9</span> (<span class="mono">V(kickoff) = +0.164</span> at the netID start). The no-pure-saddle count never depends on the kickoff.</p>
@@ -438,11 +438,11 @@
       <p><em>Scope of this claim:</em> in this particular soccer family, this one coin-flip collision variant does not create new mixed stage games, whereas random move ordering does &mdash; and only when it is the majority rule in the <span class="mono">P = (1&minus;p)P_det + p&thinsp;P_random</span> interpolation. This is <em>not</em> a statement about all action-independent stochastic transitions, which can certainly alter equilibrium structure in other games. Whether <span class="mono">p_c &asymp; 0.5</span> is structural is open.</p>
     </div>
     <figure>
-      <img src="figures/gallery/blend.svg" alt="Line chart: no-pure-saddle state count versus the blend parameter. Flat at zero until blend 0.5, then a sharp jump to a peak and a decline toward the fully-random value." style="max-width:440px; margin:0 auto;">
+      <img src="figures/png/blend.png" alt="Line chart: no-pure-saddle state count versus the blend parameter. Flat at zero until blend 0.5, then a sharp jump to a peak and a decline toward the fully-random value." style="max-width:440px; margin:0 auto;">
       <figcaption class="fig-cap"><b>A threshold, not a ramp.</b> No-pure-saddle stage games vs. the fraction of moves resolved by random order (5&times;4 board). Nothing until the random rule is the majority; then a jump and an overshoot.</figcaption>
     </figure>
     <figure>
-      <img src="figures/gallery/resolution_contrast.svg" alt="The same board state drawn twice. Under random move order both players' equilibrium strategies fan into two arrows (mixed). Under deterministic carrier-wins resolution each player has a single arrow (pure)." style="max-width:620px; margin:0 auto;">
+      <img src="figures/png/resolution_contrast.png" alt="The same board state drawn twice. Under random move order both players' equilibrium strategies fan into two arrows (mixed). Under deterministic carrier-wins resolution each player has a single arrow (pure)." style="max-width:620px; margin:0 auto;">
       <figcaption class="fig-cap"><b>One state, two resolution rules.</b> Arrows are the equilibrium action distribution, sized by probability. Random order (Littman) makes the stage game matching pennies; deterministic carrier-wins collapses it to a pure best reply. Full set: <span class="mono">docs/gallery.html</span>.</figcaption>
     </figure>
   </section>
@@ -480,7 +480,7 @@
     </div>
     <p>5&times; fewer LP solves &mdash; but the frozen strategies' distance to the current Nash stays <em>maximal</em> (a full pure-strategy flip) for <b>16 outer rounds</b>, then collapses to <span class="mono">&lt; 1e&minus;8</span>. The thrashing eats the saving; on the deterministic game it is strictly worse. Value iteration with the per-sweep Nash cache wins here.</p>
     <figure>
-      <img src="figures/gallery/convergence.svg" alt="Line chart: value iteration's Bellman residual climbs steadily to nine digits of accuracy over about 100 sweeps." style="max-width:420px; margin:0 auto;">
+      <img src="figures/png/convergence.png" alt="Line chart: value iteration's Bellman residual climbs steadily to nine digits of accuracy over about 100 sweeps." style="max-width:420px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Value iteration converges cleanly.</b> The Bellman residual decays geometrically at rate &asymp; &gamma; &mdash; 108 sweeps to <span class="mono">1e&minus;9</span>. Freeze-then-iterate, by contrast, makes <em>no</em> progress until the frozen stage saddle flips (next figure) &mdash; concurrent stochastic games have no monotone policy improvement (<span class="mono">docs/discussion.md</span> &sect;4).</figcaption>
     </figure>
     <div class="note">
@@ -488,7 +488,7 @@
       <p>The professor's specific question: the frozen <span class="mono">(p, q)</span> don't match the current <span class="mono">Q</span>, so does the evaluation sweep back up <span class="mono">p&#7488;Mq</span>, <span class="mono">min&#8342;(pM)&#8342;</span>, or <span class="mono">max&#7522;(Mq)&#7522;</span>? All three reach the <em>same</em> fixed point (zero-sum equilibria are interchangeable), but <b><span class="mono">p&#7488;Mq</span> converges in half the rounds</b> (21 vs 41&ndash;42) &mdash; it is the unbiased estimate while the strategies are stale, where the two bounds are systematically pessimistic / optimistic and stretch the thrash phase from 16 rounds to 28 (<span class="mono">run_policy_iteration(eval_value=...)</span>, <span class="mono">docs/numerics.md</span> &sect;3).</p>
     </div>
     <figure>
-      <img src="figures/gallery/eval_value.svg" alt="Line chart of frozen-strategy staleness per outer round for the three backup choices; p-transpose-M-q settles to zero by round 16, the two bounds keep spiking until round 28." style="max-width:440px; margin:0 auto;">
+      <img src="figures/png/eval_value.png" alt="Line chart of frozen-strategy staleness per outer round for the three backup choices; p-transpose-M-q settles to zero by round 16, the two bounds keep spiking until round 28." style="max-width:440px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Back up <span class="mono">p&#7488;Mq</span>.</b> Staleness of the frozen strategies per outer round. The middle quantity settles by round&nbsp;16; the pessimistic <span class="mono">min&#8342;(pM)&#8342;</span> and optimistic <span class="mono">max&#7522;(Mq)&#7522;</span> keep flipping until round&nbsp;28.</figcaption>
     </figure>
   </section>
@@ -497,11 +497,11 @@
     <h2>RQ3 &mdash; what characterizes the mixed states</h2>
     <p><b>Across the tested family, a one-cell goal produced no mixed stage games while every tested goal width &ge; 2 produced some.</b> The phase diagram sweeps <b>127 configurations</b> &mdash; boards with <span class="mono">3 &le; width &le; 11</span>, <span class="mono">3 &le; height &le; 9</span>, <span class="mono">width&middot;height &le; 45</span>, against goal widths <span class="mono">1</span> to <span class="mono">height&minus;2</span> (<span class="mono">scripts/phase_diagram.py --analyze</span>). Precisely: a multi-cell goal is <em>necessary</em> for the mixed region in the studied family, and across the tested boards <em>sufficient</em> for at least one mixed state &mdash; not a proof that every such board must have one, nor that every state is mixed.</p>
     <figure>
-      <img src="figures/phase_diagram.svg" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns) over 127 configurations (3<=W<=11, 3<=H<=9, W*H<=45). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:300px; margin:0 auto;">
+      <img src="figures/png/phase_diagram.png" alt="Heatmap of mixed-state percentage by board size (rows) and goal-mouth width (columns) over 127 configurations (3<=W<=11, 3<=H<=9, W*H<=45). The goal-width-1 column is 0 for every board; every wider goal has 3 to 12 percent." style="max-width:300px; margin:0 auto;">
       <figcaption class="fig-cap"><b>The gate (127 configs, <span class="mono">3&le;W&le;11</span>, <span class="mono">3&le;H&le;9</span>, <span class="mono">W&middot;H&le;45</span>).</b> Goal width 1 &rarr; <b>0</b> mixed stage games on all 40 tested one-cell configs. Goal width &ge; 2 &rarr; at least one on all 87 tested wider-goal configs. The <em>fraction</em> (2.7&ndash;12%) is an OLS R&sup2; 0.64 in board area &mdash; a dilution effect &mdash; goal width adding little with a negative coefficient.</figcaption>
     </figure>
     <figure>
-      <img src="figures/gallery/mixing_maps.svg" alt="Three 7 by 5 boards. In each the defender is pinned at one cell and every carrier cell is shaded by how far its stage game is from having a pure saddle; only a few cells next to the defender are shaded." style="max-width:660px; margin:0 auto;">
+      <img src="figures/png/mixing_maps.png" alt="Three 7 by 5 boards. In each the defender is pinned at one cell and every carrier cell is shaded by how far its stage game is from having a pure saddle; only a few cells next to the defender are shaded." style="max-width:660px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Where the carrier has to guess.</b> Defender pinned at the green disc; each cell shaded by <span class="mono">minimax &minus; maximin</span> of the carrier's stage game (0 = pure saddle). Mixing is a local phenomenon &mdash; a handful of cells where the defender contests the forward lane.</figcaption>
     </figure>
     <p>Geometry predicts the label (<span class="mono">scripts/geometry_model.py</span>): a depth-4 decision tree on carrier-frame features separates <span class="mono">mixed</span> from the rest with <b>precision 0.96, recall 0.91</b>. The dominant feature is <span class="mono">defender_can_intercept</span> &mdash; the defender within one move of the carrier's forward cell (<span class="mono">P(mixed) = 0.44</span> vs <span class="mono">0.002</span>).</p>
@@ -523,7 +523,7 @@
     </div>
     <p>The <b>four 2&times;2-support templates are all verified matching pennies</b> &mdash; the carrier's best reply flips between the two defender columns and vice versa &mdash; covering <b>68 of 94</b> states: carrier {climb, advance} against defender {cover a lane, hold the forward cell}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
     <figure>
-      <img src="figures/gallery/templates.svg" alt="Four boards, one per matching-pennies template, each showing the carrier and defender with two fanned arrows and their equilibrium probabilities." style="max-width:560px; margin:0 auto;">
+      <img src="figures/png/templates.png" alt="Four boards, one per matching-pennies template, each showing the carrier and defender with two fanned arrows and their equilibrium probabilities." style="max-width:560px; margin:0 auto;">
       <figcaption class="fig-cap"><b>One policy fan per matching-pennies template.</b> Each covers a class of mixed states related by carrier-frame geometry; <span class="mono">p*</span>, <span class="mono">q*</span> are the equilibrium weights on the first support action. The carrier randomizes between two scoring lanes, the defender between covering them.</figcaption>
     </figure>
     <p><b>The mechanism</b> (machine-certified per config; interpretable, not a general theorem): a stage game requires mixing when a <b>stochastic (&frac12;&ndash;&frac12;) resolution order</b> meets a <b>multi-cell goal</b> and a <b>defender that can contest the forward cell but not cover both lanes</b>. Then the carrier's "which lane" reply flips with the defender's cover and vice versa &mdash; <em>crossing best replies</em>, hence no pure saddle:</p>
@@ -536,14 +536,14 @@
     </div>
 
     <figure>
-      <img src="figures/gallery/mechanism.svg" alt="A mixed stage game's 2 by 2 matching-pennies core drawn as a payoff matrix; each player's best reply flips with the other's choice, the best replies cycle, and no cell is a pure saddle." style="max-width:340px; margin:0 auto;">
+      <img src="figures/png/mechanism.png" alt="A mixed stage game's 2 by 2 matching-pennies core drawn as a payoff matrix; each player's best reply flips with the other's choice, the best replies cycle, and no cell is a pure saddle." style="max-width:340px; margin:0 auto;">
       <figcaption class="fig-cap"><b>The 2&times;2 matching-pennies core of a mixed stage game.</b> Blue bar = player 0's best row per column; green bar = player 1's best column per row. They never coincide &mdash; the best replies cycle, so mixing is forced. Every tested mixed stage game contains one.</figcaption>
     </figure>
 
     <p><b>How far the goal-width switch generalizes</b> (<span class="mono">scripts/generalize.py</span>, <span class="mono">docs/generalize.md</span>). It survives board scale (checked to <span class="mono">11&times;5</span> and <span class="mono">9&times;7</span>), aspect ratio, and goal placement: non-contiguous goal cells like <span class="mono">(1, 3)</span> or <span class="mono">(0, 2, 4)</span> still produce mixed stage games, so adjacency does not matter, only that the carrier has two cells the defender cannot cover at once. It does <em>not</em> survive a change of transition family. Adding action-independent movement noise (<span class="mono">SoccerGame(slip=p)</span>: each player takes a random move with probability <span class="mono">p</span>) produces mixed stage games even under deterministic resolution and even with a single goal cell &mdash; a <span class="mono">5&times;5</span> one-cell board goes from 0 mixed to 62 at <span class="mono">slip = 0.1</span>. The same is true of this project's own <span class="mono">tackle</span> rule &mdash; the defender commits to a challenge that wins the ball with probability <span class="mono">tackle_prob</span> or bounces off (<span class="mono">docs/tackle.md</span>). So the switch is a property of Littman's move-order rule, where the unresolved coin only bites where the carrier has two lanes; <span class="mono">slip</span> and <span class="mono">tackle</span> supply that coin everywhere, a fair coin flip on contested squares supplies it nowhere on the equilibrium path. Reading the <span class="mono">2&times;2</span> cores of the <span class="mono">7&times;5</span> mixed states, the carrier's crossing pair is a vertical move in 90 of 94 &mdash; it is choosing which goal row to head for, and the defender is guessing it.</p>
 
     <figure>
-      <img src="figures/gallery/rule_fingerprints.svg" alt="Six small boards, one per collision rule (deterministic, coinflip, random, blend, slip, tackle). The defender is pinned at the goal mouth and every carrier cell is shaded by how far its stage game is from a pure saddle. Deterministic and coinflip are blank; random and blend light a thin band by the goal; slip and tackle light a broad region around the defender." style="max-width:680px; margin:0 auto;">
+      <img src="figures/png/rule_fingerprints.png" alt="Six small boards, one per collision rule (deterministic, coinflip, random, blend, slip, tackle). The defender is pinned at the goal mouth and every carrier cell is shaded by how far its stage game is from a pure saddle. Deterministic and coinflip are blank; random and blend light a thin band by the goal; slip and tackle light a broad region around the defender." style="max-width:680px; margin:0 auto;">
       <figcaption class="fig-cap"><b>A fingerprint per collision rule.</b> Same board, same pinned defender; shading is <span class="mono">minimax &minus; maximin</span> of the carrier's stage game. Each rule for resolving a contested cell leaves its own mark: the deterministic and coin-flip rules stay pure everywhere, Littman's move order and its blend light a thin band at the goal mouth, and the two rules that put an unavoidable coin on every square &mdash; <span class="mono">slip</span> and <span class="mono">tackle</span> &mdash; light a broad region around the defender.</figcaption>
     </figure>
 
@@ -566,7 +566,7 @@
     </div>
     <p>The no-pure-saddle set is <em>identical</em> &mdash; <b>0</b> states enter or leave. A mixed Nash equilibrium is an equilibrium of a single stage game <span class="mono">M(s)</span>; changing how the horizon is scored rescales <span class="mono">M(s)</span> through <span class="mono">V(s&prime;)</span> but does not cross the <span class="mono">maximin = minimax</span> boundary. The value <em>range</em> compresses (<span class="mono">&plusmn;1 &rarr; &plusmn;0.88</span>): under <span class="mono">rate</span> a lost position is not a cliff &mdash; conceding restarts play with possession, a floor under every state. Details in <span class="mono">docs/reward.md</span>.</p>
     <figure>
-      <img src="figures/gallery/reward_value.svg" alt="Two value heatmaps of the 7 by 5 board, one per reward objective. The rate objective's surface is the same shape but with the extremes pulled in toward the kickoff value." style="max-width:640px; margin:0 auto;">
+      <img src="figures/png/reward_value.png" alt="Two value heatmaps of the 7 by 5 board, one per reward objective. The rate objective's surface is the same shape but with the extremes pulled in toward the kickoff value." style="max-width:640px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Same shape, compressed range.</b> <span class="mono">V*</span> by carrier position under the two objectives. <span class="mono">rate</span> pulls the goal-adjacent <span class="mono">+1</span> cells down to <span class="mono">+0.88</span> &mdash; the concede-and-restart floor &mdash; without changing where the value gradient runs.</figcaption>
     </figure>
 
@@ -584,7 +584,7 @@
     </div>
     <p>The fifth action does <em>not</em> move where mixing happens &mdash; 48 of the 56 no-pure-saddle states are shared, 8 swap in and 8 out at the margin &mdash; but it changes <em>what</em> the mix is: the carrier now hedges with <span class="mono">stand</span> in 48 of 56 states rather than with <span class="mono">retreat</span>, and every player is slightly better for the option (<span class="mono">V(kickoff) +0.147 &rarr; +0.172</span>). The Figure&nbsp;2 state is a clean matching-pennies matrix with equilibrium <span class="mono">(&frac12; climb, &frac12; hold)</span>. The deterministic game keeps a pure saddle at every state with five actions too.</p>
     <figure>
-      <img src="figures/gallery/littman_stand.svg" alt="The same board state drawn twice: with four moves the carrier mixes climb and retreat; with the stand action added it mixes climb and hold, both at 50 percent." style="max-width:620px; margin:0 auto;">
+      <img src="figures/png/littman_stand.png" alt="The same board state drawn twice: with four moves the carrier mixes climb and retreat; with the stand action added it mixes climb and hold, both at 50 percent." style="max-width:620px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Littman's Figure 2.</b> Same state, four moves (left) vs. five (right). The dashed ring is <span class="mono">stand</span>. Adding it turns the carrier's climb/retreat hedge into climb/hold &mdash; Littman's mixed policy.</figcaption>
     </figure>
   </section>
@@ -595,7 +595,7 @@
     <h3>The soccer game contains rock-paper-scissors</h3>
     <p>The pure/mixed check is the professor's O(A&sup2;) best-reply method: mark player 0's best row in each column and player 1's best column in each row; a cell with both is a pure saddle, and if none has both the best replies <em>cycle</em> and the game needs mixing &mdash; no LP required.</p>
     <figure>
-      <img src="figures/gallery/rps_vs_soccer.svg" alt="Rock-paper-scissors and a soccer stage game drawn side by side as payoff matrices with best replies marked; in both, player 0's best-reply row and player 1's best-reply column never coincide." style="max-width:560px; margin:0 auto;">
+      <img src="figures/png/rps_vs_soccer.png" alt="Rock-paper-scissors and a soccer stage game drawn side by side as payoff matrices with best replies marked; in both, player 0's best-reply row and player 1's best-reply column never coincide." style="max-width:560px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Same structure.</b> Left: rock-paper-scissors. Right: the stage game at <span class="mono">(0, 1, 1, 1, 1)</span> &mdash; carrier pinned against its own goal, defender adjacent (Littman's Figure&nbsp;2 geometry). Blue bar = player 0's best row per column; green bar = player 1's best column per row. They cross both ways &mdash; matching pennies, no pure equilibrium.</figcaption>
     </figure>
 
@@ -619,7 +619,7 @@
     </div>
     <p>Discounting mildly shifts which states mix; the classification is otherwise robust across nine orders of magnitude of tolerance, breaking only as the tolerance approaches the real <span class="mono">minimax &minus; maximin</span> gaps. Fixed 0.1-rounding &mdash; proposed to force indifference &mdash; misclassifies 62 states, exactly the small-entry mixed region.</p>
     <figure>
-      <img src="figures/gallery/discounting_trap.svg" alt="Line chart: across every discount from 0.5 to 0.99, fixed 0.1-rounding wrongly makes 60 to 100 percent of the mixed stage games look pure, and their true gap never reaches the 0.1 grid." style="max-width:440px; margin:0 auto;">
+      <img src="figures/png/discounting_trap.png" alt="Line chart: across every discount from 0.5 to 0.99, fixed 0.1-rounding wrongly makes 60 to 100 percent of the mixed stage games look pure, and their true gap never reaches the 0.1 grid." style="max-width:440px; margin:0 auto;">
       <figcaption class="fig-cap"><b>There is no safe discount.</b> The genuine <span class="mono">minimax &minus; maximin</span> gaps (green) never reach the 0.1 rounding grid at any <span class="mono">&gamma;</span>: heavy discounting shrinks the <span class="mono">&gamma;&#7503;</span> value differences, light discounting leaves entries barely apart. Fixed 0.1-rounding wrongly collapses 60&ndash;100% of the mixed games (blue). The scale-aware <span class="mono">rel_tol</span> classifier is stable across the whole range.</figcaption>
     </figure>
   </section>
@@ -642,7 +642,7 @@
       </table>
     </div>
     <figure>
-      <img src="figures/gallery/tournament.svg" alt="Grouped bar chart. Against random and hand-built opponents the greedy-vs-random policy has the tallest bars; against the challenger only the minimax policy stays above zero while the greedy and hand-built policies drop below it." style="max-width:600px; margin:0 auto;">
+      <img src="figures/png/tournament.png" alt="Grouped bar chart. Against random and hand-built opponents the greedy-vs-random policy has the tallest bars; against the challenger only the minimax policy stays above zero while the greedy and hand-built policies drop below it." style="max-width:600px; margin:0 auto;">
       <figcaption class="fig-cap"><b>Only minimax is in the top-left.</b> greedy/rand is the strongest policy against weak opponents and among the weakest against a challenger &mdash; the rock-paper-scissors trap. minimax presses its advantage (<span class="mono">+0.67</span>) and still wins (<span class="mono">+0.15</span>) against the worst case, because the Nash policy has no exploitable row.</figcaption>
     </figure>
     <p>The mechanism is exactly Littman's "every deterministic offense has a perfect defense": the mixed states are matching-pennies stage games; the greedy <em>and</em> the hand-built policy each commit to one row of each, and the challenger plays the column that beats it. The minimax policy randomizes with the weights that make the challenger indifferent. Full table (including the <span class="mono">P(win) &minus; P(loss)</span> view) in <span class="mono">docs/tournament.md</span>.</p>

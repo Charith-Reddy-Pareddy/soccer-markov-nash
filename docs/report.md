@@ -72,7 +72,7 @@ point at `γ = 0.9`, and RQ4 shows the pure/mixed classification is stable acros
 `γ ∈ [0.5, 0.995]` and matches the exact undiscounted answer.
 
 ![Kickoff: player 0 (blue) carries the ball toward the right goal; player 1
-(green) defends the left.](figures/kickoff.svg)
+(green) defends the left.](figures/png/kickoff.png)
 
 ---
 
@@ -151,7 +151,7 @@ Two further reductions:
   dominates (larger action spaces, general-sum).
 
 ![Line chart: value iteration's Bellman residual climbs to 9 digits over about
-100 sweeps.](figures/gallery/convergence.svg)
+100 sweeps.](figures/png/convergence.png)
 
 **Which value quantity to back up in the frozen sweep** (the professor's
 specific question). The frozen `(p, q)` don't match the current `Q`, so does the
@@ -163,7 +163,7 @@ thrash phase from 16 rounds to 28 (`run_policy_iteration(eval_value=...)`,
 [numerics.md](numerics.md) §3).
 
 ![Staleness per outer round for the three backup choices; p-M-q locks in near
-round 16, the two bounds near round 28.](figures/gallery/eval_value.svg)
+round 16, the two bounds near round 28.](figures/png/eval_value.png)
 
 Value iteration's Bellman residual decays geometrically at rate ≈ γ.
 Freeze-then-iterate makes no progress until the frozen stage saddle flips --
@@ -188,7 +188,7 @@ stochastic move order and a defender that can't cover both lanes, the best
 replies cross into a 2x2 matching-pennies stage game that needs the LP. Beside
 it, the pure / hybrid / mixed triangle: deterministic pure = hybrid = mixed,
 random order pure &lt; hybrid = mixed; and 3.95% of states carry 41% of the
-equilibrium path.](figures/gallery/story.svg)
+equilibrium path.](figures/png/story.png)
 
 ### RQ1 -- Existence
 
@@ -267,7 +267,7 @@ every tested goal width ≥ 2 produced some.** The phase diagram
 
 ![Mixed-state fraction by board size (rows) and goal-mouth width (columns),
 127 configurations (3 ≤ W ≤ 11, 3 ≤ H ≤ 9, W·H ≤ 45). The goal-width-1 column is
-zero for every board.](figures/phase_diagram.svg)
+zero for every board.](figures/png/phase_diagram.png)
 
 - **Goal width 1: 0 mixed stage games — on all 40 tested one-cell configs.**
 - **Goal width ≥ 2: at least one mixed stage game — on all 87 tested wider-goal
@@ -304,7 +304,7 @@ one value across every equilibrium (zero-sum interchangeability); 64 have a
 unique equilibrium.
 
 ![One board per matching-pennies template: carrier and defender each with two
-probability-weighted arrows.](figures/gallery/templates.svg)
+probability-weighted arrows.](figures/png/templates.png)
 
 **A per-stage-game certificate.** `soccer_nash/certificate.py` re-derives the
 pure/mixed label from the stage matrix with `O(A^2)` arithmetic and no LP, and
@@ -326,7 +326,7 @@ statement, the certificate description, and the prior-work positioning;
 
 ![A mixed stage game's 2x2 matching-pennies core drawn as a payoff matrix: each
 player's best reply flips with the other's choice, so the best replies cycle and
-no cell is a pure saddle.](figures/gallery/mechanism.svg)
+no cell is a pure saddle.](figures/png/mechanism.png)
 
 Every policy and value surface in this report is drawn in `docs/gallery.html`
 (`make gallery`, from `soccer_nash/viz.py`): policy fans, the mixing map above,
@@ -368,7 +368,7 @@ head for, and the defender is guessing it.
 blend, slip, tackle), the defender pinned at the goal mouth and every carrier
 cell shaded by how far its stage game is from a pure saddle. Deterministic and
 coinflip are blank; random and blend light a thin band by the goal; slip and
-tackle light a broad region around the defender.](figures/gallery/rule_fingerprints.svg)
+tackle light a broad region around the defender.](figures/png/rule_fingerprints.png)
 
 Interpolating the resolution rule (`move_order="blend"`: random order with
 probability `blend`, else deterministic) shows the onset is a **sharp
@@ -420,7 +420,7 @@ not a cliff: conceding restarts play with possession. Details:
 [reward.md](reward.md).
 
 ![Two value heatmaps, win vs rate objective: same gradient, extremes pulled
-toward the kickoff value.](figures/gallery/reward_value.svg)
+toward the kickoff value.](figures/png/reward_value.png)
 
 #### Littman's fifth action
 
@@ -442,7 +442,7 @@ option. The Figure 2 state is a clean matching-pennies matrix with equilibrium
 five actions too. Details: [littman.md](littman.md).
 
 ![Littman Figure 2: the same state with four moves (climb/retreat mix) and five
-(climb/hold mix).](figures/gallery/littman_stand.svg)
+(climb/hold mix).](figures/png/littman_stand.png)
 
 ### RQ4 -- Numerical robustness
 
@@ -455,7 +455,7 @@ adjacent -- Littman's Figure 2 geometry) has exactly the crossing structure of
 rock-paper-scissors.
 
 ![Rock-paper-scissors and a soccer stage game side by side, best replies marked;
-in both the row and column best replies never coincide.](figures/gallery/rps_vs_soccer.svg)
+in both the row and column best replies never coincide.](figures/png/rps_vs_soccer.png)
 
 **A stage game falls into one of five classes** (`classify_stage_game`), and the
 count that matters -- "genuine mixed" -- is the one robust to how the line is
@@ -500,7 +500,7 @@ clean `gamma^k` bands well above 0.1.
 
 ![Line chart: fixed 0.1-rounding wrongly makes 60-100% of the mixed stage games
 look pure at every discount, and their true gap never reaches
-0.1.](figures/gallery/discounting_trap.svg)
+0.1.](figures/png/discounting_trap.png)
 
 ## 6. Mechanistic explanation
 
