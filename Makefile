@@ -13,9 +13,9 @@ help:
 	@echo "make dqn          - multi-seed neural Nash-Q vs the exact solver (~5 min)"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
-	@echo "make figures      - redraw docs/figures/*.svg from the renderer"
-	@echo "make png          - rasterize every docs/figures/*.svg to docs/figures/png/ (for slides)"
-	@echo "make gallery      - redraw the visualization gallery (docs/gallery.html)"
+	@echo "make figures      - redraw docs/figures/*.svg (+ their PNGs)"
+	@echo "make png          - rasterize every docs/figures/*.svg to docs/figures/png/ (for slides / GitHub)"
+	@echo "make gallery      - redraw the visualization gallery + docs/figures/png/ (docs/gallery.html)"
 	@echo "make littman      - reproduce Littman 1994 Figure 2 (the stand action)"
 	@echo "make mixing       - how mixed the mixed states are, and the value of mixing"
 	@echo "make reward       - the win vs rate reward objectives (goal reset)"
@@ -70,6 +70,8 @@ dqn:
 figures:
 	$(PY) scripts/render.py -o docs/figures/kickoff.svg
 	$(PY) scripts/render.py --trajectory -o docs/figures/trajectory.svg
+	$(PY) scripts/figures_png.py kickoff
+	$(PY) scripts/figures_png.py trajectory
 
 png:
 	$(PY) scripts/figures_png.py
@@ -77,6 +79,7 @@ png:
 gallery:
 	$(PY) scripts/gallery.py
 	$(PY) scripts/story.py
+	$(PY) scripts/figures_png.py
 
 littman:
 	$(PY) scripts/littman.py
