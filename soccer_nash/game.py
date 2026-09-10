@@ -43,7 +43,7 @@ move order, this noise does not depend on either player's action, so it is a
 test of whether *any* transition randomness creates mixed stage games or only
 the kind coupled to both choices (see ``docs/generalize.md``).
 
-Two reward objectives (``scoring=``):
+Three reward objectives (``scoring=``):
 
 * ``"win"`` (default) -- the first goal ends the game, reward ``+1 / -1``. The
   value is ``P(player 0 wins) - P(player 1 wins)`` under optimal play; the game
@@ -53,6 +53,12 @@ Two reward objectives (``scoring=``):
   ``max_steps``. The value is the *expected discounted goal difference*, so
   ``gamma < 1`` is load-bearing, and conceding is no longer purely bad -- you
   get the ball back. See ``docs/reward.md``.
+* ``"territory"`` -- ``"win"`` (first goal ends it) **plus** a dense per-step
+  reward: holding the ball in the opponent's final third earns
+  ``+/- territory_reward`` each step. A real objective, not potential-based
+  shaping. It is the test of whether the mixed region survives a reward that
+  reshapes the value function everywhere, not just at goals -- see
+  ``docs/reward.md``.
 """
 
 from __future__ import annotations
@@ -112,8 +118,13 @@ class SoccerGame:
     p1_start: tuple[int, int] | None = None
     #: 4 -> {U, D, L, R}; 5 -> also STAND (Littman's fifth action)
     n_actions: int = 4
-    #: "win" -> first goal ends the game; "rate" -> goal resets, play continues
+    #: "win" -> first goal ends the game; "rate" -> goal resets, play continues;
+    #: "territory" -> "win" plus a per-step reward for holding the ball in the
+    #: opponent's final third (this project's own dense objective)
     scoring: str = "win"
+    #: only for scoring="territory": per-step reward magnitude for the ball in
+    #: the attacking final third (+/- this value each step)
+    territory_reward: float = 0.02
     #: only for move_order="blend": P(resolve by random order) vs deterministic
     blend: float = 0.5
     #: only for move_order="tackle": P(a committed challenge wins the ball)
@@ -136,8 +147,14 @@ class SoccerGame:
             raise ValueError(f"slip must be in [0, 1), got {self.slip}")
         if self.n_actions not in (4, 5):
             raise ValueError(f"n_actions must be 4 or 5, got {self.n_actions}")
-        if self.scoring not in ("win", "rate"):
-            raise ValueError(f"scoring must be 'win' or 'rate', got {self.scoring!r}")
+        if self.scoring not in ("win", "rate", "territory"):
+            raise ValueError(
+                f"scoring must be 'win', 'rate' or 'territory', got {self.scoring!r}"
+            )
+        if not 0.0 <= self.territory_reward < 1.0:
+            raise ValueError(
+                f"territory_reward must be in [0, 1), got {self.territory_reward}"
+            )
         for name, p in (("p0_start", self.p0_start), ("p1_start", self.p1_start)):
             if p is not None and not (
                 0 <= p[0] < self.width and 0 <= p[1] < self.height
@@ -212,10 +229,25 @@ class SoccerGame:
 
     def _score_result(self, winner: int) -> tuple[State, tuple[int, int], bool]:
         reward = (1, -1) if winner == 0 else (-1, 1)
-        if self.scoring == "win":
+        if self.scoring != "rate":  # "win" / "territory": first goal ends it
             return (-1, -1, -1, -1, winner), reward, True
         # "rate": score the goal and play on from the restart
         return self._restart_state(1 - winner), reward, False
+
+    def _territory_reward(self, ns: State) -> tuple[float, float]:
+        """Per-step reward for scoring='territory': the carrier holding the ball
+        in the opponent's final third earns ``+/- territory_reward``; the middle
+        third is neutral."""
+        bx = ns[0] if ns[4] == 0 else ns[2]
+        edge = self.width / 3.0
+        if bx >= self.width - edge:
+            f = 1.0
+        elif bx < edge:
+            f = -1.0
+        else:
+            f = 0.0
+        r = self.territory_reward * f
+        return (r, -r)
 
     def _resolve_with_winner(
         self,
@@ -359,8 +391,15 @@ class SoccerGame:
         if self.is_terminal(state):
             raise ValueError("transitions() called on a terminal state")
         if self.slip > 0.0:
-            return self._slip_transitions(state, a0, a1)
-        return self._resolve_transitions(state, a0, a1)
+            outs = self._slip_transitions(state, a0, a1)
+        else:
+            outs = self._resolve_transitions(state, a0, a1)
+        if self.scoring == "territory":
+            outs = [
+                (prob, ns, reward if self.is_terminal(ns) else self._territory_reward(ns))
+                for prob, ns, reward in outs
+            ]
+        return outs
 
     def _slip_transitions(
         self, state: State, a0: Action, a1: Action
