@@ -47,7 +47,7 @@ the carrier, are now a real gamble against each other.
 
 ## The rule fingerprint
 
-`docs/figures/gallery/rule_fingerprints.svg` puts the six collision rules
+`docs/figures/png/rule_fingerprints.png` puts the six collision rules
 side by side: the same board, the defender pinned at the goal mouth, every
 carrier cell shaded by how far its stage game is from a pure saddle. Each rule
 leaves a distinct mark. `deterministic` and `coinflip` are blank (pure

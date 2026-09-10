@@ -63,7 +63,7 @@ Three regimes, exactly as in the paper:
    turns it into a `−0.68` loss -- deterministic, so it has a pure counter, just
    like the greedy policies.
 
-Figure: `docs/figures/gallery/tournament.svg`.
+Figure: `docs/figures/png/tournament.png`.
 
 ## Why minimax is the only policy in the top-left
 

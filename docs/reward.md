@@ -52,7 +52,7 @@ horizon is scored.
 **The value range compresses.** Under `win` a lost position is worth `−1`
 (game over). Under `rate` the worst position is `−0.88`: the concede-and-restart
 option puts a floor under every state. The whole value surface is pulled toward
-`V(kickoff)` -- see `docs/figures/gallery/reward_value.svg`.
+`V(kickoff)` -- see `docs/figures/png/reward_value.png`.
 
 ## Deterministic dynamics
 

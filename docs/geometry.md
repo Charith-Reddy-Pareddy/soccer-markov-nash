@@ -5,7 +5,7 @@
 ## The mechanism: a multi-cell goal mouth
 
 Earlier notes attributed the mixed-strategy states to "large boards". The phase
-diagram (`experiments/phase_diagram.csv`, `figures/phase_diagram.svg`) sweeps 46
+diagram (`experiments/phase_diagram.csv`, `figures/png/phase_diagram.png`) sweeps 46
 board / goal-width configurations and shows the real gate:
 
 | goal-mouth width | configs | mixed states |

@@ -27,7 +27,7 @@ goal -- passes directly through the band of contested cells where the stage game
 is matching pennies. The mixed states are not a curiosity in a corner of the
 state space; they are where the game is decided.
 
-`docs/figures/gallery/occupancy.svg` shades each carrier cell by equilibrium
+`docs/figures/png/occupancy.png` shades each carrier cell by equilibrium
 time and marks the cells that hold a mixed state -- the hot cells and the marked
 cells coincide.
 
