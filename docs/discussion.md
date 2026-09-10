@@ -2,7 +2,6 @@
 
 Questions the project raised, with the best answer its evidence supports and
 what would settle each. These are research-level, not assignment deliverables.
-For how the meeting feedback maps to the repo, see [advisor.md](advisor.md).
 
 ---
 

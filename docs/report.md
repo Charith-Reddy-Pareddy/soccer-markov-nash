@@ -6,9 +6,8 @@ structure.*
 A research report on a configurable family of two-player soccer Markov games
 ([design.md](design.md)). Scope and caveats are in `docs/assumptions.md`; how
 every number was produced is in [methods.md](methods.md); the open questions and
-what the mixed region depends on are in [discussion.md](discussion.md); the
-meeting-feedback map is [advisor.md](advisor.md). Every table regenerates from
-`experiments/*.csv`.
+what the mixed region depends on are in [discussion.md](discussion.md). Every
+table regenerates from `experiments/*.csv`.
 
 ## Position relative to Littman (1994)
 
