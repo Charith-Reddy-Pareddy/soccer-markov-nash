@@ -63,7 +63,7 @@
 <line x1="83.0" y1="184.0" x2="75.1" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="1.9" stroke-linecap="round" opacity="0.43" marker-end="url(#ah-2f8a52)"/>
 <text x="64.1" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">5%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.078</text>
-<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The professor's own position</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The corner duel</text>
 </g></g>
 <g transform="translate(848.0 16.0)"><clipPath id="pnl2"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl2)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>

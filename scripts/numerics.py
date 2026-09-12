@@ -1,6 +1,6 @@
 """Numerical behaviour of Nash Q-iteration on the soccer game.
 
-Four questions from the research meeting:
+Four open questions:
 
 * how to *define* the value of a stage game when the three numbers disagree;
 * whether rounding (to force mixed-strategy indifference) is safe under
@@ -83,7 +83,7 @@ def iteration_schemes(game, gamma):
 
 def eval_value_choice(game, gamma):
     """Which of the three stage-game quantities to back up in the frozen
-    evaluation sweep -- the professor's open question. Compare all three."""
+    evaluation sweep -- an open question. Compare all three."""
     truth = NashQIteration(game, gamma=gamma, mode="hybrid", tol=1e-9).run().values
     print("  freeze-then-iterate evaluation quantity:")
     for ev in ("mid", "lower", "upper"):

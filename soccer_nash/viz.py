@@ -502,7 +502,7 @@ def bestreply_svg(
     col_labels: list[str] | None = None,
     title: str | None = None,
 ) -> str:
-    """A payoff matrix with best replies highlighted -- the professor's O(A^2)
+    """A payoff matrix with best replies highlighted -- an O(A^2)
     pure-equilibrium check, drawn. Player 0 (rows, maximiser) gets a blue tick
     on its best row per column; player 1 (columns, minimiser) a green tick on
     its best column per row. A cell with both is a pure saddle (boxed); if none
@@ -690,8 +690,8 @@ def bestresponse_graph_svg(
     from a cell to the cell either player would rather deviate to. A pure
     saddle is the one node with no outgoing arrow; a matching-pennies game has
     every node pointing somewhere, so the arrows chase each other in a closed
-    loop -- the "no cell is safe" picture the research meeting sketched on the
-    whiteboard, as a diagram instead of hand-drawn X's."""
+    loop -- the "no cell is safe" picture, as a diagram instead of hand-drawn
+    X's."""
     M = np.asarray(M, dtype=float)
     nr, nc = M.shape
     row_labels = row_labels or [f"r{i}" for i in range(nr)]

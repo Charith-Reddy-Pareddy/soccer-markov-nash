@@ -1,7 +1,7 @@
 """State occupancy under a stationary joint policy.
 
-The professor's framing: a stochastic transition and a stochastic (mixed) policy
-both live in the *occupancy distribution* -- the discounted share of time the
+A stochastic transition and a stochastic (mixed) policy both live in the
+*occupancy distribution* -- the discounted share of time the
 process spends in each state. This module computes it exactly (a linear fixpoint,
 not sampling) and is used to ask whether the mixed-strategy states are actually
 *on the equilibrium path* or just rare curiosities.

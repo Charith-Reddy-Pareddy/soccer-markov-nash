@@ -1,7 +1,7 @@
 """The Markov-game tournament table with plain 4x4 stage games -- no `stand`.
 
-Requested at the research meeting: reproduce the minimax-vs-everyone table
-without Littman's fifth action, so every stage game is the textbook 4x4
+Reproduce the minimax-vs-everyone table without Littman's fifth action, so
+every stage game is the textbook 4x4
 {U, D, L, R} matrix, and add the simplest possible opponent -- one that always
 plays the same action -- alongside random, the hand-built policy, and each
 row's best-response challenger.

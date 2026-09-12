@@ -1,7 +1,7 @@
 # Six mixed states, worked by hand
 
-Requested at the research meeting: stop summarizing the 94 mixed states with a
-heatmap or an entropy number, and instead **look at actual states** -- draw
+Stop summarizing the 94 mixed states with a heatmap or an entropy number, and
+instead **look at actual states** -- draw
 both players on the board with their action probabilities as arrow thickness,
 print the *unrounded* `4x4` stage matrix (`U`, `D`, `L`, `R` only -- no
 narrative action names) next to each, and check by eye that mixing is

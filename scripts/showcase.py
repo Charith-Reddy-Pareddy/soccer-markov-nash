@@ -1,4 +1,4 @@
-"""Curated worked examples of mixed-strategy states, for the research meeting.
+"""Curated worked examples of mixed-strategy states.
 
 The meeting's ask: don't summarize with entropy or a heatmap -- pick actual
 states, draw both players' action distributions as probability-weighted arrows

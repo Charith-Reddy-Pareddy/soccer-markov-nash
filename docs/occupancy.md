@@ -1,9 +1,9 @@
 # Do the players actually visit the mixed states?
 
 `RQ2` reports that the hybrid solver calls the LP on **3.95%** of states -- the
-94 no-pure-saddle states out of 2380. That counts the whole state space. The
-professor's framing was that a stochastic transition and a mixed policy both
-live in the **occupancy distribution**, so the sharper question is: how much of
+94 no-pure-saddle states out of 2380. That counts the whole state space. A
+stochastic transition and a mixed policy both live in the **occupancy
+distribution**, so the sharper question is: how much of
 the *equilibrium path* runs through the mixed region?
 
 `soccer_nash/occupancy.py` computes the discounted state-visitation

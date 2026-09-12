@@ -125,7 +125,7 @@ pure flip) for 16 outer rounds before locking in, so wall-clock is not lower
 (17s vs 14s). Value iteration with the per-sweep Nash cache wins here.
 `scripts/policy_iteration.py`.
 
-## Q7: Numerical foundations (from the research meeting)
+## Q7: Numerical foundations
 
 `scripts/numerics.py`, `docs/numerics.md`.
 
