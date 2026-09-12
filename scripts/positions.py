@@ -8,29 +8,30 @@ the one node with no outgoing arrow; a matching-pennies game has every node
 pointing somewhere, so the arrows chase each other around a closed loop and
 no cell is safe -- exactly the picture drawn on the whiteboard.
 
-Eight cases, each answering a specific question from the meeting:
+Nine cases, each answering a specific question from the meeting:
 
 1. a **pure** state, for contrast -- one node lit up, no cycle, no mixing;
 2. the **typical two-action mix** -- a vertical crossing pair, the shape 90 of
    the 94 mixed states actually have (the carrier picking which goal row to
    attack, the defender guessing it);
-3. the **L/R indifference** case -- the meeting's own example ("when we move
-   right and when we move left, there's an equal chance of me winning"): the
-   carrier's live moves are exactly L and R, no vertical option in its support
-   at all, one of only 4 states shaped this way;
-4. a genuine **3-action** mix, requested explicitly ("don't focus on entropy,
+3. **the professor's own position** -- players literally at `(0, 0)` and
+   `(1, 1)`, the exact coordinates on his whiteboard sketch;
+4. the **L/R indifference** case -- the meeting's own verbal example ("when
+   we move right and when we move left, there's an equal chance of me
+   winning"): the carrier's live moves are exactly L and R, no vertical
+   option in its support at all, one of only 4 states shaped this way;
+5. a genuine **3-action** mix, requested explicitly ("don't focus on entropy,
    the matrix would be an output by the function");
-5. a **near-pure hedge** -- entropy 0.17 bits, the rounding trap made
+6. a **near-pure hedge** -- entropy 0.17 bits, the rounding trap made
    concrete: reading 97.5% as 100% would be the mistake the meeting flagged;
-6. that state's own **typical-mix twin, mirrored** -- board flipped, value
+7. the typical-mix case's own **twin, mirrored** -- board flipped, value
    negated to machine precision, showing the shape in (2) is not a one-off;
-7. this project's own **tackle rule**, a different collision mechanism
+8. this project's own **tackle rule**, a different collision mechanism
    entirely, producing the same kind of duel;
-8. the **asymmetric mix** -- support (2,1): the carrier still needs two
+9. the **asymmetric mix** -- support (2,1): the carrier still needs two
    actions while the defender's equilibrium is a single fixed move. Not a
    symmetric duel at all, and the exact "is this really mixed, or just
-   another representation of a tie" question from the meeting -- the third
-   sketch on the whiteboard, smaller and unresolved with a dashed arrow.
+   another representation of a tie" question from the meeting.
 
     python scripts/positions.py
 
@@ -121,14 +122,16 @@ def main() -> None:
     cases = [
         ((4, 0, 5, 0, 0), "A pure state -- one safe cell, nothing to guess", False),
         ((0, 1, 1, 1, 0), "The typical mix -- which goal row to head for", True),
-        ((1, 1, 1, 0, 1), "The meeting's example -- indifferent between L and R", True),
+        ((0, 0, 1, 1, 0), "The professor's own position -- (0,0) and (1,1)", True),
+        ((1, 1, 1, 0, 1), "A clean L/R indifference example", True),
         ((0, 0, 2, 0, 0), "A genuine 3-action mix, not a 2-cycle", True),
         ((1, 1, 2, 0, 1), "A near-pure hedge -- where rounding would lie", True),
     ]
+    # cases featured on the (lighter, five-case) website, keyed by state
     web_titles = {
         (0, 1, 1, 1, 0): "Two-action mix -- which lane to take",
+        (0, 0, 1, 1, 0): "The professor's own position",
         (0, 0, 2, 0, 0): "Three-action mix",
-        (1, 1, 1, 0, 1): "L/R indifference",
     }
     for state, why, should_be_mixed in cases:
         assert (state in mixed) == should_be_mixed, f"{state}: unexpected pure/mixed"
@@ -136,7 +139,7 @@ def main() -> None:
         if state in web_titles:
             _web_pair(web_boards, web_matrices, g, solver, r, state, web_titles[state])
 
-    # 6: the mirror of the typical-mix case -- same shape, opposite corner
+    # 7: the mirror of the typical-mix case -- same shape, opposite corner
     mstate = mirror_state((0, 1, 1, 1, 0), g.width)
     why = "The typical mix, mirrored -- same shape, value negated"
     v1, vm = r.values[(0, 1, 1, 1, 0)], r.values[mstate]
@@ -144,7 +147,7 @@ def main() -> None:
           f"sum = {v1 + vm:+.2e} (should be ~0)\n")
     _report(why, g, solver, r, mstate, panels)
 
-    # 7: this project's own tackle rule -- a different collision mechanism
+    # 8: this project's own tackle rule -- a different collision mechanism
     gk, sk, rk = _solve(width=5, height=4, goal_rows=(1, 2),
                          move_order="tackle", tackle_prob=0.5)
     tackle_mixed = set(rk.no_saddle_states)
@@ -152,7 +155,7 @@ def main() -> None:
     why = "This project's own tackle rule -- a different mechanism, same duel"
     _report(why, gk, sk, rk, kstate, panels)
 
-    # 8: the asymmetric mix -- support (2,1), the third whiteboard sketch
+    # 9: the asymmetric mix -- support (2,1)
     astate = (0, 2, 1, 2, 0)
     why = "The asymmetric mix -- the carrier still guesses, the defender doesn't"
     assert astate in mixed

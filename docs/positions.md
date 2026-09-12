@@ -2,21 +2,21 @@
 
 At the research meeting the professor drew a stage game by hand: a small grid
 of cells, each marked, with arrows chasing each other around the grid to show
-that no cell is a stable outcome. `scripts/positions.py` (`make positions`)
-turns that sketch into a real diagram, generated from the exact solver instead
-of drawn free-hand, pairs it with a picture of where the two players actually
-are on the board, and prints the exact **`4x4` `{U, D, L, R}` Q matrix**
-underneath every case -- always the full grid, never reduced, per the
-professor's own correction that the matrix should stay `4x4` and that the
-matrix itself, not an entropy number, is the actual output.
+that no cell is a stable outcome, at players positioned `(0, 0)` and `(1, 1)`.
+`scripts/positions.py` (`make positions`) turns that sketch into a real
+diagram, generated from the exact solver instead of drawn free-hand, pairs it
+with a picture of where the two players actually are on the board, and
+prints the exact **`4x4` `{U, D, L, R}` Q matrix** underneath every case --
+always the full grid, never reduced, per the professor's own correction that
+the matrix should stay `4x4` and that the matrix itself, not an entropy
+number, is the actual output.
 
-![Eight cases, board and Q-matrix graph side by side, from a pure state
-through the meeting's own indifference example to an asymmetric mix where
-only one player is actually guessing.](figures/png/positions.png)
+![Nine cases, board and Q-matrix graph side by side, including the exact
+board position the professor drew.](figures/png/positions.png)
 
 ## Reading the graph
 
-Each node is one cell of the full `4x4` Q matrix (`row = the carrier's
+Each node is one cell of the complete `4x4` Q matrix (`row = the carrier's
 action`, `col = the defender's action`, rows and columns always reoriented so
 the carrier's payoff is what's printed, regardless of which player id
 actually carries -- see `_oriented_matrix` in `scripts/positions.py`). A blue
@@ -61,19 +61,38 @@ like this one.
   R   0.082    0.187   -0.108   -0.071
 ```
 
-## Case 3 — `(1, 1, 1, 0, 1)`: the meeting's own example
+## Case 3 — `(0, 0, 1, 1, 0)`: the professor's own position
+
+The board position drawn on the whiteboard: the carrier at `(0, 0)` -- the
+back corner, right against its own goal -- and the defender diagonally
+adjacent at `(1, 1)`. This is the closest match, coordinate for coordinate,
+to the meeting's own sketch, distinct from the earlier "typical mix" case,
+which crosses `U/D`; this one crosses `U/L` for the carrier and `D/L` for
+the defender: pinned in the corner, the carrier's two live escapes are
+straight up the sideline (`U`) or across along the back line (`L`), and the
+defender is guessing which. Gap `0.0121`; the mix is lopsided but genuine
+(`U 4.6% / L 95.4%` for the carrier, `D 94.9% / L 5.1%` for the defender) --
+the corner leaves little room, but not zero.
+
+```
+        U        D        L        R
+  U   0.103    0.103   -0.408    0.084
+  D   0.109    0.076    0.101    0.086
+  L   0.109    0.076    0.101    0.086
+  R   0.112   -0.075    0.112    0.088
+```
+
+## Case 4 — `(1, 1, 1, 0, 1)`: a clean L/R indifference example
 
 > "when we move right and when we move left, there's an equal chance of me
 > winning. That's why I am indifferent between the two."
 
 Gap `0.0445`. The carrier's entire live option set is **exactly `{L, R}`**
--- no vertical option survives at all, so this is the plain case the meeting
-asked for: two actions that are genuinely equally good against the
-defender's own mix (`D 18% / L 82%`). This is the *rarer* shape: only 4 of
-94 mixed states cross a purely horizontal pair instead of a vertical one.
-Even though only two of its four rows are ever played, the printed matrix is
-still the full `4x4` -- `U` and `D` are there to show exactly *why* they lose
-out, not omitted.
+-- no vertical option survives at all, which is what makes this state (rather
+than Case 3, which crosses `U/L`) the cleanest match to the meeting's *verbal*
+description: two actions genuinely equally good against the defender's own
+mix (`D 18% / L 82%`). This is the *rarer* shape overall: only 4 of 94 mixed
+states cross a purely horizontal pair instead of a vertical one.
 
 ```
         U        D        L        R
@@ -83,7 +102,7 @@ out, not omitted.
   R   0.211    0.181    0.211    0.167
 ```
 
-## Case 4 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
+## Case 5 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
 
 Gap `0.0047`, entropy `1.109` bits -- the richest mix on this page. Six cells
 from goal, as far as this board allows, with the defender close enough to
@@ -99,7 +118,7 @@ explicitly at the meeting: the matrix itself, not entropy, is the point.
   R   0.088    0.095   -0.088    0.110
 ```
 
-## Case 5 — `(1, 1, 2, 0, 1)`: a near-pure hedge, where rounding would lie
+## Case 6 — `(1, 1, 2, 0, 1)`: a near-pure hedge, where rounding would lie
 
 Gap `0.0043`, entropy only `0.169` bits -- the carrier plays `R 97.5%`,
 `D 2.5%`. Reading `0.975` as `1.0` would be the rounding mistake the meeting
@@ -114,7 +133,7 @@ rounding grid would resolve.
   R   0.182    0.182    0.182    0.135
 ```
 
-## Case 6 — `(5, 1, 6, 1, 1)`: the typical mix, mirrored
+## Case 7 — `(5, 1, 6, 1, 1)`: the typical mix, mirrored
 
 `soccer_nash.symmetry.mirror_state` flips the board left-right and swaps
 which player carries; this is Case 2's exact image under that map. The
@@ -136,7 +155,7 @@ mirrored, wherever the same relative configuration recurs.
   R   0.103    0.103    0.084    0.085
 ```
 
-## Case 7 — `(2, 3, 3, 3, 1)`, on a 5×4 board: this project's own tackle rule
+## Case 8 — `(2, 3, 3, 3, 1)`, on a 5×4 board: this project's own tackle rule
 
 Every other case here gets its coin flip from Littman's random move order.
 This one is solved under [the tackle rule](tackle.md)
@@ -154,13 +173,13 @@ kind of duel: the carrier mixes `D 60.7% / R 39.3%`, the defender mixes
   R  -0.007   -0.026   -0.006   -0.039
 ```
 
-## Case 8 — `(0, 2, 1, 2, 0)`: the asymmetric mix
+## Case 9 — `(0, 2, 1, 2, 0)`: the asymmetric mix
 
-Support `(2, 1)` -- gap `0.0095`. This is the odd one out: the carrier's
-equilibrium still mixes two actions (`U 2.6% / D 97.4%`), but the
-**defender's** equilibrium is a *single fixed move* (`R`, 100%). Every other
-case on this page is a symmetric duel -- both players genuinely guessing.
-Here only one side is.
+Support `(2, 1)` -- gap `0.0095`. The odd one out: the carrier's equilibrium
+still mixes two actions (`U 2.6% / D 97.4%`), but the **defender's**
+equilibrium is a *single fixed move* (`R`, 100%). Every other case on this
+page is a symmetric duel -- both players genuinely guessing. Here only one
+side is.
 
 ```
         U        D        L        R
@@ -175,7 +194,7 @@ against the defender's pure `R`, column `R` reads `U 0.095, D 0.095, L 0.093,
 R -0.072` -- **`U` and `D` are exactly tied**, both strictly better than `L`
 or `R`. Nothing in the payoffs favours one over the other, so any split of
 `U`/`D` is an equally valid best reply; the solver's LP reports one particular
-split (`2.6% / 97.4%`), not a probability forced by the game the way Case 3's
+split (`2.6% / 97.4%`), not a probability forced by the game the way Case 4's
 `18% / 82%` is. This is the meeting's LP-edge-case question made concrete:
 **a tie between two rows can look identical, in the printed policy, to a
 genuine forced mix, but it is a different phenomenon** -- no best-reply cycle
@@ -183,18 +202,18 @@ is involved, and *either* pure `U` or pure `D` alone would also be a valid
 equilibrium reply to the defender's fixed `R`. `soccer_nash/certificate.py`'s
 `gap` field still distinguishes the two: a tie is a **degenerate** saddle
 (row `L`'s pure security value, `0.086`, sits within `0.0095` of the mixed
-value), while Case 3's cycle has no pure security value anywhere near it.
+value), while Case 4's cycle has no pure security value anywhere near it.
 
-## The mathematics behind all eight
+## The mathematics behind all nine
 
 A mixed equilibrium is exactly the strategy pair where every action in a
 player's support earns the **same expected payoff** against the opponent's
-own mix -- that equality is what "indifferent" means in Case 3, and it is
+own mix -- that equality is what "indifferent" means in Case 4, and it is
 also why the best-response graph above cycles with no resting point: if one
 action in the support paid strictly more, that player would raise its weight
 on it, which is precisely the condition an equilibrium rules out. A
 best-reply cycle and mutual indifference are the same fact seen from two
-sides, not two different explanations ([numerics.md](numerics.md) §0). Case 8
+sides, not two different explanations ([numerics.md](numerics.md) §0). Case 9
 shows the boundary of that story: indifference alone (a tie against a fixed
 opponent) can produce the same *symptom* -- a fractional policy -- without a
 cycle anywhere in the matrix.
@@ -202,5 +221,5 @@ cycle anywhere in the matrix.
 ## Reproduction
 
 `python scripts/positions.py` prints the exact `4x4` Q matrix and policy for
-all eight states and writes `figures/gallery/positions.svg`. A PDF write-up
+all nine states and writes `figures/gallery/positions.svg`. A PDF write-up
 of this page is at [positions.pdf](positions.pdf).

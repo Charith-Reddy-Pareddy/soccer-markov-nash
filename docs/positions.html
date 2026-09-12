@@ -59,18 +59,19 @@
 <p class="lede">
 At the research meeting the professor drew a stage game by hand: a small grid
 of cells, each marked, with arrows chasing each other around the grid to show
-that no cell is a stable outcome. This is that sketch, generated from the
-exact solver instead of drawn free-hand, paired with a picture of where the
-two players actually are, and the exact, complete <span class="mono">4&times;4
-{U, D, L, R}</span> <b>Q matrix</b> underneath every case &mdash; always the
-full grid, never reduced, per the professor's own correction that the matrix
-should stay <span class="mono">4&times;4</span> and that the matrix itself,
-not an entropy number, is the actual output.
+that no cell is a stable outcome, at players positioned <span class="mono">(0,
+0)</span> and <span class="mono">(1, 1)</span>. This is that sketch, generated
+from the exact solver instead of drawn free-hand, paired with a picture of
+where the two players actually are, and the exact, complete <span class="mono">
+4&times;4 {U, D, L, R}</span> <b>Q matrix</b> underneath every case &mdash;
+always the full grid, never reduced, per the professor's own correction that
+the matrix should stay <span class="mono">4&times;4</span> and that the
+matrix itself, not an entropy number, is the actual output.
 </p>
 
 <figure>
-  <img src="figures/png/positions.png" alt="Eight cases, board and Q-matrix graph side by side.">
-  <figcaption>All eight cases: board position (left) and the full 4&times;4 Q matrix redrawn as a node-and-arrow graph (right). A lit node with no outgoing arrow is a pure saddle; a closed loop of arrows means no cell is safe.</figcaption>
+  <img src="figures/png/positions.png" alt="Nine cases, board and Q-matrix graph side by side, including the exact board position the professor drew.">
+  <figcaption>All nine cases: board position (left) and the full 4&times;4 Q matrix redrawn as a node-and-arrow graph (right). A lit node with no outgoing arrow is a pure saddle; a closed loop of arrows means no cell is safe.</figcaption>
 </figure>
 
 <h2>Reading the graph</h2>
@@ -89,9 +90,9 @@ directly comparable.
 
 <div class="case">
 <h2>Case 1 <span class="state-tag">(4, 0, 5, 0, 0)</span></h2>
-<p><strong>A pure state, for contrast.</strong> Support (1,1) &mdash; a strict
-saddle at <span class="mono">U/U</span>. The carrier plays U always; the
-defender answers U always; neither has any reason to deviate.</p>
+<p><strong>A pure state, for contrast.</strong> Saddle at
+<span class="mono">U/U</span>. The carrier plays U always; the defender
+answers U always; neither has any reason to deviate.</p>
 <pre class="matrix">        U        D        L        R
   U   0.234    0.317    0.523    0.272
   D   0.151    0.211    0.211    0.222
@@ -101,7 +102,7 @@ defender answers U always; neither has any reason to deviate.</p>
 
 <div class="case">
 <h2>Case 2 <span class="state-tag">(0, 1, 1, 1, 0)</span></h2>
-<p><strong>The typical mix.</strong> Support (2,2), gap 0.0136. The carrier
+<p><strong>The typical mix.</strong> Gap 0.0136. The carrier
 mixes <span class="mono">U 63.5% / D 36.5%</span>; the defender answers
 <span class="mono">U 36.5% / R 63.5%</span>. This is the common shape: the
 carrier is deciding which goal row to head for, and the defender is guessing
@@ -115,16 +116,40 @@ board cross a vertical pair exactly like this one.</span></p>
 </div>
 
 <div class="case">
-<h2>Case 3 <span class="state-tag">(1, 1, 1, 0, 1)</span></h2>
-<p><strong>The meeting's own example.</strong></p>
+<h2>Case 3 <span class="state-tag">(0, 0, 1, 1, 0)</span></h2>
+<p><strong>The professor's own position.</strong> The board position drawn
+on the whiteboard: the carrier at <span class="mono">(0, 0)</span> &mdash;
+the back corner, right against its own goal &mdash; and the defender
+diagonally adjacent at <span class="mono">(1, 1)</span>. This is the closest
+match, coordinate for coordinate, to the meeting's own sketch. Distinct from
+Case 2 (which crosses U/D), this one crosses <span class="mono">U/L</span>
+for the carrier and <span class="mono">D/L</span> for the defender: pinned
+in the corner, the carrier's two live escapes are straight up the sideline
+(U) or across along the back line (L), and the defender is guessing which.
+<span class="fact">Gap 0.0121; the mix is lopsided but genuine</span>
+(<span class="mono">U 4.6% / L 95.4%</span> for the carrier,
+<span class="mono">D 94.9% / L 5.1%</span> for the defender) &mdash; the
+corner leaves little room, but not zero.</p>
+<pre class="matrix">        U        D        L        R
+  U   0.103    0.103   -0.408    0.084
+  D   0.109    0.076    0.101    0.086
+  L   0.109    0.076    0.101    0.086
+  R   0.112   -0.075    0.112    0.088</pre>
+</div>
+
+<div class="case">
+<h2>Case 4 <span class="state-tag">(1, 1, 1, 0, 1)</span></h2>
+<p><strong>A clean L/R indifference example.</strong></p>
 <blockquote>"when we move right and when we move left, there's an equal chance
 of me winning. That's why I am indifferent between the two."</blockquote>
-<p>Support (2,2), gap 0.0445. The carrier's entire live option set is exactly
+<p>Gap 0.0445. The carrier's entire live option set is exactly
 <span class="mono">{L, R}</span> &mdash; no vertical option survives at all,
-so this is the plain case the meeting asked for: two actions genuinely
-equally good against the defender's own mix (<span class="mono">D 18% /
-L 82%</span>). <span class="fact">This is the rarer shape: only 4 of 94 mixed
-states cross a purely horizontal pair instead of a vertical one.</span></p>
+which is what makes this state (rather than Case 3, which crosses U/L) the
+cleanest match to the meeting's <em>verbal</em> description: two actions
+genuinely equally good against the defender's own mix (<span class="mono">
+D 18% / L 82%</span>). <span class="fact">This is the rarer shape overall:
+only 4 of 94 mixed states cross a purely horizontal pair instead of a
+vertical one.</span></p>
 <pre class="matrix">        U        D        L        R
   U   0.139   -0.173    0.099    0.110
   D   0.171    0.185    0.157    0.171
@@ -133,8 +158,8 @@ states cross a purely horizontal pair instead of a vertical one.</span></p>
 </div>
 
 <div class="case">
-<h2>Case 4 <span class="state-tag">(0, 0, 2, 0, 0)</span></h2>
-<p><strong>A genuine 3-action mix.</strong> Support (3,3), gap 0.0047, entropy
+<h2>Case 5 <span class="state-tag">(0, 0, 2, 0, 0)</span></h2>
+<p><strong>A genuine 3-action mix.</strong> Gap 0.0047, entropy
 1.109 bits &mdash; the richest mix on this page. Six cells from goal, as far
 as this board allows, with the defender close enough to threaten three
 different rows at once: no single row is safely better than the other two.
@@ -148,12 +173,12 @@ not entropy, is the point.</span></p>
 </div>
 
 <div class="case">
-<h2>Case 5 <span class="state-tag">(1, 1, 2, 0, 1)</span></h2>
-<p><strong>A near-pure hedge, where rounding would lie.</strong> Support
-(2,2) again, but entropy only 0.169 bits &mdash; the carrier plays
+<h2>Case 6 <span class="state-tag">(1, 1, 2, 0, 1)</span></h2>
+<p><strong>A near-pure hedge, where rounding would lie.</strong> Gap
+0.0043, entropy only 0.169 bits &mdash; the carrier plays
 <span class="mono">R 97.5%</span>, <span class="mono">D 2.5%</span>. Reading
 0.975 as 1.0 would be the rounding mistake the meeting flagged: the gap
-(0.0043) is real and certified, twelve times smaller than a 0.1 rounding
+is real and certified, twelve times smaller than a 0.1 rounding
 grid would resolve.</p>
 <pre class="matrix">        U        D        L        R
   U   0.317    0.317    0.247   -0.178
@@ -163,7 +188,7 @@ grid would resolve.</p>
 </div>
 
 <div class="case">
-<h2>Case 6 <span class="state-tag">(5, 1, 6, 1, 1)</span></h2>
+<h2>Case 7 <span class="state-tag">(5, 1, 6, 1, 1)</span></h2>
 <p><strong>The typical mix, mirrored.</strong> The board's left-right /
 role-swap symmetry maps Case 2 exactly onto this state. The values negate to
 machine precision:</p>
@@ -181,13 +206,13 @@ configuration recurs.</p>
 </div>
 
 <div class="case">
-<h2>Case 7 <span class="state-tag">(2, 3, 3, 3, 1), 5&times;4 board</span></h2>
+<h2>Case 8 <span class="state-tag">(2, 3, 3, 3, 1), 5&times;4 board</span></h2>
 <p><strong>This project's own tackle rule.</strong> Every other case here
 gets its coin flip from Littman's random move order. This one is solved
 under the tackle rule (defender commits to a challenge that wins the ball
 with fixed probability or bounces off) instead &mdash; a mechanism with
 nothing to do with move order at all. <span class="fact">It produces the
-same kind of duel</span> (support (2,2), gap 0.0223): the carrier
+same kind of duel</span> (gap 0.0223): the carrier
 mixes <span class="mono">D 60.7% / R 39.3%</span>, the defender mixes
 <span class="mono">U 32.1% / D 67.9%</span>. Different cause, same structure.</p>
 <pre class="matrix">        U        D        L        R
@@ -198,7 +223,7 @@ mixes <span class="mono">D 60.7% / R 39.3%</span>, the defender mixes
 </div>
 
 <div class="case">
-<h2>Case 8 <span class="state-tag">(0, 2, 1, 2, 0)</span></h2>
+<h2>Case 9 <span class="state-tag">(0, 2, 1, 2, 0)</span></h2>
 <p><strong>The asymmetric mix.</strong> Support (2, 1) &mdash; gap 0.0095.
 The odd one out: the carrier's equilibrium still mixes two actions
 (<span class="mono">U 2.6% / D 97.4%</span>), but the <strong>defender's</strong>
@@ -217,7 +242,7 @@ L 0.093, R -0.072</span> &mdash; <span class="fact">U and D are exactly
 tied</span>, both strictly better than L or R. Nothing in the payoffs favours
 one over the other, so any split of U/D is an equally valid best reply; the
 solver's LP reports one particular split (2.6% / 97.4%), not a probability
-forced by the game the way Case 3's 18% / 82% is. This is the meeting's
+forced by the game the way Case 4's 18% / 82% is. This is the meeting's
 LP-edge-case question made concrete: <strong>a tie between two rows can look
 identical, in the printed policy, to a genuine forced mix, but it is a
 different phenomenon</strong> &mdash; no best-reply cycle is involved, and
@@ -225,16 +250,16 @@ either pure U or pure D alone would also be a valid equilibrium reply to the
 defender's fixed R.</p>
 </div>
 
-<h2>The mathematics behind all eight</h2>
+<h2>The mathematics behind all nine</h2>
 <p>
 A mixed equilibrium is exactly the strategy pair where every action in a
 player's support earns the <strong>same expected payoff</strong> against the
 opponent's own mix &mdash; that equality is what "indifferent" means in
-Case&nbsp;3, and it is also why the best-response graph cycles with no
+Case&nbsp;4, and it is also why the best-response graph cycles with no
 resting point: if one action in the support paid strictly more, that player
 would raise its weight on it, which is precisely the condition an
 equilibrium rules out. A best-reply cycle and mutual indifference are the
-same fact seen from two sides, not two different explanations. Case 8 shows
+same fact seen from two sides, not two different explanations. Case 9 shows
 the boundary of that story: indifference alone (a tie against a fixed
 opponent) can produce the same <em>symptom</em> &mdash; a fractional policy
 &mdash; without a cycle anywhere in the matrix.
