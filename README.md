@@ -1,8 +1,8 @@
 # When Does a Soccer Markov Game Need Mixed Strategies?
 
 **Non-technical, visual walkthrough:
-[Soccer × Nash Lab](https://charith-reddy-pareddy.github.io/soccer-nash-lab/)**
-(separate repo, [soccer-nash-lab](https://github.com/Charith-Reddy-Pareddy/soccer-nash-lab)) —
+[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)**
+(separate repo, [the-mixed-game](https://github.com/Charith-Reddy-Pareddy/the-mixed-game)) —
 start there for the plain-language version with figures. This repo is the
 technical research project; its own documentation site is
 [the docs index](https://charith-reddy-pareddy.github.io/soccer-markov-nash/).

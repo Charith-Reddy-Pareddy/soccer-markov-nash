@@ -1,7 +1,7 @@
 # Docs
 
-Non-technical, visual walkthrough: **[Soccer × Nash Lab](https://charith-reddy-pareddy.github.io/soccer-nash-lab/)**
-([soccer-nash-lab](https://github.com/Charith-Reddy-Pareddy/soccer-nash-lab), a
+Non-technical, visual walkthrough: **[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)**
+([the-mixed-game](https://github.com/Charith-Reddy-Pareddy/the-mixed-game), a
 separate repo). For the technical answer, start with **[report.pdf](report.pdf)**
 (or [report.md](report.md) / [report.html](report.html)).
 
