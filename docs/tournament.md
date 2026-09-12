@@ -65,6 +65,29 @@ Three regimes, exactly as in the paper:
 
 Figure: `docs/figures/png/tournament.png`.
 
+## The same result with plain 4×4 stage games
+
+Littman's board needs the `stand` action for the hand-built policy to block
+properly, so every table above is on 5×5 matrices. Requested at the meeting:
+check the result survives dropping `stand` entirely, so every stage game is
+the textbook 4×4 `{U, D, L, R}` matrix, and add the simplest possible
+opponent -- one that always plays the same action (`always_left`) -- alongside
+random, hand-built, and the challenger.
+
+`scripts/tournament4.py` (`make tournament4`), same board, `n_actions=4`:
+
+| policy | vs. always-left | vs. random | vs. hand-built | vs. challenger | robustness |
+|---|---|---|---|---|---|
+| minimax | +0.64 | +0.63 | +0.19 | **+0.13** | +0.50 |
+| greedy/rand | +0.95 | +0.92 | +0.79 | **−0.54** | +1.46 |
+| greedy/self | +0.00 | +0.07 | +0.00 | −0.00 | +0.07 |
+| hand-built | +0.00 | +0.71 | +0.00 | **−0.79** | +1.50 |
+
+Identical story: minimax is the only policy whose challenger cannot drive it
+negative. `stand` was never load-bearing for this result -- it changes the
+*content* of a few mixed states ([littman.md](littman.md)), not whether
+minimax's robustness advantage exists. Figure: `docs/figures/png/tournament4.png`.
+
 ## Why minimax is the only policy in the top-left
 
 The mixed states are matching-pennies stage games ([templates.md](templates.md)).

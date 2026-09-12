@@ -13,7 +13,11 @@ Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
   reproduction of his Figure 2 mixed equilibrium (`make littman`).
 - [tournament.md](tournament.md) — Littman's Table 3, reproduced exactly:
   minimax exploits *and* survives its challenger; greedy policies do one or the
-  other, never both (`make tournament`).
+  other, never both (`make tournament`); the same result again with plain 4×4
+  stage games and no `stand` action (`make tournament4`).
+- [showcase.md](showcase.md) — three mixed states worked by hand: weighted-arrow
+  diagrams, the exact stage matrix, and why relative position (not distance to
+  goal) is what forces a guess (`make showcase`).
 - [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
   (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
   structure, and the value of mixing (`make mixing`).

@@ -293,7 +293,13 @@ Geometry predicts the classification (`scripts/geometry_model.py`): a depth-4
 decision tree separates `mixed` from the rest with **precision 0.96, recall
 0.91** using carrier-frame features. The dominant signal is
 `defender_can_intercept` -- the defender within one move of the carrier's
-forward cell (`P(mixed) = 0.44` vs `0.002`).
+forward cell (`P(mixed) = 0.44` vs `0.002`). Sharper still (`scripts/showcase.py`,
+[showcase.md](showcase.md)): **every one of the 94 mixed states has the two
+players within 2 cells of each other** (Manhattan distance -- 40 at distance 1,
+54 at distance 2, none at distance ≥ 3). Distance to the *opponent*, not
+distance to the goal, is what forces a guess -- one worked example is a
+3-action mix 6 cells from goal, the farthest this board allows, because the
+defender is adjacent.
 
 Beyond prediction, the 94 mixed states canonicalize under the board mirror to 47
 pairs and cluster into **8 geometric templates** (`scripts/templates.py`,
