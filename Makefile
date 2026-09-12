@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional positions a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional positions a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -25,6 +25,7 @@ help:
 	@echo "make tournament4  - the same table with plain 4x4 stage games (no stand action)"
 	@echo "make showcase     - 6 hand-picked mixed states: weighted-arrow diagrams + exact matrices"
 	@echo "make positions    - player positions + stage game as a best-response-graph"
+	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
 	@echo "make numerics     - numerical-robustness analysis + figures"
 	@echo "make templates    - print the mixed-state geometric templates"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
@@ -60,6 +61,13 @@ report:
 	  --print-to-pdf=docs/report.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/report.html"
 	@echo "wrote docs/report.pdf"
+
+positions-pdf:
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/positions.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/positions.html"
+	@echo "wrote docs/positions.pdf"
 
 phase:
 	$(PY) scripts/phase_diagram.py

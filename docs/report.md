@@ -340,7 +340,9 @@ no cell is a pure saddle.](figures/png/mechanism.png)
 The same fact, drawn as a node-and-arrow graph instead of a highlighted grid
 (the format sketched at the research meeting: one lit-up cell for a pure
 state, a closed loop of arrows for a mixed one) next to where the players
-actually are on the board -- [positions.md](positions.md), `make positions`.
+actually are on the board, across seven representative cases with the full
+`4x4` matrix printed for each -- [positions.md](positions.md) /
+[positions.pdf](positions.pdf), `make positions`.
 
 Every policy and value surface in this report is drawn in `docs/gallery.html`
 (`make gallery`, from `soccer_nash/viz.py`): policy fans, the mixing map above,
