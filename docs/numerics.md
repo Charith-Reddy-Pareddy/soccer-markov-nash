@@ -214,7 +214,7 @@ strategies:
 | 3x2 / 2x3 / 3x3 | 12 |
 
 **68 of 94 reduce to a 2x2 matching-pennies mix** (section 0 shows one next to
-rock-paper-scissors). The essential sub-game is the carrier choosing between
-{advance toward goal, climb / hold} and the defender between {cover a lane, hold
-the forward cell} -- a "guess where the ball goes" game. [templates.md](templates.md)
-reduces all 94 to 8 geometric templates and prints a stage matrix for each.
+rock-paper-scissors). The essential sub-game is the carrier choosing between two
+of `{U, D, L, R}` and the defender covering one of the same two -- a "guess
+where the ball goes" game. [templates.md](templates.md) reduces all 94 to 8
+geometric templates and prints the exact `U`/`D`/`L`/`R` stage matrix for each.

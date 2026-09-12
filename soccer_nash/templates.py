@@ -231,11 +231,12 @@ def format_templates(templates: list[Template]) -> str:
             f"carrier {'on' if in_row else 'off'} a goal row"
         )
         lines.append(f"     representative {t.representative}")
+        # U/D/L/R only -- no narrative action names (per the meeting feedback)
         lines.append(
-            "     carrier:  " + ", ".join(f"{a}={g}" for a, g in t.carrier_actions)
+            "     carrier:  " + ", ".join(a for a, _g in t.carrier_actions)
         )
         lines.append(
-            "     defender: " + ", ".join(f"{a}={g}" for a, g in t.defender_actions)
+            "     defender: " + ", ".join(a for a, _g in t.defender_actions)
         )
         with np.printoptions(precision=3, suppress=True):
             for row in np.atleast_2d(t.subgame):

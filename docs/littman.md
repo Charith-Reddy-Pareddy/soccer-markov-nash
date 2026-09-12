@@ -35,9 +35,9 @@ with the hybrid Nash-Q solver, with and without the stand action.
   goal, a stochastic resolution order, a defender who can contest one lane but
   not both -- and STAND is not part of that condition.
 - **The content of the mix.** With five actions, the carrier's equilibrium puts
-  positive weight on **standing** in 48 of the 56 mixed states. A "wait" move is
-  a strictly better hedge than "retreat" when the defender is guessing which
-  lane you will take.
+  positive weight on `STAND` in 48 of the 56 mixed states. Standing is a
+  strictly better hedge than committing to a move action when the defender is
+  guessing which lane you will take.
 - **The value.** Standing is a real option, so every player is a little better
   off: `V(kickoff)` rises `+0.147 → +0.172`.
 
@@ -45,18 +45,20 @@ with the hybrid Nash-Q solver, with and without the stand action.
 
 ```
 state (0, 1, 1, 1, 1)   player 1 carries, V = -0.315
-  carrier support:  climb 50%,  hold 50%
-  defender support: cover up 50%,  hold position 50%
-  stage game (carrier maximises rows):
-      +0.284   +0.347
-      +0.347   +0.284
+  carrier support:  U 50%,  STAND 50%
+  defender support: U 50%,  STAND 50%
+  stage game (rows = carrier's U / STAND, cols = defender's U / STAND;
+              carrier maximises):
+              U        STAND
+      U     +0.284    +0.347
+      STAND +0.347    +0.284
 ```
 
 The carrier is at its own goal edge with the defender one cell away. The 2 × 2
 stage game is a clean **matching-pennies** matrix: the off-diagonal (players
 mismatch) pays the carrier `+0.347`, the diagonal (defender guesses right)
 `+0.284`, so there is no pure saddle and the unique equilibrium is
-`(½ climb, ½ hold)` against `(½ cover, ½ hold)`. This is Littman's Figure 2,
+`(½ U, ½ STAND)` for both players. This is Littman's Figure 2,
 drawn in `docs/gallery.html` (`littman_fig2.svg`) and contrasted with the
 four-move equilibrium at the same state (`littman_stand.svg`).
 

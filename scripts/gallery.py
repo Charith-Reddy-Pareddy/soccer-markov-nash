@@ -170,8 +170,9 @@ def build(width: int, height: int) -> list[tuple[str, str, str]]:
     figs.append((
         "littman_stand",
         "Littman's fifth action. The carrier is pinned near its own goal by an "
-        "adjacent defender. With four moves the mix is climb / retreat; adding "
-        "STAND, the equilibrium becomes climb / hold -- Littman's Figure 2.",
+        "adjacent defender. With four moves the mix is over two move actions; "
+        "adding STAND, the equilibrium becomes a move/STAND mix -- Littman's "
+        "Figure 2.",
         panel_svg([
             policy_svg(lit4, lit_state, l4r.row_policy, l4r.col_policy,
                        l4r.values[lit_state], title="four moves"),
