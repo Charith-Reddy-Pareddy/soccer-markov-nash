@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional a10 clean
+.PHONY: help lint test test-all coverage report experiments phase benchmark dqn figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional positions a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -23,7 +23,8 @@ help:
 	@echo "make occupancy    - equilibrium-path occupancy of the mixed states"
 	@echo "make tournament   - reproduce Littman 1994 Table 3 (minimax vs greedy robustness)"
 	@echo "make tournament4  - the same table with plain 4x4 stage games (no stand action)"
-	@echo "make showcase     - 3 hand-picked mixed states: weighted-arrow diagrams + exact matrices"
+	@echo "make showcase     - 6 hand-picked mixed states: weighted-arrow diagrams + exact matrices"
+	@echo "make positions    - player positions + stage game as a best-response-graph"
 	@echo "make numerics     - numerical-robustness analysis + figures"
 	@echo "make templates    - print the mixed-state geometric templates"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
@@ -108,6 +109,10 @@ tournament4:
 showcase:
 	$(PY) scripts/showcase.py
 	$(PY) scripts/figures_png.py showcase
+
+positions:
+	$(PY) scripts/positions.py
+	$(PY) scripts/figures_png.py positions
 
 numerics:
 	$(PY) scripts/numerics.py --move-orders deterministic random --figures
