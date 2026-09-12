@@ -1,12 +1,11 @@
-"""Player positions and their Q matrix, in the format sketched at the
-research meeting: a board showing where the two players actually are, next to
-the full 4x4 Q matrix redrawn as a node-and-arrow graph -- one node per cell
-of the *complete* action grid (every case is the full `{U,D,L,R} x {U,D,L,R}`
-matrix, never reduced, per the professor's explicit correction), an arrow
-toward whichever cell either player would rather deviate to. A pure saddle is
-the one node with no outgoing arrow; a matching-pennies game has every node
-pointing somewhere, so the arrows chase each other around a closed loop and
-no cell is safe -- exactly the picture drawn on the whiteboard.
+"""Player positions and their Q matrix: a board showing where the two
+players actually are, next to the full 4x4 Q matrix redrawn as a
+node-and-arrow graph -- one node per cell of the *complete* action grid
+(every case is the full `{U,D,L,R} x {U,D,L,R}` matrix, never reduced), an
+arrow toward whichever cell either player would rather deviate to. A pure
+saddle is the one node with no outgoing arrow; a matching-pennies game has
+every node pointing somewhere, so the arrows chase each other around a
+closed loop and no cell is safe.
 
 Twelve cases. Across the whole project there are exactly four *canonical*
 equilibrium-support shapes once every stage game is reoriented so rows are
@@ -101,8 +100,7 @@ def _solve(**kw):
 def _report(label, g, solver, r, state, panels):
     """Print the full, un-reduced 4x4 Q matrix and policy, and append the
     board + best-response-graph panel pair. The whole 4x4 grid is always
-    shown -- no dominance reduction -- so every case is directly comparable
-    and matches the professor's own 4x4 format."""
+    shown -- no dominance reduction -- so every case is directly comparable."""
     M = _oriented_matrix(solver, state, r.values)
     cert = certify_game(M)
     print(f"state {state} -- {label}")

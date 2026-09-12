@@ -54,19 +54,14 @@
   @media print { body { max-width: none; } }
 </style>
 
-<p class="kicker">Soccer Markov game &middot; research meeting follow-up</p>
 <h1>Player positions and the 4&times;4 Q matrix</h1>
 <p class="lede">
-At the research meeting the professor drew a stage game by hand: a small grid
-of cells, each marked, with arrows chasing each other around the grid to show
-that no cell is a stable outcome, at players positioned <span class="mono">(0,
-0)</span> and <span class="mono">(1, 1)</span>. This is that sketch, generated
-from the exact solver instead of drawn free-hand, paired with a picture of
-where the two players actually are, and the exact, complete <span class="mono">
-4&times;4 {U, D, L, R}</span> <b>Q matrix</b> underneath every case &mdash;
-always the full grid, never reduced, per the professor's own correction that
-the matrix should stay <span class="mono">4&times;4</span> and that the
-matrix itself, not an entropy number, is the actual output.
+Twelve board positions from the soccer Markov game, each paired with the
+exact, complete <span class="mono">4&times;4 {U, D, L, R}</span>
+<b>Q matrix</b> redrawn as a node-and-arrow graph &mdash; one node per cell,
+an arrow toward whichever cell either player would rather deviate to.
+Always the full grid, never reduced: the matrix itself, not an entropy
+number, is the point.
 </p>
 <p class="lede">
 <strong>Twelve cases.</strong> Across the whole project there are exactly
@@ -83,7 +78,7 @@ on a goal shape that is otherwise always pure.
 </p>
 
 <figure>
-  <img src="figures/png/positions.png" alt="Twelve cases, board and Q-matrix graph side by side, including the exact board position the professor drew.">
+  <img src="figures/png/positions.png" alt="Twelve cases, board and Q-matrix graph side by side.">
   <figcaption>All twelve cases: board position (left) and the full 4&times;4 Q matrix redrawn as a node-and-arrow graph (right). A lit node with no outgoing arrow is a pure saddle; a closed loop of arrows means no cell is safe.</figcaption>
 </figure>
 

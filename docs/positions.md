@@ -1,15 +1,11 @@
-# Player positions and the 4×4 Q matrix, drawn the way the meeting sketched them
+# Player positions and the 4×4 Q matrix
 
-At the research meeting the professor drew a stage game by hand: a small grid
-of cells, each marked, with arrows chasing each other around the grid to show
-that no cell is a stable outcome, at players positioned `(0, 0)` and `(1, 1)`.
-`scripts/positions.py` (`make positions`) turns that sketch into a real
-diagram, generated from the exact solver instead of drawn free-hand, pairs it
-with a picture of where the two players actually are on the board, and
-prints the exact **`4x4` `{U, D, L, R}` Q matrix** underneath every case --
-always the full grid, never reduced, per the professor's own correction that
-the matrix should stay `4x4` and that the matrix itself, not an entropy
-number, is the actual output.
+`scripts/positions.py` (`make positions`) draws twelve board positions from
+the soccer Markov game, each paired with the exact, complete
+**`4x4` `{U, D, L, R}` Q matrix** redrawn as a node-and-arrow graph -- one
+node per cell, an arrow toward whichever cell either player would rather
+deviate to. Always the full grid, never reduced: the matrix itself, not an
+entropy number, is the point.
 
 **Twelve cases.** Across the whole project there are exactly four
 *canonical* equilibrium-support shapes once every stage game is reoriented
@@ -23,8 +19,7 @@ force a mix: a stochastic move order, this project's own tackle rule, a
 dense reward with zero transition noise, and movement slip on a goal shape
 that is otherwise always pure.
 
-![Twelve cases, board and Q-matrix graph side by side, including the exact
-board position the professor drew.](figures/png/positions.png)
+![Twelve cases, board and Q-matrix graph side by side.](figures/png/positions.png)
 
 ## Reading the graph
 
