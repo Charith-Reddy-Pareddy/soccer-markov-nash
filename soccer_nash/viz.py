@@ -678,6 +678,120 @@ def line_chart_svg(
                 pad=14 if title else 4)
 
 
+# ------------------------------------------------------- bestresponse_graph_svg
+
+def bestresponse_graph_svg(
+    M: np.ndarray,
+    row_labels: list[str] | None = None,
+    col_labels: list[str] | None = None,
+    title: str | None = None,
+) -> str:
+    """The stage game as a node-and-arrow graph: one node per cell, an arrow
+    from a cell to the cell either player would rather deviate to. A pure
+    saddle is the one node with no outgoing arrow; a matching-pennies game has
+    every node pointing somewhere, so the arrows chase each other in a closed
+    loop -- the "no cell is safe" picture the research meeting sketched on the
+    whiteboard, as a diagram instead of hand-drawn X's."""
+    M = np.asarray(M, dtype=float)
+    nr, nc = M.shape
+    row_labels = row_labels or [f"r{i}" for i in range(nr)]
+    col_labels = col_labels or [f"c{j}" for j in range(nc)]
+    gap_x, gap_y, lm, tm = 92, 78, 46, 34
+    r = 15  # node radius
+
+    def cx(j: float) -> float:
+        return lm + j * gap_x
+
+    def cy(i: float) -> float:
+        return tm + i * gap_y
+
+    row_best = {j: int(np.argmax(M[:, j])) for j in range(nc)}   # player 0
+    col_best = {i: int(np.argmin(M[i, :])) for i in range(nr)}   # player 1
+    saddle = next(
+        ((i, j) for j in range(nc) for i in range(nr)
+         if row_best[j] == i and col_best[i] == j),
+        None,
+    )
+
+    body = [f'<defs>{_marker(P0)}{_marker(P1)}</defs>']
+    for j, lab in enumerate(col_labels):
+        body.append(
+            f'<text x="{cx(j):.0f}" y="{tm - 22:.0f}" text-anchor="middle" '
+            f'font-family="ui-monospace,monospace" font-size="10" '
+            f'fill="{P1}">{lab}</text>'
+        )
+    for i, lab in enumerate(row_labels):
+        body.append(
+            f'<text x="{lm - 34:.0f}" y="{cy(i) + 4:.0f}" text-anchor="middle" '
+            f'font-family="ui-monospace,monospace" font-size="10" '
+            f'fill="{P0}">{lab}</text>'
+        )
+
+    # vertical edges: player 0 (max) deviating within a fixed column
+    for j in range(nc):
+        best_i = row_best[j]
+        for i in range(nr):
+            if i == best_i:
+                continue
+            x = cx(j) - 7
+            y0, y1 = cy(i), cy(best_i)
+            sign = 1 if y1 > y0 else -1
+            body.append(
+                f'<line x1="{x:.1f}" y1="{y0 + sign * r:.1f}" '
+                f'x2="{x:.1f}" y2="{y1 - sign * r:.1f}" stroke="{P0}" '
+                f'stroke-width="2" marker-end="url(#ah-{P0[-7:-1]})" opacity=".85"/>'
+            )
+    # horizontal edges: player 1 (min) deviating within a fixed row
+    for i in range(nr):
+        best_j = col_best[i]
+        for j in range(nc):
+            if j == best_j:
+                continue
+            y = cy(i) + 7
+            x0, x1 = cx(j), cx(best_j)
+            sign = 1 if x1 > x0 else -1
+            body.append(
+                f'<line x1="{x0 + sign * r:.1f}" y1="{y:.1f}" '
+                f'x2="{x1 - sign * r:.1f}" y2="{y:.1f}" stroke="{P1}" '
+                f'stroke-width="2" marker-end="url(#ah-{P1[-7:-1]})" opacity=".85"/>'
+            )
+
+    for i in range(nr):
+        for j in range(nc):
+            is_saddle = (i, j) == saddle
+            fill = _EMBER_HEX if is_saddle else "var(--tint, #eef2ec)"
+            stroke = _EMBER_HEX if is_saddle else "var(--rule-strong, #b7c4b9)"
+            body.append(
+                f'<circle cx="{cx(j):.1f}" cy="{cy(i):.1f}" r="{r}" fill="{fill}" '
+                f'stroke="{stroke}" stroke-width="1.6"/>'
+            )
+            txt = PAPER if is_saddle else _INK
+            body.append(
+                f'<text x="{cx(j):.1f}" y="{cy(i) + 4:.1f}" text-anchor="middle" '
+                f'font-family="ui-monospace,monospace" font-weight="600" '
+                f'font-size="11" fill="{txt}">{M[i, j]:+.2f}</text>'
+            )
+
+    sub = (
+        f"pure saddle at {row_labels[saddle[0]]}/{col_labels[saddle[1]]}"
+        if saddle else "arrows cycle -- no cell is a stable outcome, must mix"
+    )
+    th = tm + (nr - 1) * gap_y + 34
+    body.append(
+        f'<text x="{lm}" y="{th - 4}" font-family="ui-monospace,monospace" '
+        f'font-size="9.5" fill="{_EMBER_HEX if not saddle else _FAINT}">{sub}</text>'
+    )
+    tw = max(lm + (nc - 1) * gap_x + gap_x / 2, lm + len(sub) * 6.0)
+    if title:
+        body.insert(
+            0,
+            f'<text x="{lm - r}" y="-6" font-family="Barlow Semi Condensed,'
+            f'sans-serif" font-weight="600" font-size="13" fill="{_INK}">{title}</text>',
+        )
+        tw = max(tw, lm - r + len(title) * 6.6)
+    return _svg(tw, th, body, "best-response graph", pad=16 if title else 6)
+
+
 # ------------------------------------------------------------- panel_svg
 
 def panel_svg(items: list[str], cols: int = 2, gap: int = 16) -> str:
