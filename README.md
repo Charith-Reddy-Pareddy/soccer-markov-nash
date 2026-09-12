@@ -1,5 +1,12 @@
 # When Does a Soccer Markov Game Need Mixed Strategies?
 
+**Non-technical, visual walkthrough:
+[Soccer × Nash Lab](https://charith-reddy-pareddy.github.io/soccer-nash-lab/)**
+(separate repo, [soccer-nash-lab](https://github.com/Charith-Reddy-Pareddy/soccer-nash-lab)) —
+start there for the plain-language version with figures. This repo is the
+technical research project; its own documentation site is
+[the docs index](https://charith-reddy-pareddy.github.io/soccer-markov-nash/).
+
 A pure-first Nash-Q approach to a configurable family of two-player soccer
 Markov games. The environment, reward, and transition rules are design choices
 of this project (see [docs/design.md](docs/design.md)); Littman's 1994 soccer

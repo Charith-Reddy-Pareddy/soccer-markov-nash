@@ -1,7 +1,9 @@
 # Docs
 
-Start with **[report.pdf](report.pdf)** (or [report.md](report.md) /
-[report.html](report.html)) — the full answer to the research question.
+Non-technical, visual walkthrough: **[Soccer × Nash Lab](https://charith-reddy-pareddy.github.io/soccer-nash-lab/)**
+([soccer-nash-lab](https://github.com/Charith-Reddy-Pareddy/soccer-nash-lab), a
+separate repo). For the technical answer, start with **[report.pdf](report.pdf)**
+(or [report.md](report.md) / [report.html](report.html)).
 
 - [design.md](design.md) — the game as a configurable family: every axis, the
   reward, the three transition rules, and the reason each is there.
