@@ -8,6 +8,51 @@ fourth result about the game itself.
 
 Run: `python scripts/numerics.py --move-orders deterministic random --figures`
 
+## Notation: `π1ᵀ Q π2` vs `π2ᵀ Q π1` -- these are not the same quantity
+
+A recurring point of confusion in the group's notes, worth settling once. Fix
+`M` = **player 0's** payoff matrix for one stage game: rows are player 0's
+actions, columns are player 1's actions, `M[i, j]` is player 0's payoff when
+player 0 plays action `i` and player 1 plays action `j`. Player 0 maximises,
+player 1 minimises, and (zero-sum) player 1's payoff is `-M[i, j]`.
+
+Let `p` (`= π1`) be player 0's mixed strategy and `q` (`= π2`) be player 1's.
+Player 0's expected payoff under `(p, q)` is
+
+    p^T M q          -- rows of M indexed by p, columns by q
+
+**`p^T M q` and `q^T M p` are genuinely different numbers** if you plug them
+into the *same* `M` -- `q^T M p` indexes `M`'s rows by `q` (player 1's
+strategy) and its columns by `p`, which only makes sense if `M`'s rows are
+player 1's actions. Since they are not, `q^T M p` is not player 0's payoff,
+not player 1's payoff, not anything meaningful -- it is the classic bug of
+swapping which player's strategy goes first without also swapping the matrix
+(`soccer_nash/nash_q.py`'s history has exactly this bug, fixed as "Debug
+transposed value bracket").
+
+**The safe identity** is the transpose one, which always holds because a
+scalar equals its own transpose:
+
+    p^T M q  =  q^T M^T p          -- always true, for any M, p, q
+
+So if your notes write the row player's value as `π2^T Q π1` (column
+strategy first), that is consistent with this page's `p^T M q` **only if**
+their `Q` is *this page's `M`, transposed* -- i.e. their `Q` has player 1's
+actions as rows. Both conventions compute the same number; the rule is
+*whichever strategy you write first indexes that matrix's rows*, and you must
+transpose to swap the order. `soccer_nash/numerics.py`'s `value_bracket` uses
+`p^T M q` throughout (a code comment flags exactly this transpose point at the
+one place it matters).
+
+For a **general-sum** game (`soccer_nash/support_enum.py`,
+`soccer_nash/markov_game.py`) there is a second, real reason the two players'
+values are not simply related: player 1 has its *own* payoff matrix `M2` at
+the same `(i, j)` grid, and `M2` is **not** forced to be `-M` the way it is in
+a zero-sum game. Player 0's value is `p^T M q`, player 1's is `p^T M2 q` (same
+`p`, `q`, same row/column indexing, different matrix) -- and with no relation
+between `M` and `M2`, there is no identity connecting the two values at all.
+That is the actual content of "general sum", not a notational trap.
+
 ## 0. Why the LP returns pure strategies
 
 It is the **collision rule**, not the solver. Under `deterministic` or

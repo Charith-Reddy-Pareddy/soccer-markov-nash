@@ -133,6 +133,7 @@ game needs a mixed Nash equilibrium, and which do not.**
 | board size | scales the *fraction* only (area dilution, R² 0.64); does not create or remove mixing | phase diagram |
 | discount `γ` | shifts *which* states mix by a few percent (94 at 0.9, 122 at 0.5, 102 at 0.995); the region is otherwise stable | RQ4 |
 | **kickoff position** | **no effect** on the region; only `V(kickoff)` moves | RQ1 |
+| **player distance** | a hard cutoff on the tested board: all 94 mixed states have the players within 2 cells (Manhattan) of each other, none at distance ≥ 3 -- proximity to the opponent, not to the goal | [showcase.md](showcase.md) |
 | **horizon scoring** (`win` vs `rate`) | **no effect** -- the identical 94 states; only the value *range* changes | [reward.md](reward.md) |
 | **dense per-step reward** (`scoring="territory"`) | **moves it** -- 39 in / 21 out at reward 0.05, and it gives the *deterministic* game 69 mixed stage games (0 under `win`/`rate`) | [reward.md](reward.md) |
 | the `stand` action | barely -- 48 of 56 no-saddle states shared with the 4-action game; changes the *content* of the mix, not its location | [littman.md](littman.md) |
