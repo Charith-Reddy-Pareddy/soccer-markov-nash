@@ -23,8 +23,8 @@ specific question from the meeting:
 2. the **typical two-action mix** -- a vertical crossing pair, the shape 90 of
    the 94 mixed states actually have (the carrier picking which goal row to
    attack, the defender guessing it);
-3. **the professor's own position** -- players literally at `(0, 0)` and
-   `(1, 1)`, the exact coordinates on his whiteboard sketch;
+3. **the corner duel** -- players literally at `(0, 0)` and `(1, 1)`, the
+   exact coordinates sketched at the meeting;
 4. the **L/R indifference** case -- the meeting's own verbal example ("when
    we move right and when we move left, there's an equal chance of me
    winning"): the carrier's live moves are exactly L and R, no vertical
@@ -143,7 +143,7 @@ def main() -> None:
     cases = [
         ((4, 0, 5, 0, 0), "A pure state -- one safe cell, nothing to guess", False),
         ((0, 1, 1, 1, 0), "The typical mix -- which goal row to head for", True),
-        ((0, 0, 1, 1, 0), "The professor's own position -- (0,0) and (1,1)", True),
+        ((0, 0, 1, 1, 0), "The corner duel -- (0,0) and (1,1)", True),
         ((1, 1, 1, 0, 1), "A clean L/R indifference example", True),
         ((0, 0, 2, 0, 0), "A genuine 3-action mix, not a 2-cycle", True),
         ((1, 1, 2, 0, 1), "A near-pure hedge -- where rounding would lie", True),
@@ -151,7 +151,7 @@ def main() -> None:
     # cases featured on the (lighter, five-case) website, keyed by state
     web_titles = {
         (0, 1, 1, 1, 0): "Two-action mix -- which lane to take",
-        (0, 0, 1, 1, 0): "The professor's own position",
+        (0, 0, 1, 1, 0): "The corner duel",
         (0, 0, 2, 0, 0): "Three-action mix",
     }
     for state, why, should_be_mixed in cases:

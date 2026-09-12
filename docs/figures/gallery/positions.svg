@@ -228,7 +228,7 @@
 <line x1="83.0" y1="184.0" x2="75.1" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="1.9" stroke-linecap="round" opacity="0.43" marker-end="url(#ah-2f8a52)"/>
 <text x="64.1" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">5%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.078</text>
-<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The professor's own position -- (0,0) and (1,1)</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The corner duel -- (0,0) and (1,1)</text>
 </g></g>
 <g transform="translate(607.5 716.0)"><clipPath id="pnl5"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl5)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 0, 1, 1, 0)</text>

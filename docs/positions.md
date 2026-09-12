@@ -73,9 +73,9 @@ like this one.
   R   0.082    0.187   -0.108   -0.071
 ```
 
-## Case 3 — `(0, 0, 1, 1, 0)`: the professor's own position
+## Case 3 — `(0, 0, 1, 1, 0)`: the corner duel
 
-The board position drawn on the whiteboard: the carrier at `(0, 0)` -- the
+The board position sketched at the meeting: the carrier at `(0, 0)` -- the
 back corner, right against its own goal -- and the defender diagonally
 adjacent at `(1, 1)`. This is the closest match, coordinate for coordinate,
 to the meeting's own sketch, distinct from the earlier "typical mix" case,
