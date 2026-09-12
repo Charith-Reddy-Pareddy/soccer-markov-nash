@@ -338,7 +338,7 @@ class NashQIteration:
 
         ``eval_value`` picks which of the three stage-game quantities the
         evaluation sweep backs up while the frozen ``(p, q)`` are still stale --
-        the choice the professor flagged as an open question:
+        an open question:
 
         * ``"mid"`` -- ``p M q`` (what both get if both mix). Unbiased at the
           equilibrium, noisy while the strategies are wrong.

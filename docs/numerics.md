@@ -1,7 +1,7 @@
 # Numerical foundations for mixed Nash Q-iteration
 
-The research meeting named three unsolved problems for the discrete soccer
-solver, on top of the core puzzle -- *why does the LP return pure strategies
+Three unsolved problems for the discrete soccer solver, on top of the core
+puzzle -- *why does the LP return pure strategies
 when Littman's game is supposed to need mixed ones?* `soccer_nash/numerics.py` +
 `scripts/numerics.py` address all of them for the zero-sum case, and turn up a
 fourth result about the game itself.
@@ -67,7 +67,7 @@ contested cell into a matching-pennies game with no pure saddle. Under
 best-reply row and player 1's best-reply column never coincide.](figures/png/rps_vs_soccer.png)
 
 The blue bar marks player 0's best row per column, the green bar player 1's best
-column per row (the professor's O(A²) check -- no LP needed). In a pure-saddle
+column per row (an O(A²) check -- no LP needed). In a pure-saddle
 game one cell has both; in rock-paper-scissors and in the soccer stage game at
 `(0, 1, 1, 1, 1)` -- carrier pinned against its own goal, defender adjacent --
 they cycle, and the game has no pure equilibrium.
@@ -175,7 +175,7 @@ guarantee ([discussion.md](discussion.md) §4); this is what that looks like.
 
 ### Which value quantity to back up in the frozen sweep
 
-The professor's specific open question: in freeze-then-iterate, the frozen
+A specific open question: in freeze-then-iterate, the frozen
 `(p, q)` do not match the current `Q`, so which of the three stage-game
 quantities should the evaluation sweep use? `run_policy_iteration(eval_value=...)`
 runs all three (`mid` = `p M q`, `lower` = `min_j (pM)_j`, `upper` =

@@ -1,7 +1,7 @@
 """Exact hybrid Nash-Q vs. two neural baselines.
 
-The professor's stated pipeline is: exact discrete solver first, then get a
-network to replicate it. Two ways to replicate it, so we can tell *where* the
+The stated pipeline is: exact discrete solver first, then get a network to
+replicate it. Two ways to replicate it, so we can tell *where* the
 approximation breaks:
 
 * **Q net** -- regress toward the stage matrices `Q(s, a0, a1)`, then extract a

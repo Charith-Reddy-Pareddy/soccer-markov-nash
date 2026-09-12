@@ -124,7 +124,7 @@ five speed-ups, none in the paper:
 
 - **Precompute the outcome table.** Build every stage game's transition list
   once (`NashQIteration.__init__`), then look up `s'` during the recursion --
-  the professor's "solve once for every `s`".
+  "solve once for every `s`".
 - **Pure-first.** At each state, mark the best responses along rows and columns
   (`O(A^2)`); if one entry is both a row and a column best response, its value
   *is* the Nash value -- use it, no LP. On the deterministic game a pure saddle
@@ -155,8 +155,8 @@ Two further reductions:
 ![Line chart: value iteration's Bellman residual climbs to 9 digits over about
 100 sweeps.](figures/png/convergence.png)
 
-**Which value quantity to back up in the frozen sweep** (the professor's
-specific question). The frozen `(p, q)` don't match the current `Q`, so does the
+**Which value quantity to back up in the frozen sweep.** The frozen `(p, q)`
+don't match the current `Q`, so does the
 evaluation sweep use `p^T M q`, `min_j (pM)_j`, or `max_i (Mq)_i`? All three
 reach the same fixed point, but `p^T M q` converges in **half the rounds** (21
 vs 41-42) -- it is the unbiased estimate while the strategies are stale, where
@@ -338,8 +338,8 @@ player's best reply flips with the other's choice, so the best replies cycle and
 no cell is a pure saddle.](figures/png/mechanism.png)
 
 The same fact, drawn as a node-and-arrow graph instead of a highlighted grid
-(the format sketched at the research meeting: one lit-up cell for a pure
-state, a closed loop of arrows for a mixed one) next to where the players
+(one lit-up cell for a pure state, a closed loop of arrows for a mixed one)
+next to where the players
 actually are on the board, across twelve representative cases with the full
 `4x4` matrix printed for each -- [positions.md](positions.md) /
 [positions.pdf](positions.pdf), `make positions`.
@@ -475,8 +475,8 @@ pure saddle everywhere with five actions too. Details: [littman.md](littman.md).
 
 ### RQ4 -- Numerical robustness
 
-**The soccer game contains rock-paper-scissors.** The pure/mixed check is the
-professor's O(A²) best-reply method: mark player 0's best row in each column and
+**The soccer game contains rock-paper-scissors.** The pure/mixed check is an
+`O(A²)` best-reply method: mark player 0's best row in each column and
 player 1's best column in each row; a cell with both is a pure saddle, and if
 none has both the best replies *cycle* and mixing is forced -- no LP needed. The
 stage game at `(0, 1, 1, 1, 1)` (carrier pinned against its own goal, defender
@@ -504,7 +504,7 @@ is the only class that forces an LP.
 
 **The value is three numbers** (`value_bracket`): what the row player
 guarantees (`min_j (pM)_j`), gets (`p^T M q`), and can reach (`max_i (Mq)_i`) --
-the quantities the professor flagged as never numerically identical. With `scipy`
+three quantities that are not guaranteed to be numerically identical. With `scipy`
 HiGHS they agree to `1.1e-16` per stage game and `8.7e-10` accumulated -- the LP
 solution is a certified `1e-16`-equilibrium, so the definitional ambiguity is
 not a practical problem. If it were, the row player takes the *guaranteed* value
@@ -647,7 +647,7 @@ ones that matter most:
   a splitting argument) is the most valuable next step.
 - **Is the goal-width dichotomy already known** in the stochastic /
   pursuit-evasion literature? This determines how strongly novelty can be
-  claimed and is a question for the professor / a literature pass.
+  claimed and is a question for a literature pass.
 - **The `blend` threshold.** Is `p_c ≈ 0.5` structural, and is the overshoot a
   phase transition? ([blend.md](blend.md), [discussion.md](discussion.md) §7)
 - **Reward-invariance, precisely.** The mixed region is identical under `win`

@@ -67,7 +67,7 @@ Littman's minimax-Q solves an LP at every `(s, a, o)` update. This solver adds:
 
 | trick | effect | where |
 |---|---|---|
-| **precompute the outcome table** -- build every stage game's transition list once in `__init__`, then look up `s'` during the recursion | the professor's "solve once for every `s`" -- turns per-entry transition work into a dict lookup | `NashQIteration.__init__` (`_out`) |
+| **precompute the outcome table** -- build every stage game's transition list once in `__init__`, then look up `s'` during the recursion | "solve once for every `s`" -- turns per-entry transition work into a dict lookup | `NashQIteration.__init__` (`_out`) |
 | **pure-first** -- the `O(A²)` best-reply check before any LP; use the saddle value when one exists | `~25×` fewer LP calls (3.95% vs 100% of states) | `_stage_value`, `matrix_games.pure_saddle_points` |
 | **LP-result memoization** -- key the LP value on `round(M, 11).tobytes()` | near convergence most stage matrices repeat sweep-to-sweep, so `~10 000` LP calls become `~9 700` -- a further few percent | `_cached_game_value` (`_lp_cache`) |
 | **mirror symmetry** -- solve one state per board-flip/player-swap pair, reconstruct the other by `V(mirror(s)) = -V(s)` | `2×` on the deterministic game (`0.33 s → 0.23 s`) | `run_symmetric`, `symmetry.py` |

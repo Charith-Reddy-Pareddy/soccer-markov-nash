@@ -179,8 +179,8 @@ that cannot be exploited at all.
 
 ## 7. New questions the recent sweeps raise
 
-These came out of the runs, not the meeting -- the "notice something new" the
-professor asked for.
+These came out of the runs, not from any single request -- open questions
+worth flagging as they turned up.
 
 1. **The blend overshoot.** Sweeping the resolution rule from deterministic to
    random ([blend.md](blend.md)), the no-pure-saddle count does not rise
@@ -190,8 +190,8 @@ professor asked for.
    (order parameter: the mixed fraction; is there a critical exponent)?
 
 2. **Occupancy-weighted solving.** The mixed states are 4% of the space but 41%
-   of the discounted occupancy ([occupancy.md](occupancy.md)). The professor
-   noted you can drop never-reached Nash; the sharper version is a
+   of the discounted occupancy ([occupancy.md](occupancy.md)). Never-reached
+   Nash can be dropped; the sharper version is a
    *prioritized* solver that spends LP effort in proportion to occupancy (or
    Bellman residual). Does it beat uniform value iteration in wall-clock, and
    does it still certify the off-path values a best-responder could deviate to?
@@ -214,9 +214,9 @@ professor asked for.
 
 5. **The one open proof.** For the single goal cell, a board-size-free argument
    that the carrier's closed-form strategy secures `V*` is still missing
-   ([proof.md](proof.md)). The professor de-prioritised formal proofs; a
-   *machine-checked* induction on the stochastic attractor rank would be a
-   middle path.
+   ([proof.md](proof.md)). Formal proofs are a lower priority than the
+   empirical characterization; a *machine-checked* induction on the
+   stochastic attractor rank would be a middle path.
 
 ## How the experiments were run
 
