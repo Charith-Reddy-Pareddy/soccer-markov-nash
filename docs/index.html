@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When Does Soccer Need Mixed Strategies?</title>
+<meta name="description" content="A discrete soccer Markov game where the equilibrium switches from always-deterministic to sometimes-must-bluff the moment the goal gets wider than one cell — worked out exactly, not learned.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --paper: #f7f8f5;
+    --tint: #eef2ec;
+    --raise: #ffffff;
+    --ink: #19211c;
+    --ink-soft: #4b564e;
+    --ink-faint: #77817a;
+    --rule: #d9e2db;
+    --rule-strong: #c2cec5;
+    --pitch: #2f6b48;
+    --pitch-deep: #142a1c;
+    --pitch-mid: #1e4a30;
+    --pitch-soft: #dfeae1;
+    --pitch-line: rgba(247, 248, 245, .14);
+    --ember: #a94e18;
+    --ember-hi: #c96326;
+    --ember-soft: #f2e5da;
+    --p0: #2f6bb0;
+    --p1: #2f8a52;
+    --on-dark: #eef3ec;
+    --on-dark-soft: #a9c0ac;
+    --shadow: 24px 24px 60px -30px rgba(25, 45, 33, .28);
+    --shadow-lg: 40px 50px 90px -40px rgba(10, 20, 14, .5);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #11150f;
+      --tint: #171c14;
+      --raise: #1a2017;
+      --ink: #e7ece2;
+      --ink-soft: #a9b3a6;
+      --ink-faint: #7c867a;
+      --rule: #2b342a;
+      --rule-strong: #3b463a;
+      --pitch: #7cba95;
+      --pitch-soft: #1a241b;
+      --ember: #dd9057;
+      --ember-hi: #eaa876;
+      --ember-soft: #241b13;
+      --p0: #6ea8de;
+      --p1: #7cba95;
+      --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
+      --shadow-lg: 40px 50px 90px -40px rgba(0, 0, 0, .7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #11150f;
+    --tint: #171c14;
+    --raise: #1a2017;
+    --ink: #e7ece2;
+    --ink-soft: #a9b3a6;
+    --ink-faint: #7c867a;
+    --rule: #2b342a;
+    --rule-strong: #3b463a;
+    --pitch: #7cba95;
+    --pitch-soft: #1a241b;
+    --ember: #dd9057;
+    --ember-hi: #eaa876;
+    --ember-soft: #241b13;
+    --p0: #6ea8de;
+    --p1: #7cba95;
+    --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
+    --shadow-lg: 40px 50px 90px -40px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.62;
+    font-feature-settings: "onum" 1;
+  }
+  h1, h2, h3, .kicker, .eyebrow, .mono, th, .stat-k, .fig-cap b, nav a, .btn {
+    font-family: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  }
+  code, .data, .stat-v, .tag, table, .fig-tag {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+  }
+  table { font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 28px; }
+  .wide { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+  section { padding: 5.5rem 0; }
+  @media (max-width: 640px) { section { padding: 3.6rem 0; } }
+
+  h1 {
+    font-weight: 700;
+    font-size: clamp(2.5rem, 6.4vw, 4.1rem);
+    line-height: .99;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+    margin: .5rem 0 0;
+  }
+  h2 {
+    font-weight: 600;
+    font-size: clamp(1.7rem, 3.6vw, 2.25rem);
+    line-height: 1.08;
+    text-wrap: balance;
+    margin: 0 0 1.1rem;
+  }
+  h3 {
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin: 0 0 .5rem;
+  }
+  p { margin: 0 0 1.05rem; max-width: 66ch; }
+  p.lede {
+    font-size: 1.18rem;
+    color: var(--ink-soft);
+    max-width: 58ch;
+  }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+
+  /* ---------- shared bits ---------- */
+  .eyebrow {
+    display: flex; align-items: center; gap: .6rem;
+    font-size: .82rem; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 1rem;
+  }
+  .badge {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: "IBM Plex Mono", monospace; font-size: .72rem; font-weight: 600;
+  }
+  .badge.p0 { background: var(--p0); }
+  .badge.p1 { background: var(--p1); }
+  .badge.em { background: var(--ember); }
+
+  .tag {
+    display: inline-block; font-size: .74rem; letter-spacing: .04em;
+    padding: .18rem .55rem; border-radius: 4px;
+    background: var(--tint); color: var(--ink-soft); border: 1px solid var(--rule);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-weight: 600; font-size: .95rem; letter-spacing: .01em;
+    padding: .72rem 1.35rem; border-radius: 6px; text-decoration: none;
+    border: 1px solid transparent; white-space: nowrap;
+  }
+  .btn-primary { background: var(--ember); color: #fff2e9; }
+  .btn-primary:hover { background: var(--ember-hi); }
+  .btn-ghost { border-color: var(--pitch-line); color: var(--on-dark); }
+  .btn-ghost:hover { border-color: var(--on-dark-soft); }
+  .btn-outline { border-color: var(--rule-strong); color: var(--ink); }
+  .btn-outline:hover { border-color: var(--ink-faint); }
+
+  .cta-row { display: flex; gap: .9rem; flex-wrap: wrap; margin-top: 1.9rem; }
+
+  figure { margin: 2.2rem 0; }
+  figure img {
+    width: 100%; border-radius: 10px; border: 1px solid var(--rule);
+    background: #fff;
+  }
+  .fig-cap {
+    font-family: "IBM Plex Mono", monospace; font-size: .82rem;
+    color: var(--ink-faint); margin-top: .8rem; max-width: 74ch; line-height: 1.55;
+  }
+  .fig-cap b { color: var(--ink-soft); font-weight: 600; }
+  .breakout { max-width: 1080px; margin-left: auto; margin-right: auto; }
+
+  /* ---------- nav ---------- */
+  header.site {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px) saturate(1.1);
+    border-bottom: 1px solid var(--rule);
+  }
+  nav {
+    max-width: 1080px; margin: 0 auto; padding: 0 28px;
+    height: 60px; display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem;
+  }
+  .brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1.02rem; text-decoration: none; }
+  .brand .mark { display: flex; }
+  .brand .mark span { width: 11px; height: 11px; border-radius: 50%; margin-left: -4px; border: 1.5px solid var(--paper); }
+  .brand .mark span:first-child { margin-left: 0; background: var(--p0); }
+  .brand .mark span:last-child { background: var(--p1); }
+  nav .links { display: flex; align-items: center; gap: 1.5rem; font-size: .88rem; font-weight: 500; }
+  nav .links a { text-decoration: none; color: var(--ink-soft); }
+  nav .links a:hover { color: var(--ink); }
+  nav .links a.cta { color: #fff; background: var(--pitch); padding: .4rem .85rem; border-radius: 5px; }
+  nav .links a.cta:hover { background: var(--pitch-mid); }
+  @media (max-width: 720px) { nav .links a:not(.cta) { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative; overflow: hidden; color: var(--on-dark);
+    background: radial-gradient(120% 140% at 15% -10%, var(--pitch-mid), var(--pitch-deep) 55%);
+    padding: 4.6rem 0 5rem;
+  }
+  .hero .pitch-lines { position: absolute; inset: 0; opacity: .55; pointer-events: none; }
+  .hero-grid {
+    max-width: 1080px; margin: 0 auto; padding: 0 28px;
+    display: grid; grid-template-columns: 1.05fr .95fr; gap: 3rem; align-items: center;
+    position: relative;
+  }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
+  .hero .kicker {
+    font-size: .8rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--on-dark-soft);
+    display: flex; align-items: center; gap: .55rem;
+  }
+  .hero .kicker::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ember-hi); }
+  .hero p.lede { color: var(--on-dark-soft); margin-top: 1.15rem; }
+  .hero-card {
+    background: var(--raise); border-radius: 14px; padding: 1.1rem 1.1rem 1rem;
+    box-shadow: var(--shadow-lg); border: 1px solid rgba(0,0,0,.04);
+  }
+  .hero-card img { border-radius: 8px; border: none; }
+  .hero-card .fig-cap { color: var(--ink-faint); margin-top: .7rem; }
+
+  /* ---------- sections ---------- */
+  .band-tint { background: var(--tint); }
+  .band-dark {
+    background: linear-gradient(180deg, var(--pitch-deep), #0c130d 85%);
+    color: var(--on-dark);
+  }
+  .band-dark p, .band-dark .lede { color: var(--on-dark-soft); }
+  .band-dark h2 { color: var(--on-dark); }
+  .band-dark .fig-cap { color: var(--on-dark-soft); }
+
+  /* ---------- stat pair ---------- */
+  .stat-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; margin: 2.2rem 0 2.6rem;
+  }
+  @media (max-width: 640px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--raise); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 1.7rem 1.6rem;
+  }
+  .stat-card.hit { border-color: color-mix(in srgb, var(--ember) 45%, var(--rule)); }
+  .stat-k { font-size: .78rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: .6rem; }
+  .stat-v { font-size: 2.5rem; font-weight: 600; line-height: 1; color: var(--ink); }
+  .stat-v .unit { font-size: 1.1rem; color: var(--ink-faint); margin-left: .35rem; }
+  .stat-card p { margin-top: .8rem; margin-bottom: 0; font-size: .95rem; color: var(--ink-soft); max-width: none; }
+
+  /* ---------- compass icon ---------- */
+  .compass-row { display: flex; align-items: center; gap: 2.2rem; flex-wrap: wrap; margin: 1.6rem 0 2rem; }
+  .compass-row .compass { flex: none; }
+  .compass-row .legend { display: grid; gap: .5rem; font-family: "IBM Plex Mono", monospace; font-size: .88rem; color: var(--ink-soft); }
+  .legend .k { color: var(--ink); font-weight: 600; }
+
+  /* ---------- two col ---------- */
+  .cols { display: grid; grid-template-columns: 1.1fr .9fr; gap: 3rem; align-items: start; }
+  @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+
+  /* ---------- showcase caption grid ---------- */
+  .case-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem 1.6rem; margin-top: 1.6rem;
+  }
+  @media (max-width: 760px) { .case-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .case-grid { grid-template-columns: 1fr; } }
+  .case {
+    display: flex; gap: .7rem; font-size: .92rem; color: var(--ink-soft);
+  }
+  .case .n {
+    flex: none; width: 22px; height: 22px; border-radius: 50%; font-family: "IBM Plex Mono", monospace;
+    font-size: .72rem; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff;
+    margin-top: .1rem;
+  }
+  .case b { color: var(--ink); display: block; font-weight: 600; font-family: "Barlow Semi Condensed", sans-serif; }
+
+  /* ---------- table ---------- */
+  .tbl-wrap { overflow-x: auto; margin: 1.6rem 0 2rem; border: 1px solid var(--rule); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: .86rem; min-width: 560px; }
+  th, td { text-align: right; padding: .65rem .9rem; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; font-family: "Barlow Semi Condensed", sans-serif; font-weight: 600; }
+  thead th { color: var(--ink-faint); font-weight: 600; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; background: var(--tint); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.hi { color: var(--pitch); font-weight: 600; }
+  td.lo { color: var(--ember); font-weight: 600; }
+
+  /* ---------- footer ---------- */
+  footer {
+    background: var(--pitch-deep); color: var(--on-dark-soft); padding: 3.6rem 0 2.2rem;
+  }
+  .foot-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 2.4rem; }
+  @media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+  footer h4 {
+    font-family: "Barlow Semi Condensed", sans-serif; font-size: .78rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--on-dark); margin: 0 0 .9rem; font-weight: 600;
+  }
+  footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; font-size: .92rem; }
+  footer a { text-decoration: none; color: var(--on-dark-soft); }
+  footer a:hover { color: var(--on-dark); }
+  footer p { color: var(--on-dark-soft); font-size: .95rem; max-width: 34ch; }
+  .foot-bottom {
+    max-width: 1080px; margin: 3rem auto 0; padding: 1.4rem 28px 0; border-top: 1px solid var(--pitch-line);
+    display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    font-family: "IBM Plex Mono", monospace; font-size: .78rem; color: var(--on-dark-soft);
+  }
+
+  .credit-mark { display: flex; align-items: center; gap: .5rem; }
+  .credit-mark span { width: 9px; height: 9px; border-radius: 50%; }
+  .credit-mark span:nth-child(1) { background: var(--p0); }
+  .credit-mark span:nth-child(2) { background: var(--p1); margin-left: -3px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <nav>
+    <a class="brand" href="#top">
+      <span class="mark"><span></span><span></span></span>
+      Soccer &times; Nash
+    </a>
+    <div class="links">
+      <a href="#switch">The switch</a>
+      <a href="#seeing">Gallery</a>
+      <a href="#tournament">Tournament</a>
+      <a href="report.pdf" class="cta">Full report</a>
+    </div>
+  </nav>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <svg class="pitch-lines" viewBox="0 0 1080 620" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect x="40" y="40" width="1000" height="540" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+    <line x1="540" y1="40" x2="540" y2="580" stroke="var(--pitch-line)" stroke-width="2"/>
+    <circle cx="540" cy="310" r="88" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+    <circle cx="540" cy="310" r="3.5" fill="var(--pitch-line)"/>
+    <rect x="40" y="180" width="70" height="260" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+    <rect x="970" y="180" width="70" height="260" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+  </svg>
+  <div class="hero-grid">
+    <div>
+      <div class="kicker">Multi-agent reinforcement learning &middot; game theory</div>
+      <h1>When does soccer need mixed strategies?</h1>
+      <p class="lede">Two players fight over a ball on a grid. Almost always, the
+      smart move is obvious &mdash; head for the goal, or stand in the way. But at
+      a precise, identifiable set of moments, the only rational move is to
+      <em>randomize on purpose</em>: to genuinely not know, until the last
+      instant, which way you're going to go. This project pins down exactly
+      when that switch flips &mdash; and proves it, exactly, without training a
+      single neural network.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="report.pdf">Read the full report &rarr;</a>
+        <a class="btn btn-ghost" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">View the code on GitHub &rarr;</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <img src="figures/png/kickoff.png" alt="A soccer Markov game board at kickoff: player 0 in blue carries the ball toward the right-hand goal, player 1 in green defends the left.">
+      <div class="fig-cap">Kickoff. <b>Blue</b> carries toward the right goal;
+      <b>green</b> defends the left. Every result on this page comes from
+      solving games like this one exactly &mdash; to machine precision, board by
+      board, no simulation and no learning curve.</div>
+    </div>
+  </div>
+</section>
+
+<section id="setup">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge p0">01</span>The game, briefly</div>
+    <h2>A grid, a ball, and one rule that makes it a real contest</h2>
+    <p>Two players share a small grid. One carries the ball and is trying to
+    reach the opponent's goal; the other is trying to stop them. Each turn,
+    both players choose a move <em>simultaneously</em> &mdash; neither sees the
+    other's choice first &mdash; and the game plays out from there, discounted so
+    that a goal scored sooner is worth more than one scored later. It is
+    <strong>zero-sum</strong>: every bit of advantage one player gains is
+    exactly what the other loses. That is what makes it a clean laboratory for
+    a much bigger question &mdash; not "how do you play soccer," but "when,
+    exactly, is confident and predictable play the right call, and when does
+    the situation itself force you to bluff?"</p>
+    <p>To keep the vocabulary unambiguous throughout this page (per this
+    project's own convention &mdash; earlier drafts used names like "advance" or
+    "cover the lane" and they only added confusion), every move is just one of
+    four directions, plus an optional fifth action that means "don't move this
+    turn":</p>
+    <div class="compass-row">
+      <svg class="compass" width="132" height="132" viewBox="0 0 132 132" aria-hidden="true">
+        <circle cx="66" cy="66" r="60" fill="none" stroke="var(--rule-strong)" stroke-width="1.4" stroke-dasharray="2 4"/>
+        <circle cx="66" cy="66" r="15" fill="none" stroke="var(--ink-faint)" stroke-width="2"/>
+        <g stroke="var(--pitch)" stroke-width="3" stroke-linecap="round" marker-end="url(#cArrow)">
+          <line x1="66" y1="45" x2="66" y2="16"/>
+          <line x1="66" y1="87" x2="66" y2="116"/>
+          <line x1="45" y1="66" x2="16" y2="66"/>
+          <line x1="87" y1="66" x2="116" y2="66"/>
+        </g>
+        <defs>
+          <marker id="cArrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+            <path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--pitch)"/>
+          </marker>
+        </defs>
+        <text x="66" y="10" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">U</text>
+        <text x="66" y="128" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">D</text>
+        <text x="8" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">L</text>
+        <text x="124" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" fill="var(--ink)">R</text>
+      </svg>
+      <div class="legend">
+        <div><span class="k">U / D / L / R</span> &mdash; up, down, left, right, one cell.</div>
+        <div><span class="k">STAND</span> (dashed ring) &mdash; hold this cell, a fifth
+        option in some of the boards below.</div>
+        <div>That's the entire action set. Every diagram on this page draws
+        moves as arrows in exactly these four directions &mdash; no hidden
+        vocabulary.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band-tint" id="question">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge p1">02</span>Where this starts</div>
+    <h2>A 30-year-old open question, made checkable in one glance</h2>
+    <p>Michael Littman's 1994 soccer game already proved that some situations
+    in a game like this force a coin flip &mdash; his own example is a player
+    pinned against its own goal with a defender right beside it, where any
+    fixed move can be blocked forever. What Littman's result doesn't say is
+    <em>which</em> situations, in general, need that coin flip and which
+    don't. That's the question a research group brought to this project: not
+    "can this happen," but "exactly when does it happen, and can you tell
+    without running an expensive solver on every single situation?"</p>
+    <p>The check turns out to be almost embarrassingly simple. Look at one
+    matchup at a time. Does either player have a single move that is at least
+    as good as anything else, no matter what the other player does? If yes,
+    that move is the obvious, unbeatable answer &mdash; play it. If <em>every</em>
+    move can be beaten by some response, the two best replies chase each
+    other in a circle. That circle is exactly the shape of rock&ndash;paper&ndash;scissors,
+    and the only sane move inside it is to genuinely randomize.</p>
+    <figure class="breakout">
+      <img src="figures/png/rps_vs_soccer.png" alt="Rock-paper-scissors payoff matrix next to a soccer stage game payoff matrix, both showing a cycle of best replies with no pure winning move.">
+      <div class="fig-cap"><b>The same shape, twice.</b> Left: rock&ndash;paper&ndash;scissors
+      &mdash; the blue bar marks each row's best reply, the green bar each
+      column's; they never land in the same cell. Right: an actual soccer
+      matchup from this project, at the moment a carrier is pinned against
+      its own goal with a defender beside it &mdash; the identical cycle, no
+      training required to see it, just checking every cell once.</div>
+    </figure>
+  </div>
+</section>
+
+<section id="switch">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge p0">03</span>The main finding</div>
+    <h2>One number on the board flips the entire game from predictable to unpredictable</h2>
+    <p>Widen the goal from a single defendable cell to two or more cells, and
+    every other setting held fixed, the game's character changes completely.
+    With a one-cell goal, a defender can always plant itself in the only spot
+    that matters &mdash; there's nothing to guess about, so <strong>every single
+    situation on the board has an obvious, deterministic best move for both
+    players.</strong> The instant the goal is wide enough that the defender
+    cannot cover every scoring cell at once, the carrier has a genuine choice
+    of lanes and the defender has to guess which one &mdash; and guessing games
+    are exactly where mixed strategies become mandatory, not optional.</p>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-k">Single-cell goal</div>
+        <div class="stat-v">0<span class="unit">of 2,380 situations</span></div>
+        <p>Every reachable matchup on the board has a pure, deterministic
+        best move for both players &mdash; verified by machine, not assumed.</p>
+      </div>
+      <div class="stat-card hit">
+        <div class="stat-k">Goal &ge; 2 cells wide</div>
+        <div class="stat-v">94<span class="unit">situations force a guess</span></div>
+        <p>Mixed strategies become provably necessary &mdash; and <strong>68 of
+        those 94</strong> reduce to the same simple pattern: the carrier
+        picking a lane, the defender guessing it.</p>
+      </div>
+    </div>
+    <p>This switch holds up across board sizes, board shapes, and where
+    exactly the goal sits &mdash; it is not a quirk of one particular layout. And
+    it survives a much stronger test: it's exactly the shape needed for a fast
+    shortcut. Rather than running an expensive general-purpose solver on
+    <em>every</em> situation, a solver can check the simple pure-move test
+    first and only fall back to the harder mixed-strategy math on the rare
+    situations that actually need it &mdash; skipping that expensive step
+    entirely on the overwhelming majority of the board.</p>
+    <figure class="breakout">
+      <img src="figures/png/mechanism.png" alt="A payoff matrix for one mixed soccer matchup, with best-reply markers cycling around the grid so that no single cell is a stable best response for both players.">
+      <div class="fig-cap"><b>No safe cell.</b> A payoff grid from one of the
+      94 must-guess situations: the blue marker traces player one's best row
+      for every column, the green marker traces player two's best column for
+      every row. They never overlap &mdash; there is no cell where both players
+      are simultaneously doing their best, which is the exact, checkable
+      signature of a forced mix.</div>
+    </figure>
+  </div>
+</section>
+
+<section class="band-tint" id="seeing">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge p1">04</span>Seeing it happen</div>
+    <h2>Six situations, drawn out by hand</h2>
+    <p>Numbers and heatmaps only go so far, so here are six actual situations,
+    solved exactly and drawn directly. Reading the diagrams: the <strong
+    style="color:var(--p0)">blue</strong> disc is player one, the <strong
+    style="color:var(--p1)">green</strong> disc is player two, the small
+    orange dot is the ball. An arrow's <em>thickness</em> and the percentage
+    beside it are the equilibrium's exact odds of playing that move &mdash; one
+    fat, lone arrow means "always do this"; several arrows sharing the weight
+    means the player must genuinely gamble, in precisely those proportions,
+    or hand the opponent a predictable pattern to exploit.</p>
+    <figure class="breakout">
+      <img src="figures/png/showcase.png" alt="Six soccer board diagrams, each showing both players' equilibrium move probabilities as weighted arrows, alongside the exact 4x4 payoff matrix for that situation.">
+      <div class="fig-cap">All six situations, with the unrounded 4&times;4
+      payoff matrix printed alongside each one in the underlying report &mdash;
+      so anyone can check by hand that the mix is real, not a rounding
+      artifact.</div>
+    </figure>
+    <div class="case-grid">
+      <div class="case"><span class="n" style="background:var(--p0)">1</span>
+        <div><b>A coin-flip at the goal mouth.</b> Near a 50/50 split for
+        both players &mdash; the textbook case.</div></div>
+      <div class="case"><span class="n" style="background:var(--p1)">2</span>
+        <div><b>Still guessing, far from goal.</b> The carrier is as far from
+        scoring as this board allows, yet still splits three ways &mdash; what
+        matters is the defender's distance, not the goal's.</div></div>
+      <div class="case"><span class="n" style="background:var(--p0)">3</span>
+        <div><b>A near-pure hedge.</b> A 97.5% / 2.5% split &mdash; genuinely
+        mixed, but shallow enough that rounding it to "always" would be a
+        real mistake.</div></div>
+      <div class="case"><span class="n" style="background:var(--p1)">4</span>
+        <div><b>Its mirror image.</b> Flip the board left-right and swap the
+        players: the exact same equilibrium comes back, and its value
+        negates to 17 decimal places.</div></div>
+      <div class="case"><span class="n" style="background:var(--p0)">5</span>
+        <div><b>Zero randomness in the rules &mdash; a mix anyway.</b> With every
+        movement fully deterministic, a reward that rewards field position
+        alone still forces a near-perfect coin flip.</div></div>
+      <div class="case"><span class="n" style="background:var(--p1)">6</span>
+        <div><b>A different rule, the same duel.</b> Swap in this project's
+        own sliding-tackle rule for who wins a contested ball, and the
+        identical "dive in or contain" guessing game reappears.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="generalize">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge p0">05</span>Stress-testing it</div>
+    <h2>Robust to the board. Specific to the reason.</h2>
+    <p>The goal-width switch isn't a one-board coincidence: it survives boards
+    up to roughly 7,800 states, odd aspect ratios, and goals with gaps in
+    them &mdash; a defender only ever fails when it genuinely cannot cover every
+    scoring cell at once, regardless of the exact shape. But the switch is
+    specific to <em>why</em> the game is uncertain, not to uncertainty in
+    general. Add a completely different kind of randomness &mdash; players
+    occasionally slipping and moving the wrong way by accident, on
+    <em>every</em> square, independent of either player's choice &mdash; and the
+    mixing requirement reappears even with a single-cell goal. A shared coin
+    everywhere produces guessing everywhere; a coin that only shows up where
+    lanes cross produces guessing only there.</p>
+    <figure class="breakout">
+      <img src="figures/png/rule_fingerprints.png" alt="Six board heatmaps, one per collision rule, showing where mixed strategies are required; deterministic and coinflip rules are blank, random and blend light a thin band near the goal, slip and tackle light a broad region around the defender.">
+      <div class="fig-cap"><b>Six rules, six fingerprints.</b> Same board,
+      defender pinned at the goal mouth, every carrier cell shaded by how far
+      its matchup is from having an obvious answer. Two rules (deterministic,
+      a coin-flip tiebreak) are blank &mdash; always predictable. Two more light
+      up a thin band right next to the goal. The last two &mdash; movement slip
+      and this project's tackle rule &mdash; light up a broad region wherever
+      the two players are close, not just near the goal.</div>
+    </figure>
+  </div>
+</section>
+
+<section class="band-tint" id="tournament">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge p1">06</span>Put to the test</div>
+    <h2>Knowing when to bluff isn't academic &mdash; it's the difference between winning and losing</h2>
+    <p>Solving for the correct mix is worthless if it doesn't matter in
+    practice, so four policies were pitted against four opponents, including
+    one built specifically, for each policy, to find and punish its weakness.
+    <strong>Minimax</strong> is the exact policy this project solves for &mdash; it
+    mixes exactly where the theory says it must, and stays pure everywhere
+    else. The other three never mix: <strong>greedy/self</strong> always
+    plays it safe, <strong>greedy/rand</strong> plays the single best reply to
+    a random opponent, and <strong>hand-built</strong> is a scripted, common-sense
+    "drive at the goal, block the direct path" defense.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Policy</th><th>vs. always-left</th><th>vs. random</th><th>vs. hand-built</th><th>vs. its own challenger</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Minimax (this project's policy)</td><td>+0.64</td><td>+0.63</td><td>+0.19</td><td class="hi">+0.13</td></tr>
+          <tr><td>Greedy / random-beater</td><td>+0.95</td><td>+0.92</td><td>+0.79</td><td class="lo">&minus;0.54</td></tr>
+          <tr><td>Greedy / play-it-safe</td><td>0.00</td><td>+0.07</td><td>0.00</td><td>&minus;0.00</td></tr>
+          <tr><td>Hand-built defense</td><td>0.00</td><td>+0.71</td><td>0.00</td><td class="lo">&minus;0.79</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><span class="tag">expected goal difference, exact solve, no simulation noise</span></p>
+    <p>Every deterministic policy looks strong against a weak opponent and
+    then collapses the moment a challenger is built to exploit it &mdash; because
+    a fixed pattern always has a fixed counter, exactly like always throwing
+    rock. <strong>Only the policy that knows how, and how much, to randomize
+    survives being specifically hunted.</strong> That's the entire practical
+    payoff of doing the harder math on the small slice of situations that
+    actually require it, instead of a policy that looks clever until someone
+    studies it.</p>
+    <figure class="breakout">
+      <img src="figures/png/tournament4.png" alt="Bar chart reproducing Littman's Table 3 tournament: minimax exploits weak opponents and survives its challenger, while greedy and hand-built policies collapse against a tailored challenger.">
+      <div class="fig-cap">The same result Littman reported in 1994, reproduced
+      here with an exact solver instead of learned policies, and with the
+      plain 4&times;4 <code>{U, D, L, R}</code> action set requested at the
+      research meeting &mdash; no fifth "stand" action needed for the result to
+      hold.</div>
+    </figure>
+  </div>
+</section>
+
+<section class="band-dark" id="why">
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge em">07</span>Why it matters</div>
+    <h2>A small game, a question that shows up everywhere agents share a world</h2>
+    <p class="lede">Strip away the ball and the grid, and the question
+    underneath this project is one that appears anywhere two or more
+    decision-makers with opposing or partly opposing goals act in the same
+    environment: poker-playing agents, adversarial-robustness testing,
+    pricing and auction bots, multi-robot coordination. In every one of those
+    settings, being perfectly predictable is a liability the moment someone
+    else is watching closely enough to exploit it &mdash; but paying the cost of
+    "always consider randomizing" everywhere is wasteful, because most
+    situations really do have a clean, deterministic best answer.</p>
+    <p>This project's contribution is a cheap, exact way to tell which regime
+    a given situation is in &mdash; a check that costs almost nothing and never
+    guesses wrong &mdash; instead of defaulting to an expensive general solver
+    everywhere or, worse, a policy that is confidently deterministic in
+    exactly the spots where that confidence is a losing bet.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="report.pdf">Read the full report &rarr;</a>
+      <a class="btn btn-ghost" href="gallery.html">Browse every diagram &rarr;</a>
+      <a class="btn btn-ghost" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">Source on GitHub &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="credit-mark" style="margin-bottom:.9rem;"><span></span><span></span></div>
+        <p>An exact, no-learning-curve solver for a discrete soccer Markov
+        game &mdash; and a map of exactly where, and why, its equilibrium stops
+        being deterministic.</p>
+      </div>
+      <div>
+        <h4>Read</h4>
+        <ul>
+          <li><a href="report.pdf">Full report (PDF)</a></li>
+          <li><a href="result.md">The goal-width switch</a></li>
+          <li><a href="showcase.md">Six worked examples</a></li>
+          <li><a href="tournament.md">The tournament, in full</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="gallery.html">Diagram gallery</a></li>
+          <li><a href="generalize.md">How far it generalizes</a></li>
+          <li><a href="tackle.md">The tackle rule</a></li>
+          <li><a href="templates.md">The 8 geometric templates</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">GitHub repository</a></li>
+          <li><a href="README.md">Documentation index</a></li>
+          <li><a href="methods.md">Methods &amp; reproducibility</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>Charith Reddy Pareddy &mdash; soccer-markov-nash</span>
+    <span>Solved exactly. Nothing on this page was learned by a neural network.</span>
+  </div>
+</footer>
+
+</body>
+</html>

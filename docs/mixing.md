@@ -41,8 +41,8 @@ because the carrier barely has to randomise there.
 | 3-action (one side) | 26 | near-pure saddles (2×1 effective support) or one 3×3 |
 
 This is the same 68 / 94 the geometric templates cover
-([templates.md](templates.md)); the carrier randomizes between two scoring lanes
-(climb / advance) and the defender between covering them.
+([templates.md](templates.md)); the carrier randomizes between two of
+`{U, D, L, R}` toward two scoring lanes and the defender between covering them.
 
 ## 4. The value of mixing
 

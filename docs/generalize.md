@@ -57,8 +57,7 @@ submatrix:
   94 mixed states. The carrier is choosing **which goal row to head for**.
 - The defender's crossing pair mirrors it. The defender is **guessing which row
   the carrier will take**.
-- Pure left/right crossings (advance versus retreat with no vertical choice)
-  occur in only 4 states.
+- Pure `L`/`R` crossings (no vertical choice at all) occur in only 4 states.
 
 This is the mechanism in one line: near a multi-cell goal the carrier picks a
 lane and the defender guesses the lane, which is matching pennies, so neither

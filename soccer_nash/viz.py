@@ -120,7 +120,9 @@ def policy_svg(
     w, h = game.width, game.height
     x0, y0, x1, y1, b = state
     tw = w * CELL + 2 * MARGIN
-    th = h * CELL + 2 * MARGIN + 4
+    if title:  # widen for a title wider than the board (matches bestreply_svg)
+        tw = max(tw, MARGIN + len(title) * 6.6)
+    th = h * CELL + 2 * MARGIN + 18  # room so a bottom-row arrow label clears the caption
 
     p0 = np.asarray(row_policy[state], dtype=float)
     p1 = np.asarray(col_policy[state], dtype=float)

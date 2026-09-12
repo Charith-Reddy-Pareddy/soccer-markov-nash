@@ -115,14 +115,27 @@ def characterise_mixed_states(solver, result):
     print(f"  {two_by_two} of {len(ns)} are 2x2 -- a matching-pennies mix")
 
 
+_ACT = ["U", "D", "L", "R", "STAND"]
+
+
 def _first_2x2_mixed(solver, result):
-    """A real 2x2 matching-pennies stage game, carrier as the maximising rows."""
+    """A real 2x2 matching-pennies stage game, carrier as the maximising rows.
+
+    Returns ``(state, matrix, row_letters, col_letters)`` -- the row/col
+    labels are the actual ``U``/``D``/``L``/``R`` actions surviving dominance,
+    not narrative names, per the meeting feedback.
+    """
     for s in sorted(result.no_saddle_states):
         m = solver._matrix(s, result.values)
-        _ri, _ci, sub = essential_subgame(m)
+        ri, ci, sub = essential_subgame(m)
         if sub.shape == (2, 2):
-            return s, (sub if s[4] == 0 else -sub.T)
-    return None, None
+            carries = s[4] == 0
+            mat = sub if carries else -sub.T
+            row_idx, col_idx = (ri, ci) if carries else (ci, ri)
+            row_letters = [_ACT[i] for i in row_idx]
+            col_letters = [_ACT[i] for i in col_idx]
+            return s, mat, row_letters, col_letters
+    return None, None, None, None
 
 
 def write_figures(gamma: float) -> None:
@@ -133,11 +146,11 @@ def write_figures(gamma: float) -> None:
 
     # 1. the soccer game contains rock-paper-scissors
     rps = np.array([[0.0, -1, 1], [1, 0, -1], [-1, 1, 0]])
-    state, sub = _first_2x2_mixed(solver, result)
+    state, sub, row_letters, col_letters = _first_2x2_mixed(solver, result)
     (FIGDIR / "rps_vs_soccer.svg").write_text(panel_svg([
         bestreply_svg(rps, ["rock", "paper", "scis"], ["rock", "paper", "scis"],
                       title="rock-paper-scissors"),
-        bestreply_svg(np.round(sub, 3), ["climb", "advance"], ["cover", "hold"],
+        bestreply_svg(np.round(sub, 3), row_letters, col_letters,
                       title=f"soccer: carrier pinned  {state}"),
     ], cols=2))
     print(f"wrote {FIGDIR / 'rps_vs_soccer.svg'}")

@@ -521,7 +521,7 @@
         </tbody>
       </table>
     </div>
-    <p>The <b>four 2&times;2-support templates are all verified matching pennies</b> &mdash; the carrier's best reply flips between the two defender columns and vice versa &mdash; covering <b>68 of 94</b> states: carrier {climb, advance} against defender {cover a lane, hold the forward cell}. All 94 share one value across every equilibrium; 64 have a unique one.</p>
+    <p>The <b>four 2&times;2-support templates are all verified matching pennies</b> &mdash; the carrier's best reply flips between the two defender columns and vice versa &mdash; covering <b>68 of 94</b> states: the carrier choosing between two of <span class="mono">{U, D, L, R}</span> against the defender covering one of the same two (exact letters per template in <span class="mono">docs/templates.md</span>). All 94 share one value across every equilibrium; 64 have a unique one.</p>
     <figure>
       <img src="figures/png/templates.png" alt="Four boards, one per matching-pennies template, each showing the carrier and defender with two fanned arrows and their equilibrium probabilities." style="max-width:560px; margin:0 auto;">
       <figcaption class="fig-cap"><b>One policy fan per matching-pennies template.</b> Each covers a class of mixed states related by carrier-frame geometry; <span class="mono">p*</span>, <span class="mono">q*</span> are the equilibrium weights on the first support action. The carrier randomizes between two scoring lanes, the defender between covering them.</figcaption>
@@ -582,10 +582,10 @@
         </tbody>
       </table>
     </div>
-    <p>The fifth action does <em>not</em> move where mixing happens &mdash; 48 of the 56 no-pure-saddle states are shared, 8 swap in and 8 out at the margin &mdash; but it changes <em>what</em> the mix is: the carrier now hedges with <span class="mono">stand</span> in 48 of 56 states rather than with <span class="mono">retreat</span>, and every player is slightly better for the option (<span class="mono">V(kickoff) +0.147 &rarr; +0.172</span>). The Figure&nbsp;2 state is a clean matching-pennies matrix with equilibrium <span class="mono">(&frac12; climb, &frac12; hold)</span>. The deterministic game keeps a pure saddle at every state with five actions too.</p>
+    <p>The fifth action does <em>not</em> move where mixing happens &mdash; 48 of the 56 no-pure-saddle states are shared, 8 swap in and 8 out at the margin &mdash; but it changes <em>what</em> the mix is: the carrier now hedges with <span class="mono">STAND</span> in 48 of 56 states rather than with a move action, and every player is slightly better for the option (<span class="mono">V(kickoff) +0.147 &rarr; +0.172</span>). The Figure&nbsp;2 state (0,1,1,1,1) is a clean matching-pennies matrix with equilibrium <span class="mono">(&frac12; U, &frac12; STAND)</span> for both players. The deterministic game keeps a pure saddle at every state with five actions too.</p>
     <figure>
-      <img src="figures/png/littman_stand.png" alt="The same board state drawn twice: with four moves the carrier mixes climb and retreat; with the stand action added it mixes climb and hold, both at 50 percent." style="max-width:620px; margin:0 auto;">
-      <figcaption class="fig-cap"><b>Littman's Figure 2.</b> Same state, four moves (left) vs. five (right). The dashed ring is <span class="mono">stand</span>. Adding it turns the carrier's climb/retreat hedge into climb/hold &mdash; Littman's mixed policy.</figcaption>
+      <img src="figures/png/littman_stand.png" alt="The same board state drawn twice: with four moves the carrier mixes U and L; with the stand action added it mixes U and STAND, both at 50 percent." style="max-width:620px; margin:0 auto;">
+      <figcaption class="fig-cap"><b>Littman's Figure 2.</b> Same state, four moves (left) vs. five (right). The dashed ring is <span class="mono">STAND</span>. Adding it turns the carrier's U/L hedge into a U/STAND hedge &mdash; Littman's mixed policy.</figcaption>
     </figure>
   </section>
 
