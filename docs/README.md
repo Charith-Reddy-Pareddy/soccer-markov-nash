@@ -20,13 +20,12 @@ separate repo). For the technical answer, start with **[report.pdf](report.pdf)*
 - [showcase.md](showcase.md) — six mixed states worked by hand: weighted-arrow
   diagrams, the exact stage matrix, and why relative position (not distance to
   goal) is what forces a guess (`make showcase`).
-- [positions.md](positions.md) (also [positions.pdf](positions.pdf)) — nine
-  player-position cases, including the exact board position drawn at the
-  meeting, next to the full `4x4` Q matrix redrawn as a node-and-arrow
-  best-response graph: one lit-up cell for a pure state, a closed loop of
-  arrows for a mixed one, and one asymmetric case where only one player is
-  actually
-  guessing (`make positions`, `make positions-pdf`).
+- [positions.md](positions.md) (also [positions.pdf](positions.pdf)) —
+  twelve player-position cases, one per canonical equilibrium-support shape
+  and per mixing mechanism studied in the project (move order, tackle,
+  reward, slip), including the exact board position drawn at the meeting,
+  next to the full `4x4` Q matrix redrawn as a node-and-arrow best-response
+  graph (`make positions`, `make positions-pdf`).
 - [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
   (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
   structure, and the value of mixing (`make mixing`).

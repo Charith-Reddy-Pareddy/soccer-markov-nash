@@ -8,7 +8,16 @@ the one node with no outgoing arrow; a matching-pennies game has every node
 pointing somewhere, so the arrows chase each other around a closed loop and
 no cell is safe -- exactly the picture drawn on the whiteboard.
 
-Nine cases, each answering a specific question from the meeting:
+Twelve cases. Across the whole project there are exactly four *canonical*
+equilibrium-support shapes once every stage game is reoriented so rows are
+always the carrier's actions (`(2,2)`: 68 states, `(3,3)`: 4, `(2,1)`: 14,
+`(3,2)`: 8) -- the defender's support is **never larger** than the
+carrier's, in any of the 94 mixed states on the canonical board. This file
+shows an example of all four shapes, plus every distinct *mechanism* studied
+in the project that can force a mix (a stochastic move order, this project's
+own tackle rule, a dense reward with zero transition noise, and movement
+slip on an otherwise-always-pure single-cell goal), each answering a
+specific question from the meeting:
 
 1. a **pure** state, for contrast -- one node lit up, no cycle, no mixing;
 2. the **typical two-action mix** -- a vertical crossing pair, the shape 90 of
@@ -20,18 +29,30 @@ Nine cases, each answering a specific question from the meeting:
    we move right and when we move left, there's an equal chance of me
    winning"): the carrier's live moves are exactly L and R, no vertical
    option in its support at all, one of only 4 states shaped this way;
-5. a genuine **3-action** mix, requested explicitly ("don't focus on entropy,
-   the matrix would be an output by the function");
+5. a genuine **3-action** mix (support `3x3`), requested explicitly ("don't
+   focus on entropy, the matrix would be an output by the function");
 6. a **near-pure hedge** -- entropy 0.17 bits, the rounding trap made
    concrete: reading 97.5% as 100% would be the mistake the meeting flagged;
 7. the typical-mix case's own **twin, mirrored** -- board flipped, value
    negated to machine precision, showing the shape in (2) is not a one-off;
 8. this project's own **tackle rule**, a different collision mechanism
    entirely, producing the same kind of duel;
-9. the **asymmetric mix** -- support (2,1): the carrier still needs two
+9. the **asymmetric mix** -- support `(2,1)`: the carrier still needs two
    actions while the defender's equilibrium is a single fixed move. Not a
    symmetric duel at all, and the exact "is this really mixed, or just
-   another representation of a tie" question from the meeting.
+   another representation of a tie" question from the meeting;
+10. the **three-lane mix** -- support `(3,2)`: the carrier genuinely needs
+    three actions but the defender only ever needs two to cover them, the
+    fourth and last canonical shape, and (by coincidence) the single
+    deepest, most rounding-proof gap of any state on this page;
+11. **mixing forced by reward alone** -- fully deterministic movement, a
+    dense reward that pays for field position instead of goals alone, and
+    still a near-fair-coin mix: no stochastic transition anywhere in this
+    one;
+12. **movement slip on a single-cell goal** -- the one board shape that is
+    *always* pure under every move-order rule in this project, forced to mix
+    anyway once every player has a chance of slipping to a random move
+    regardless of who is where.
 
     python scripts/positions.py
 
@@ -162,13 +183,34 @@ def main() -> None:
     _report(why, g, solver, r, astate, panels)
     _web_pair(web_boards, web_matrices, g, solver, r, astate, "Asymmetric mix")
 
-    # web-only bonus: deterministic + territory, mixing forced by reward alone
+    # 10: the three-lane mix -- support (3,2), the fourth canonical shape,
+    # and (by coincidence) the deepest gap of any state on this page
+    lstate = (0, 2, 2, 2, 1)
+    why = "The three-lane mix -- support (3,2), the deepest gap on this page"
+    assert lstate in mixed
+    _report(why, g, solver, r, lstate, panels)
+
+    # 11: deterministic + territory -- mixing forced by reward alone
     gt, st_, rt = _solve(width=7, height=5, goal_rows=(1, 2, 3),
                           move_order="deterministic", scoring="territory",
                           territory_reward=0.05)
     tstate = (4, 4, 5, 4, 0)
+    why = "Mixing forced by reward alone -- zero transition randomness"
+    _report(why, gt, st_, rt, tstate, panels)
     _web_pair(web_boards, web_matrices, gt, st_, rt, tstate,
               "The surprising case -- zero randomness, still mixes")
+
+    # 12: movement slip on a single-cell goal -- the one shape that is
+    # always pure under every move-order rule, forced to mix by slip alone
+    gs, ss, rs = _solve(width=5, height=5, goal_rows=(2,),
+                         move_order="deterministic", slip=0.15)
+    slip_mixed = set(rs.no_saddle_states)
+    sstate = next(iter(sorted(slip_mixed)[len(slip_mixed) // 2:]))
+    why = "Movement slip -- a single-cell goal, always pure until now"
+    assert sstate in slip_mixed
+    _report(why, gs, ss, rs, sstate, panels)
+    print(f"  ({len(slip_mixed)} mixed states appear under slip=0.15 on a "
+          f"goal shape that has exactly 0 at slip=0)\n")
 
     FIG.parent.mkdir(parents=True, exist_ok=True)
     FIG.write_text(panel_svg(panels, cols=2))

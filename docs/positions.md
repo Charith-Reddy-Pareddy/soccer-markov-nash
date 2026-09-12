@@ -11,7 +11,19 @@ always the full grid, never reduced, per the professor's own correction that
 the matrix should stay `4x4` and that the matrix itself, not an entropy
 number, is the actual output.
 
-![Nine cases, board and Q-matrix graph side by side, including the exact
+**Twelve cases.** Across the whole project there are exactly four
+*canonical* equilibrium-support shapes once every stage game is reoriented
+so rows are always the carrier's actions -- `(2,2)`: 68 states, `(3,3)`: 4,
+`(2,1)`: 14, `(3,2)`: 8. **The defender's support is never larger than the
+carrier's**, in any of the 94 mixed states on the canonical board -- a fact
+that only became visible once every case in this file was reoriented onto
+the same carrier/defender axis. This page shows one example of all four
+shapes, plus every distinct *mechanism* studied in the project that can
+force a mix: a stochastic move order, this project's own tackle rule, a
+dense reward with zero transition noise, and movement slip on a goal shape
+that is otherwise always pure.
+
+![Twelve cases, board and Q-matrix graph side by side, including the exact
 board position the professor drew.](figures/png/positions.png)
 
 ## Reading the graph
@@ -204,7 +216,65 @@ equilibrium reply to the defender's fixed `R`. `soccer_nash/certificate.py`'s
 (row `L`'s pure security value, `0.086`, sits within `0.0095` of the mixed
 value), while Case 4's cycle has no pure security value anywhere near it.
 
-## The mathematics behind all nine
+## Case 10 — `(0, 2, 2, 2, 1)`: the three-lane mix
+
+Support `(3, 2)` -- gap `0.0699`, the **deepest gap of any state on this
+page** (fifteen times deeper than the shallowest hedge in Case 6). This is
+the fourth and last canonical support shape: the carrier genuinely needs
+three live actions (`U 16.9% / D 66% / L 17.1%`), while the defender only
+ever needs two (`L 77.9% / R 22.1%`). Combined with
+Case 9, this settles a structural question the certificates make checkable
+rather than assumed: **the defender never needs strictly more actions than
+the carrier**, across all 94 mixed states on the canonical board.
+
+```
+        U        D        L        R
+  U   0.247    0.330    0.272    0.317
+  D   0.330    0.247    0.272    0.317
+  L   0.366    0.366    0.330    0.110
+  R   0.228    0.228    0.220    0.205
+```
+
+## Case 11 — `(4, 4, 5, 4, 0)`, deterministic: mixing forced by reward alone
+
+Every case so far gets its coin flip from a stochastic *transition* -- the
+random move order, or the tackle rule's own coin. This one has **no
+transition stochasticity at all** (`move_order="deterministic"`): the mix
+comes entirely from `scoring="territory"`, a dense per-step reward for the
+ball in the opponent's final third, layered on top of the ordinary win/loss
+score. Gap `0.0653`, entropy `0.996` bits -- close to a fair coin, forced
+purely by coupling the reward to both players' actions.
+
+```
+        U        D        L        R
+  U   0.116    0.105    0.170    0.136
+  D   0.094    0.415    0.815    0.450
+  L   0.094    0.105    0.000    0.105
+  R   0.170    0.500   -0.671    0.500
+```
+
+## Case 12 — `(1, 3, 1, 4, 1)`: movement slip on a single-cell goal
+
+The sharpest possible contrast with Case 1. A single-cell goal under
+deterministic move order is **provably pure at every one of its states** --
+that is [the whole goal-width result](result.md). Add `slip=0.15` (each
+player independently takes a uniform-random move instead of its chosen one,
+15% of the time, regardless of position) to that exact board, and **52 mixed
+states appear** where there were 0. Gap `0.0172` -- a genuine, certified
+mix, not noise. [generalize.md](generalize.md) states the mechanism
+precisely: the goal-width switch is a property of Littman's move-order
+coin specifically; a coin that lands on every square regardless of the goal
+forces mixing everywhere, independent of goal width.
+
+```
+        U        D        L        R
+  U  -0.273    0.006    0.001    0.069
+  D  -0.031    0.069    0.057    0.450
+  L   0.396    0.083    0.039    0.450
+  R   0.039    0.020    0.015    0.092
+```
+
+## The mathematics behind all twelve
 
 A mixed equilibrium is exactly the strategy pair where every action in a
 player's support earns the **same expected payoff** against the opponent's
@@ -221,5 +291,5 @@ cycle anywhere in the matrix.
 ## Reproduction
 
 `python scripts/positions.py` prints the exact `4x4` Q matrix and policy for
-all nine states and writes `figures/gallery/positions.svg`. A PDF write-up
+all twelve states and writes `figures/gallery/positions.svg`. A PDF write-up
 of this page is at [positions.pdf](positions.pdf).
