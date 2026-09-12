@@ -1,6 +1,6 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Player positions and the 4x4 stage game</title>
+<title>Player positions and the 4x4 Q matrix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -55,33 +55,36 @@
 </style>
 
 <p class="kicker">Soccer Markov game &middot; research meeting follow-up</p>
-<h1>Player positions and the 4&times;4 stage game</h1>
+<h1>Player positions and the 4&times;4 Q matrix</h1>
 <p class="lede">
 At the research meeting the professor drew a stage game by hand: a small grid
 of cells, each marked, with arrows chasing each other around the grid to show
 that no cell is a stable outcome. This is that sketch, generated from the
 exact solver instead of drawn free-hand, paired with a picture of where the
-two players actually are, and the exact <span class="mono">4&times;4
-{U, D, L, R}</span> matrix underneath &mdash; the professor's own correction
-that the matrix, not an entropy number, is the actual output.
+two players actually are, and the exact, complete <span class="mono">4&times;4
+{U, D, L, R}</span> <b>Q matrix</b> underneath every case &mdash; always the
+full grid, never reduced, per the professor's own correction that the matrix
+should stay <span class="mono">4&times;4</span> and that the matrix itself,
+not an entropy number, is the actual output.
 </p>
 
 <figure>
-  <img src="figures/png/positions.png" alt="Seven cases, board and stage-game graph side by side.">
-  <figcaption>All seven cases: board position (left) and the stage game redrawn as a node-and-arrow graph (right). A lit node with no outgoing arrow is a pure saddle; a closed loop of arrows means no cell is safe.</figcaption>
+  <img src="figures/png/positions.png" alt="Eight cases, board and Q-matrix graph side by side.">
+  <figcaption>All eight cases: board position (left) and the full 4&times;4 Q matrix redrawn as a node-and-arrow graph (right). A lit node with no outgoing arrow is a pure saddle; a closed loop of arrows means no cell is safe.</figcaption>
 </figure>
 
 <h2>Reading the graph</h2>
 <p>
-Each node is one surviving cell of the stage game after removing strictly
-dominated rows/columns (<span class="mono">row = the carrier's action</span>,
+Each node is one cell of the complete <span class="mono">4&times;4</span> Q
+matrix (<span class="mono">row = the carrier's action</span>,
 <span class="mono">col = the defender's action</span>, always reoriented so
 the printed payoff is the carrier's, regardless of which player id actually
 carries the ball). A blue arrow points from a cell to the cell in the same
 column with the higher payoff &mdash; the carrier's own reason to switch rows.
 A green arrow points from a cell to the cell in the same row with the
 <em>lower</em> payoff &mdash; the defender's reason to switch columns, since
-the defender minimises.
+the defender minimises. Every case shows all 16 cells, so the shapes are
+directly comparable.
 </p>
 
 <div class="case">
@@ -183,11 +186,10 @@ configuration recurs.</p>
 gets its coin flip from Littman's random move order. This one is solved
 under the tackle rule (defender commits to a challenge that wins the ball
 with fixed probability or bounces off) instead &mdash; a mechanism with
-nothing to do with move order at all. <span class="fact">It reduces to the
-same 2&times;2 duel shape</span> (support (2,2), gap 0.0223): the carrier
+nothing to do with move order at all. <span class="fact">It produces the
+same kind of duel</span> (support (2,2), gap 0.0223): the carrier
 mixes <span class="mono">D 60.7% / R 39.3%</span>, the defender mixes
-<span class="mono">U 32.1% / D 67.9%</span>. Different cause, identical
-structure.</p>
+<span class="mono">U 32.1% / D 67.9%</span>. Different cause, same structure.</p>
 <pre class="matrix">        U        D        L        R
   U  -0.012    0.005    0.016   -0.042
   D   0.072   -0.022    0.009    0.000
@@ -195,7 +197,35 @@ structure.</p>
   R  -0.007   -0.026   -0.006   -0.039</pre>
 </div>
 
-<h2>The mathematics behind all seven</h2>
+<div class="case">
+<h2>Case 8 <span class="state-tag">(0, 2, 1, 2, 0)</span></h2>
+<p><strong>The asymmetric mix.</strong> Support (2, 1) &mdash; gap 0.0095.
+The odd one out: the carrier's equilibrium still mixes two actions
+(<span class="mono">U 2.6% / D 97.4%</span>), but the <strong>defender's</strong>
+equilibrium is a single fixed move (<span class="mono">R</span>, 100%).
+Every other case on this page is a symmetric duel &mdash; both players
+genuinely guessing. Here only one side is.</p>
+<pre class="matrix">        U        D        L        R
+  U   0.085    0.478    0.291    0.095
+  D   0.478    0.085    0.291    0.095
+  L   0.093    0.093    0.086    0.093
+  R   0.082    0.082   -0.122   -0.072</pre>
+<p>Why the carrier still needs two actions against a defender who never
+varies: against the defender's pure <span class="mono">R</span>, column
+<span class="mono">R</span> reads <span class="mono">U 0.095, D 0.095,
+L 0.093, R -0.072</span> &mdash; <span class="fact">U and D are exactly
+tied</span>, both strictly better than L or R. Nothing in the payoffs favours
+one over the other, so any split of U/D is an equally valid best reply; the
+solver's LP reports one particular split (2.6% / 97.4%), not a probability
+forced by the game the way Case 3's 18% / 82% is. This is the meeting's
+LP-edge-case question made concrete: <strong>a tie between two rows can look
+identical, in the printed policy, to a genuine forced mix, but it is a
+different phenomenon</strong> &mdash; no best-reply cycle is involved, and
+either pure U or pure D alone would also be a valid equilibrium reply to the
+defender's fixed R.</p>
+</div>
+
+<h2>The mathematics behind all eight</h2>
 <p>
 A mixed equilibrium is exactly the strategy pair where every action in a
 player's support earns the <strong>same expected payoff</strong> against the
@@ -204,7 +234,10 @@ Case&nbsp;3, and it is also why the best-response graph cycles with no
 resting point: if one action in the support paid strictly more, that player
 would raise its weight on it, which is precisely the condition an
 equilibrium rules out. A best-reply cycle and mutual indifference are the
-same fact seen from two sides, not two different explanations.
+same fact seen from two sides, not two different explanations. Case 8 shows
+the boundary of that story: indifference alone (a tie against a fixed
+opponent) can produce the same <em>symptom</em> &mdash; a fractional policy
+&mdash; without a cycle anywhere in the matrix.
 </p>
 
 <footer>
