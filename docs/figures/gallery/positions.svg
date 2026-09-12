@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 2784" role="img" aria-label="panel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 3134" role="img" aria-label="panel">
 <g transform="translate(74.5 18.0)"><clipPath id="pnl0"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl0)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
@@ -197,7 +197,109 @@
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.07</text>
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
-<g transform="translate(72.0 718.0)"><clipPath id="pnl4"><rect x="-16.0" y="-16.0" width="405.0" height="330.0"/></clipPath><g clip-path="url(#pnl4)">
+<g transform="translate(74.5 718.0)"><clipPath id="pnl4"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl4)">
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
+<line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="162" y1="30" x2="162" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="206" y1="30" x2="206" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="250" y1="30" x2="250" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="294" y1="30" x2="294" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="74" x2="338" y2="74" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
+<circle cx="96.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
+<line x1="52.0" y1="215.0" x2="52.0" y2="207.2" stroke="var(--p0, #2f6bb0)" stroke-width="1.9" stroke-linecap="round" opacity="0.43" marker-end="url(#ah-2f6bb0)"/>
+<text x="52.0" y="199.2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">5%</text>
+<line x1="39.0" y1="228.0" x2="14.8" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.92" marker-end="url(#ah-2f6bb0)"/>
+<text x="3.8" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">95%</text>
+<line x1="96.0" y1="197.0" x2="96.0" y2="221.1" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.92" marker-end="url(#ah-2f8a52)"/>
+<text x="96.0" y="235.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">95%</text>
+<line x1="83.0" y1="184.0" x2="75.1" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="1.9" stroke-linecap="round" opacity="0.43" marker-end="url(#ah-2f8a52)"/>
+<text x="64.1" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">5%</text>
+<text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.078</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The professor's own position -- (0,0) and (1,1)</text>
+</g></g>
+<g transform="translate(607.5 716.0)"><clipPath id="pnl5"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl5)">
+<text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 0, 1, 1, 0)</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
+<text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
+<text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
+<text x="12" y="272" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">R</text>
+<line x1="39.0" y1="49.0" x2="39.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="39.0" y1="127.0" x2="39.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="39.0" y1="205.0" x2="39.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="131.0" y1="97.0" x2="131.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="131.0" y1="175.0" x2="131.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="131.0" y1="253.0" x2="131.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="223.0" y1="49.0" x2="223.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="223.0" y1="127.0" x2="223.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="223.0" y1="205.0" x2="223.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="315.0" y1="49.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="315.0" y1="127.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="315.0" y1="205.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="61.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="245.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.10</text>
+<circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="138.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.10</text>
+<circle cx="230.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="230.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.41</text>
+<circle cx="322.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="322.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.08</text>
+<circle cx="46.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.11</text>
+<circle cx="138.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="138.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.08</text>
+<circle cx="230.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="230.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.10</text>
+<circle cx="322.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="322.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.09</text>
+<circle cx="46.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.11</text>
+<circle cx="138.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="138.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.08</text>
+<circle cx="230.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="230.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.10</text>
+<circle cx="322.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="322.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.09</text>
+<circle cx="46.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.11</text>
+<circle cx="138.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.08</text>
+<circle cx="230.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.11</text>
+<circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.09</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
+</g></g>
+<g transform="translate(74.5 1068.0)"><clipPath id="pnl6"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl6)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -228,9 +330,9 @@
 <line x1="109.0" y1="228.0" x2="132.6" y2="228.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.91" marker-end="url(#ah-2f8a52)"/>
 <text x="143.6" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">92%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = -0.206</text>
-<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The meeting's example -- indifferent between L and R</text>
+<text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">A clean L/R indifference example</text>
 </g></g>
-<g transform="translate(607.5 716.0)"><clipPath id="pnl5"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl5)">
+<g transform="translate(607.5 1066.0)"><clipPath id="pnl7"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl7)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (1, 1, 1, 0, 1)</text>
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
@@ -299,7 +401,7 @@
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.17</text>
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
-<g transform="translate(74.5 1068.0)"><clipPath id="pnl6"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl6)">
+<g transform="translate(74.5 1418.0)"><clipPath id="pnl8"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl8)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -334,7 +436,7 @@
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.085</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">A genuine 3-action mix, not a 2-cycle</text>
 </g></g>
-<g transform="translate(607.5 1066.0)"><clipPath id="pnl7"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl7)">
+<g transform="translate(607.5 1416.0)"><clipPath id="pnl9"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl9)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 0, 2, 0, 0)</text>
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
@@ -403,7 +505,7 @@
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.11</text>
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
-<g transform="translate(74.5 1418.0)"><clipPath id="pnl8"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl8)">
+<g transform="translate(74.5 1768.0)"><clipPath id="pnl10"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl10)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -436,7 +538,7 @@
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = -0.168</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">A near-pure hedge -- where rounding would lie</text>
 </g></g>
-<g transform="translate(607.5 1416.0)"><clipPath id="pnl9"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl9)">
+<g transform="translate(607.5 1766.0)"><clipPath id="pnl11"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl11)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (1, 1, 2, 0, 1)</text>
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
@@ -505,7 +607,7 @@
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.14</text>
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
-<g transform="translate(65.5 1768.0)"><clipPath id="pnl10"><rect x="-16.0" y="-16.0" width="418.0" height="330.0"/></clipPath><g clip-path="url(#pnl10)">
+<g transform="translate(65.5 2118.0)"><clipPath id="pnl12"><rect x="-16.0" y="-16.0" width="418.0" height="330.0"/></clipPath><g clip-path="url(#pnl12)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -538,7 +640,7 @@
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = -0.094</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The typical mix, mirrored -- same shape, value negated</text>
 </g></g>
-<g transform="translate(607.5 1766.0)"><clipPath id="pnl11"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl11)">
+<g transform="translate(607.5 2116.0)"><clipPath id="pnl13"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl13)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (5, 1, 6, 1, 1)</text>
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
@@ -607,7 +709,7 @@
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.08</text>
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
-<g transform="translate(25.5 2140.0)"><clipPath id="pnl12"><rect x="-16.0" y="-16.0" width="498.0" height="286.0"/></clipPath><g clip-path="url(#pnl12)">
+<g transform="translate(25.5 2490.0)"><clipPath id="pnl14"><rect x="-16.0" y="-16.0" width="498.0" height="286.0"/></clipPath><g clip-path="url(#pnl14)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="220" height="176" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -635,7 +737,7 @@
 <text x="30" y="250" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.013</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">This project's own tackle rule -- a different mechanism, same duel</text>
 </g></g>
-<g transform="translate(607.5 2116.0)"><clipPath id="pnl13"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl13)">
+<g transform="translate(607.5 2466.0)"><clipPath id="pnl15"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl15)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (2, 3, 3, 3, 1)</text>
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
@@ -704,7 +806,7 @@
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.04</text>
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
-<g transform="translate(16.0 2468.0)"><clipPath id="pnl14"><rect x="-16.0" y="-16.0" width="517.0" height="330.0"/></clipPath><g clip-path="url(#pnl14)">
+<g transform="translate(16.0 2818.0)"><clipPath id="pnl16"><rect x="-16.0" y="-16.0" width="517.0" height="330.0"/></clipPath><g clip-path="url(#pnl16)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -734,7 +836,7 @@
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.095</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The asymmetric mix -- the carrier still guesses, the defender doesn't</text>
 </g></g>
-<g transform="translate(607.5 2466.0)"><clipPath id="pnl15"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl15)">
+<g transform="translate(607.5 2816.0)"><clipPath id="pnl17"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl17)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 2, 1, 2, 0)</text>
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
 <text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
