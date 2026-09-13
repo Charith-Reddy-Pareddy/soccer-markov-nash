@@ -19,11 +19,14 @@ run, which is what makes sweeping many architectures affordable at all.
 Two sweeps, both fixed at 600 epochs:
 
 * **width**, depth fixed at 2 hidden layers (the original architecture):
-  `hidden in {32, 64, 96, 128, 192, 256}`.
+  `hidden in {32, 64, 96, 128, 192, 256, 512}` -- extended to 512 specifically
+  because the review this answers said not to limit the network size.
 * **depth**, width fixed at 96: `hidden in {(96,), (96,96,96), (96,96,96,96)}`
   (depth 2 / width 96 is already the width sweep's `hidden=96` point).
 
-Plus one combined "go big both ways" point, `hidden=(256, 256, 256)`.
+Plus two combined "go big both ways" points, `hidden=(256, 256, 256)` and
+`hidden=(512, 512, 512)` -- 5 hidden->hidden weight matrices of 512x512 each,
+~1.3M parameters, about 115x the original `5->96->96->16` architecture.
 
 2 seeds per configuration (an ablation grid trades seed count for breadth of
 configurations; `nash_dqn.py`'s own headline numbers use 5).
@@ -65,11 +68,12 @@ def _configs() -> list[tuple[str, int, int, tuple[int, ...]]]:
     shared between both sweeps (labelled "width" since it's that sweep's
     midpoint) so it is listed once, not trained twice."""
     out = []
-    for width in (32, 64, 96, 128, 192, 256):
+    for width in (32, 64, 96, 128, 192, 256, 512):
         out.append(("width", 2, width, (width, width)))
     for depth in (1, 3, 4):
         out.append(("depth", depth, 96, (96,) * depth))
     out.append(("both", 3, 256, (256, 256, 256)))
+    out.append(("both", 3, 512, (512, 512, 512)))
     return out
 
 

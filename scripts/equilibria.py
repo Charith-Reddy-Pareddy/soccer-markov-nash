@@ -3,8 +3,10 @@
 Support enumeration (``soccer_nash.support_enum``) finds all Nash equilibria of
 a 2-player game, not just the one an LP returns. Two things fall out:
 
-* the 94 soccer stage games that need mixed strategies -- how many have a unique
-  equilibrium, and how sharp the 2x2 mixes are;
+* the 94 soccer stage games with no pure saddle -- how many have a unique
+  equilibrium, and how sharp the 2x2 mixes are (see also ``scripts/degeneracy.py``,
+  which answers the closely related "is the *reported* support the whole
+  indifference class" question directly, per state and per player);
 * on a general-sum game (Battle of the Sexes) the equilibria disagree on value,
   so selection matters -- which is exactly why the research notes' "largest sum
   of values" rule is a no-op for zero-sum but not in general.
@@ -45,7 +47,7 @@ def soccer_stage_equilibria(gamma: float) -> None:
             mixes.extend(p for p in e.row if 1e-4 < p < 1 - 1e-4)
 
     total = len(result.no_saddle_states)
-    print("94 mixed-strategy soccer stage games:")
+    print("94 no-pure-saddle soccer stage games:")
     print(f"  equilibria per state:      {dict(sorted(counts.items()))}")
     print(f"  all equilibria same value: {same_value} / {total}  (zero-sum interchangeability)")
     m = np.array(mixes)

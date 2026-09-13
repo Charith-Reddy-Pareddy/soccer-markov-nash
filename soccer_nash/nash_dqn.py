@@ -7,7 +7,14 @@ payoff). Fitted-Q iteration regresses it toward
     r(s, a0, a1) + gamma * val(Q_target(s'))
 
 with a frozen target network (the same freezing idea as DQN and as
-``run_policy_iteration``). ``val`` is the exact minimax of the tiny 4x4.
+``run_policy_iteration``). ``val`` is the exact minimax of the tiny 4x4 --
+the pure-saddle fast path plus an LP fallback (:func:`_minimax_batch`), not
+a maximin-only shortcut, so this is exact on *any* move order, including
+ones whose stage games are genuinely mixed (``scripts/nash_dqn_random.py`).
+The transition precompute uses ``game.transitions`` (the full outcome
+distribution), not ``game.step`` (which samples one outcome) -- the two only
+coincide when every joint action has a single outcome, i.e. only on the
+deterministic game.
 
 The point is not to beat the exact solver -- it is to measure how close a
 function approximator gets on value error, action agreement and exploitability,
@@ -43,6 +50,27 @@ _SCALE = np.array([1 / 6, 1 / 4, 1 / 6, 1 / 4, 1.0])
 def _minimax(m: np.ndarray) -> float:
     lo, hi = pure_bounds(m)
     return lo if hi - lo <= _SADDLE_TOL else game_value(m)
+
+
+def _minimax_batch(M: np.ndarray) -> np.ndarray:
+    """The exact hybrid minimax value of every matrix in a batch
+    ``M`` (shape ``(n, 4, 4)``) -- the pure-saddle check (``pure_bounds``,
+    vectorised, no LP) for every matrix at once, then one LP
+    (:func:`soccer_nash.matrix_games.game_value`) only for the matrices that
+    don't have one. This is what makes fitted-Q iteration correct on a game
+    whose stage matrices are sometimes genuinely mixed (``move_order=
+    "random"``/``"coinflip"``/``"tackle"``/``"blend"``) rather than the
+    pure-maximin-only shortcut that is exact solely on the ``deterministic``
+    game, where every stage game has a pure saddle."""
+    col_min = M.min(axis=2)
+    lo = col_min.max(axis=1)
+    row_max = M.max(axis=1)
+    hi = row_max.min(axis=1)
+    v = lo.copy()
+    mixed_idx = np.flatnonzero(hi - lo > _SADDLE_TOL)
+    for i in mixed_idx:
+        v[i] = game_value(M[i])
+    return v
 
 
 class _QNet:
@@ -137,6 +165,36 @@ class NashDQNResult:
     loss_trace: list[float]
 
 
+def _precompute_transitions(game: SoccerGame, states: list[State]):
+    """``(probs, rews, nidx, term)``, each shape ``(n, 16, max_outcomes)`` --
+    the exact transition distribution of every joint action at every state
+    (``game.transitions``, not ``game.step``: ``step`` *samples* one outcome,
+    which is only equivalent to the exact expectation on the deterministic
+    game where every joint action already has a single outcome. Any other
+    move order needs the real distribution averaged, not one sampled draw).
+    ``nidx`` indexes into ``states``; ``term`` marks a terminal (or padding)
+    outcome, for which the continuation value is 0 regardless of ``nidx``."""
+    index = {s: i for i, s in enumerate(states)}
+    n = len(states)
+    raw = [
+        [game.transitions(s, a0, a1) for a0, a1 in JOINT_ACTIONS] for s in states
+    ]
+    max_out = max(len(outs) for row in raw for outs in row)
+    probs = np.zeros((n, 16, max_out))
+    rews = np.zeros((n, 16, max_out))
+    nidx = np.zeros((n, 16, max_out), dtype=int)
+    term = np.ones((n, 16, max_out), dtype=bool)
+    for si, row in enumerate(raw):
+        for k, outs in enumerate(row):
+            for oi, (p, ns, (r0, _r1)) in enumerate(outs):
+                probs[si, k, oi] = p
+                rews[si, k, oi] = r0
+                if not game.is_terminal(ns):
+                    nidx[si, k, oi] = index[ns]
+                    term[si, k, oi] = False
+    return probs, rews, nidx, term
+
+
 def train_nash_dqn(
     game: SoccerGame,
     gamma: float = 0.9,
@@ -147,7 +205,17 @@ def train_nash_dqn(
     seed: int = 0,
     init_net: _QNet | None = None,
 ) -> NashDQNResult:
-    """Fitted-Q / DQN-style training on the deterministic game.
+    """Fitted-Q / DQN-style training, exact for *any* move order.
+
+    The bootstrap target at every ``(s, a0, a1)`` is the full expectation
+    over ``game.transitions`` -- ``sum_outcomes prob * (r + gamma *
+    minimax(Q_target(s')))`` -- using :func:`_minimax_batch`'s pure-fast-path
+    + LP hybrid for ``minimax``, not the maximin-only shortcut that is exact
+    solely when every stage game already has a pure saddle. On the
+    deterministic game this reduces to exactly the old behaviour (one
+    outcome per joint action, pure fast path every time); on ``"random"``/
+    ``"coinflip"``/``"tackle"``/``"blend"`` it is now the correct target
+    where a stage game is genuinely mixed.
 
     ``init_net``, when given, seeds both the online and target network's
     weights from it instead of the usual random (He-normal) init -- e.g. the
@@ -156,22 +224,12 @@ def train_nash_dqn(
     where it ends up, versus starting from scratch (``init_net=None``). It
     must share this call's ``hidden``/``out`` shape.
     """
-    if game.move_order != "deterministic":
-        raise ValueError("nash_dqn expects the deterministic game")
     states = list(game.states())
     X = np.array(states, float)
     n = len(states)
 
-    # Precompute (next_state, r0) per (state, a0, a1).
-    nxt = np.empty((n, 16), dtype=object)
-    rew = np.zeros((n, 16))
-    for si, s in enumerate(states):
-        for k, (a0, a1) in enumerate(JOINT_ACTIONS):
-            ns, (r0, _), _ = game.step(s, a0, a1)
-            nxt[si, k] = ns
-            rew[si, k] = r0
+    probs, rews, nidx, term = _precompute_transitions(game, states)
 
-    index = {s: i for i, s in enumerate(states)}
     net = _QNet(hidden, seed)
     if init_net is not None:
         for w, iw in zip(net._w(), init_net._w()):
@@ -183,18 +241,10 @@ def train_nash_dqn(
     losses: list[float] = []
 
     for epoch in range(epochs):
-        # Bootstrap target: the maximin lower bound (vectorised, no LP). It
-        # coincides with the minimax on saddle-point equilibria, so the
-        # deterministic game's fixed point is unchanged.
         preds = target.predict(X).reshape(n, 4, 4)
-        v_next = preds.min(axis=2).max(axis=1)
-        # Build the regression target matrix for every state.
-        tgt = np.zeros((n, 16))
-        for k in range(16):
-            for i in range(n):
-                ns = nxt[i, k]
-                cont = 0.0 if game.is_terminal(ns) else gamma * v_next[index[ns]]
-                tgt[i, k] = rew[i, k] + cont
+        v_next = _minimax_batch(preds)
+        cont = np.where(term, 0.0, gamma * v_next[nidx])
+        tgt = (probs * (rews + cont)).sum(axis=2)  # shape (n, 16)
 
         perm = rng.permutation(n)
         ep_loss = 0.0
@@ -210,6 +260,14 @@ def train_nash_dqn(
     return NashDQNResult(net, epochs, losses)
 
 
+def _support_set(p: np.ndarray, tol: float = 1e-6) -> frozenset[int]:
+    """Actions with positive probability -- same convention as
+    ``soccer_nash.numerics.support_shape`` and ``scripts/positions.py``'s
+    ``_support``, so support-agreement here is comparable to the canonical
+    (2,2)/(3,3)/(2,1)/(3,2) shape counts elsewhere in the project."""
+    return frozenset(i for i, v in enumerate(p) if v > tol)
+
+
 def compare_to_exact(
     game: SoccerGame,
     net: _QNet,
@@ -217,9 +275,18 @@ def compare_to_exact(
     exact_row_policy,
     gamma,
     exact_no_saddle: set | None = None,
+    exact_matrix_of=None,
+    exact_col_policy=None,
 ):
     """Value error, action agreement, pure/mixed classification agreement, and
-    exploitability of the DQN policy.
+    exploitability of the DQN policy -- plus, when ``exact_matrix_of`` is
+    given, the matrix-level metrics that ``action_agreement`` alone can hide
+    in a game with ties and non-unique equilibria: mean/max entrywise
+    (Frobenius) error against ``Q_exact``, the extracted policy's exact
+    equilibrium regret (:func:`soccer_nash.numerics.epsilon_equilibrium`
+    against the *exact* stage matrix, not the net's own predicted one), and
+    support agreement (does the net's policy use the same action set as the
+    exact one, ``exact_col_policy`` needed for the defender side).
 
     ``exact_no_saddle`` is the exact solver's set of no-pure-saddle states; when
     given, ``classification_agreement`` reports how often the network agrees on
@@ -227,6 +294,7 @@ def compare_to_exact(
     """
     from soccer_nash.exploit import duality_gap
     from soccer_nash.matrix_games import solve_zero_sum
+    from soccer_nash.numerics import epsilon_equilibrium
 
     exact_no_saddle = exact_no_saddle or set()
     states = list(game.states())
@@ -234,6 +302,13 @@ def compare_to_exact(
     agree = 0
     class_agree = 0
     mean_verr = 0.0
+    frob_sum = 0.0
+    frob_max = 0.0
+    entry_max = 0.0
+    regret_sum = 0.0
+    regret_max = 0.0
+    row_support_agree = 0
+    col_support_agree = 0
     row_pol: dict[State, np.ndarray] = {}
     col_pol: dict[State, np.ndarray] = {}
     for s in states:
@@ -257,15 +332,44 @@ def compare_to_exact(
         if np.argmax(p) == int(np.argmax(exact_row_policy[s])):
             agree += 1
 
+        if exact_matrix_of is not None:
+            m_exact = exact_matrix_of(s)
+            diff = m - m_exact
+            frob = float(np.sqrt((diff**2).sum()))
+            frob_sum += frob
+            frob_max = max(frob_max, frob)
+            entry_max = max(entry_max, float(np.abs(diff).max()))
+            reg = float(epsilon_equilibrium(m_exact, p, q))
+            regret_sum += reg
+            regret_max = max(regret_max, reg)
+            if _support_set(p) == _support_set(exact_row_policy[s]):
+                row_support_agree += 1
+            if exact_col_policy is not None and _support_set(q) == _support_set(
+                exact_col_policy[s]
+            ):
+                col_support_agree += 1
+
     gap = duality_gap(game, row_pol, col_pol, gamma=gamma)
     n = len(states)
-    return {
+    out = {
         "max_value_error": verr,
         "mean_value_error": mean_verr / n,
         "action_agreement": agree / n,
         "classification_agreement": class_agree / n,
         "duality_gap": gap,
     }
+    if exact_matrix_of is not None:
+        out.update({
+            "mean_frobenius_error": frob_sum / n,
+            "max_frobenius_error": frob_max,
+            "max_entrywise_error": entry_max,
+            "mean_equilibrium_regret": regret_sum / n,
+            "max_equilibrium_regret": regret_max,
+            "row_support_agreement": row_support_agree / n,
+        })
+        if exact_col_policy is not None:
+            out["col_support_agreement"] = col_support_agree / n
+    return out
 
 
 def fit_q_to_exact(
@@ -283,10 +387,11 @@ def fit_q_to_exact(
     this size can even *represent* ``Q_exact``, before any bootstrapping
     noise gets involved. Mirrors :func:`train_policy_baseline`, but for the
     Q-matrix head (``out=16``) instead of the two policy heads (``out=8``).
-    Its returned net is a valid ``init_net`` for :func:`train_nash_dqn`.
+    Its returned net is a valid ``init_net`` for :func:`train_nash_dqn`. Any
+    move order works -- this function only ever sees ``exact_matrix_of``'s
+    output, already the correct stage matrix (pure or mixed) for whichever
+    game produced it.
     """
-    if game.move_order != "deterministic":
-        raise ValueError("nash_dqn expects the deterministic game")
     states = list(game.states())
     X = np.array(states, float)
     y = np.array([exact_matrix_of(s).reshape(-1) for s in states])
@@ -314,9 +419,8 @@ def train_policy_baseline(
 ) -> _QNet:
     """A network trained *directly* on the exact equilibrium strategies -- the
     third baseline the meeting asked for: does the neural failure come from the
-    value approximation or from extracting a policy out of it?"""
-    if game.move_order != "deterministic":
-        raise ValueError("nash_dqn expects the deterministic game")
+    value approximation or from extracting a policy out of it? Any move order
+    works -- this only ever sees the already-computed exact policies."""
     states = list(game.states())
     X = np.array(states, float)
     y = np.array([

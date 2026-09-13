@@ -17,7 +17,7 @@ four *canonical* support shapes `(carrier actions, defender actions)` once
 every stage game is reoriented so rows are always the carrier's actions --
 `(2,2)`: 68 states, `(3,3)`: 4, `(2,1)`: 14, `(3,2)`: 8, 94 total -- and the
 defender's support is **never larger** than the carrier's, in any of them.
-The bigger picture those four numbers make concrete: 94 mixed states are not
+The bigger picture those four numbers make concrete: 94 no-pure-saddle states are not
 94 different phenomena, they are four repeated shapes recurring around the
 board. This file shows an example of all four, plus every distinct
 *mechanism* studied in the project that can force a mix (a stochastic move
@@ -26,7 +26,7 @@ noise, and movement slip on an otherwise-always-pure single-cell goal):
 
 1. a **pure** state, for contrast -- one node lit up, no cycle, no mixing;
 2. **the primary example: the typical two-action mix** -- a vertical
-   crossing pair, the shape 90 of the 94 mixed states actually have (the
+   crossing pair, the shape 90 of the 94 no-pure-saddle states actually have (the
    carrier picking which goal row to attack, the defender guessing it);
 3. the **L/R indifference** case, directly after (2) -- the cleanest
    illustration of two actions carrying exactly equal strategic value ("when
