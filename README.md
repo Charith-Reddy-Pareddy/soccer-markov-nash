@@ -1,10 +1,19 @@
 # When Does a Soccer Markov Game Need Mixed Strategies?
 
-**Non-technical, visual walkthrough:
-[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)**
-(separate repo, [the-mixed-game](https://github.com/Charith-Reddy-Pareddy/the-mixed-game)) —
-start there for the plain-language version with figures. This repo is the
-technical research project; its own documentation site is
+**Two documents, by design.** This repo is the technical notebook: every
+proof, every experiment, every figure, reproducible from the code in it —
+written for a reader who wants the exact math.
+[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)
+(separate repo,
+[the-mixed-game](https://github.com/Charith-Reddy-Pareddy/the-mixed-game)) is
+the public companion: plain-language, figures, one live table, no proofs —
+written for a reader who does not want to read a research paper. Content
+flows one way only, this repo outward: `the-mixed-game/scripts/sync_assets.py`
+pulls its figures and live tournament data straight from this repo's own
+`docs/figures/png/` and `experiments/*.csv`, so nothing on the public site is
+a hand-copied number that can drift from the solver's output. Read whichever
+one matches what you're after; neither is a stub of the other. This repo's
+own documentation site is
 [the docs index](https://charith-reddy-pareddy.github.io/soccer-markov-nash/).
 
 A pure-first Nash-Q approach to a configurable family of two-player soccer

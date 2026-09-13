@@ -1,8 +1,12 @@
 # Docs
 
-Non-technical, visual walkthrough: **[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)**
+Two documents, by design: this directory is the technical notebook (every
+proof, every experiment, reproducible from the repo's own code) --
+**[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)**
 ([the-mixed-game](https://github.com/Charith-Reddy-Pareddy/the-mixed-game), a
-separate repo). For the technical answer, start with **[report.pdf](report.pdf)**
+separate repo) is the public, non-technical companion, its figures and live
+table pulled straight from this repo's own output, never hand-copied. For the
+technical answer, start with **[report.pdf](report.pdf)**
 (or [report.md](report.md) / [report.html](report.html)).
 
 - [design.md](design.md) — the game as a configurable family: every axis, the

@@ -7,7 +7,11 @@ A research report on a configurable family of two-player soccer Markov games
 ([design.md](design.md)). Scope and caveats are in `docs/assumptions.md`; how
 every number was produced is in [methods.md](methods.md); the open questions and
 what the mixed region depends on are in [discussion.md](discussion.md). Every
-table regenerates from `experiments/*.csv`.
+table regenerates from `experiments/*.csv`. This report is the technical
+notebook by design -- for the plain-language, non-technical companion, see
+[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)
+(neither document is a stub of the other; see the repository
+[README](../README.md)).
 
 ## Position relative to Littman (1994)
 
