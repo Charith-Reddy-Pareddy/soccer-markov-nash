@@ -76,6 +76,8 @@ always; neither has any reason to deviate.
 
 **Support:** carrier `{U}` (100%) · defender `{U}` (100%).
 
+**Why indifferent:** Carrier: `U`=+0.234 beats next-best `L`=+0.161 by 0.073; defender: `U`=+0.234 beats next-best `R`=+0.271 by 0.038. No tie on either side -- that gap, not a coin flip, is what makes this state pure.
+
 ![Case 1 board position and Q matrix graph.](figures/png/positions_case01.png)
 
 ```
@@ -99,6 +101,8 @@ worth contrasting against it (Cases 3, 4, 5, 9, 10).
 
 **Support:** carrier `{U, D}` (63.5% / 36.5%) · defender `{U, R}`
 (36.5% / 63.5%).
+
+**Why indifferent:** Carrier `E[U]`=`E[D]`=+0.094, strictly above `E[L]`=+0.091 and `E[R]`=−0.015. Defender `E[U]`=`E[R]`=+0.094, strictly below `E[L]`=+0.212 and `E[D]`=+0.332.
 
 ![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
 
@@ -128,6 +132,8 @@ horizontal pair instead of a vertical one.
 **Support:** carrier `{L, R}` (7.7% / 92.3%) · defender `{D, L}`
 (18% / 82%).
 
+**Why indifferent:** Carrier `E[L]`=`E[R]`=+0.206, strictly above `E[D]`=+0.162 and `E[U]`=+0.050. Defender `E[D]`=`E[L]`=+0.206, strictly below `E[R]`=+0.216 and `E[U]`=+0.257.
+
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
 ```
@@ -153,6 +159,8 @@ the corner leaves little room, but not zero.
 **Support:** carrier `{U, L}` (4.6% / 95.4%) · defender `{D, L}`
 (94.9% / 5.1%).
 
+**Why indifferent:** Carrier `E[U]`=`E[L]`=+0.078, above `E[R]`=−0.066 -- but `E[D]`=+0.078 too, an **exact** tie the solver simply didn't weight: any mix of `U`/`D`/`L` in the right proportion is an equally valid equilibrium, not just the 4.6%/95.4% split shown. Defender `E[D]`=`E[L]`=+0.078, below `E[R]`=+0.086 and `E[U]`=+0.109.
+
 ![Case 4 board position and Q matrix graph.](figures/png/positions_case04.png)
 
 ```
@@ -176,6 +184,8 @@ summary number is wanted -- but the three-way split itself is the point.)
 **Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%) · defender
 `{U, D, L}` (91.9% / 5.9% / 2.3%).
 
+**Why indifferent:** Carrier `E[U]`=`E[L]`=`E[R]`=+0.0848 (the three actions weighted) -- and `E[D]`=+0.0848 too: **all four actions tie exactly**, so the 43.3%/0%/54.7%/1.9% split printed is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender `E[U]`=`E[D]`=`E[L]`=+0.0848, below `E[R]`=+0.097.
+
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
 ```
@@ -197,6 +207,8 @@ makes this case worth including, not the carrier's.
 
 **Support:** carrier `{D, L}` (73.9% / 26.1%) · defender `{D, R}`
 (2.5% / 97.5%).
+
+**Why indifferent:** Carrier `E[D]`=`E[L]`=+0.168, above `E[R]`=+0.136 and `E[U]`=−0.166. Defender `E[D]`=`E[R]`=+0.168, below `E[L]`=+0.197 and `E[U]`=+0.201.
 
 ![Case 6 board position and Q matrix graph.](figures/png/positions_case06.png)
 
@@ -225,6 +237,8 @@ relative configuration recurs on the board.
 **Support:** carrier `{U, D}` (63.5% / 36.5%) · defender `{U, L}`
 (36.5% / 63.5%).
 
+**Why indifferent:** Carrier `E[U]`=`E[D]`=+0.094, above `E[R]`=+0.091 and `E[L]`=−0.015. Defender `E[U]`=`E[L]`=+0.094, below `E[R]`=+0.212 and `E[D]`=+0.332 -- Case 2's exact chain, mirrored.
+
 ![Case 7 board position and Q matrix graph.](figures/png/positions_case07.png)
 
 ```
@@ -248,6 +262,8 @@ defender mixes `D 60.7% / R 39.3%`. Different cause, same structure.
 **Support:** carrier `{U, D}` (32.1% / 67.9%) · defender `{D, R}`
 (60.7% / 39.3%).
 
+**Why indifferent:** Carrier `E[U]`=`E[D]`=−0.013, above `E[R]`=−0.031 and `E[L]`=−0.065. Defender `E[D]`=`E[R]`=−0.013, below `E[L]`=+0.011 and `E[U]`=+0.045.
+
 ![Case 8 board position and Q matrix graph.](figures/png/positions_case08.png)
 
 ```
@@ -267,6 +283,8 @@ page is a symmetric duel -- both players genuinely guessing. Here only one
 side is.
 
 **Support:** carrier `{U, D}` (2.6% / 97.4%) · defender `{R}` (100%).
+
+**Why indifferent:** Carrier `E[U]`=`E[D]`=+0.095, above `E[L]`=+0.093 and `E[R]`=−0.072 (worked out fully below). The defender's official policy is pure `R` (100%), but `E[R]`=+0.095 and `E[D]`=+0.095 tie **too**: the defender's own choice of `R` over `D` is exactly as arbitrary as the carrier's `U`/`D` split, it just isn't printed as a percentage because the solver put all the weight on one side.
 
 ![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
 
@@ -308,6 +326,8 @@ the carrier**, across all 94 mixed states on the canonical board.
 **Support:** carrier `{U, D, L}` (16.9% / 66% / 17.1%) · defender `{L, R}`
 (77.9% / 22.1%).
 
+**Why indifferent:** Carrier `E[U]`=`E[D]`=`E[L]`=+0.282, above `E[R]`=+0.217 -- a genuine three-way tie. The defender's official support is `{L, R}` at +0.282, below `E[U]`=+0.322 -- but `E[D]`=+0.282 too: the defender is really indifferent among `D`, `L`, and `R`, even though the LP only split weight over two of them.
+
 ![Case 10 board position and Q matrix graph.](figures/png/positions_case10.png)
 
 ```
@@ -333,6 +353,8 @@ alone.**
 
 **Support:** carrier `{D, R}` (53.8% / 46.2%) · defender `{U, L}`
 (95.1% / 4.9%).
+
+**Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473.
 
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
@@ -360,6 +382,8 @@ regardless of the goal forces mixing everywhere, independent of goal width.
 
 **Support:** carrier `{D, L}` (80.2% / 19.8%) · defender `{U, L}`
 (3.9% / 96.1%).
+
+**Why indifferent:** Carrier `E[D]`=`E[L]`=+0.053, above `E[R]`=+0.016 and `E[U]`=−0.010. Defender `E[U]`=`E[L]`=+0.053, below `E[D]`=+0.072 and `E[R]`=+0.450.
 
 ![Case 12 board position and Q matrix graph.](figures/png/positions_case12.png)
 

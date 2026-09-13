@@ -120,6 +120,20 @@ def _support(policy_vec, tol: float = 1e-6) -> tuple[str, ...]:
     return tuple(_ACT[i] for i, p in enumerate(policy_vec) if p > tol)
 
 
+def _indifference(M, carrier_pol, defender_pol):
+    """Every action's expected payoff against the *opponent's actual mix* --
+    the arithmetic behind "indifferent", not just "the arrows cycle". For the
+    carrier this is `M @ defender_pol` (its expected payoff per row); for the
+    defender it's `carrier_pol @ M` (the carrier's expected payoff per
+    column, which the defender is trying to minimise). A support action's
+    value should match every other support action's to solver precision; a
+    non-support action should be strictly worse (lower for the carrier,
+    higher for the defender)."""
+    e_carrier = M @ defender_pol
+    e_defender = carrier_pol @ M
+    return e_carrier, e_defender
+
+
 CASE_DIR = pathlib.Path("docs/figures/gallery")
 
 
@@ -148,7 +162,13 @@ def _report(label, g, solver, r, state, panels, case_no=None):
     print(f"  row_policy (p0) = {np.round(r.row_policy[state], 3).tolist()}")
     print(f"  col_policy (p1) = {np.round(r.col_policy[state], 3).tolist()}")
     print(f"  carrier support = {_support(carrier_pol)}   "
-          f"defender support = {_support(defender_pol)}\n")
+          f"defender support = {_support(defender_pol)}")
+    e_carrier, e_defender = _indifference(M, carrier_pol, defender_pol)
+    print("  E[action] against the opponent's actual mix "
+          "(support actions should tie; others should lose):")
+    print("    carrier  " + "  ".join(f"{a}={v:+.4f}" for a, v in zip(_ACT, e_carrier)))
+    print("    defender " + "  ".join(f"{a}={v:+.4f}" for a, v in zip(_ACT, e_defender)))
+    print()
 
     board = policy_svg(g, state, r.row_policy, r.col_policy,
                         value=r.values[state], title=label)

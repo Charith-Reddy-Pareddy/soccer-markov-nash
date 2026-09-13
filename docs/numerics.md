@@ -72,6 +72,60 @@ game one cell has both; in rock-paper-scissors and in the soccer stage game at
 `(0, 1, 1, 1, 1)` -- carrier pinned against its own goal, defender adjacent --
 they cycle, and the game has no pure equilibrium.
 
+### 0b. The one exception: tied pure best responses
+
+The paragraph above is not the whole story. Take every state with an exact
+pure saddle (`pure_bounds`'s `hi - lo == 0`, checked directly on the raw
+payoff matrix, not through the hybrid solver's fast path) and hand its matrix
+straight to the same LP (`soccer_nash.matrix_games.solve_zero_sum`) that
+Nash-Q calls only for genuinely mixed states -- i.e. ask what the LP itself
+would have returned, had nothing short-circuited it. Of the **2,286** such
+states on the canonical board, **9** come back with a policy that is *not* a
+clean one-hot, even though a pure equilibrium demonstrably exists.
+
+The mechanism is always the same: two of one player's actions are *exactly*
+tied against the equilibrium counter-strategy, so the LP has no reason to
+prefer either pure vertex and is free to return any point on the tied face --
+including a fractional one. State `(0, 0, 2, 1, 0)` is the cleanest example:
+
+```
+        U        D        L        R
+  U   0.0951   0.0951   0.0848   0.0951
+  D   0.0796   0.0764   0.0698   0.0796
+  L   0.0796   0.0764   0.0698   0.0796
+  R   0.1214   0.0951   0.1214   0.1102
+```
+
+Column `D` is the defender's unambiguous pure equilibrium
+(`q = [0, 1, 0, 0]`). But against column `D`, rows `U` and `R` **both** pay
+exactly `0.0951` -- an exact tie, not an approximate one -- so
+`solve_zero_sum` returns `p = [0.719, 0, 0, 0.281]` instead of committing to
+either pure row. `certify_game`'s `gap` field still reports `0.0` (it checks
+the value bracket in §1 below, not the shape of the returned policy), so the
+**certificate** correctly says "this state is pure" even though the
+**printed policy**, read on its own, looks like a genuine 72/28 mix.
+
+This is a different phenomenon from Case 9's tie in
+[positions.md](positions.md): there, the carrier's own equilibrium mix is
+fractional because *it* is indifferent between two actions against a fixed
+opponent -- a real mixed equilibrium, just one whose split isn't uniquely
+forced. Here, a **pure** equilibrium exists and the fractional-looking output
+is purely an artifact of which vertex of the solution polytope the LP happens
+to land on. It is rare (9 of 2,286 pure states, **≈0.4%**) but it is real,
+reproducible, and exactly the case the certificate is for: check `gap`, not
+whether the printed policy happens to look like a one-hot vector.
+
+**Why this never shows up in this project's own results:**
+`soccer_nash.nash_q.NashQIteration`'s default `mode="hybrid"` checks
+`pure_bounds` *before* ever calling the LP (§0 above), so a state it
+classifies as pure never reaches `solve_zero_sum` in the first place -- the
+artifact can only appear under `mode="mixed"`, which forces every stage game
+through the LP regardless. `scripts/analyze.py` is the one place in this repo
+that runs `mode="mixed"`, and it only ever compares *values* between hybrid
+and mixed solves, never policies, so the artifact has never leaked into a
+reported number -- but reading a `mode="mixed"` policy directly, for any
+project that does, is exactly where this would bite.
+
 ## 1. The value of a stage game is three numbers
 
 For candidate strategies `(p, q)` the row (maximising) player:

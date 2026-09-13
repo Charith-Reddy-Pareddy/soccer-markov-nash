@@ -51,6 +51,7 @@
     padding: .5rem .8rem; margin: 0 0 1rem; max-width: none;
   }
   .support-line b { color: var(--ink); font-family: "Barlow Semi Condensed", sans-serif; }
+  .support-line.why-line { background: var(--raise); font-family: "Spectral", Georgia, serif; font-size: .95rem; line-height: 1.5; }
   table.shapes {
     border-collapse: collapse; width: 100%; margin: 1.2rem 0 .6rem;
     font-family: "IBM Plex Mono", monospace; font-size: .86rem;
@@ -178,6 +179,7 @@ which is exactly why the board shows more than one arrow.
 <span class="mono">U/U</span>. The carrier plays U always; the defender
 answers U always; neither has any reason to deviate.</p>
 <p class="support-line"><b>Support:</b> carrier {U} (100%) &middot; defender {U} (100%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier: <span class="mono">U</span>=+0.234 beats next-best <span class="mono">L</span>=+0.161 by 0.073; defender: <span class="mono">U</span>=+0.234 beats next-best <span class="mono">R</span>=+0.271 by 0.038. No tie on either side &mdash; that gap, not a coin flip, is what makes this state pure.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case01.png" alt="Case 1 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -201,6 +203,7 @@ which goal row to attack and the defender guessing which one. Everything
 that follows is either this same shape recurring (Case 7), or a genuinely
 different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
 <p class="support-line"><b>Support:</b> carrier {U, D} (63.5% / 36.5%) &middot; defender {U, R} (36.5% / 63.5%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.094, strictly above <span class="mono">E[L]</span>=+0.091 and <span class="mono">E[R]</span>=&minus;0.015. Defender <span class="mono">E[U]</span>=<span class="mono">E[R]</span>=+0.094, strictly below <span class="mono">E[L]</span>=+0.212 and <span class="mono">E[D]</span>=+0.332.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case02.png" alt="Case 2 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -227,6 +230,7 @@ against the defender's own mix. <span class="fact">This is the rarer shape
 overall: only 4 of 94 mixed states cross a purely horizontal pair instead of
 a vertical one.</span></p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -253,6 +257,7 @@ the back line (L), and the defender is guessing which.
 <span class="fact">Gap 0.0121; the mix is lopsided but genuine</span> &mdash;
 the corner leaves little room, but not zero.</p>
 <p class="support-line"><b>Support:</b> carrier {U, L} (4.6% / 95.4%) &middot; defender {D, L} (94.9% / 5.1%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.078, above <span class="mono">E[R]</span>=&minus;0.066 &mdash; but <span class="mono">E[D]</span>=+0.078 too, an <strong>exact</strong> tie the solver simply didn&apos;t weight: any mix of U/D/L in the right proportion is an equally valid equilibrium, not just the 4.6%/95.4% split shown. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.078, below <span class="mono">E[R]</span>=+0.086 and <span class="mono">E[U]</span>=+0.109.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case04.png" alt="Case 4 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -276,6 +281,7 @@ between two actions. (Entropy 1.109 bits, the richest mix on this page, if a
 single summary number is wanted &mdash; but the three-way split itself is
 the point.)</p>
 <p class="support-line"><b>Support:</b> carrier {U, L, R} (43.3% / 54.7% / 1.9%) &middot; defender {U, D, L} (91.9% / 5.9% / 2.3%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.0848 (the three actions weighted) &mdash; and <span class="mono">E[D]</span>=+0.0848 too: <strong>all four actions tie exactly</strong>, so the 43.3%/0%/54.7%/1.9% split printed is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.0848, below <span class="mono">E[R]</span>=+0.097.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case05.png" alt="Case 5 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -298,6 +304,7 @@ carrier's own mix is more balanced (<span class="mono">D 73.9% / L
 26.1%</span>) &mdash; <span class="fact">it is the defender's near-pure
 hedge that makes this case worth including, not the carrier's.</span></p>
 <p class="support-line"><b>Support:</b> carrier {D, L} (73.9% / 26.1%) &middot; defender {D, R} (2.5% / 97.5%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.168, above <span class="mono">E[R]</span>=+0.136 and <span class="mono">E[U]</span>=&minus;0.166. Defender <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=+0.168, below <span class="mono">E[L]</span>=+0.197 and <span class="mono">E[U]</span>=+0.201.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case06.png" alt="Case 6 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -321,6 +328,7 @@ sum       = -1.39e-17   (zero, to floating-point noise)</pre>
 this is not a new shape, it is Case 2's identical mix reappearing, exactly
 mirrored, wherever the same relative configuration recurs.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D} (63.5% / 36.5%) &middot; defender {U, L} (36.5% / 63.5%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.094, above <span class="mono">E[R]</span>=+0.091 and <span class="mono">E[L]</span>=&minus;0.015. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.094, below <span class="mono">E[R]</span>=+0.212 and <span class="mono">E[D]</span>=+0.332 &mdash; Case 2&apos;s exact chain, mirrored.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case07.png" alt="Case 7 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -343,6 +351,7 @@ same kind of duel</span> (gap 0.0223): the carrier mixes
 <span class="mono">U 32.1% / D 67.9%</span>, the defender mixes
 <span class="mono">D 60.7% / R 39.3%</span>. Different cause, same structure.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D} (32.1% / 67.9%) &middot; defender {D, R} (60.7% / 39.3%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=&minus;0.013, above <span class="mono">E[R]</span>=&minus;0.031 and <span class="mono">E[L]</span>=&minus;0.065. Defender <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=&minus;0.013, below <span class="mono">E[L]</span>=+0.011 and <span class="mono">E[U]</span>=+0.045.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case08.png" alt="Case 8 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -364,6 +373,7 @@ still mixes two actions (<span class="mono">U 2.6% / D 97.4%</span>), but the
 symmetric duel &mdash; both players genuinely guessing. Here only one side
 is.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D} (2.6% / 97.4%) &middot; defender {R} (100%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.095, above <span class="mono">E[L]</span>=+0.093 and <span class="mono">E[R]</span>=&minus;0.072 (worked out fully below). The defender&apos;s official policy is pure R (100%), but <span class="mono">E[R]</span>=+0.095 and <span class="mono">E[D]</span>=+0.095 tie <strong>too</strong>: the defender&apos;s own choice of R over D is exactly as arbitrary as the carrier&apos;s U/D split, it just isn&apos;t printed as a percentage because the solver put all the weight on one side.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case09.png" alt="Case 9 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -400,6 +410,7 @@ this settles a structural question the certificates make checkable rather
 than assumed: <strong>the defender never needs strictly more actions than
 the carrier</strong>, across all 94 mixed states on the canonical board.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D, L} (16.9% / 66% / 17.1%) &middot; defender {L, R} (77.9% / 22.1%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.282, above <span class="mono">E[R]</span>=+0.217 &mdash; a genuine three-way tie. The defender&apos;s official support is {L, R} at +0.282, below <span class="mono">E[U]</span>=+0.322 &mdash; but <span class="mono">E[D]</span>=+0.282 too: the defender is really indifferent among D, L, and R, even though the LP only split weight over two of them.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case10.png" alt="Case 10 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -425,6 +436,7 @@ ordinary win/loss score. Gap 0.0653 &mdash; close to a fair coin (entropy
 <span class="fact">Mixing does not require stochastic transitions; it can
 come from the payoff structure alone.</span></p>
 <p class="support-line"><b>Support:</b> carrier {D, R} (53.8% / 46.2%) &middot; defender {U, L} (95.1% / 4.9%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=+0.129, above <span class="mono">E[U]</span>=+0.119 and <span class="mono">E[L]</span>=+0.090. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.129, below <span class="mono">E[D]</span>=+0.455 and <span class="mono">E[R]</span>=+0.473.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case11.png" alt="Case 11 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -451,6 +463,7 @@ a property of Littman's move-order coin specifically; a coin that lands on
 every square regardless of the goal forces mixing everywhere, independent
 of goal width.</p>
 <p class="support-line"><b>Support:</b> carrier {D, L} (80.2% / 19.8%) &middot; defender {U, L} (3.9% / 96.1%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.053, above <span class="mono">E[R]</span>=+0.016 and <span class="mono">E[U]</span>=&minus;0.010. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.053, below <span class="mono">E[D]</span>=+0.072 and <span class="mono">E[R]</span>=+0.450.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case12.png" alt="Case 12 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>

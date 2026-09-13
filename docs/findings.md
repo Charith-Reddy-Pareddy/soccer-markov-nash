@@ -140,6 +140,13 @@ pure flip) for 16 outer rounds before locking in, so wall-clock is not lower
   states; the random game has 604 strict-pure, 1682 degenerate, 94 mixed.
 - **The mixed states:** 68 of the 94 reduce to a 2x2 matching-pennies support
   (carrier {advance, hold} x defender {block, intercept}).
+- **The LP/pure-equilibrium edge case:** yes, it happens -- 9 of the 2,286
+  states with an exact pure saddle get a non-one-hot policy back from the LP
+  anyway, when two actions tie exactly against the equilibrium reply. The
+  certificate's `gap` field still reads `0.0` (correctly pure); only the raw
+  policy looks mixed. `soccer_nash.nash_q`'s default `mode="hybrid"` never
+  hits this (it checks for a pure saddle before calling the LP at all) -- see
+  [numerics.md §0b](numerics.md#0b-the-one-exception-tied-pure-best-responses).
 
 ## Q3: Does discounting change which states require mixing?
 
