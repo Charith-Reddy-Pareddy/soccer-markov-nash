@@ -689,9 +689,9 @@ def bestresponse_graph_svg(
     """The stage game as a node-and-arrow graph: one node per cell, an arrow
     from a cell to the cell either player would rather deviate to. A pure
     saddle is the one node with no outgoing arrow; a matching-pennies game has
-    every node pointing somewhere, so the arrows chase each other in a closed
-    loop -- the "no cell is safe" picture, as a diagram instead of hand-drawn
-    X's."""
+    every node pointing somewhere, so the arrows chase each other around a
+    closed best-response cycle -- no pure action pair is stable -- as a
+    diagram instead of hand-drawn X's."""
     M = np.asarray(M, dtype=float)
     nr, nc = M.shape
     row_labels = row_labels or [f"r{i}" for i in range(nr)]

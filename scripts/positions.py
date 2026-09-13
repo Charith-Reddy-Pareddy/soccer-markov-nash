@@ -1,62 +1,74 @@
-"""Player positions and their Q matrix: a board showing where the two
-players actually are, next to the full 4x4 Q matrix redrawn as a
-node-and-arrow graph -- one node per cell of the *complete* action grid
-(every case is the full `{U,D,L,R} x {U,D,L,R}` matrix, never reduced), an
-arrow toward whichever cell either player would rather deviate to. A pure
-saddle is the one node with no outgoing arrow; a matching-pennies game has
-every node pointing somewhere, so the arrows chase each other around a
-closed loop and no cell is safe.
+"""Player positions and their stage-game Q matrix: a board showing where the
+two players actually are and what each one is actually doing -- probability
+arrows, thick for likely actions, thin for unlikely ones, none at all for a
+zero-probability action -- next to the full 4x4 stage-game Q matrix (the
+`Q(s, a0, a1)` payoff table at that one state, not the value function
+`V(s)`) redrawn as a node-and-arrow graph: one node per cell of the
+*complete* action grid (every case is the full `{U,D,L,R} x {U,D,L,R}`
+matrix, never reduced), an arrow toward whichever cell either player would
+rather deviate to. A pure saddle is the one node with no outgoing arrow; a
+matching-pennies game has every node pointing somewhere, so the arrows chase
+each other around a closed best-response cycle -- no pure action pair is
+stable.
 
-Twelve cases. Across the whole project there are exactly four *canonical*
-equilibrium-support shapes once every stage game is reoriented so rows are
-always the carrier's actions (`(2,2)`: 68 states, `(3,3)`: 4, `(2,1)`: 14,
-`(3,2)`: 8) -- the defender's support is **never larger** than the
-carrier's, in any of the 94 mixed states on the canonical board. This file
-shows an example of all four shapes, plus every distinct *mechanism* studied
-in the project that can force a mix (a stochastic move order, this project's
-own tackle rule, a dense reward with zero transition noise, and movement
-slip on an otherwise-always-pure single-cell goal), each answering a
-specific question from the meeting:
+A player's *support* is the set of actions it assigns positive probability
+in equilibrium. Twelve cases. Across the whole project there are exactly
+four *canonical* support shapes `(carrier actions, defender actions)` once
+every stage game is reoriented so rows are always the carrier's actions --
+`(2,2)`: 68 states, `(3,3)`: 4, `(2,1)`: 14, `(3,2)`: 8, 94 total -- and the
+defender's support is **never larger** than the carrier's, in any of them.
+The bigger picture those four numbers make concrete: 94 mixed states are not
+94 different phenomena, they are four repeated shapes recurring around the
+board. This file shows an example of all four, plus every distinct
+*mechanism* studied in the project that can force a mix (a stochastic move
+order, this project's own tackle rule, a dense reward with zero transition
+noise, and movement slip on an otherwise-always-pure single-cell goal):
 
 1. a **pure** state, for contrast -- one node lit up, no cycle, no mixing;
-2. the **typical two-action mix** -- a vertical crossing pair, the shape 90 of
-   the 94 mixed states actually have (the carrier picking which goal row to
-   attack, the defender guessing it);
-3. **the corner duel** -- players literally at `(0, 0)` and `(1, 1)`, the
-   exact coordinates sketched at the meeting;
-4. the **L/R indifference** case -- the meeting's own verbal example ("when
+2. **the primary example: the typical two-action mix** -- a vertical
+   crossing pair, the shape 90 of the 94 mixed states actually have (the
+   carrier picking which goal row to attack, the defender guessing it);
+3. the **L/R indifference** case, directly after (2) -- the cleanest
+   illustration of two actions carrying exactly equal strategic value ("when
    we move right and when we move left, there's an equal chance of me
    winning"): the carrier's live moves are exactly L and R, no vertical
    option in its support at all, one of only 4 states shaped this way;
-5. a genuine **3-action** mix (support `3x3`), requested explicitly ("don't
-   focus on entropy, the matrix would be an output by the function");
-6. a **near-pure hedge** -- entropy 0.17 bits, the rounding trap made
-   concrete: reading 97.5% as 100% would be the mistake the meeting flagged;
+4. **the corner duel** -- players literally at `(0, 0)` and `(1, 1)`, the
+   exact coordinates sketched at the meeting, crossing U/L rather than (3)'s
+   clean L/R tie;
+5. a genuine **3-action** mix (support `3x3`) -- mixing is not always a
+   50/50 split between two actions;
+6. a **near-pure hedge** -- the carrier's live support is still two actions
+   even at a 97.5/2.5 split, and rounding it to 100% would erase a real,
+   certified gap;
 7. the typical-mix case's own **twin, mirrored** -- board flipped, value
    negated to machine precision, showing the shape in (2) is not a one-off;
 8. this project's own **tackle rule**, a different collision mechanism
    entirely, producing the same kind of duel;
-9. the **asymmetric mix** -- support `(2,1)`: the carrier still needs two
-   actions while the defender's equilibrium is a single fixed move. Not a
-   symmetric duel at all, and the exact "is this really mixed, or just
-   another representation of a tie" question from the meeting;
+9. **the asymmetric mix, and the case worth discussing most** -- support
+   `(2,1)`: the carrier still needs two actions while the defender's
+   equilibrium is a single fixed move, and the fractional split the LP
+   reports for the carrier is a tie, not a forced mix -- the clearest
+   example on this page that a fractional LP output is not automatically a
+   strategically required mixed strategy;
 10. the **three-lane mix** -- support `(3,2)`: the carrier genuinely needs
     three actions but the defender only ever needs two to cover them, the
     fourth and last canonical shape, and (by coincidence) the single
     deepest, most rounding-proof gap of any state on this page;
-11. **mixing forced by reward alone** -- fully deterministic movement, a
-    dense reward that pays for field position instead of goals alone, and
-    still a near-fair-coin mix: no stochastic transition anywhere in this
-    one;
+11. **mixing forced by reward alone**, an advanced case kept after the core
+    Littman examples above -- fully deterministic movement, a dense reward
+    that pays for field position instead of goals alone, and still a
+    near-fair-coin mix: no stochastic transition anywhere in this one, so
+    mixing does not require stochastic transitions;
 12. **movement slip on a single-cell goal** -- the one board shape that is
-    *always* pure under every move-order rule in this project, forced to mix
-    anyway once every player has a chance of slipping to a random move
-    regardless of who is where.
+    pure across every move-order configuration tested elsewhere in this
+    project, forced to mix anyway once every player has a chance of slipping
+    to a random move regardless of who is where.
 
     python scripts/positions.py
 
 Writes `docs/figures/gallery/positions.svg` and prints each state's exact
-Q matrix and policy.
+Q matrix, policy, and action support.
 """
 
 from __future__ import annotations
@@ -97,10 +109,20 @@ def _solve(**kw):
     return g, s, s.run()
 
 
+def _support(policy_vec, tol: float = 1e-6) -> tuple[str, ...]:
+    """Actions assigned positive probability -- same `tol` as
+    `soccer_nash.numerics.support_shape`, so these tuples agree with the
+    (2,2)/(3,3)/(2,1)/(3,2) canonical-shape counts elsewhere in the project.
+    Note this can include an action too thin to draw an arrow for (the board
+    figure's `_action_fan` only draws probability >= 2%)."""
+    return tuple(_ACT[i] for i, p in enumerate(policy_vec) if p > tol)
+
+
 def _report(label, g, solver, r, state, panels):
-    """Print the full, un-reduced 4x4 Q matrix and policy, and append the
-    board + best-response-graph panel pair. The whole 4x4 grid is always
-    shown -- no dominance reduction -- so every case is directly comparable."""
+    """Print the full, un-reduced 4x4 Q matrix, policy, and support, and
+    append the board + best-response-graph panel pair. The whole 4x4 grid is
+    always shown -- no dominance reduction -- so every case is directly
+    comparable."""
     M = _oriented_matrix(solver, state, r.values)
     cert = certify_game(M)
     print(f"state {state} -- {label}")
@@ -108,12 +130,17 @@ def _report(label, g, solver, r, state, panels):
         print(f"  pure equilibrium, saddle at {_ACT[cert.saddle[0]]}/{_ACT[cert.saddle[1]]}")
     else:
         print(f"  mixed equilibrium, no pure saddle, gap {cert.gap:.4f}")
-    print("  Q matrix (carrier's payoff; rows = carrier, cols = defender):")
+    print("  Q matrix -- the stage-game payoff table at this one state "
+          "(carrier's payoff; rows = carrier, cols = defender):")
     print("        " + "".join(f"{a:>8}" for a in _ACT))
     for i, a in enumerate(_ACT):
         print(f"    {a:>3} " + "".join(f"{M[i, j]:>8.3f}" for j in range(4)))
+    carrier_pol = r.row_policy[state] if state[4] == 0 else r.col_policy[state]
+    defender_pol = r.col_policy[state] if state[4] == 0 else r.row_policy[state]
     print(f"  row_policy (p0) = {np.round(r.row_policy[state], 3).tolist()}")
-    print(f"  col_policy (p1) = {np.round(r.col_policy[state], 3).tolist()}\n")
+    print(f"  col_policy (p1) = {np.round(r.col_policy[state], 3).tolist()}")
+    print(f"  carrier support = {_support(carrier_pol)}   "
+          f"defender support = {_support(defender_pol)}\n")
 
     panels.append(policy_svg(g, state, r.row_policy, r.col_policy,
                               value=r.values[state], title=label))
@@ -140,9 +167,9 @@ def main() -> None:
 
     cases = [
         ((4, 0, 5, 0, 0), "A pure state -- one safe cell, nothing to guess", False),
-        ((0, 1, 1, 1, 0), "The typical mix -- which goal row to head for", True),
-        ((0, 0, 1, 1, 0), "The corner duel -- (0,0) and (1,1)", True),
+        ((0, 1, 1, 1, 0), "The primary example: the typical mix", True),
         ((1, 1, 1, 0, 1), "A clean L/R indifference example", True),
+        ((0, 0, 1, 1, 0), "The corner duel -- (0,0) and (1,1)", True),
         ((0, 0, 2, 0, 0), "A genuine 3-action mix, not a 2-cycle", True),
         ((1, 1, 2, 0, 1), "A near-pure hedge -- where rounding would lie", True),
     ]
@@ -174,9 +201,10 @@ def main() -> None:
     why = "This project's own tackle rule -- a different mechanism, same duel"
     _report(why, gk, sk, rk, kstate, panels)
 
-    # 9: the asymmetric mix -- support (2,1)
+    # 9: the asymmetric mix -- support (2,1); a fractional LP split that is a
+    # tie against a fixed opponent, not a forced mix -- worth discussing most
     astate = (0, 2, 1, 2, 0)
-    why = "The asymmetric mix -- the carrier still guesses, the defender doesn't"
+    why = "The asymmetric mix -- a tie, not a forced mix, dressed the same"
     assert astate in mixed
     _report(why, g, solver, r, astate, panels)
     _web_pair(web_boards, web_matrices, g, solver, r, astate, "Asymmetric mix")
@@ -198,13 +226,13 @@ def main() -> None:
     _web_pair(web_boards, web_matrices, gt, st_, rt, tstate,
               "The surprising case -- zero randomness, still mixes")
 
-    # 12: movement slip on a single-cell goal -- the one shape that is
-    # always pure under every move-order rule, forced to mix by slip alone
+    # 12: movement slip on a single-cell goal -- pure in every configuration
+    # tested elsewhere in this project, forced to mix by slip alone
     gs, ss, rs = _solve(width=5, height=5, goal_rows=(2,),
                          move_order="deterministic", slip=0.15)
     slip_mixed = set(rs.no_saddle_states)
     sstate = next(iter(sorted(slip_mixed)[len(slip_mixed) // 2:]))
-    why = "Movement slip -- a single-cell goal, always pure until now"
+    why = "Movement slip -- a single-cell goal, pure until now"
     assert sstate in slip_mixed
     _report(why, gs, ss, rs, sstate, panels)
     print(f"  ({len(slip_mixed)} mixed states appear under slip=0.15 on a "
