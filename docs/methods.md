@@ -120,7 +120,7 @@ python -m venv --system-site-packages .venv   # see README for the macOS SciPy n
 source .venv/bin/activate
 pip install -r requirements.txt -e .
 make lint            # ruff
-make test-all        # ~200 fast + slow tests
+make test-all        # ~315 fast + slow tests
 make experiments     # regenerates the CSVs above
 make phase templates proof benchmark dqn figures report
 ```

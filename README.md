@@ -150,11 +150,19 @@ See [docs/findings.md](docs/findings.md) and [docs/README.md](docs/README.md).
 | `selfplay.py --seeds 5` | Nash-vs-Nash return and exploitability | [docs/selfplay.md](docs/selfplay.md) |
 | `policy_iteration.py` | value iteration vs. freeze-then-iterate: same fixed point, ~5x fewer LP solves | -- |
 | `numerics.py` | value bracket, five-way stage-game classification, rounding | [docs/numerics.md](docs/numerics.md) |
-| `templates.py` | the 94 no-pure-saddle states -> 8 geometric templates | [docs/templates.md](docs/templates.md) |
+| `templates.py` | the 94 no-pure-saddle states -> 8 geometric templates, with a board+matrix figure per template | [docs/templates.md](docs/templates.md) |
+| `degeneracy.py` | classifies all 94: unique forced mix vs. degenerate (a zero-weight action tied with the reported LP support) | [docs/degeneracy.md](docs/degeneracy.md) |
+| `distance_table.py` | no-pure-saddle / forced / degenerate counts by Manhattan distance between the players | [docs/showcase.md](docs/showcase.md) |
+| `positions.py` / `pure_vs_mixed_exploit.py` | twelve worked player-position cases with the exact 4x4 Q matrix, plus a pure-vs-mixed exploitability table at those same states | [docs/positions.md](docs/positions.md) (also [docs/positions.pdf](docs/positions.pdf)) |
+| `showcase.py` | six mixed states worked by hand: weighted-arrow boards + the exact stage matrix | [docs/showcase.md](docs/showcase.md) |
 | `phase_diagram.py` | goal-width x board-size phase diagram (`--analyze` decomposes the variance) | -- |
 | `onecell_proof.py` | the single-cell pure-saddle certificate | [docs/proof.md](docs/proof.md) |
 | `benchmark.py` | repeated-run timing + LP-call rate of the hybrid | -- |
-| `nash_dqn.py --seeds 5` | neural Nash-Q vs. the exact solver | -- |
+| `tournament.py` / `tournament4.py` | Littman's Table 3, reproduced exactly: minimax exploits *and* survives its challenger, greedy does one or the other | [docs/tournament.md](docs/tournament.md) |
+| `tournament_deepdive.py` | the causal version of that claim: patching greedy with the exact mix at only the mixed states recovers 43% of its robustness gap | [docs/tournament_deepdive.md](docs/tournament_deepdive.md) |
+| `nash_dqn.py --seeds 5` | neural Nash-Q vs. the exact solver: from-zero, fit-to-exact, warm-start, and a policy net, on the deterministic game | [docs/report.md](docs/report.md) §8 |
+| `nash_dqn_random.py --seeds 5` | the same four baselines on the random-move-order game, where equilibria are genuinely mixed | [docs/report.md](docs/report.md) §8 |
+| `nash_dqn_ablation.py --seeds 2` | Q-net width/depth capacity sweep, up to 512-wide / 115x the original architecture | [docs/report.md](docs/report.md) §8 |
 
 `soccer_nash.shaping` adds intermediate rewards: potential-based shaping leaves
 the equilibrium unchanged (value shifts by exactly `-Phi`), a naive possession

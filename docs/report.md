@@ -979,11 +979,19 @@ in detail.
 The code groups conceptually as:
 
 ```
-core        game.py  markov_game.py
+core        game.py  a10.py  markov_game.py  experiment.py
 equilibrium matrix_games.py  nash_q.py  support_enum.py  numerics.py
 analysis    geometry.py  tree.py  templates.py  occupancy.py  reachability.py
             symmetry.py  attractor.py  dominance.py  onecell.py  certificate.py
 learning    nash_dqn.py  mlp.py
 evaluation  exploit.py  evaluate.py  simulate.py  opponents.py  best_response.py
+            shaping.py
 render      render.py  viz.py
 ```
+
+`scripts/` (one file per analysis, `make <name>` runs most of them),
+`docs/*.md` (one per topic, cross-linked throughout this report), and
+`experiments/*.csv` (every regenerable table) are listed in full in the
+report's own footer (HTML/PDF) and in [methods.md](methods.md)'s experiments
+table -- not repeated here since both grow with the project and this section
+would otherwise drift out of date the way it once did.

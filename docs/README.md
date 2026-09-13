@@ -99,7 +99,11 @@ technical answer, start with **[report.pdf](report.pdf)**
   equilibrium fixed; a naive possession bonus does not.
 - Neural Nash-Q vs. the exact solver — report section 8, multi-seed, three
   Q-net starting points (from-zero, fit-to-exact, warm-start) plus a policy
-  net (`experiments/nash_dqn_seeds.csv`, `make dqn`).
+  net, on both the deterministic game (`experiments/nash_dqn_seeds.csv`,
+  `make dqn`) and the random-move-order game where equilibria are genuinely
+  mixed (`experiments/nash_dqn_random_seeds.csv`, `make dqn-random`); a
+  width/depth capacity sweep up to 512-wide / 115x the original architecture
+  (`experiments/nash_dqn_ablation.csv`, `make dqn-ablation`).
 
 ## Provenance
 
