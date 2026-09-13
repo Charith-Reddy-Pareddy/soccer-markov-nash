@@ -76,6 +76,8 @@ always; neither has any reason to deviate.
 
 **Support:** carrier `{U}` (100%) · defender `{U}` (100%).
 
+![Case 1 board position and Q matrix graph.](figures/png/positions_case01.png)
+
 ```
         U        D        L        R
   U   0.234    0.317    0.523    0.272
@@ -97,6 +99,8 @@ worth contrasting against it (Cases 3, 4, 5, 9, 10).
 
 **Support:** carrier `{U, D}` (63.5% / 36.5%) · defender `{U, R}`
 (36.5% / 63.5%).
+
+![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
 
 ```
         U        D        L        R
@@ -124,6 +128,8 @@ horizontal pair instead of a vertical one.
 **Support:** carrier `{L, R}` (7.7% / 92.3%) · defender `{D, L}`
 (18% / 82%).
 
+![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
+
 ```
         U        D        L        R
   U   0.139   -0.173    0.099    0.110
@@ -147,6 +153,8 @@ the corner leaves little room, but not zero.
 **Support:** carrier `{U, L}` (4.6% / 95.4%) · defender `{D, L}`
 (94.9% / 5.1%).
 
+![Case 4 board position and Q matrix graph.](figures/png/positions_case04.png)
+
 ```
         U        D        L        R
   U   0.103    0.103   -0.408    0.084
@@ -168,6 +176,8 @@ summary number is wanted -- but the three-way split itself is the point.)
 **Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%) · defender
 `{U, D, L}` (91.9% / 5.9% / 2.3%).
 
+![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
+
 ```
         U        D        L        R
   U   0.084    0.095    0.103    0.110
@@ -187,6 +197,8 @@ makes this case worth including, not the carrier's.
 
 **Support:** carrier `{D, L}` (73.9% / 26.1%) · defender `{D, R}`
 (2.5% / 97.5%).
+
+![Case 6 board position and Q matrix graph.](figures/png/positions_case06.png)
 
 ```
         U        D        L        R
@@ -213,6 +225,8 @@ relative configuration recurs on the board.
 **Support:** carrier `{U, D}` (63.5% / 36.5%) · defender `{U, L}`
 (36.5% / 63.5%).
 
+![Case 7 board position and Q matrix graph.](figures/png/positions_case07.png)
+
 ```
         U        D        L        R
   U   0.086    0.478    0.099    0.286
@@ -234,6 +248,8 @@ defender mixes `D 60.7% / R 39.3%`. Different cause, same structure.
 **Support:** carrier `{U, D}` (32.1% / 67.9%) · defender `{D, R}`
 (60.7% / 39.3%).
 
+![Case 8 board position and Q matrix graph.](figures/png/positions_case08.png)
+
 ```
         U        D        L        R
   U  -0.012    0.005    0.016   -0.042
@@ -251,6 +267,8 @@ page is a symmetric duel -- both players genuinely guessing. Here only one
 side is.
 
 **Support:** carrier `{U, D}` (2.6% / 97.4%) · defender `{R}` (100%).
+
+![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
 
 ```
         U        D        L        R
@@ -290,6 +308,8 @@ the carrier**, across all 94 mixed states on the canonical board.
 **Support:** carrier `{U, D, L}` (16.9% / 66% / 17.1%) · defender `{L, R}`
 (77.9% / 22.1%).
 
+![Case 10 board position and Q matrix graph.](figures/png/positions_case10.png)
+
 ```
         U        D        L        R
   U   0.247    0.330    0.272    0.317
@@ -313,6 +333,8 @@ alone.**
 
 **Support:** carrier `{D, R}` (53.8% / 46.2%) · defender `{U, L}`
 (95.1% / 4.9%).
+
+![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
 ```
         U        D        L        R
@@ -338,6 +360,8 @@ regardless of the goal forces mixing everywhere, independent of goal width.
 
 **Support:** carrier `{D, L}` (80.2% / 19.8%) · defender `{U, L}`
 (3.9% / 96.1%).
+
+![Case 12 board position and Q matrix graph.](figures/png/positions_case12.png)
 
 ```
         U        D        L        R

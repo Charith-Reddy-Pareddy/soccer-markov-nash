@@ -67,8 +67,10 @@ noise, and movement slip on an otherwise-always-pure single-cell goal):
 
     python scripts/positions.py
 
-Writes `docs/figures/gallery/positions.svg` and prints each state's exact
-Q matrix, policy, and action support.
+Writes `docs/figures/gallery/positions.svg` (all twelve, composite) plus one
+`docs/figures/gallery/positions_caseNN.svg` per case (board and Q matrix,
+sized to read on its own), and prints each state's exact Q matrix, policy,
+and action support.
 """
 
 from __future__ import annotations
@@ -118,11 +120,17 @@ def _support(policy_vec, tol: float = 1e-6) -> tuple[str, ...]:
     return tuple(_ACT[i] for i, p in enumerate(policy_vec) if p > tol)
 
 
-def _report(label, g, solver, r, state, panels):
-    """Print the full, un-reduced 4x4 Q matrix, policy, and support, and
-    append the board + best-response-graph panel pair. The whole 4x4 grid is
-    always shown -- no dominance reduction -- so every case is directly
-    comparable."""
+CASE_DIR = pathlib.Path("docs/figures/gallery")
+
+
+def _report(label, g, solver, r, state, panels, case_no=None):
+    """Print the full, un-reduced 4x4 Q matrix, policy, and support, append
+    the board + best-response-graph panel pair to the composite figure, and
+    (when `case_no` is given) also write that one pair on its own as
+    `positions_caseNN.svg` -- the board (where the players actually are) and
+    the Q matrix (why), sized to be readable on its own instead of only as
+    one tile in the full 12-case composite. The whole 4x4 grid is always
+    shown -- no dominance reduction -- so every case is directly comparable."""
     M = _oriented_matrix(solver, state, r.values)
     cert = certify_game(M)
     print(f"state {state} -- {label}")
@@ -142,10 +150,15 @@ def _report(label, g, solver, r, state, panels):
     print(f"  carrier support = {_support(carrier_pol)}   "
           f"defender support = {_support(defender_pol)}\n")
 
-    panels.append(policy_svg(g, state, r.row_policy, r.col_policy,
-                              value=r.values[state], title=label))
-    panels.append(bestresponse_graph_svg(M, _ACT, _ACT,
-                                          title=f"Q matrix -- {state}"))
+    board = policy_svg(g, state, r.row_policy, r.col_policy,
+                        value=r.values[state], title=label)
+    matrix = bestresponse_graph_svg(M, _ACT, _ACT, title=f"Q matrix -- {state}")
+    panels.append(board)
+    panels.append(matrix)
+    if case_no is not None:
+        CASE_DIR.mkdir(parents=True, exist_ok=True)
+        out = CASE_DIR / f"positions_case{case_no:02d}.svg"
+        out.write_text(panel_svg([board, matrix], cols=2))
 
 
 def _web_pair(board_panels, matrix_panels, g, solver, r, state, title):
@@ -179,9 +192,9 @@ def main() -> None:
         (0, 0, 1, 1, 0): "The corner duel",
         (0, 0, 2, 0, 0): "Three-action mix",
     }
-    for state, why, should_be_mixed in cases:
+    for case_no, (state, why, should_be_mixed) in enumerate(cases, start=1):
         assert (state in mixed) == should_be_mixed, f"{state}: unexpected pure/mixed"
-        _report(why, g, solver, r, state, panels)
+        _report(why, g, solver, r, state, panels, case_no=case_no)
         if state in web_titles:
             _web_pair(web_boards, web_matrices, g, solver, r, state, web_titles[state])
 
@@ -191,7 +204,7 @@ def main() -> None:
     v1, vm = r.values[(0, 1, 1, 1, 0)], r.values[mstate]
     print(f"  symmetry check: V(case 2) = {v1:+.6f}, V(mirror) = {vm:+.6f}, "
           f"sum = {v1 + vm:+.2e} (should be ~0)\n")
-    _report(why, g, solver, r, mstate, panels)
+    _report(why, g, solver, r, mstate, panels, case_no=7)
 
     # 8: this project's own tackle rule -- a different collision mechanism
     gk, sk, rk = _solve(width=5, height=4, goal_rows=(1, 2),
@@ -199,14 +212,14 @@ def main() -> None:
     tackle_mixed = set(rk.no_saddle_states)
     kstate = next(s for s in tackle_mixed if features(gk, s)["player_dist"] == 1)
     why = "This project's own tackle rule -- a different mechanism, same duel"
-    _report(why, gk, sk, rk, kstate, panels)
+    _report(why, gk, sk, rk, kstate, panels, case_no=8)
 
     # 9: the asymmetric mix -- support (2,1); a fractional LP split that is a
     # tie against a fixed opponent, not a forced mix -- worth discussing most
     astate = (0, 2, 1, 2, 0)
     why = "The asymmetric mix -- a tie, not a forced mix, dressed the same"
     assert astate in mixed
-    _report(why, g, solver, r, astate, panels)
+    _report(why, g, solver, r, astate, panels, case_no=9)
     _web_pair(web_boards, web_matrices, g, solver, r, astate, "Asymmetric mix")
 
     # 10: the three-lane mix -- support (3,2), the fourth canonical shape,
@@ -214,7 +227,7 @@ def main() -> None:
     lstate = (0, 2, 2, 2, 1)
     why = "The three-lane mix -- support (3,2), the deepest gap on this page"
     assert lstate in mixed
-    _report(why, g, solver, r, lstate, panels)
+    _report(why, g, solver, r, lstate, panels, case_no=10)
 
     # 11: deterministic + territory -- mixing forced by reward alone
     gt, st_, rt = _solve(width=7, height=5, goal_rows=(1, 2, 3),
@@ -222,7 +235,7 @@ def main() -> None:
                           territory_reward=0.05)
     tstate = (4, 4, 5, 4, 0)
     why = "Mixing forced by reward alone -- zero transition randomness"
-    _report(why, gt, st_, rt, tstate, panels)
+    _report(why, gt, st_, rt, tstate, panels, case_no=11)
     _web_pair(web_boards, web_matrices, gt, st_, rt, tstate,
               "The surprising case -- zero randomness, still mixes")
 
@@ -234,7 +247,7 @@ def main() -> None:
     sstate = next(iter(sorted(slip_mixed)[len(slip_mixed) // 2:]))
     why = "Movement slip -- a single-cell goal, pure until now"
     assert sstate in slip_mixed
-    _report(why, gs, ss, rs, sstate, panels)
+    _report(why, gs, ss, rs, sstate, panels, case_no=12)
     print(f"  ({len(slip_mixed)} mixed states appear under slip=0.15 on a "
           f"goal shape that has exactly 0 at slip=0)\n")
 
