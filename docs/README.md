@@ -17,6 +17,10 @@ separate repo). For the technical answer, start with **[report.pdf](report.pdf)*
   minimax exploits *and* survives its challenger; greedy policies do one or the
   other, never both (`make tournament`); the same result again with plain 4×4
   stage games and no `stand` action (`make tournament4`).
+- [tournament_deepdive.md](tournament_deepdive.md) — the causal version of
+  that claim: patching greedy's policy with the exact Nash mix at only the
+  mixed states recovers 43% of its robustness gap to minimax, one exploited
+  state shown matrix and all, and a gamma sweep (`make tournament-deepdive`).
 - [showcase.md](showcase.md) — six mixed states worked by hand: weighted-arrow
   diagrams, the exact stage matrix, and why relative position (not distance to
   goal) is what forces a guess (`make showcase`).

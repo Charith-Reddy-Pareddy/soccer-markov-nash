@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn dqn-ablation figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional positions a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn dqn-ablation figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -24,6 +24,7 @@ help:
 	@echo "make occupancy    - equilibrium-path occupancy of the mixed states"
 	@echo "make tournament   - reproduce Littman 1994 Table 3 (minimax vs greedy robustness)"
 	@echo "make tournament4  - the same table with plain 4x4 stage games (no stand action)"
+	@echo "make tournament-deepdive - causal test: patch greedy at the mixed states only, gamma sweep (~80s)"
 	@echo "make showcase     - 6 hand-picked mixed states: weighted-arrow diagrams + exact matrices"
 	@echo "make positions    - player positions + stage game as a best-response-graph"
 	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
@@ -117,6 +118,9 @@ tournament:
 tournament4:
 	$(PY) scripts/tournament4.py
 	$(PY) scripts/figures_png.py tournament4
+
+tournament-deepdive:
+	$(PY) scripts/tournament_deepdive.py
 
 showcase:
 	$(PY) scripts/showcase.py

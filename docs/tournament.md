@@ -98,3 +98,10 @@ make the challenger indifferent, so there is no column to punish it with. This
 is the practical payoff of solving the LP on the [41% of the equilibrium
 path](occupancy.md) that needs it, rather than falling back to a deterministic
 best reply.
+
+[tournament_deepdive.md](tournament_deepdive.md) tests this causally instead
+of just asserting it: patching greedy's policy with the exact Nash mix at
+*only* the mixed states (7.4% of the state space) recovers 43% of the gap to
+minimax against a fresh challenger, a concrete worked exploit at one specific
+state, and a gamma sweep showing the recovered share shrinks -- and briefly
+reverses -- as the horizon lengthens.

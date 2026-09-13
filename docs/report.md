@@ -577,7 +577,13 @@ stays ahead of its challenger; every deterministic policy -- greedy or
 hand-built -- does exactly one. This is Littman's "every deterministic offense
 has a perfect defense, like rock-paper-scissors": the mixed states are
 matching-pennies stage games, and a deterministic policy hands the challenger a
-column to punish.
+column to punish. [tournament_deepdive.md](tournament_deepdive.md) turns that
+into a measured, causal claim instead of an assertion: patching greedy's
+policy with the exact Nash mix at *only* the 7.4% of states that are
+genuinely mixed -- leaving every other state as greedy already plays it --
+recovers 43% of the gap to minimax against a freshly built challenger, with
+one concrete exploited state shown matrix and all, and a gamma sweep showing
+that recovered share shrinks (and briefly reverses) as the horizon lengthens.
 
 - Its duality gap `V0_br(s0) + V1_br(s0)` is `< 1e-9` for every move order -- no
   opponent beats the game value.
