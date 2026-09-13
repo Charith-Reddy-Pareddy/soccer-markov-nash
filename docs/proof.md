@@ -149,7 +149,7 @@ the defender's strategy in closed form and an independent proof of one half.
   it and `T₁` can drop to `g₂`… except `g₂` is now *also* a scoring row, so the
   defender must have committed to `g₁` or `g₂` and can be wrong. That
   commitment is the matching-pennies guess.
-- **IEWDS stalls.** On the 94 mixed states of the 7×5 three-row-goal game,
+- **IEWDS stalls.** On the 94 no-pure-saddle states of the 7×5 three-row-goal game,
   weak-dominance elimination leaves a `2×2` (or larger) residual with **no**
   dominated action — exactly the templates in [templates.md](templates.md).
   `dominance.iewds` residual sizes on those 94 states: `3×3` (30), `3×4` (16),

@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn dqn-ablation figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn dqn-ablation dqn-random degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -12,6 +12,10 @@ help:
 	@echo "make benchmark    - repeated-run timing + LP-call rate of the hybrid"
 	@echo "make dqn          - multi-seed neural Nash-Q vs the exact solver (~16 min)"
 	@echo "make dqn-ablation - Q-net width/depth sweep vs the exact solver (~17 min)"
+	@echo "make dqn-random   - neural Nash-Q on the RANDOM move-order game (mixed equilibria) (~30 min)"
+	@echo "make degeneracy   - classify the 94 no-pure-saddle states: unique vs degenerate"
+	@echo "make distance-table - no-pure-saddle counts by Manhattan player distance"
+	@echo "make pure-vs-mixed  - greedy-pure vs Nash-mixed exploitability at the positions.md cases"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg (+ their PNGs)"
@@ -82,6 +86,18 @@ dqn:
 
 dqn-ablation:
 	$(PY) scripts/nash_dqn_ablation.py --seeds 2
+
+dqn-random:
+	$(PY) scripts/nash_dqn_random.py --seeds 5
+
+degeneracy:
+	$(PY) scripts/degeneracy.py
+
+distance-table:
+	$(PY) scripts/distance_table.py
+
+pure-vs-mixed:
+	$(PY) scripts/pure_vs_mixed_exploit.py
 
 figures:
 	$(PY) scripts/render.py -o docs/figures/kickoff.svg

@@ -28,7 +28,7 @@ matrix is
 A stage game lacks a pure saddle iff the best-response correspondence *cycles*:
 player 0's best row changes with player 1's column and player 1's best column
 changes with player 0's row (a 2x2 matching-pennies structure -- confirmed for
-68 of the 94 mixed states).
+68 of the 94 no-pure-saddle states).
 
 ## The single-cell-goal argument
 

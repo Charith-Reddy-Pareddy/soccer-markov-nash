@@ -54,7 +54,7 @@ Reading which two carrier moves and which two defender moves cross in that
 submatrix:
 
 - The carrier's crossing pair includes a vertical move (up or down) in 90 of the
-  94 mixed states. The carrier is choosing **which goal row to head for**.
+  94 no-pure-saddle states. The carrier is choosing **which goal row to head for**.
 - The defender's crossing pair mirrors it. The defender is **guessing which row
   the carrier will take**.
 - Pure `L`/`R` crossings (no vertical choice at all) occur in only 4 states.

@@ -61,7 +61,7 @@ known, so the carrier has a weakly-dominant reply and every stage game has a
 pure saddle -- the LP is *right* to return pure. Littman's random *move order*
 makes a ball-steal depend on both players' targets at once, which turns the
 contested cell into a matching-pennies game with no pure saddle. Under
-`move_order="random"`, 94 of 2380 stage games (γ = 0.9) are genuinely mixed.
+`move_order="random"`, 94 of 2380 stage games (γ = 0.9) have no pure saddle.
 
 ![Rock-paper-scissors and a soccer stage game side by side; in both, player 0's
 best-reply row and player 1's best-reply column never coincide.](figures/png/rps_vs_soccer.png)
@@ -258,8 +258,8 @@ action spaces, or general-sum games.
 
 ## 4. Where the game "has to" mix, and what it looks like
 
-On the random-move-order 7x5 board, of the 94 states that require mixed
-strategies:
+On the random-move-order 7x5 board, of the 94 states with no pure saddle
+(68 of them a genuinely forced, non-degenerate mix -- [degeneracy.md](degeneracy.md)):
 
 | equilibrium support | count |
 |---|---|

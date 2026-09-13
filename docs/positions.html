@@ -120,13 +120,13 @@ the defender mixes over 2 actions.
     <tr><td>2 actions</td><td>1 action</td><td>(2,1)</td><td>14</td></tr>
     <tr><td>3 actions</td><td>2 actions</td><td>(3,2)</td><td>8</td></tr>
   </tbody>
-  <tfoot><tr><td colspan="3">total mixed states</td><td>94</td></tr></tfoot>
+  <tfoot><tr><td colspan="3">total no-pure-saddle states</td><td>94</td></tr></tfoot>
 </table>
 <p><strong>The defender's support is never larger than the carrier's</strong>,
-in any of the 94 mixed states on the canonical board.</p>
+in any of the 94 no-pure-saddle states on the canonical board.</p>
 
 <div class="takeaway">
-<p><strong>The bigger finding underneath those four rows:</strong> 94 mixed
+<p><strong>The bigger finding underneath those four rows:</strong> 94 no-pure-saddle
 states are not 94 different phenomena &mdash; they are four repeated shapes,
 recurring all over the board. Case 7 shows one of those repeats directly
 (Case 2's exact shape, elsewhere on the board, mirrored). This page shows one
@@ -197,7 +197,7 @@ answers U always; neither has any reason to deviate.</p>
 The carrier mixes <span class="mono">U 63.5% / D 36.5%</span>; the defender
 answers <span class="mono">U 36.5% / R 63.5%</span>. This is not one strange
 state among many &mdash; it is <span class="fact">the dominant pattern in
-the entire mixed-state set: 90 of the 94 mixed states on the canonical board
+the entire mixed-state set: 90 of the 94 no-pure-saddle states on the canonical board
 cross a vertical pair exactly like this one</span>, the carrier deciding
 which goal row to attack and the defender guessing which one. Everything
 that follows is either this same shape recurring (Case 7), or a genuinely
@@ -227,7 +227,7 @@ of me winning. That's why I am indifferent between the two."</blockquote>
 which is what makes this state (rather than Case 4, which crosses U/L) the
 cleanest match to that description: two actions genuinely equally good
 against the defender's own mix. <span class="fact">This is the rarer shape
-overall: only 4 of 94 mixed states cross a purely horizontal pair instead of
+overall: only 4 of 94 no-pure-saddle states cross a purely horizontal pair instead of
 a vertical one.</span></p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
@@ -408,7 +408,7 @@ fourth and last canonical support shape: the carrier genuinely needs three
 live actions, while the defender only ever needs two. Combined with Case 9,
 this settles a structural question the certificates make checkable rather
 than assumed: <strong>the defender never needs strictly more actions than
-the carrier</strong>, across all 94 mixed states on the canonical board.</p>
+the carrier</strong>, across all 94 no-pure-saddle states on the canonical board.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D, L} (16.9% / 66% / 17.1%) &middot; defender {L, R} (77.9% / 22.1%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.282, above <span class="mono">E[R]</span>=+0.217 &mdash; a genuine three-way tie. The defender&apos;s official support is {L, R} at +0.282, below <span class="mono">E[U]</span>=+0.322 &mdash; but <span class="mono">E[D]</span>=+0.282 too: the defender is really indifferent among D, L, and R, even though the LP only split weight over two of them.</p>
 <figure class="case-fig">
@@ -490,10 +490,51 @@ opponent) can produce the same <em>symptom</em> &mdash; a fractional policy
 &mdash; without a cycle anywhere in the matrix.
 </p>
 
+<h2>From worked cases to exploitability: pure vs. mixed, at these exact states</h2>
+<p>
+Everything above stays inside one stage game &mdash; what the carrier and
+defender do <em>at</em> a state. <span class="mono">tournament_deepdive.md</span>
+shows the whole-game consequence &mdash; greedy collapses against a
+challenger, minimax doesn't &mdash; but at the level of the
+<em>tournament</em>, not any one of these twelve states. This table connects
+the two directly: at each of the cases above, force the carrier to its
+single most likely ("greedy") action and let the defender best-respond
+<em>within that one stage game</em>, then compare to the actual Nash mixed
+value.
+</p>
+<table class="shapes">
+  <thead><tr><th>case</th><th>greedy pure value vs. BR</th><th>Nash mixed value vs. BR</th><th>value of mixing</th></tr></thead>
+  <tbody>
+    <tr><td>Case 2 &mdash; the primary example</td><td>+0.0856</td><td>+0.0942</td><td>+0.0086</td></tr>
+    <tr><td>Case 3 &mdash; L/R indifference</td><td>+0.1665</td><td>+0.2056</td><td>+0.0391</td></tr>
+    <tr><td>Case 4 &mdash; the corner duel</td><td>+0.0763</td><td>+0.0776</td><td>+0.0012</td></tr>
+    <tr><td>Case 5 &mdash; 3-action mix</td><td>+0.0763</td><td>+0.0848</td><td>+0.0085</td></tr>
+    <tr><td>Case 6 &mdash; near-pure hedge</td><td>+0.1665</td><td>+0.1676</td><td>+0.0011</td></tr>
+    <tr><td>Case 9 &mdash; the asymmetric mix</td><td>+0.0848</td><td>+0.0951</td><td>+0.0103</td></tr>
+    <tr><td>Case 10 &mdash; the three-lane mix</td><td>+0.2471</td><td>+0.2816</td><td>+0.0345</td></tr>
+  </tbody>
+</table>
+<p>
+<strong>The value of mixing is never negative</strong> &mdash; exactly the
+theoretical guarantee (an equilibrium mix is a best response to the
+opponent's best response; nothing pure can beat that). It is also not
+uniform: Case 3's clean L/R indifference is worth <span class="mono">+0.039</span>,
+fifteen times more than Case 6's near-pure hedge (<span class="mono">+0.0011</span>,
+unsurprising &mdash; a 97.5/2.5 hedge is <em>almost</em> what the greedy
+action already does) or Case 4's corner duel (<span class="mono">+0.0012</span>,
+the corner leaves little room to exploit either way). Case 3 and Case 10 --
+the deepest gap on the whole page in the original write-up above &mdash; are
+also the two largest values of mixing here: the states where the matrix
+punishes commitment hardest are the same ones where committing costs the
+most.
+</p>
+
 <footer>
 Reproduce with <span class="mono">python scripts/positions.py</span>
 (<span class="mono">make positions</span>) &mdash; writes
 <span class="mono">figures/gallery/positions.svg</span> and prints every
-matrix, policy, and support shown here. Full project:
+matrix, policy, and support shown here.
+<span class="mono">python scripts/pure_vs_mixed_exploit.py</span> reproduces
+the pure-vs-mixed exploitability table above. Full project:
 <span class="mono">github.com/Charith-Reddy-Pareddy/soccer-markov-nash</span>.
 </footer>

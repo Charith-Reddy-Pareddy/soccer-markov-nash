@@ -60,7 +60,7 @@ technical answer, start with **[report.pdf](report.pdf)**
 
 - [geometry.md](geometry.md) — RQ3: which spatial configurations force mixing,
   and the decision tree that predicts them.
-- [templates.md](templates.md) — the 94 mixed states reduced to 8 geometric
+- [templates.md](templates.md) — the 94 no-pure-saddle states reduced to 8 geometric
   templates, with the stage matrix and matching-pennies proof for each.
 - [result.md](result.md) — the goal-width switch stated precisely: single cell →
   pure everywhere, goal ≥ 2 cells → a provably saddle-free stage game; the
@@ -79,6 +79,9 @@ technical answer, start with **[report.pdf](report.pdf)**
 - [numerics.md](numerics.md) — why the LP returns pure strategies, the value
   bracket, why 0.1-rounding is never safe, and value-iteration vs.
   freeze-then-iterate — all with figures (`scripts/numerics.py --figures`).
+- [degeneracy.md](degeneracy.md) — not every fractional LP output is a forced
+  mixture: 64 of the 94 no-pure-saddle states are a unique forced mix, 30 have
+  a zero-weight action tied with the reported support (`make degeneracy`).
 - [findings.md](findings.md) — dated working notes (Q1–Q7).
 
 ## A10 deliverables

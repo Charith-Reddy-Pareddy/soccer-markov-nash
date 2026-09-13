@@ -44,7 +44,7 @@ Two contributions:
   Mixing appears under Littman's random move *order*, with a multi-cell goal
   mouth and a defender that cannot cover both scoring lanes; **across the tested
   boards, a one-cell goal produced no mixed stage games while every tested goal
-  width &ge; 2 produced some.** 68 of 94 mixed states (7&times;5) reduce to
+  width &ge; 2 produced some.** 68 of 94 no-pure-saddle states (7&times;5) reduce to
   2&times;2 matching pennies; the strongly-mixed core is ~26.
 
 - Policies and values, drawn rather than tabulated: [docs/gallery.html](docs/gallery.html) (`make gallery`)
@@ -128,9 +128,14 @@ depends on the machine and LP backend.
   a pure saddle. A pure equilibrium exists; the discount was never load-bearing.
 - **Random move order (Littman):** 3.95% of stage games on the 7x5 3-cell-goal
   board have no pure saddle, so no pure stationary equilibrium exists; the
-  `pure` solver then under-values the kickoff by 0.16. **Whether any state needs
-  mixing is decided entirely by goal-mouth width** -- one cell: never; two or
-  more: always ([docs/geometry.md](docs/geometry.md), phase diagram).
+  `pure` solver then under-values the kickoff by 0.16. **Within the tested
+  Littman random-move-order family, one-cell goals produced no no-pure-saddle
+  states, while every tested wider-goal configuration produced at least
+  one** ([docs/geometry.md](docs/geometry.md), phase diagram) -- a different
+  transition family (movement `slip`, this project's own `tackle` rule)
+  breaks the switch even on a one-cell goal ([generalize.md](docs/generalize.md)),
+  so this is an empirical result scoped to the tested family, not a theorem
+  about goal width in general.
 - **Coinflip tie-break:** stochastic, yet its value function is identical to the
   deterministic game's -- it is Littman's move *order*, not randomness, that
   forces mixed strategies.
@@ -145,7 +150,7 @@ See [docs/findings.md](docs/findings.md) and [docs/README.md](docs/README.md).
 | `selfplay.py --seeds 5` | Nash-vs-Nash return and exploitability | [docs/selfplay.md](docs/selfplay.md) |
 | `policy_iteration.py` | value iteration vs. freeze-then-iterate: same fixed point, ~5x fewer LP solves | -- |
 | `numerics.py` | value bracket, five-way stage-game classification, rounding | [docs/numerics.md](docs/numerics.md) |
-| `templates.py` | the 94 mixed states -> 8 geometric templates | [docs/templates.md](docs/templates.md) |
+| `templates.py` | the 94 no-pure-saddle states -> 8 geometric templates | [docs/templates.md](docs/templates.md) |
 | `phase_diagram.py` | goal-width x board-size phase diagram (`--analyze` decomposes the variance) | -- |
 | `onecell_proof.py` | the single-cell pure-saddle certificate | [docs/proof.md](docs/proof.md) |
 | `benchmark.py` | repeated-run timing + LP-call rate of the hybrid | -- |

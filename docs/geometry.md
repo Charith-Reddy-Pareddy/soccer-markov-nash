@@ -52,7 +52,7 @@ A depth-4 decision tree (`soccer_nash/tree.py`) predicts "mixed" with
 
 ## Templates
 
-The 94 mixed states (7x5, gamma 0.9) canonicalize under the board mirror to 47
+The 94 no-pure-saddle states (7x5, gamma 0.9) canonicalize under the board mirror to 47
 pairs, then cluster into **8 geometric templates**. The four with a 2x2
 equilibrium support are all verified matching pennies (best replies cross both
 ways) and cover **68 of 94** states; the rest are borderline near-pure saddles

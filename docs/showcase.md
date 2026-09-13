@@ -1,6 +1,6 @@
 # Six mixed states, worked by hand
 
-Stop summarizing the 94 mixed states with a heatmap or an entropy number, and
+Stop summarizing the 94 no-pure-saddle states with a heatmap or an entropy number, and
 instead **look at actual states** -- draw
 both players on the board with their action probabilities as arrow thickness,
 print the *unrounded* `4x4` stage matrix (`U`, `D`, `L`, `R` only -- no
@@ -16,13 +16,38 @@ both players' action probabilities drawn as weighted arrows.](figures/png/showca
 
 ## Does mixing depend on *where* the players are, or their *relative* position?
 
-The meeting's question, directly: every one of the 94 mixed states (canonical
+The meeting's question, directly: every one of the 94 no-pure-saddle states (canonical
 `7x5` board, 3-cell goal, random move order, γ = 0.9) has the two players
 within **2 cells of each other** (Manhattan distance) -- 40 at distance 1, 54
 at distance 2, **zero at distance ≥ 3**. Proximity to the *opponent*, not
 distance to the goal, is what forces a guess. State 2 below is the sharpest
 evidence: the carrier is 6 cells from goal (as far as this board allows) and
 still faces a genuine 3-way mix, because the defender is right there.
+
+`scripts/distance_table.py` gives the full breakdown, every distance on the
+board, not just the two where anything happens, and further splits the
+no-pure-saddle count into a genuinely forced (unique) mix vs. a degenerate
+one ([degeneracy.md](degeneracy.md)):
+
+| Manhattan distance | states | no-pure-saddle | forced (unique) | degenerate | % no-pure-saddle |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 232 | 40 | 28 | 12 | 17.2% |
+| 2 | 376 | 54 | 36 | 18 | 14.4% |
+| 3 | 440 | 0 | 0 | 0 | 0.0% |
+| 4 | 432 | 0 | 0 | 0 | 0.0% |
+| 5 | 360 | 0 | 0 | 0 | 0.0% |
+| 6 | 260 | 0 | 0 | 0 | 0.0% |
+| 7 | 160 | 0 | 0 | 0 | 0.0% |
+| 8 | 80 | 0 | 0 | 0 | 0.0% |
+| 9 | 32 | 0 | 0 | 0 | 0.0% |
+| 10 | 8 | 0 | 0 | 0 | 0.0% |
+
+Two things this adds beyond "zero at distance >= 2": the no-pure-saddle
+*rate* is actually higher at distance 1 (17.2%) than at distance 2 (14.4%) --
+closer is not simply "more likely to mix" in a monotone way once you
+condition on being close enough to matter at all -- and the unique/degenerate
+split is essentially the same shape at both distances (roughly 70/30), so
+distance does not select for one kind of mixing over the other.
 
 ## State 1 — `(0, 1, 1, 0, 1)`: a near-even split at the goal mouth
 

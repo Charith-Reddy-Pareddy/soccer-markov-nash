@@ -84,8 +84,8 @@ be the converged stage game (player 0 maximises, player 1 minimises).
 | robustness | 5x3 vs 5x4, `gamma in {0.5,0.9,0.995}` x actions `{4,5}` x scoring `{win,rate}` + undiscounted | 0-vs-positive mixed count invariant (16/16) |
 | perturbation | 5x4, `+/- 1e-6` noise on every `M_s` | no genuine mixed game (gap > 1e-4) and no sharp pure saddle (margin > 1e-5) changes label |
 
-Observed on the 7x5 three-row goal: **94 / 2380** stage games are mixed, all 94
-reachable from the kickoff, smallest pure-bound gap **3.8e-3** (≈ 3800x the
+Observed on the 7x5 three-row goal: **94 / 2380** stage games have no pure
+saddle, all 94 reachable from the kickoff, smallest pure-bound gap **3.8e-3** (≈ 3800x the
 `1e-6` perturbation). The broader 127-config phase-diagram sweep
 (`scripts/phase_diagram.py`) is the wide-coverage companion; this script is the
 depth check with certificates.
@@ -114,10 +114,18 @@ Carries the two slacks (both `0` for a true saddle).
 - a **2x2 matching-pennies core**: two rows and two columns whose `2x2`
   submatrix `A` satisfies `A00 > A10`, `A11 > A01` (player 0 switches row with
   the column) and `A00 > A01`, `A11 > A10` (player 1 switches column with the
-  row). Every one of the 94 (7x5) and 56 (5x4) mixed states has such a core --
-  the interpretable "each player must guess" structure, the same shape as
-  matching pennies and the near-goal soccer templates in
-  [templates.md](templates.md).
+  row). Every one of the 94 (7x5) and 56 (5x4) no-pure-saddle states has such
+  a core -- the interpretable "each player must guess" structure, the same
+  shape as matching pennies and the near-goal soccer templates in
+  [templates.md](templates.md). **This is a claim about the matrix, not about
+  the LP's printed output**: the core is what makes a pure saddle impossible,
+  and it is present in the matrix regardless of which particular equilibrium
+  the LP happens to report. The LP-*reported* support can still be degenerate
+  ([degeneracy.md](degeneracy.md)) -- an action outside it tied for the same
+  value, so the printed split is one vertex of a larger equilibrium face, not
+  a uniquely forced number -- without that changing whether the core itself
+  is there. 30 of the 94 states (positions.md's Cases 4, 5, 9, 10 among them)
+  have this kind of degeneracy on one side; the core is unaffected in all 94.
 - the residual **shape after iterated weak-dominance elimination** (never
   smaller than `2x2` on the mixed states), and its own `maximin < minimax` gap.
 - the **exact equilibrium** `(p*, q*, v)` with `epsilon_equilibrium(M, p*, q*)`

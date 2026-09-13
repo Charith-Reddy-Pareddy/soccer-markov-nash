@@ -49,7 +49,7 @@ This is the same 68 / 94 the geometric templates cover
 `V(hybrid) − V(pure maximin)` -- how much a player gives up by being unable to
 mix:
 
-- **at the 94 mixed states:** mean `+0.126`, median `+0.107`, up to `+0.367`.
+- **at the 94 no-pure-saddle states:** mean `+0.126`, median `+0.107`, up to `+0.367`.
 - **propagated to the kickoff** `(0, 2, 6, 2, 0)`: `+0.150` with mixing vs
   `0.000` restricted to pure strategies. A pure-strategy player at this kickoff
   can only *secure a draw*; the mixing option is worth a decisive `+0.15` edge.

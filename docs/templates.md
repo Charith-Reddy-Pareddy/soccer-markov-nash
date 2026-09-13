@@ -26,6 +26,18 @@ representatives by the defender's position in the carrier's frame -- forward
 lead `dx_rel`, vertical offset `|dy_rel|`, whether the carrier is on a goal
 row -- and by the equilibrium support shape gives 8 templates.
 
+> **94 no-pure-saddle states reduce to 8 canonical relative configurations
+> under mirror/role-swap symmetry and carrier-frame geometry.** The
+> question of whether mixing is about *absolute* position on the board or a
+> *repeated relative* configuration is answered directly by this reduction:
+> two states with the same defender-relative geometry and the same
+> equilibrium support shape are the same template regardless of where on the
+> board they sit, and only 8 distinct shapes appear across the whole board.
+
+![The 8 templates, board and Q-matrix graph side by side: one representative
+state per template, its full 4x4 matrix, and the state count each template
+covers.](figures/png/templates.png)
+
 ## The templates
 
 Matrices are in the carrier's frame: **rows are the carrier's actions
@@ -44,7 +56,7 @@ continuation value, and every row/column is one of `U`, `D`, `L`, `R`.
 | 8 | 2 | defender 2 ahead, same row, near the back wall | 2x1 | defender pure, carrier indifferent |
 
 **The four 2x2-support templates are all genuine matching pennies** -- best
-replies cross in both directions -- and they cover **68 of the 94** mixed
+replies cross in both directions -- and they cover **68 of the 94** no-pure-saddle
 states. Templates 4, 5 and 8 (22 states) are the borderline cases: a pure
 saddle is *almost* present (one player has a pure optimal action, the other is
 indifferent between two), so they are classed mixed only under the
@@ -145,3 +157,6 @@ third clause; templates 1–3 and 7 are exactly the states where all three hold.
 ```
 python scripts/templates.py --gamma 0.9
 ```
+
+Also writes `docs/figures/gallery/templates.svg` (the 8-template figure
+above).

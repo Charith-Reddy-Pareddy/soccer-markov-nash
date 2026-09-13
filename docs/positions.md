@@ -28,8 +28,8 @@ carrier's actions:
 | | | **total** | **94** |
 
 **The defender's support is never larger than the carrier's**, in any of the
-94 mixed states on the canonical board. The bigger finding underneath those
-four rows: **94 mixed states are not 94 different phenomena -- they are four
+94 no-pure-saddle states on the canonical board. The bigger finding underneath those
+four rows: **94 no-pure-saddle states are not 94 different phenomena -- they are four
 repeated shapes, recurring all over the board.** Case 7 shows one of those
 repeats directly (Case 2's exact shape, elsewhere on the board, mirrored).
 This page shows one example of each of the four shapes, plus every distinct
@@ -93,7 +93,7 @@ always; neither has any reason to deviate.
 **This is the case to lead with.** Gap `0.0136`. The carrier mixes
 `U 63.5% / D 36.5%`; the defender answers `U 36.5% / R 63.5%`. This is not
 one strange state among many -- it is the dominant pattern in the entire
-mixed-state set: **90 of the 94 mixed states on the canonical board** cross
+mixed-state set: **90 of the 94 no-pure-saddle states on the canonical board** cross
 a vertical pair exactly like this one, the carrier deciding which goal row
 to attack and the defender guessing which one. Everything that follows is
 either this same shape recurring (Case 7), or a genuinely different shape
@@ -126,7 +126,7 @@ Gap `0.0445`. The carrier's entire live option set is **exactly `{L, R}`**
 -- no vertical option survives at all, which is what makes this state (rather
 than Case 4, which crosses `U/L`) the cleanest match to that description:
 two actions genuinely equally good against the defender's own mix. This is
-the *rarer* shape overall: only 4 of 94 mixed states cross a purely
+the *rarer* shape overall: only 4 of 94 no-pure-saddle states cross a purely
 horizontal pair instead of a vertical one.
 
 **Support:** carrier `{L, R}` (7.7% / 92.3%) · defender `{D, L}`
@@ -321,7 +321,7 @@ the fourth and last canonical support shape: the carrier genuinely needs
 three live actions, while the defender only ever needs two. Combined with
 Case 9, this settles a structural question the certificates make checkable
 rather than assumed: **the defender never needs strictly more actions than
-the carrier**, across all 94 mixed states on the canonical board.
+the carrier**, across all 94 no-pure-saddle states on the canonical board.
 
 **Support:** carrier `{U, D, L}` (16.9% / 66% / 17.1%) · defender `{L, R}`
 (77.9% / 22.1%).
@@ -409,9 +409,42 @@ shows the boundary of that story: indifference alone (a tie against a fixed
 opponent) can produce the same *symptom* -- a fractional policy -- without a
 cycle anywhere in the matrix.
 
+## From worked cases to exploitability: pure vs. mixed, at these exact states
+
+Everything above stays inside one stage game -- what the carrier and
+defender do *at* a state. [tournament_deepdive.md](tournament_deepdive.md)
+shows the whole-game consequence -- greedy collapses against a challenger,
+minimax doesn't -- but at the level of the *tournament*, not any one of
+these twelve states. This table connects the two directly: at each of the
+cases above, force the carrier to its single most likely ("greedy") action
+and let the defender best-respond *within that one stage game*, then
+compare to the actual Nash mixed value.
+
+| case | greedy pure value vs. BR | Nash mixed value vs. BR | value of mixing |
+|---|---:|---:|---:|
+| Case 2 -- the primary example | +0.0856 | +0.0942 | +0.0086 |
+| Case 3 -- L/R indifference | +0.1665 | +0.2056 | +0.0391 |
+| Case 4 -- the corner duel | +0.0763 | +0.0776 | +0.0012 |
+| Case 5 -- 3-action mix | +0.0763 | +0.0848 | +0.0085 |
+| Case 6 -- near-pure hedge | +0.1665 | +0.1676 | +0.0011 |
+| Case 9 -- the asymmetric mix | +0.0848 | +0.0951 | +0.0103 |
+| Case 10 -- the three-lane mix | +0.2471 | +0.2816 | +0.0345 |
+
+**The value of mixing is never negative** -- exactly the theoretical
+guarantee (an equilibrium mix is a best response to the opponent's best
+response; nothing pure can beat that). It is also not uniform: Case 3's
+clean L/R indifference is worth `+0.039`, fifteen times more than Case 6's
+near-pure hedge (`+0.0011`, unsurprising -- a 97.5/2.5 hedge is *almost*
+what the greedy action already does) or Case 4's corner duel (`+0.0012`,
+the corner leaves little room to exploit either way). Case 3 and Case 10 --
+the deepest gap on the whole page in the original write-up above -- are also
+the two largest values of mixing here: the states where the matrix punishes
+commitment hardest are the same ones where committing costs the most.
+
 ## Reproduction
 
 `python scripts/positions.py` prints the exact `4x4` Q matrix, policy, and
 action support for all twelve states and writes
 `figures/gallery/positions.svg`. A PDF write-up of this page is at
-[positions.pdf](positions.pdf).
+[positions.pdf](positions.pdf). `python scripts/pure_vs_mixed_exploit.py`
+reproduces the pure-vs-mixed exploitability table above.

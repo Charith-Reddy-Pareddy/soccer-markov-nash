@@ -86,12 +86,16 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `tolerance_sweep.csv` | `experiments.py tolerance` | `random`, 9 classification tolerances | ~2 min |
 | `phase_diagram.csv` + heatmap | `phase_diagram.py` | every board `w ≤ 11, h ≤ 9, w·h ≤ 45` × every goal width, `random` | ~15 min |
 | `phase_diagram.py --analyze` | — | OLS variance decomposition of the mixed fraction | instant |
-| templates | `templates.py` | the 94 mixed states → mirror pairs → geometric templates | ~15 s |
+| templates | `templates.py` | the 94 no-pure-saddle states → mirror pairs → geometric templates | ~15 s |
 | certificate | `onecell_proof.py` | single-cell proof, 13 boards × 5 discounts, 3 checks each | ~4 min |
 | `benchmark.py` | — | hybrid solve, **median of 5 repeats**, LP-call rate | ~2 min |
 | `nash_dqn_seeds.csv` | `nash_dqn.py --seeds 5` | neural Nash-Q vs exact -- from-zero, fit-to-exact, warm-start Q nets + policy net, **5 seeds** | ~16 min |
 | `nash_dqn_ablation.csv` | `nash_dqn_ablation.py --seeds 2` | Q-net width (32-256) + depth (1-4 layers) sweep, fit-to-exact, **2 seeds/config x 10 configs** | ~17 min |
 | `tournament_deepdive.csv` | `tournament_deepdive.py` | patched-policy causal test + gamma sweep (6 discounts) of the greedy-vs-minimax robustness gap | ~80 s |
+| `nash_dqn_random_seeds.csv` | `nash_dqn_random.py --seeds 5` | neural Nash-Q on the RANDOM move-order game (mixed stage games, LP-exact bootstrap target) -- same 3 Q-net starting points + policy net, **5 seeds** | ~30 min |
+| `degeneracy.csv` | `degeneracy.py` | classify all 94 no-pure-saddle states: unique forced mix vs. degenerate (zero-weight action tied with the reported support) | ~10 s |
+| `distance_table.csv` | `distance_table.py` | no-pure-saddle / forced / degenerate counts, bucketed by Manhattan distance between the players | ~10 s |
+| `pure_vs_mixed_exploit.csv` | `pure_vs_mixed_exploit.py` | greedy-pure vs. Nash-mixed value against a best response, at each positions.md case | instant |
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | self-play | `selfplay.py --seeds 5` | Nash-vs-Nash return, **5 seeds × 3000 games** | ~5 min |
 | `board_sweep.csv` | `experiments.py board` | larger board sweep (legacy) | ~10 min |
