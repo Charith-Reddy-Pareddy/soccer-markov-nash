@@ -12,6 +12,19 @@ with a frozen target network (the same freezing idea as DQN and as
 The point is not to beat the exact solver -- it is to measure how close a
 function approximator gets on value error, action agreement and exploitability,
 so that the eventual continuous-action work has a yardstick.
+
+Three starting points for the Q-net, all comparable via :func:`compare_to_exact`:
+
+- :func:`train_nash_dqn` -- **from zero**: random init, trained purely by TD
+  bootstrap against a frozen target network.
+- :func:`fit_q_to_exact` -- **fit to exact**: supervised regression straight
+  onto ``Q_exact``, no bootstrap at all -- how well the network can represent
+  the answer when it is simply told what it is.
+- :func:`train_nash_dqn` again, passed ``init_net=`` the net
+  :func:`fit_q_to_exact` returned -- **warm start**: the same TD bootstrap as
+  "from zero", but starting already at (an approximation of) the exact
+  solution, to see whether the bootstrap objective holds that starting point
+  or pulls the network away from it.
 """
 
 from __future__ import annotations
@@ -108,7 +121,17 @@ def train_nash_dqn(
     target_sync: int = 5,
     batch_size: int = 256,
     seed: int = 0,
+    init_net: _QNet | None = None,
 ) -> NashDQNResult:
+    """Fitted-Q / DQN-style training on the deterministic game.
+
+    ``init_net``, when given, seeds both the online and target network's
+    weights from it instead of the usual random (He-normal) init -- e.g. the
+    output of :func:`fit_q_to_exact`, to test whether starting the TD
+    bootstrap already at (an approximation of) the exact solution changes
+    where it ends up, versus starting from scratch (``init_net=None``). It
+    must share this call's ``hidden``/``out`` shape.
+    """
     if game.move_order != "deterministic":
         raise ValueError("nash_dqn expects the deterministic game")
     states = list(game.states())
@@ -126,6 +149,9 @@ def train_nash_dqn(
 
     index = {s: i for i, s in enumerate(states)}
     net = _QNet(hidden, seed)
+    if init_net is not None:
+        for w, iw in zip(net._w(), init_net._w()):
+            w[:] = iw
     target = _QNet(hidden, seed)
     for tw, w in zip(target._w(), net._w()):
         tw[:] = w
@@ -216,6 +242,40 @@ def compare_to_exact(
         "classification_agreement": class_agree / n,
         "duality_gap": gap,
     }
+
+
+def fit_q_to_exact(
+    game: SoccerGame,
+    exact_matrix_of,
+    hidden: int = 64,
+    epochs: int = 400,
+    lr: float = 3e-3,
+    batch_size: int = 256,
+    seed: int = 0,
+) -> _QNet:
+    """A Q-net trained *directly* on the exact stage-game matrices --
+    supervised regression, no TD bootstrap, no target network. This is the
+    "fit a DQN to the exact solution" step: it isolates how well a network of
+    this size can even *represent* ``Q_exact``, before any bootstrapping
+    noise gets involved. Mirrors :func:`train_policy_baseline`, but for the
+    Q-matrix head (``out=16``) instead of the two policy heads (``out=8``).
+    Its returned net is a valid ``init_net`` for :func:`train_nash_dqn`.
+    """
+    if game.move_order != "deterministic":
+        raise ValueError("nash_dqn expects the deterministic game")
+    states = list(game.states())
+    X = np.array(states, float)
+    y = np.array([exact_matrix_of(s).reshape(-1) for s in states])
+    net = _QNet(hidden, seed, out=16)
+    rng = np.random.default_rng(seed)
+    n = len(states)
+    for epoch in range(epochs):
+        lr_e = lr * 0.5 * (1 + np.cos(np.pi * epoch / max(epochs - 1, 1)))
+        perm = rng.permutation(n)
+        for b in range(0, n, batch_size):
+            idx = perm[b : b + batch_size]
+            net.step(X[idx], y[idx], lr=lr_e)
+    return net
 
 
 def train_policy_baseline(

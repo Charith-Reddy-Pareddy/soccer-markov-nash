@@ -1,6 +1,6 @@
-seed,train_time_s,final_mse,epochs_to_plateau,still_improving,max_value_error,mean_value_error,action_agreement,classification_agreement,duality_gap,policy_action_agreement,policy_max_regret,policy_duality_gap
-0,33.5,0.0028,478,1,0.5579,0.1301,0.4513,0.6853,0.4595,0.9992,0.4464,0.844
-1,27.7,0.00329,454,0,0.5552,0.1388,0.4122,0.6626,0.366,0.9987,0.4394,0.8405
-2,28.4,0.00331,515,1,0.5409,0.1318,0.421,0.6664,0.4006,0.9992,0.4716,0.8398
-3,27.1,0.00331,432,0,0.5743,0.1385,0.4231,0.6429,0.4597,0.9992,0.4718,0.8431
-4,27.7,0.00315,466,1,0.5129,0.1307,0.4601,0.6748,0.4929,0.9992,0.4524,0.8425
+seed,train_time_s,final_mse,epochs_to_plateau,still_improving,max_value_error,mean_value_error,action_agreement,classification_agreement,duality_gap,fit_max_value_error,fit_action_agreement,fit_classification_agreement,fit_duality_gap,warm_train_time_s,warm_final_mse,warm_max_value_error,warm_mean_value_error,warm_action_agreement,warm_classification_agreement,warm_duality_gap,policy_action_agreement,policy_max_regret,policy_duality_gap
+0,47.9,0.0028,478,1,0.5579,0.1301,0.4513,0.6853,0.4595,0.4165,0.4534,0.466,0.4643,124.2,0.00312,0.5245,0.1373,0.4605,0.6807,0.4037,0.9992,0.4464,0.844
+1,96.2,0.00329,454,0,0.5552,0.1388,0.4122,0.6626,0.366,0.4288,0.4391,0.4689,0.4818,113.6,0.00337,0.5117,0.1326,0.4521,0.6303,0.3092,0.9987,0.4394,0.8405
+2,27.6,0.00331,515,1,0.5409,0.1318,0.421,0.6664,0.4006,0.3111,0.4357,0.445,0.4378,25.5,0.0031,0.5114,0.1239,0.4256,0.6496,0.4718,0.9992,0.4716,0.8398
+3,25.5,0.00331,432,0,0.5743,0.1385,0.4231,0.6429,0.4597,0.3947,0.4592,0.484,0.4295,44.2,0.0032,0.5085,0.1256,0.4597,0.6555,0.3833,0.9992,0.4718,0.8431
+4,25.3,0.00315,466,1,0.5129,0.1307,0.4601,0.6748,0.4929,0.3245,0.4765,0.479,0.5271,54.6,0.00317,0.3926,0.1138,0.4655,0.6252,0.3309,0.9992,0.4524,0.8425

@@ -6,6 +6,7 @@ from soccer_nash.nash_dqn import (
     _minimax,
     compare_policy_to_exact,
     compare_to_exact,
+    fit_q_to_exact,
     train_nash_dqn,
     train_policy_baseline,
 )
@@ -42,6 +43,47 @@ def test_qnet_can_regress_toward_the_exact_stage_matrices():
     assert 0.0 <= m["classification_agreement"] <= 1.0
     assert m["max_value_error"] >= m["mean_value_error"] >= 0.0
     assert m["duality_gap"] >= -1e-9
+
+
+def test_fit_q_to_exact_regresses_toward_the_exact_stage_matrices():
+    game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
+    exact = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9).run()
+    solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9)
+    solver.run()
+    matrix_of = lambda s: solver._matrix(s, exact.values)  # noqa: E731
+
+    net = fit_q_to_exact(game, matrix_of, hidden=48, epochs=60, seed=0)
+    m = compare_to_exact(
+        game, net, exact.values, exact.row_policy, 0.9,
+        exact_no_saddle=set(exact.no_saddle_states),
+    )
+    # supervised regression onto the exact matrices, no bootstrap at all --
+    # should fit noticeably closer than a handful of TD-bootstrap epochs would
+    assert m["max_value_error"] < 1.0
+    assert 0.0 <= m["action_agreement"] <= 1.0
+    assert m["duality_gap"] >= -1e-9
+
+
+def test_train_nash_dqn_init_net_is_the_actual_starting_point():
+    # epochs=0 skips the training loop entirely, so the returned net's
+    # weights should be an exact copy of init_net's, not a fresh random init.
+    game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
+    exact = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9).run()
+    solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9)
+    solver.run()
+    matrix_of = lambda s: solver._matrix(s, exact.values)  # noqa: E731
+
+    warm_start = fit_q_to_exact(game, matrix_of, hidden=48, epochs=20, seed=0)
+    result = train_nash_dqn(
+        game, gamma=0.9, hidden=48, epochs=0, seed=1, init_net=warm_start,
+    )
+    s0 = game.initial_state()
+    np.testing.assert_allclose(result.net.matrix(s0), warm_start.matrix(s0))
+
+    # and it must differ from what a from-scratch (seed=1) init would give --
+    # otherwise this test wouldn't actually be exercising init_net at all
+    from_scratch = train_nash_dqn(game, gamma=0.9, hidden=48, epochs=0, seed=1)
+    assert not np.allclose(result.net.matrix(s0), from_scratch.net.matrix(s0))
 
 
 def test_policy_baseline_regresses_toward_the_exact_strategies():

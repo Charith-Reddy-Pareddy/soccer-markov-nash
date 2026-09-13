@@ -1,11 +1,19 @@
-"""Exact hybrid Nash-Q vs. two neural baselines.
+"""Exact hybrid Nash-Q vs. neural baselines, including a warm-start ablation.
 
 The stated pipeline is: exact discrete solver first, then get a network to
-replicate it. Two ways to replicate it, so we can tell *where* the
-approximation breaks:
+replicate it. Three starting points for the Q-net, plus the separate policy
+net, so we can tell *where* the approximation breaks:
 
-* **Q net** -- regress toward the stage matrices `Q(s, a0, a1)`, then extract a
-  policy by taking the minimax of the predicted matrix.
+* **Q net, from zero** -- regress toward the stage matrices `Q(s, a0, a1)` via
+  TD bootstrap from a random init, then extract a policy by taking the
+  minimax of the predicted matrix.
+* **Q net, fit to exact** -- the same network *architecture*, but trained by
+  plain supervised regression straight onto `Q_exact` -- no bootstrap, no
+  target network. Isolates representational capacity from bootstrap noise.
+* **Q net, warm start** -- take the "fit to exact" weights and continue
+  training with the *same* TD-bootstrap loop as "from zero", for the same
+  number of epochs. Does starting already at the right answer survive
+  further bootstrapped training, or does the bootstrap pull it away again?
 * **policy net** -- regress a network *directly* onto the exact equilibrium
   strategies `(p(s), q(s))`.
 
@@ -29,6 +37,7 @@ from soccer_nash.game import A10SoccerGame
 from soccer_nash.nash_dqn import (
     compare_policy_to_exact,
     compare_to_exact,
+    fit_q_to_exact,
     train_nash_dqn,
     train_policy_baseline,
 )
@@ -39,6 +48,11 @@ FIELDS = [
     "seed", "train_time_s", "final_mse", "epochs_to_plateau", "still_improving",
     "max_value_error", "mean_value_error",
     "action_agreement", "classification_agreement", "duality_gap",
+    "fit_max_value_error", "fit_action_agreement",
+    "fit_classification_agreement", "fit_duality_gap",
+    "warm_train_time_s", "warm_final_mse",
+    "warm_max_value_error", "warm_mean_value_error",
+    "warm_action_agreement", "warm_classification_agreement", "warm_duality_gap",
     "policy_action_agreement", "policy_max_regret", "policy_duality_gap",
 ]
 
@@ -88,6 +102,27 @@ def main() -> None:
         m = compare_to_exact(
             game, dqn.net, exact.values, exact.row_policy, args.gamma, no_saddle
         )
+
+        # fit to exact: plain supervised regression onto Q_exact, no bootstrap
+        qfit = fit_q_to_exact(
+            game, matrix_of, hidden=args.hidden, epochs=args.epochs, seed=seed
+        )
+        fm = compare_to_exact(
+            game, qfit, exact.values, exact.row_policy, args.gamma, no_saddle
+        )
+
+        # warm start: continue the *same* TD-bootstrap loop as "from zero",
+        # but starting from the exact-fit weights instead of a random init
+        t = time.perf_counter()
+        warm = train_nash_dqn(
+            game, gamma=args.gamma, hidden=args.hidden, epochs=args.epochs,
+            seed=seed, init_net=qfit,
+        )
+        t_warm = time.perf_counter() - t
+        wm = compare_to_exact(
+            game, warm.net, exact.values, exact.row_policy, args.gamma, no_saddle
+        )
+
         pnet = train_policy_baseline(
             game, exact.row_policy, exact.col_policy, hidden=args.hidden,
             epochs=args.epochs, seed=seed,
@@ -107,12 +142,27 @@ def main() -> None:
             "action_agreement": round(m["action_agreement"], 4),
             "classification_agreement": round(m["classification_agreement"], 4),
             "duality_gap": round(m["duality_gap"], 4),
+            "fit_max_value_error": round(fm["max_value_error"], 4),
+            "fit_action_agreement": round(fm["action_agreement"], 4),
+            "fit_classification_agreement": round(fm["classification_agreement"], 4),
+            "fit_duality_gap": round(fm["duality_gap"], 4),
+            "warm_train_time_s": round(t_warm, 1),
+            "warm_final_mse": round(warm.loss_trace[-1], 5),
+            "warm_max_value_error": round(wm["max_value_error"], 4),
+            "warm_mean_value_error": round(wm["mean_value_error"], 4),
+            "warm_action_agreement": round(wm["action_agreement"], 4),
+            "warm_classification_agreement": round(wm["classification_agreement"], 4),
+            "warm_duality_gap": round(wm["duality_gap"], 4),
             "policy_action_agreement": round(pm["action_agreement"], 4),
             "policy_max_regret": round(pm["max_equilibrium_regret"], 4),
             "policy_duality_gap": round(pm["duality_gap"], 4),
         })
-        print(f"  seed {seed}: Q-net agree {rows[-1]['action_agreement']:.3f} "
+        print(f"  seed {seed}: from-zero agree {rows[-1]['action_agreement']:.3f} "
               f"exploit {rows[-1]['duality_gap']:.3f}  |  "
+              f"fit-to-exact agree {rows[-1]['fit_action_agreement']:.3f} "
+              f"exploit {rows[-1]['fit_duality_gap']:.3f}  |  "
+              f"warm-start agree {rows[-1]['warm_action_agreement']:.3f} "
+              f"exploit {rows[-1]['warm_duality_gap']:.3f}  |  "
               f"pi-net agree {rows[-1]['policy_action_agreement']:.3f} "
               f"exploit {rows[-1]['policy_duality_gap']:.3f}")
 
@@ -124,20 +174,47 @@ def main() -> None:
 
     print(f"\nexact hybrid Nash-Q : {exact.iterations} sweeps, {t_exact:.2f} s, "
           f"value error 0, exploitability 0")
-    print(f"\nQ net -- regress toward Q(s,a0,a1), extract minimax "
+    print(f"\nQ net, from zero -- TD bootstrap from a random init "
           f"({args.seeds} seeds, {args.epochs} epochs):")
     print(f"  max |V_dqn - V_exact|     : {_fmt([r['max_value_error'] for r in rows])}")
     print(f"  action agreement          : {_fmt([r['action_agreement'] for r in rows])}")
     print(f"  pure/mixed classification : {_fmt([r['classification_agreement'] for r in rows])}")
     print(f"  exploitability            : {_fmt([r['duality_gap'] for r in rows])}")
+    print(f"\nQ net, fit to exact -- supervised regression onto Q_exact, "
+          f"no bootstrap ({args.seeds} seeds, {args.epochs} epochs):")
+    print(f"  max |V_dqn - V_exact|     : {_fmt([r['fit_max_value_error'] for r in rows])}")
+    print(f"  action agreement          : {_fmt([r['fit_action_agreement'] for r in rows])}")
+    print(f"  pure/mixed classification : "
+          f"{_fmt([r['fit_classification_agreement'] for r in rows])}")
+    print(f"  exploitability            : {_fmt([r['fit_duality_gap'] for r in rows])}")
+    print(f"\nQ net, warm start -- fit-to-exact weights, then the *same* "
+          f"{args.epochs}-epoch TD bootstrap as 'from zero':")
+    print(f"  max |V_dqn - V_exact|     : {_fmt([r['warm_max_value_error'] for r in rows])}")
+    print(f"  action agreement          : {_fmt([r['warm_action_agreement'] for r in rows])}")
+    print(f"  pure/mixed classification : "
+          f"{_fmt([r['warm_classification_agreement'] for r in rows])}")
+    print(f"  exploitability            : {_fmt([r['warm_duality_gap'] for r in rows])}")
     print("\npolicy net -- regress toward the exact (p, q):")
     print(f"  action agreement          : {_fmt([r['policy_action_agreement'] for r in rows])}")
     print(f"  max equilibrium regret    : {_fmt([r['policy_max_regret'] for r in rows])}")
     print(f"  exploitability            : {_fmt([r['policy_duality_gap'] for r in rows])}")
-    print("\n=> the policy net names the right action far more often, yet is "
-          "no less exploitable: naming the argmax is not game-theoretic "
-          "robustness -- the few wrong states are exactly the ones a "
-          "best-responder attacks.")
+
+    fit_agree = statistics.mean(r["fit_action_agreement"] for r in rows)
+    warm_agree = statistics.mean(r["warm_action_agreement"] for r in rows)
+    zero_agree = statistics.mean(r["action_agreement"] for r in rows)
+    verdict = (
+        "the bootstrap erases almost all of the warm start's head start"
+        if warm_agree - zero_agree < 0.5 * (fit_agree - zero_agree)
+        else "the warm start holds: most of its head start survives continued "
+        "bootstrapped training"
+    )
+    print(f"\n=> fit-to-exact starts at {fit_agree:.3f} action agreement; "
+          f"{args.epochs} more epochs of the same TD bootstrap that produces "
+          f"{zero_agree:.3f} from a random init leaves the warm-started net at "
+          f"{warm_agree:.3f} -- {verdict}. The policy net names the right "
+          "action far more often than either Q-net variant, yet is no less "
+          "exploitable: naming the argmax is not game-theoretic robustness -- "
+          "the few wrong states are exactly the ones a best-responder attacks.")
     print(f"wrote {OUT.relative_to(OUT.parent.parent)}")
 
 
