@@ -46,32 +46,58 @@ def _minimax(m: np.ndarray) -> float:
 
 
 class _QNet:
-    """5 -> h -> h -> out ReLU regressor with biases (linear output), Adam.
-    ``out=16`` for a 4x4 Q matrix, ``out=8`` for two 4-vectors of policy logits."""
+    """5 -> hidden layers -> out ReLU regressor with biases (linear output
+    layer), Adam. ``hidden`` is either a single int -- 2 hidden layers of
+    that width, the original architecture -- or a tuple of ints, one entry
+    per hidden layer, for the width/depth ablation
+    (``scripts/nash_dqn_ablation.py``): ``(256,)`` is one wide layer,
+    ``(64, 64, 64)`` is three narrower ones, etc. ``out=16`` for a 4x4 Q
+    matrix, ``out=8`` for two 4-vectors of policy logits.
 
-    def __init__(self, h: int = 96, seed: int = 0, out: int = 16):
+    Passing an int for ``hidden`` reproduces the original 2-hidden-layer
+    network bit-for-bit (same init formula, same weight order, same seed ->
+    same weights) -- this class only generalizes *how many* hidden layers
+    there are, not the per-layer init scheme or the training math.
+    """
+
+    def __init__(self, h: int | tuple[int, ...] = 96, seed: int = 0, out: int = 16):
+        hidden = (h, h) if isinstance(h, int) else tuple(h)
         rng = np.random.default_rng(seed)
         self.out = out
-        self.W1 = rng.normal(0, np.sqrt(2 / 5), (5, h))
-        self.b1 = np.zeros(h)
-        self.W2 = rng.normal(0, np.sqrt(2 / h), (h, h))
-        self.b2 = np.zeros(h)
-        self.W3 = rng.normal(0, np.sqrt(2 / h), (h, out)) * 0.1
-        self.b3 = np.zeros(out)
+        self.hidden = hidden
+        sizes = [5, *hidden, out]
+        n_layers = len(sizes) - 1  # weight matrices, not hidden layers
+        self.Ws: list[np.ndarray] = []
+        self.bs: list[np.ndarray] = []
+        for i in range(n_layers):
+            fan_in, fan_out = sizes[i], sizes[i + 1]
+            W = rng.normal(0, np.sqrt(2 / fan_in), (fan_in, fan_out))
+            if i == n_layers - 1:
+                W = W * 0.1  # output layer: small init, as in the original
+            self.Ws.append(W)
+            self.bs.append(np.zeros(fan_out))
         self._opt = [[np.zeros_like(w), np.zeros_like(w)] for w in self._w()]
         self._t = 0
 
     def _w(self):
-        return [self.W1, self.b1, self.W2, self.b2, self.W3, self.b3]
+        out = []
+        for W, b in zip(self.Ws, self.bs):
+            out.append(W)
+            out.append(b)
+        return out
 
     def _forward(self, X):
         x = np.asarray(X, float) * _SCALE
-        z1 = x @ self.W1 + self.b1
-        a1 = np.maximum(z1, 0)
-        z2 = a1 @ self.W2 + self.b2
-        a2 = np.maximum(z2, 0)
-        out = a2 @ self.W3 + self.b3
-        return out, (x, z1, a1, z2, a2)
+        n_layers = len(self.Ws)
+        acts = [x]  # acts[i] feeds Ws[i]; acts[-1] is the (linear) output
+        pre: list[np.ndarray] = []
+        a = x
+        for i in range(n_layers):
+            z = a @ self.Ws[i] + self.bs[i]
+            pre.append(z)
+            a = np.maximum(z, 0) if i < n_layers - 1 else z
+            acts.append(a)
+        return a, (acts, pre)
 
     def predict(self, X) -> np.ndarray:
         return self._forward(np.atleast_2d(X))[0]
@@ -87,18 +113,16 @@ class _QNet:
         return p / p.sum(), q / q.sum()
 
     def step(self, X, target, lr=2e-3):
-        out, (x, z1, a1, z2, a2) = self._forward(X)
+        out, (acts, pre) = self._forward(X)
+        n_layers = len(self.Ws)
         g = 2.0 * (out - target) / len(X)
-        dW3 = a2.T @ g
-        db3 = g.sum(0)
-        g2 = (g @ self.W3.T) * (z2 > 0)
-        dW2 = a1.T @ g2
-        db2 = g2.sum(0)
-        g1 = (g2 @ self.W2.T) * (z1 > 0)
-        dW1 = x.T @ g1
-        db1 = g1.sum(0)
+        grads: list[np.ndarray | None] = [None] * (2 * n_layers)
+        for i in reversed(range(n_layers)):
+            grads[2 * i] = acts[i].T @ g
+            grads[2 * i + 1] = g.sum(0)
+            if i > 0:
+                g = (g @ self.Ws[i].T) * (pre[i - 1] > 0)
         self._t += 1
-        grads = (dW1, db1, dW2, db2, dW3, db3)
         for (w, (m, v), grad) in zip(self._w(), self._opt, grads):
             m[:] = 0.9 * m + 0.1 * grad
             v[:] = 0.999 * v + 0.001 * grad**2

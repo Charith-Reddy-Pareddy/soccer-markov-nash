@@ -4,6 +4,7 @@ import pytest
 from soccer_nash.game import A10SoccerGame, SoccerGame
 from soccer_nash.nash_dqn import (
     _minimax,
+    _QNet,
     compare_policy_to_exact,
     compare_to_exact,
     fit_q_to_exact,
@@ -20,6 +21,32 @@ def test_minimax_matches_the_lp_on_a_random_matrix():
     for _ in range(20):
         m = rng.normal(size=(4, 4))
         assert _minimax(m) == pytest.approx(solve_zero_sum(m)[0], abs=1e-7)
+
+
+def test_qnet_int_hidden_matches_the_equivalent_tuple():
+    # h=64 is documented to mean "2 hidden layers of width 64" -- same as
+    # passing (64, 64) explicitly. Same seed should give bit-identical
+    # weights either way, since this is the width/depth ablation's whole
+    # premise: the int shorthand is not a different architecture.
+    a = _QNet(64, seed=3, out=16)
+    b = _QNet((64, 64), seed=3, out=16)
+    for wa, wb in zip(a._w(), b._w()):
+        np.testing.assert_array_equal(wa, wb)
+
+
+def test_qnet_supports_variable_depth_and_width():
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(12, 5))
+    target = rng.normal(size=(12, 16))
+    for hidden in [(32,), (48, 48, 48), (16, 16, 16, 16)]:
+        net = _QNet(hidden, seed=0, out=16)
+        assert len(net.Ws) == len(hidden) + 1
+        assert net.Ws[0].shape == (5, hidden[0])
+        assert net.Ws[-1].shape == (hidden[-1], 16)
+        loss0 = net.step(X, target)
+        for _ in range(20):
+            loss = net.step(X, target)
+        assert loss < loss0  # actually learns something over a few steps
 
 
 def test_rejects_stochastic_game():

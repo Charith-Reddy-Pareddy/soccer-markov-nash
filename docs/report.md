@@ -650,6 +650,50 @@ near-indifference. So the failure is not primarily value approximation --
 is a 0.3 s computation, a straightforward neural approximation does not
 preserve game-theoretic robustness. Keep the exact solver as ground truth.
 
+### Width/depth ablation: is 45% a capacity limit?
+
+The warm-start result above already showed that more *training* doesn't move
+action agreement -- fitting straight to `Q_exact` with zero bootstrap noise
+lands at the same ~45% as 600 epochs of TD bootstrap from scratch. The
+remaining question (item 15 of the DQN checklist, "use a sufficiently
+expressive network") is whether more *capacity* does.
+`scripts/nash_dqn_ablation.py` sweeps width (2 hidden layers, 32-256 wide)
+and depth (1-4 hidden layers, width 96 fixed) using the fit-to-exact method
+above (2 seeds/config, 600 epochs; `experiments/nash_dqn_ablation.csv`):
+
+| width sweep (depth 2) | 32 | 64 | 96 | 128 | 192 | 256 |
+|---|---|---|---|---|---|---|
+| params | 1.8k | 5.6k | 11.4k | 19.3k | 41.3k | 71.4k |
+| action agreement | 43% | 47% | 45% | 45% | 46% | 45% |
+| exploitability | 0.79 | 0.56 | 0.47 | 0.41 | 0.38 | 0.25 |
+
+| depth sweep (width 96) | 1 | 2 | 3 | 4 | 3, width 256 |
+|---|---|---|---|---|---|
+| params | 2.1k | 11.4k | 20.8k | 30.1k | 137.2k |
+| action agreement | 44% | 45% | 46% | 48% | **48%** |
+| exploitability | 0.82 | 0.47 | 0.37 | 0.25 | **0.08** |
+
+**Action agreement barely moves.** A 77x increase in parameters (1.8k -> 137k)
+buys only 5 points of action agreement (43% -> 48%) -- nowhere near the
+policy net's 99.9%. Item 15 is answered: this is not an expressiveness
+problem in the sense of "the network can't fit the numbers" -- it already
+plateaus. **Exploitability and value error, on the other hand, improve a
+great deal with capacity** -- exploitability falls from 0.79 to 0.08 (roughly
+10x) over the same range, and max value error from 0.53 to 0.075 -- so a
+bigger net genuinely gets *closer* to `Q_exact` in the numbers that matter for
+robustness, it just doesn't get closer in a way the discrete argmax reflects.
+That is the same lesson as the policy net's own failure, from the other
+direction: matching a continuous target well (small MSE) and matching a
+discrete decision well (correct argmax) are different objectives, and this
+architecture is much better at the former than the latter, regardless of
+size. **Depth beats width at matched budget**: depth-3/width-96 (20.8k
+params) beats width-128/depth-2 (19.3k params, the nearest matched budget) on
+every metric -- action agreement, exploitability, and value error alike --
+and depth-4/width-96 (30.1k params) beats width-256/depth-2 (71.4k params,
+2.4x the parameters) outright on all three. The single best configuration in
+the grid combines both -- depth 3, width 256, 137k params -- and is still 52
+points of action agreement short of the policy net.
+
 ### General-sum — a sanity check, not a second paper
 
 `soccer_nash/markov_game.py` extends pure-first beyond zero-sum: enumerate *all*

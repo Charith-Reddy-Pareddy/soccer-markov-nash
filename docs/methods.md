@@ -90,6 +90,7 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | certificate | `onecell_proof.py` | single-cell proof, 13 boards × 5 discounts, 3 checks each | ~4 min |
 | `benchmark.py` | — | hybrid solve, **median of 5 repeats**, LP-call rate | ~2 min |
 | `nash_dqn_seeds.csv` | `nash_dqn.py --seeds 5` | neural Nash-Q vs exact -- from-zero, fit-to-exact, warm-start Q nets + policy net, **5 seeds** | ~16 min |
+| `nash_dqn_ablation.csv` | `nash_dqn_ablation.py --seeds 2` | Q-net width (32-256) + depth (1-4 layers) sweep, fit-to-exact, **2 seeds/config x 10 configs** | ~17 min |
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | self-play | `selfplay.py --seeds 5` | Nash-vs-Nash return, **5 seeds × 3000 games** | ~5 min |
 | `board_sweep.csv` | `experiments.py board` | larger board sweep (legacy) | ~10 min |

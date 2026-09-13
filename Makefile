@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional positions a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn dqn-ablation figures png gallery littman mixing reward blend occupancy tournament numerics templates proof verify generalize tackle positional positions a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -10,7 +10,8 @@ help:
 	@echo "make experiments  - regenerate experiments/*.csv (board sweep is slow)"
 	@echo "make phase        - regenerate experiments/phase_diagram.csv (~8 min)"
 	@echo "make benchmark    - repeated-run timing + LP-call rate of the hybrid"
-	@echo "make dqn          - multi-seed neural Nash-Q vs the exact solver (~5 min)"
+	@echo "make dqn          - multi-seed neural Nash-Q vs the exact solver (~16 min)"
+	@echo "make dqn-ablation - Q-net width/depth sweep vs the exact solver (~17 min)"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg (+ their PNGs)"
@@ -77,6 +78,9 @@ benchmark:
 
 dqn:
 	$(PY) scripts/nash_dqn.py --seeds 5
+
+dqn-ablation:
+	$(PY) scripts/nash_dqn_ablation.py --seeds 2
 
 figures:
 	$(PY) scripts/render.py -o docs/figures/kickoff.svg
