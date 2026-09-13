@@ -90,6 +90,13 @@ symmetry halves the remaining work. LP-solve reduction and wall-clock speedup
 are reported separately &mdash; the former is a property of the game, the latter
 depends on the machine and LP backend.
 
+**Neural Nash-Q was also evaluated on a random-order game containing genuine
+mixed equilibria**, not only the deterministic game
+(`nash_dqn_random.py --seeds 5`, [docs/report.md](docs/report.md) §8) &mdash;
+action agreement plateaus around 60% regardless of network size while
+equilibrium exploitability keeps improving, the report's headline "action
+accuracy is not equilibrium accuracy" finding.
+
 ## Repository map
 
 | path | what |

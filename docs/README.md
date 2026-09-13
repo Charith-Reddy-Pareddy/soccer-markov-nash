@@ -55,6 +55,7 @@ technical answer, start with **[report.pdf](report.pdf)**
   collision rules are quoted vs. interpreted.
 - [gallery.html](gallery.html) — every policy and value surface, drawn
   (`make gallery`, from `soccer_nash/viz.py`).
+- [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).
 
 ## The research questions
 
@@ -105,10 +106,3 @@ technical answer, start with **[report.pdf](report.pdf)**
   width/depth capacity sweep up to 512-wide / 115x the original architecture
   (`experiments/nash_dqn_ablation.csv`, `make dqn-ablation`).
 
-## Provenance
-
-- [review-checklist.md](review-checklist.md) — the first 20 review points.
-- [review-18.md](review-18.md) — the second review (18 points) and its status.
-- [review-15.md](review-15.md) — the third review (15 points, the DQN fix +
-  report framing) and its status.
-- [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).

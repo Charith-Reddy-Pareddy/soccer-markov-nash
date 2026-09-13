@@ -16,16 +16,25 @@ notebook by design -- for the plain-language, non-technical companion, see
 ## Reading guide: core, supporting, exploratory
 
 This report covers more ground than its central claim needs (full accounting
-in §11). If time is short:
+in §11). The core story is one chain:
 
-- **Core** — the pure-first hybrid algorithm and its LP-elimination result
-  (§3, §5 RQ2); where and why mixing occurs (§5 RQ3, §6); and **the practical
-  payoff: a minimax policy exploits weak opponents and survives a challenger
-  built specifically to beat it, while every deterministic policy —
-  including a hand-scripted one that beats a random opponent ~76% of the
-  time — does one or the other, never both (§7).** That last result is the
-  direct answer to *why any of this matters*: a predictable pure policy can
-  be learned and exploited, and the 94 no-pure-saddle states are exactly
+> **where mixing occurs → why it occurs → the pure-first exact solver → why
+> mixing matters against a best response**
+
+If time is short, follow exactly that, in that order:
+
+- **Core** — *Where*: the 94 no-pure-saddle states, all at Manhattan
+  distance 1–2 between the players, clustering into 8 geometric templates
+  (§5 RQ3). *Why*: a stochastic move order plus a multi-cell goal produces
+  crossing best replies — a certified 2×2 matching-pennies core at every one
+  (§6). *The solver*: the pure-first hybrid backup, exact everywhere, that
+  eliminates LP work on 96–100% of stage games (§3, §5 RQ2). *Why it
+  matters*: a minimax policy exploits weak opponents and survives a
+  challenger built specifically to beat it, while every deterministic
+  policy — including a hand-scripted one that beats a random opponent ~76%
+  of the time — does one or the other, never both (§7). That last result is
+  the direct answer to *why any of this matters*: a predictable pure policy
+  can be learned and exploited, and the 94 no-pure-saddle states are exactly
   where that predictability would show up.
 - **Supporting validation** — numerical robustness across discount and
   tolerance (§5 RQ4); self-play and occupancy on the equilibrium path
@@ -314,6 +323,26 @@ one mixed state to exist.** It is *not* a proof that every board with a
 multi-cell goal must have a mixed state, nor that every state on such a board is
 mixed.
 
+**Two structural facts worth reading before the mechanism below.** First, the
+94 no-pure-saddle states are all close together on the board:
+
+> all no-pure-saddle states occur at Manhattan distance 1 or 2 between the
+> players -- 40 at distance 1, 54 at distance 2, zero at distance ≥ 3
+> ([showcase.md](showcase.md))
+
+Second, not every one of the 94 is a uniquely forced mix -- a zero-weight
+action can tie the reported LP support's value exactly, meaning the printed
+split is one vertex of a larger equilibrium face, not a number the game
+forces (`scripts/degeneracy.py`, full detail in [degeneracy.md](degeneracy.md)):
+
+| category | count | share |
+|---|---:|---:|
+| unique forced mix -- no freedom left over | 64 | 68.1% |
+| degenerate equilibrium face -- a zero-weight action ties the reported support | 16 (8 carrier, 8 defender) | 17.0% |
+| pure reply tied inside the equilibrium set -- the reported "pure" side isn't uniquely forced either | 14 (always the defender) | 14.9% |
+
+> 94 = 64 unique forced + 16 degenerate faces + 14 pure-tied
+
 `scripts/phase_diagram.py --analyze` decomposes the variance. Over the tested
 grid, whether a board has *any* mixed state is a perfect function of goal width
 (1 vs ≥ 2). Among the boards that do, an OLS of the mixed *fraction* is carried
@@ -326,13 +355,13 @@ Geometry predicts the classification (`scripts/geometry_model.py`): a depth-4
 decision tree separates `mixed` from the rest with **precision 0.96, recall
 0.91** using carrier-frame features. The dominant signal is
 `defender_can_intercept` -- the defender within one move of the carrier's
-forward cell (`P(mixed) = 0.44` vs `0.002`). Sharper still (`scripts/showcase.py`,
-[showcase.md](showcase.md)): **every one of the 94 no-pure-saddle states has the two
-players within 2 cells of each other** (Manhattan distance -- 40 at distance 1,
-54 at distance 2, none at distance ≥ 3). Distance to the *opponent*, not
-distance to the goal, is what forces a guess -- one worked example is a
-3-action mix 6 cells from goal, the farthest this board allows, because the
-defender is adjacent.
+forward cell (`P(mixed) = 0.44` vs `0.002`). Sharper still (`scripts/showcase.py`):
+every one of the 94 no-pure-saddle states has the two players within 2 cells
+of each other -- the distance-1/2 split is stated above, with the full
+per-distance breakdown in [showcase.md](showcase.md). Distance to the
+*opponent*, not distance to the goal, is what forces a guess -- one worked
+example is a 3-action mix 6 cells from goal, the farthest this board allows,
+because the defender is adjacent.
 
 Beyond prediction, the 94 no-pure-saddle states canonicalize under the board mirror to 47
 pairs and cluster into **8 geometric templates** (`scripts/templates.py`,
@@ -342,8 +371,8 @@ two defender columns and vice versa -- covering **68 of 94** states; the
 carrier choosing between two of `{U, D, L, R}` against the defender covering
 one of the same two (exact letters per template in [templates.md](templates.md)).
 The other 26 are borderline near-pure saddles (22) or one 3x3 mix (4). All 94 share
-one value across every equilibrium (zero-sum interchangeability); 64 have a
-unique equilibrium.
+one value across every equilibrium (zero-sum interchangeability); the
+forced-vs-degenerate 64/16/14 split is above.
 
 ![One board per matching-pennies template: carrier and defender each with two
 probability-weighted arrows.](figures/png/templates.png)
