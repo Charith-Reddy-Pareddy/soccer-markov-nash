@@ -52,6 +52,13 @@
   }
   .support-line b { color: var(--ink); font-family: "Barlow Semi Condensed", sans-serif; }
   .support-line.why-line { background: var(--raise); font-family: "Spectral", Georgia, serif; font-size: .95rem; line-height: 1.5; }
+  .support-line.type-line {
+    background: var(--raise); border-color: var(--pitch); font-family: "Spectral", Georgia, serif;
+    font-size: .92rem; line-height: 1.5;
+  }
+  .support-line.type-line.pure { border-color: var(--rule-strong); }
+  .support-line.type-line b { color: var(--pitch); }
+  .support-line.type-line.pure b { color: var(--ink-soft); }
   table.shapes {
     border-collapse: collapse; width: 100%; margin: 1.2rem 0 .6rem;
     font-family: "IBM Plex Mono", monospace; font-size: .86rem;
@@ -67,6 +74,8 @@
   table.shapes tfoot td {
     font-weight: 600; background: var(--tint); color: var(--ink);
   }
+  table.legend { text-align: left; }
+  table.legend th, table.legend td { text-align: left; }
   .takeaway {
     margin: 1.2rem 0 1.6rem; padding: 1rem 1.3rem; background: var(--tint);
     border: 1px solid var(--rule-strong); border-radius: 8px; color: var(--ink);
@@ -74,6 +83,7 @@
   }
   table.shapes { page-break-inside: avoid; }
   .takeaway p { margin: 0; max-width: none; }
+  .takeaway p + p { margin-top: .7rem; }
   blockquote {
     margin: 1.4rem 0; padding: .9rem 1.2rem; border-left: 3px solid var(--pitch);
     background: var(--tint); font-style: italic; color: var(--ink-soft); border-radius: 0 8px 8px 0;
@@ -86,6 +96,9 @@
   figure.case-fig { margin: 0 0 1rem; }
   figure.case-fig img { width: 100%; border-radius: 8px; border: 1px solid var(--rule); }
   figure.case-fig figcaption { margin-top: .4rem; }
+  .appendix-divider {
+    margin: 2.6rem 0 .7rem; padding-top: 1.6rem; border-top: 3px double var(--rule-strong);
+  }
   footer { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); color: var(--ink-faint); font-size: .85rem; }
   @media print { body { max-width: none; } }
 </style>
@@ -128,13 +141,27 @@ in any of the 94 no-pure-saddle states on the canonical board.</p>
 <div class="takeaway">
 <p><strong>The bigger finding underneath those four rows:</strong> 94 no-pure-saddle
 states are not 94 different phenomena &mdash; they are four repeated shapes,
-recurring all over the board. Case 7 shows one of those repeats directly
-(Case 2's exact shape, elsewhere on the board, mirrored). This page shows one
-example of each of the four shapes, plus every distinct mechanism studied in
-the project that can force a mix: a stochastic move order, this project's own
-tackle rule, a dense reward with zero transition noise, and movement slip on
-a goal shape that is otherwise always pure.</p>
+recurring all over the board.</p>
 </div>
+
+<h2>Three kinds of fractional output, labelled below on every case</h2>
+<p>A reported fractional split is not always a number the game forces. Every
+case below is labelled with exactly one of these (<span class="mono">docs/degeneracy.md</span>
+has the full breakdown, all 94 states):</p>
+<table class="shapes legend">
+  <thead><tr><th>type</th><th>meaning</th><th>count</th></tr></thead>
+  <tbody>
+    <tr><td><b>Forced mixed equilibrium</b></td><td>neither side has an unweighted action tied with its reported support's value &mdash; the split shown is the whole indifference class, no freedom left over.</td><td>64</td></tr>
+    <tr><td><b>Degenerate equilibrium face</b></td><td>a side's reported support already has two or more actions, and a further, unweighted action ties them exactly &mdash; one vertex of a larger polytope, not a uniquely forced ratio.</td><td>16</td></tr>
+    <tr><td><b>Pure-tied / fractional LP output</b></td><td>a side's reported support is a single action (nominally &ldquo;pure&rdquo;), but an unweighted action ties it exactly &mdash; just as arbitrary as a printed fractional split.</td><td>14</td></tr>
+  </tbody>
+</table>
+<p>Case 7 shows one of the 64 repeats directly (Case 2's exact shape,
+elsewhere on the board, mirrored). This page shows one example of each of
+the four canonical support shapes, plus every distinct mechanism studied in
+the project that can force a mix: a stochastic move order, this project's
+own tackle rule, a dense reward with zero transition noise, and movement
+slip on a goal shape that is otherwise always pure.</p>
 
 <figure>
   <img src="figures/png/positions.png" alt="Twelve cases, board and Q-matrix graph side by side.">
@@ -173,23 +200,13 @@ around a closed best-response cycle &mdash; no pure action pair is stable,
 which is exactly why the board shows more than one arrow.
 </p>
 
-<div class="case">
-<h2>Case 1 <span class="state-tag">(4, 0, 5, 0, 0)</span></h2>
-<p><strong>A pure state, for contrast.</strong> Saddle at
-<span class="mono">U/U</span>. The carrier plays U always; the defender
-answers U always; neither has any reason to deviate.</p>
-<p class="support-line"><b>Support:</b> carrier {U} (100%) &middot; defender {U} (100%)</p>
-<p class="support-line why-line"><b>Why indifferent:</b> Carrier: <span class="mono">U</span>=+0.234 beats next-best <span class="mono">L</span>=+0.161 by 0.073; defender: <span class="mono">U</span>=+0.234 beats next-best <span class="mono">R</span>=+0.271 by 0.038. No tie on either side &mdash; that gap, not a coin flip, is what makes this state pure.</p>
-<figure class="case-fig">
-  <img src="figures/png/positions_case01.png" alt="Case 1 board position and Q matrix graph.">
-  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">        U        D        L        R
-  U   0.234    0.317    0.523    0.272
-  D   0.151    0.211    0.211    0.222
-  L   0.161    0.182    0.172    0.190
-  R   0.012   -0.095    0.058    0.098</pre>
-</div>
+<h2>Five representative cases</h2>
+<p>For a focused read: the typical two-action mix, the cleanest indifference
+example, a genuine three-action mix, the sharpest LP-degeneracy example, and
+a case where a completely different mechanism (the reward, not the
+transition) forces the mix. Seven more cases &mdash; the remaining canonical
+support shape, near-pure hedges, a mirrored symmetry check, and every other
+mechanism studied &mdash; are in the appendix below, for completeness.</p>
 
 <div class="case">
 <h2>Case 2 <span class="state-tag">(0, 1, 1, 1, 0)</span></h2>
@@ -202,6 +219,7 @@ cross a vertical pair exactly like this one</span>, the carrier deciding
 which goal row to attack and the defender guessing which one. Everything
 that follows is either this same shape recurring (Case 7), or a genuinely
 different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; the reported 63.5%/36.5% split is the whole indifference class, not one point on a larger face.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D} (63.5% / 36.5%) &middot; defender {U, R} (36.5% / 63.5%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.094, strictly above <span class="mono">E[L]</span>=+0.091 and <span class="mono">E[R]</span>=&minus;0.015. Defender <span class="mono">E[U]</span>=<span class="mono">E[R]</span>=+0.094, strictly below <span class="mono">E[L]</span>=+0.212 and <span class="mono">E[D]</span>=+0.332.</p>
 <figure class="case-fig">
@@ -229,6 +247,7 @@ cleanest match to that description: two actions genuinely equally good
 against the defender's own mix. <span class="fact">This is the rarer shape
 overall: only 4 of 94 no-pure-saddle states cross a purely horizontal pair instead of
 a vertical one.</span></p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
 <figure class="case-fig">
@@ -243,33 +262,6 @@ a vertical one.</span></p>
 </div>
 
 <div class="case">
-<h2>Case 4 <span class="state-tag">(0, 0, 1, 1, 0)</span></h2>
-<p><strong>The corner duel.</strong> The board position sketched at the
-meeting: the carrier at <span class="mono">(0, 0)</span> &mdash;
-the back corner, right against its own goal &mdash; and the defender
-diagonally adjacent at <span class="mono">(1, 1)</span>. This is the closest
-match, coordinate for coordinate, to that sketch. Distinct from both cases
-before it &mdash; Case 2 crosses U/D, Case 3 a clean L/R &mdash; this one
-crosses <span class="mono">U/L</span> for the carrier and
-<span class="mono">D/L</span> for the defender: pinned in the corner, the
-carrier's two live escapes are straight up the sideline (U) or across along
-the back line (L), and the defender is guessing which.
-<span class="fact">Gap 0.0121; the mix is lopsided but genuine</span> &mdash;
-the corner leaves little room, but not zero.</p>
-<p class="support-line"><b>Support:</b> carrier {U, L} (4.6% / 95.4%) &middot; defender {D, L} (94.9% / 5.1%)</p>
-<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.078, above <span class="mono">E[R]</span>=&minus;0.066 &mdash; but <span class="mono">E[D]</span>=+0.078 too, an <strong>exact</strong> tie the solver simply didn&apos;t weight: any mix of U/D/L in the right proportion is an equally valid equilibrium, not just the 4.6%/95.4% split shown. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.078, below <span class="mono">E[R]</span>=+0.086 and <span class="mono">E[U]</span>=+0.109.</p>
-<figure class="case-fig">
-  <img src="figures/png/positions_case04.png" alt="Case 4 board position and Q matrix graph.">
-  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">        U        D        L        R
-  U   0.103    0.103   -0.408    0.084
-  D   0.109    0.076    0.101    0.086
-  L   0.109    0.076    0.101    0.086
-  R   0.112   -0.075    0.112    0.088</pre>
-</div>
-
-<div class="case">
 <h2>Case 5 <span class="state-tag">(0, 0, 2, 0, 0)</span></h2>
 <p><strong>A genuine 3-action mix.</strong> Six cells from goal, as far as
 this board allows, with the defender close enough to threaten three
@@ -280,6 +272,7 @@ with support shape (3,3)</span> &mdash; mixing is not always a 50/50 split
 between two actions. (Entropy 1.109 bits, the richest mix on this page, if a
 single summary number is wanted &mdash; but the three-way split itself is
 the point.)</p>
+<p class="support-line type-line"><b>Type:</b> degenerate equilibrium face (carrier) &mdash; a fourth, unweighted carrier action ties the reported three-way split exactly (see &ldquo;why indifferent&rdquo;), so the printed split is one point on a larger face, not a forced ratio. The defender's own split is a genuine forced mix.</p>
 <p class="support-line"><b>Support:</b> carrier {U, L, R} (43.3% / 54.7% / 1.9%) &middot; defender {U, D, L} (91.9% / 5.9% / 2.3%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.0848 (the three actions weighted) &mdash; and <span class="mono">E[D]</span>=+0.0848 too: <strong>all four actions tie exactly</strong>, so the 43.3%/0%/54.7%/1.9% split printed is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.0848, below <span class="mono">E[R]</span>=+0.097.</p>
 <figure class="case-fig">
@@ -294,84 +287,15 @@ the point.)</p>
 </div>
 
 <div class="case">
-<h2>Case 6 <span class="state-tag">(1, 1, 2, 0, 1)</span></h2>
-<p><strong>A near-pure hedge, where rounding would lie.</strong> Gap 0.0043.
-The <strong>defender</strong> plays <span class="mono">R 97.5% / D
-2.5%</span> &mdash; entropy only 0.169 bits, a hedge so lopsided that
-reading 0.975 as 1.0 would be a real rounding mistake: the gap is certified
-and real, twelve times smaller than a 0.1 rounding grid would resolve. The
-carrier's own mix is more balanced (<span class="mono">D 73.9% / L
-26.1%</span>) &mdash; <span class="fact">it is the defender's near-pure
-hedge that makes this case worth including, not the carrier's.</span></p>
-<p class="support-line"><b>Support:</b> carrier {D, L} (73.9% / 26.1%) &middot; defender {D, R} (2.5% / 97.5%)</p>
-<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.168, above <span class="mono">E[R]</span>=+0.136 and <span class="mono">E[U]</span>=&minus;0.166. Defender <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=+0.168, below <span class="mono">E[L]</span>=+0.197 and <span class="mono">E[U]</span>=+0.201.</p>
-<figure class="case-fig">
-  <img src="figures/png/positions_case06.png" alt="Case 6 board position and Q matrix graph.">
-  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">        U        D        L        R
-  U   0.317    0.317    0.247   -0.178
-  D   0.211    0.211    0.211    0.167
-  L   0.171    0.045    0.157    0.171
-  R   0.182    0.182    0.182    0.135</pre>
-</div>
-
-<div class="case">
-<h2>Case 7 <span class="state-tag">(5, 1, 6, 1, 1)</span></h2>
-<p><strong>The typical mix, mirrored.</strong> The board's left-right /
-role-swap symmetry maps Case 2 exactly onto this state. The values negate to
-machine precision:</p>
-<pre class="matrix">V(case 2) = +0.094235
-V(mirror) = -0.094235
-sum       = -1.39e-17   (zero, to floating-point noise)</pre>
-<p><span class="fact">Direct evidence for the repetition claim above:</span>
-this is not a new shape, it is Case 2's identical mix reappearing, exactly
-mirrored, wherever the same relative configuration recurs.</p>
-<p class="support-line"><b>Support:</b> carrier {U, D} (63.5% / 36.5%) &middot; defender {U, L} (36.5% / 63.5%)</p>
-<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.094, above <span class="mono">E[R]</span>=+0.091 and <span class="mono">E[L]</span>=&minus;0.015. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.094, below <span class="mono">E[R]</span>=+0.212 and <span class="mono">E[D]</span>=+0.332 &mdash; Case 2&apos;s exact chain, mirrored.</p>
-<figure class="case-fig">
-  <img src="figures/png/positions_case07.png" alt="Case 7 board position and Q matrix graph.">
-  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">        U        D        L        R
-  U   0.086    0.478    0.099    0.286
-  D   0.109    0.076    0.086    0.085
-  L   0.082    0.187   -0.071   -0.108
-  R   0.103    0.103    0.084    0.085</pre>
-</div>
-
-<div class="case">
-<h2>Case 8 <span class="state-tag">(2, 3, 3, 3, 1), 5&times;4 board</span></h2>
-<p><strong>This project's own tackle rule.</strong> Every other case here
-gets its coin flip from Littman's random move order. This one is solved
-under the tackle rule (defender commits to a challenge that wins the ball
-with fixed probability or bounces off) instead &mdash; a mechanism with
-nothing to do with move order at all. <span class="fact">It produces the
-same kind of duel</span> (gap 0.0223): the carrier mixes
-<span class="mono">U 32.1% / D 67.9%</span>, the defender mixes
-<span class="mono">D 60.7% / R 39.3%</span>. Different cause, same structure.</p>
-<p class="support-line"><b>Support:</b> carrier {U, D} (32.1% / 67.9%) &middot; defender {D, R} (60.7% / 39.3%)</p>
-<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=&minus;0.013, above <span class="mono">E[R]</span>=&minus;0.031 and <span class="mono">E[L]</span>=&minus;0.065. Defender <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=&minus;0.013, below <span class="mono">E[L]</span>=+0.011 and <span class="mono">E[U]</span>=+0.045.</p>
-<figure class="case-fig">
-  <img src="figures/png/positions_case08.png" alt="Case 8 board position and Q matrix graph.">
-  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">        U        D        L        R
-  U  -0.012    0.005    0.016   -0.042
-  D   0.072   -0.022    0.009    0.000
-  L  -0.019   -0.080    0.019   -0.042
-  R  -0.007   -0.026   -0.006   -0.039</pre>
-</div>
-
-<div class="case">
 <h2>Case 9 <span class="state-tag">(0, 2, 1, 2, 0)</span></h2>
-<p><strong>The asymmetric mix &mdash; the case worth discussing most.</strong>
+<p><strong>The asymmetric mix &mdash; the sharpest LP-degeneracy example.</strong>
 Support (2, 1) &mdash; gap 0.0095. The odd one out: the carrier's equilibrium
 still mixes two actions (<span class="mono">U 2.6% / D 97.4%</span>), but the
 <strong>defender's</strong> equilibrium is a single fixed move
 (<span class="mono">R</span>, 100%). Every other case on this page is a
 symmetric duel &mdash; both players genuinely guessing. Here only one side
 is.</p>
+<p class="support-line type-line"><b>Type:</b> pure-tied / fractional LP output (defender) &mdash; the defender's official policy is printed pure R (100%), but D ties it exactly: the choice of R over D is exactly as arbitrary as a printed fractional split. The sharpest example on this page that a fractional LP output is not automatically a strategically required mixed strategy.</p>
 <p class="support-line"><b>Support:</b> carrier {U, D} (2.6% / 97.4%) &middot; defender {R} (100%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.095, above <span class="mono">E[L]</span>=+0.093 and <span class="mono">E[R]</span>=&minus;0.072 (worked out fully below). The defender&apos;s official policy is pure R (100%), but <span class="mono">E[R]</span>=+0.095 and <span class="mono">E[D]</span>=+0.095 tie <strong>too</strong>: the defender&apos;s own choice of R over D is exactly as arbitrary as the carrier&apos;s U/D split, it just isn&apos;t printed as a percentage because the solver put all the weight on one side.</p>
 <figure class="case-fig">
@@ -400,41 +324,19 @@ D alone would also be a valid equilibrium reply to the defender's fixed R.</p>
 </div>
 
 <div class="case">
-<h2>Case 10 <span class="state-tag">(0, 2, 2, 2, 1)</span></h2>
-<p><strong>The three-lane mix.</strong> Support (3, 2) &mdash; gap 0.0699,
-<span class="fact">the deepest gap of any state on this page</span>
-(fifteen times deeper than the shallowest hedge in Case 6). This is the
-fourth and last canonical support shape: the carrier genuinely needs three
-live actions, while the defender only ever needs two. Combined with Case 9,
-this settles a structural question the certificates make checkable rather
-than assumed: <strong>the defender never needs strictly more actions than
-the carrier</strong>, across all 94 no-pure-saddle states on the canonical board.</p>
-<p class="support-line"><b>Support:</b> carrier {U, D, L} (16.9% / 66% / 17.1%) &middot; defender {L, R} (77.9% / 22.1%)</p>
-<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.282, above <span class="mono">E[R]</span>=+0.217 &mdash; a genuine three-way tie. The defender&apos;s official support is {L, R} at +0.282, below <span class="mono">E[U]</span>=+0.322 &mdash; but <span class="mono">E[D]</span>=+0.282 too: the defender is really indifferent among D, L, and R, even though the LP only split weight over two of them.</p>
-<figure class="case-fig">
-  <img src="figures/png/positions_case10.png" alt="Case 10 board position and Q matrix graph.">
-  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">        U        D        L        R
-  U   0.247    0.330    0.272    0.317
-  D   0.330    0.247    0.272    0.317
-  L   0.366    0.366    0.330    0.110
-  R   0.228    0.228    0.220    0.205</pre>
-</div>
-
-<div class="case">
 <h2>Case 11 <span class="state-tag">(4, 4, 5, 4, 0), deterministic</span></h2>
-<p><strong>Mixing forced by reward alone.</strong> An advanced case,
-deliberately placed after the ten core examples above. Every case so far
-gets its coin flip from a stochastic transition &mdash; the random move
-order, or the tackle rule's own coin. This one has <strong>no transition
-stochasticity at all</strong>: the mix comes entirely from
+<p><strong>Mixing forced by reward alone, not transition.</strong> An
+advanced case, illustrating a fundamentally different mechanism from the
+four above. Every case so far gets its coin flip from a stochastic
+transition &mdash; the random move order. This one has <strong>no
+transition stochasticity at all</strong>: the mix comes entirely from
 <span class="mono">scoring=&quot;territory&quot;</span>, a dense per-step
 reward for the ball in the opponent's final third, layered on top of the
 ordinary win/loss score. Gap 0.0653 &mdash; close to a fair coin (entropy
 0.996 bits), forced purely by coupling the reward to both players' actions.
 <span class="fact">Mixing does not require stochastic transitions; it can
 come from the payoff structure alone.</span></p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; reward-coupling forces a genuine indifference on both sides, the same as a transition-coupled matching-pennies core.</p>
 <p class="support-line"><b>Support:</b> carrier {D, R} (53.8% / 46.2%) &middot; defender {U, L} (95.1% / 4.9%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=+0.129, above <span class="mono">E[U]</span>=+0.119 and <span class="mono">E[L]</span>=+0.090. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.129, below <span class="mono">E[D]</span>=+0.455 and <span class="mono">E[R]</span>=+0.473.</p>
 <figure class="case-fig">
@@ -446,6 +348,201 @@ come from the payoff structure alone.</span></p>
   D   0.094    0.415    0.815    0.450
   L   0.094    0.105    0.000    0.105
   R   0.170    0.500   -0.671    0.500</pre>
+</div>
+
+<h2>From worked cases to exploitability: pure vs. mixed, at these exact states</h2>
+<p>
+Everything above stays inside one stage game &mdash; what the carrier and
+defender do <em>at</em> a state. <span class="mono">tournament_deepdive.md</span>
+shows the whole-game consequence &mdash; greedy collapses against a
+challenger, minimax doesn't &mdash; but at the level of the
+<em>tournament</em>, not any one of these states. This table connects
+the two directly: at each state, force the carrier to its
+single most likely ("greedy") action and let the defender best-respond
+<em>within that one stage game</em>, then compare to the actual Nash mixed
+value. Three rows (Cases 4, 6, 10) reference the appendix below; the other
+four are the lead cases above.
+</p>
+<table class="shapes">
+  <thead><tr><th>case</th><th>greedy pure value vs. BR</th><th>Nash mixed value vs. BR</th><th>value of mixing</th></tr></thead>
+  <tbody>
+    <tr><td>Case 2 &mdash; the primary example</td><td>+0.0856</td><td>+0.0942</td><td>+0.0086</td></tr>
+    <tr><td>Case 3 &mdash; L/R indifference</td><td>+0.1665</td><td>+0.2056</td><td>+0.0391</td></tr>
+    <tr><td>Case 4 &mdash; the corner duel (appendix)</td><td>+0.0763</td><td>+0.0776</td><td>+0.0012</td></tr>
+    <tr><td>Case 5 &mdash; 3-action mix</td><td>+0.0763</td><td>+0.0848</td><td>+0.0085</td></tr>
+    <tr><td>Case 6 &mdash; near-pure hedge (appendix)</td><td>+0.1665</td><td>+0.1676</td><td>+0.0011</td></tr>
+    <tr><td>Case 9 &mdash; the asymmetric mix</td><td>+0.0848</td><td>+0.0951</td><td>+0.0103</td></tr>
+    <tr><td>Case 10 &mdash; the three-lane mix (appendix)</td><td>+0.2471</td><td>+0.2816</td><td>+0.0345</td></tr>
+  </tbody>
+</table>
+<p>
+<strong>The value of mixing is never negative</strong> &mdash; exactly the
+theoretical guarantee (an equilibrium mix is a best response to the
+opponent's best response; nothing pure can beat that). It is also not
+uniform: Case 3's clean L/R indifference is worth <span class="mono">+0.039</span>,
+fifteen times more than Case 6's near-pure hedge (<span class="mono">+0.0011</span>,
+unsurprising &mdash; a 97.5/2.5 hedge is <em>almost</em> what the greedy
+action already does) or Case 4's corner duel (<span class="mono">+0.0012</span>,
+the corner leaves little room to exploit either way). Case 3 and Case 10 --
+the deepest gap of any case in this doc &mdash; are
+also the two largest values of mixing here: the states where the matrix
+punishes commitment hardest are the same ones where committing costs the
+most.
+</p>
+
+<div class="appendix-divider">
+<h2 style="border-top:none;padding-top:0;margin-top:0;">Appendix: seven more cases</h2>
+<p>For completeness: a pure state for contrast, the fourth and last canonical
+support shape, a hedge so shallow that rounding it would misread the game,
+this project's own tackle rule producing the same duel by a different
+mechanism, the exact mirror of Case 2, a case worth discussing on its own
+(the three-lane mix), and a single-cell goal forced to mix anyway once
+movement noise is added &mdash; each with its board, its node-and-arrow
+graph, its exact 4&times;4 Q matrix, and its type label.</p>
+</div>
+
+<div class="case">
+<h2>Case 1 <span class="state-tag">(4, 0, 5, 0, 0)</span></h2>
+<p><strong>A pure state, for contrast.</strong> Saddle at
+<span class="mono">U/U</span>. The carrier plays U always; the defender
+answers U always; neither has any reason to deviate.</p>
+<p class="support-line type-line pure"><b>Type:</b> pure equilibrium &mdash; not one of the 94 no-pure-saddle states; shown for contrast with everything else on this page.</p>
+<p class="support-line"><b>Support:</b> carrier {U} (100%) &middot; defender {U} (100%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier: <span class="mono">U</span>=+0.234 beats next-best <span class="mono">L</span>=+0.161 by 0.073; defender: <span class="mono">U</span>=+0.234 beats next-best <span class="mono">R</span>=+0.271 by 0.038. No tie on either side &mdash; that gap, not a coin flip, is what makes this state pure.</p>
+<figure class="case-fig">
+  <img src="figures/png/positions_case01.png" alt="Case 1 board position and Q matrix graph.">
+  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
+</figure>
+<pre class="matrix">        U        D        L        R
+  U   0.234    0.317    0.523    0.272
+  D   0.151    0.211    0.211    0.222
+  L   0.161    0.182    0.172    0.190
+  R   0.012   -0.095    0.058    0.098</pre>
+</div>
+
+<div class="case">
+<h2>Case 4 <span class="state-tag">(0, 0, 1, 1, 0)</span></h2>
+<p><strong>The corner duel.</strong> The board position sketched at the
+meeting: the carrier at <span class="mono">(0, 0)</span> &mdash;
+the back corner, right against its own goal &mdash; and the defender
+diagonally adjacent at <span class="mono">(1, 1)</span>. This is the closest
+match, coordinate for coordinate, to that sketch. Distinct from both cases
+before it &mdash; Case 2 crosses U/D, Case 3 a clean L/R &mdash; this one
+crosses <span class="mono">U/L</span> for the carrier and
+<span class="mono">D/L</span> for the defender: pinned in the corner, the
+carrier's two live escapes are straight up the sideline (U) or across along
+the back line (L), and the defender is guessing which.
+<span class="fact">Gap 0.0121; the mix is lopsided but genuine</span> &mdash;
+the corner leaves little room, but not zero.</p>
+<p class="support-line type-line"><b>Type:</b> degenerate equilibrium face (carrier) &mdash; D ties the reported U/L split exactly (see &ldquo;why indifferent&rdquo;), so any mix of U/D/L in the right proportion is an equally valid equilibrium, not just the split shown.</p>
+<p class="support-line"><b>Support:</b> carrier {U, L} (4.6% / 95.4%) &middot; defender {D, L} (94.9% / 5.1%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.078, above <span class="mono">E[R]</span>=&minus;0.066 &mdash; but <span class="mono">E[D]</span>=+0.078 too, an <strong>exact</strong> tie the solver simply didn&apos;t weight: any mix of U/D/L in the right proportion is an equally valid equilibrium, not just the 4.6%/95.4% split shown. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.078, below <span class="mono">E[R]</span>=+0.086 and <span class="mono">E[U]</span>=+0.109.</p>
+<figure class="case-fig">
+  <img src="figures/png/positions_case04.png" alt="Case 4 board position and Q matrix graph.">
+  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
+</figure>
+<pre class="matrix">        U        D        L        R
+  U   0.103    0.103   -0.408    0.084
+  D   0.109    0.076    0.101    0.086
+  L   0.109    0.076    0.101    0.086
+  R   0.112   -0.075    0.112    0.088</pre>
+</div>
+
+<div class="case">
+<h2>Case 6 <span class="state-tag">(1, 1, 2, 0, 1)</span></h2>
+<p><strong>A near-pure hedge, where rounding would lie.</strong> Gap 0.0043.
+The <strong>defender</strong> plays <span class="mono">R 97.5% / D
+2.5%</span> &mdash; entropy only 0.169 bits, a hedge so lopsided that
+reading 0.975 as 1.0 would be a real rounding mistake: the gap is certified
+and real, twelve times smaller than a 0.1 rounding grid would resolve. The
+carrier's own mix is more balanced (<span class="mono">D 73.9% / L
+26.1%</span>) &mdash; <span class="fact">it is the defender's near-pure
+hedge that makes this case worth including, not the carrier's.</span></p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; lopsided, but neither side has a tied outsider action.</p>
+<p class="support-line"><b>Support:</b> carrier {D, L} (73.9% / 26.1%) &middot; defender {D, R} (2.5% / 97.5%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.168, above <span class="mono">E[R]</span>=+0.136 and <span class="mono">E[U]</span>=&minus;0.166. Defender <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=+0.168, below <span class="mono">E[L]</span>=+0.197 and <span class="mono">E[U]</span>=+0.201.</p>
+<figure class="case-fig">
+  <img src="figures/png/positions_case06.png" alt="Case 6 board position and Q matrix graph.">
+  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
+</figure>
+<pre class="matrix">        U        D        L        R
+  U   0.317    0.317    0.247   -0.178
+  D   0.211    0.211    0.211    0.167
+  L   0.171    0.045    0.157    0.171
+  R   0.182    0.182    0.182    0.135</pre>
+</div>
+
+<div class="case">
+<h2>Case 7 <span class="state-tag">(5, 1, 6, 1, 1)</span></h2>
+<p><strong>The typical mix, mirrored.</strong> The board's left-right /
+role-swap symmetry maps Case 2 exactly onto this state. The values negate to
+machine precision:</p>
+<pre class="matrix">V(case 2) = +0.094235
+V(mirror) = -0.094235
+sum       = -1.39e-17   (zero, to floating-point noise)</pre>
+<p><span class="fact">Direct evidence for the repetition claim above:</span>
+this is not a new shape, it is Case 2's identical mix reappearing, exactly
+mirrored, wherever the same relative configuration recurs.</p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; Case 2's exact classification, mirrored.</p>
+<p class="support-line"><b>Support:</b> carrier {U, D} (63.5% / 36.5%) &middot; defender {U, L} (36.5% / 63.5%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=+0.094, above <span class="mono">E[R]</span>=+0.091 and <span class="mono">E[L]</span>=&minus;0.015. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.094, below <span class="mono">E[R]</span>=+0.212 and <span class="mono">E[D]</span>=+0.332 &mdash; Case 2&apos;s exact chain, mirrored.</p>
+<figure class="case-fig">
+  <img src="figures/png/positions_case07.png" alt="Case 7 board position and Q matrix graph.">
+  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
+</figure>
+<pre class="matrix">        U        D        L        R
+  U   0.086    0.478    0.099    0.286
+  D   0.109    0.076    0.086    0.085
+  L   0.082    0.187   -0.071   -0.108
+  R   0.103    0.103    0.084    0.085</pre>
+</div>
+
+<div class="case">
+<h2>Case 8 <span class="state-tag">(2, 3, 3, 3, 1), 5&times;4 board</span></h2>
+<p><strong>This project's own tackle rule.</strong> Every other case here
+gets its coin flip from Littman's random move order. This one is solved
+under the tackle rule (defender commits to a challenge that wins the ball
+with fixed probability or bounces off) instead &mdash; a mechanism with
+nothing to do with move order at all. <span class="fact">It produces the
+same kind of duel</span> (gap 0.0223): the carrier mixes
+<span class="mono">U 32.1% / D 67.9%</span>, the defender mixes
+<span class="mono">D 60.7% / R 39.3%</span>. Different cause, same structure.</p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; same classification as the move-order-driven cases above, under a completely different mechanism.</p>
+<p class="support-line"><b>Support:</b> carrier {U, D} (32.1% / 67.9%) &middot; defender {D, R} (60.7% / 39.3%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=&minus;0.013, above <span class="mono">E[R]</span>=&minus;0.031 and <span class="mono">E[L]</span>=&minus;0.065. Defender <span class="mono">E[D]</span>=<span class="mono">E[R]</span>=&minus;0.013, below <span class="mono">E[L]</span>=+0.011 and <span class="mono">E[U]</span>=+0.045.</p>
+<figure class="case-fig">
+  <img src="figures/png/positions_case08.png" alt="Case 8 board position and Q matrix graph.">
+  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
+</figure>
+<pre class="matrix">        U        D        L        R
+  U  -0.012    0.005    0.016   -0.042
+  D   0.072   -0.022    0.009    0.000
+  L  -0.019   -0.080    0.019   -0.042
+  R  -0.007   -0.026   -0.006   -0.039</pre>
+</div>
+
+<div class="case">
+<h2>Case 10 <span class="state-tag">(0, 2, 2, 2, 1)</span></h2>
+<p><strong>The three-lane mix.</strong> Support (3, 2) &mdash; gap 0.0699,
+<span class="fact">the deepest gap of any state on this page</span>
+(fifteen times deeper than the shallowest hedge in Case 6). This is the
+fourth and last canonical support shape: the carrier genuinely needs three
+live actions, while the defender only ever needs two. Combined with Case 9,
+this settles a structural question the certificates make checkable rather
+than assumed: <strong>the defender never needs strictly more actions than
+the carrier</strong>, across all 94 no-pure-saddle states on the canonical board.</p>
+<p class="support-line type-line"><b>Type:</b> degenerate equilibrium face (defender) &mdash; D ties the reported {L, R} split exactly (see &ldquo;why indifferent&rdquo;), so the defender is really indifferent among three actions even though the LP only split weight over two. The carrier's own split is a genuine forced mix.</p>
+<p class="support-line"><b>Support:</b> carrier {U, D, L} (16.9% / 66% / 17.1%) &middot; defender {L, R} (77.9% / 22.1%)</p>
+<p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[U]</span>=<span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.282, above <span class="mono">E[R]</span>=+0.217 &mdash; a genuine three-way tie. The defender&apos;s official support is {L, R} at +0.282, below <span class="mono">E[U]</span>=+0.322 &mdash; but <span class="mono">E[D]</span>=+0.282 too: the defender is really indifferent among D, L, and R, even though the LP only split weight over two of them.</p>
+<figure class="case-fig">
+  <img src="figures/png/positions_case10.png" alt="Case 10 board position and Q matrix graph.">
+  <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
+</figure>
+<pre class="matrix">        U        D        L        R
+  U   0.247    0.330    0.272    0.317
+  D   0.330    0.247    0.272    0.317
+  L   0.366    0.366    0.330    0.110
+  R   0.228    0.228    0.220    0.205</pre>
 </div>
 
 <div class="case">
@@ -462,6 +559,7 @@ and <span class="fact">52 mixed states appear where there were 0</span>. Gap
 a property of Littman's move-order coin specifically; a coin that lands on
 every square regardless of the goal forces mixing everywhere, independent
 of goal width.</p>
+<p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; movement noise produces the same genuine indifference as the move-order coin, on a board shape that is otherwise always pure.</p>
 <p class="support-line"><b>Support:</b> carrier {D, L} (80.2% / 19.8%) &middot; defender {U, L} (3.9% / 96.1%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.053, above <span class="mono">E[R]</span>=+0.016 and <span class="mono">E[U]</span>=&minus;0.010. Defender <span class="mono">E[U]</span>=<span class="mono">E[L]</span>=+0.053, below <span class="mono">E[D]</span>=+0.072 and <span class="mono">E[R]</span>=+0.450.</p>
 <figure class="case-fig">
@@ -490,51 +588,15 @@ opponent) can produce the same <em>symptom</em> &mdash; a fractional policy
 &mdash; without a cycle anywhere in the matrix.
 </p>
 
-<h2>From worked cases to exploitability: pure vs. mixed, at these exact states</h2>
-<p>
-Everything above stays inside one stage game &mdash; what the carrier and
-defender do <em>at</em> a state. <span class="mono">tournament_deepdive.md</span>
-shows the whole-game consequence &mdash; greedy collapses against a
-challenger, minimax doesn't &mdash; but at the level of the
-<em>tournament</em>, not any one of these twelve states. This table connects
-the two directly: at each of the cases above, force the carrier to its
-single most likely ("greedy") action and let the defender best-respond
-<em>within that one stage game</em>, then compare to the actual Nash mixed
-value.
-</p>
-<table class="shapes">
-  <thead><tr><th>case</th><th>greedy pure value vs. BR</th><th>Nash mixed value vs. BR</th><th>value of mixing</th></tr></thead>
-  <tbody>
-    <tr><td>Case 2 &mdash; the primary example</td><td>+0.0856</td><td>+0.0942</td><td>+0.0086</td></tr>
-    <tr><td>Case 3 &mdash; L/R indifference</td><td>+0.1665</td><td>+0.2056</td><td>+0.0391</td></tr>
-    <tr><td>Case 4 &mdash; the corner duel</td><td>+0.0763</td><td>+0.0776</td><td>+0.0012</td></tr>
-    <tr><td>Case 5 &mdash; 3-action mix</td><td>+0.0763</td><td>+0.0848</td><td>+0.0085</td></tr>
-    <tr><td>Case 6 &mdash; near-pure hedge</td><td>+0.1665</td><td>+0.1676</td><td>+0.0011</td></tr>
-    <tr><td>Case 9 &mdash; the asymmetric mix</td><td>+0.0848</td><td>+0.0951</td><td>+0.0103</td></tr>
-    <tr><td>Case 10 &mdash; the three-lane mix</td><td>+0.2471</td><td>+0.2816</td><td>+0.0345</td></tr>
-  </tbody>
-</table>
-<p>
-<strong>The value of mixing is never negative</strong> &mdash; exactly the
-theoretical guarantee (an equilibrium mix is a best response to the
-opponent's best response; nothing pure can beat that). It is also not
-uniform: Case 3's clean L/R indifference is worth <span class="mono">+0.039</span>,
-fifteen times more than Case 6's near-pure hedge (<span class="mono">+0.0011</span>,
-unsurprising &mdash; a 97.5/2.5 hedge is <em>almost</em> what the greedy
-action already does) or Case 4's corner duel (<span class="mono">+0.0012</span>,
-the corner leaves little room to exploit either way). Case 3 and Case 10 --
-the deepest gap on the whole page in the original write-up above &mdash; are
-also the two largest values of mixing here: the states where the matrix
-punishes commitment hardest are the same ones where committing costs the
-most.
-</p>
-
 <footer>
 Reproduce with <span class="mono">python scripts/positions.py</span>
 (<span class="mono">make positions</span>) &mdash; writes
 <span class="mono">figures/gallery/positions.svg</span> and prints every
 matrix, policy, and support shown here.
 <span class="mono">python scripts/pure_vs_mixed_exploit.py</span> reproduces
-the pure-vs-mixed exploitability table above. Full project:
+the pure-vs-mixed exploitability table above.
+<span class="mono">python scripts/degeneracy.py</span> reproduces the
+forced/degenerate/pure-tied classification behind every "Type" label above.
+Full project:
 <span class="mono">github.com/Charith-Reddy-Pareddy/soccer-markov-nash</span>.
 </footer>

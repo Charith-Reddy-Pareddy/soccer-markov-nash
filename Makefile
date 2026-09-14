@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf experiments phase benchmark dqn dqn-ablation dqn-random degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -17,6 +17,7 @@ help:
 	@echo "make distance-table - no-pure-saddle counts by Manhattan player distance"
 	@echo "make pure-vs-mixed  - greedy-pure vs Nash-mixed exploitability at the positions.md cases"
 	@echo "make report       - regenerate docs/report.pdf from docs/report.html"
+	@echo "make reproduce-core - regenerate only the headline figures/tables the paper cites (~5 min, not the full experiment/dqn/phase sweeps)"
 	@echo "make a10          - regenerate the A10 Part 2 + competition artifacts"
 	@echo "make figures      - redraw docs/figures/*.svg (+ their PNGs)"
 	@echo "make png          - rasterize every docs/figures/*.svg to docs/figures/png/ (for slides / GitHub)"
@@ -74,6 +75,13 @@ positions-pdf:
 	  --print-to-pdf=docs/positions.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/positions.html"
 	@echo "wrote docs/positions.pdf"
+
+# The headline figures/tables the report and positions.pdf actually cite --
+# not the full experiment sweep, the phase diagram, or the DQN trainings,
+# which stay separate because they are slow and not needed to regenerate the
+# paper's core claims. Run `make report` / `make positions-pdf` after this.
+reproduce-core: benchmark verify templates degeneracy distance-table tournament4 tournament-deepdive positions pure-vs-mixed gallery
+	@echo "core headline figures and tables regenerated -- run 'make report' / 'make positions-pdf' next"
 
 phase:
 	$(PY) scripts/phase_diagram.py

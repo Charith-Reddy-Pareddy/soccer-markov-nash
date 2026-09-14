@@ -16,86 +16,111 @@ one matches what you're after; neither is a stub of the other. This repo's
 own documentation site is
 [the docs index](https://charith-reddy-pareddy.github.io/soccer-markov-nash/).
 
+## The problem
+
 A pure-first Nash-Q approach to a configurable family of two-player soccer
-Markov games. The environment, reward, and transition rules are design choices
-of this project (see [docs/design.md](docs/design.md)); Littman's 1994 soccer
-game and the CS&nbsp;540 A10 geometry are two instances of the family.
+Markov games. The environment, reward, and transition rules are design
+choices of this project ([docs/design.md](docs/design.md)); Littman's 1994
+soccer game and the CS&nbsp;540 A10 geometry are two instances of the family.
 
-## Research question
-
-> Which geometric configurations of the soccer Markov game make mixed strategies
-> necessary, can those configurations be characterized analytically, and can a
-> solver that checks for a pure equilibrium first exploit that structure?
+> Which geometric configurations of the soccer Markov game make mixed
+> strategies necessary, can those configurations be characterized
+> analytically, and can a solver that checks for a pure equilibrium first
+> exploit that structure?
 
 **Full answer: [docs/report.pdf](docs/report.pdf)**, also as
 [docs/report.html](docs/report.html) (open in any browser) and
-[docs/report.md](docs/report.md).
+[docs/report.md](docs/report.md). Everything below is a compressed summary;
+the report has the proofs, the full experiment grid, and the discussion.
 
-Two contributions:
+## Two contributions
 
 - **Algorithmic** &mdash; a pure-first hybrid Nash-Q backup: check each stage
   game for a pure saddle (`O(A²)`, no LP), take its value when it exists, fall
   back to the LP only where it does not. Exact everywhere; **it eliminates LP
   work on 96&ndash;100% of stage games** (a property of the game). The observed
   wall-clock speedup is reported separately.
-- **Empirical structural characterization** &mdash; where the mixed region is
-  and what switches it on, over the tested parameter grid (not a theorem). For a
-  deterministic transition model every converged stage game has a pure saddle.
-  Mixing appears under Littman's random move *order*, with a multi-cell goal
-  mouth and a defender that cannot cover both scoring lanes; **across the tested
-  boards, a one-cell goal produced no mixed stage games while every tested goal
-  width &ge; 2 produced some.** 68 of 94 no-pure-saddle states (7&times;5) reduce to
-  2&times;2 matching pennies; the strongly-mixed core is ~26.
+- **Empirical structural characterization** &mdash; where the no-pure-saddle
+  region is and what switches it on, over the tested parameter grid (not a
+  theorem). Mixing appears under Littman's random move *order*, with a
+  multi-cell goal mouth and a defender that cannot cover both scoring lanes.
 
-- Policies and values, drawn rather than tabulated: [docs/gallery.html](docs/gallery.html) (`make gallery`)
-- Scope, the three claims, interpreted collision rules: [docs/assumptions.md](docs/assumptions.md)
-- How every number was produced: [docs/methods.md](docs/methods.md)
-- Research-level open questions and their best answers: [docs/discussion.md](docs/discussion.md)
-- Where mixing is forced, and why: [docs/geometry.md](docs/geometry.md), [docs/templates.md](docs/templates.md), [docs/mechanism.md](docs/mechanism.md)
-- Everything else: [docs/README.md](docs/README.md)
-- `make test` / `make experiments` / `make report` regenerate everything
+## Four headline results
 
-## The core question: why does the LP solver return *pure* strategies?
+1. **The switch is the collision rule, not randomness.** A deterministic or
+   coin-flip contest resolution leaves a pure saddle at every one of the
+   238&thinsp;000 (state × step) stage games. Littman's random *move order* --
+   the same joint action resolving differently depending on who moves first
+   -- produces **94 of 2380 stage games (γ = 0.9) with no pure saddle**, on a
+   7×5, 3-cell-goal board. Within the tested Littman-family boards, every
+   one-cell goal produced zero such states, while every tested wider goal
+   produced at least one; a different transition family (movement `slip`,
+   this project's own `tackle` rule) breaks that switch even on a one-cell
+   goal ([generalize.md](docs/generalize.md)) -- an empirical result scoped
+   to the tested family, not a theorem about goal width in general.
+2. **The pure-first hybrid is exact and (almost) free.** It reproduces the
+   all-LP value function to `4e-16` while calling the LP on only 3.95% of
+   states (~25× fewer per sweep); mirror symmetry halves the remaining work.
+3. **94 no-pure-saddle states are not 94 different situations.** They
+   canonicalize under the board mirror to 47 pairs and collapse again, by
+   carrier-frame geometry, to just **8 canonical templates** -- and every one
+   of them occurs with the two players at Manhattan distance 1 or 2 (40 at
+   distance 1, 54 at distance 2, **zero** at distance ≥ 3). Distance to the
+   *opponent*, not distance to the goal, is what forces a guess. Of the 94,
+   **64 have a uniquely forced mix**; the rest (30) are degenerate LP
+   outputs -- a reported split that is one point on a larger equally-valid
+   equilibrium face, not a number the game forces
+   ([docs/templates.md](docs/templates.md), [docs/degeneracy.md](docs/degeneracy.md)).
+4. **Randomization matters because it prevents exploitation, not because it
+   wins every matchup.** A minimax policy exploits weak opponents *and*
+   survives a challenger built specifically to beat it; every deterministic
+   policy tested -- including a hand-scripted one that beats a random
+   opponent ~76% of the time -- does one or the other, never both
+   ([docs/tournament.md](docs/tournament.md)). Patching a greedy policy with
+   the exact Nash mix at *only* the 94 no-pure-saddle states recovers 43% of
+   its robustness gap to minimax against a freshly built challenger
+   ([docs/tournament_deepdive.md](docs/tournament_deepdive.md)) -- direct,
+   causal evidence that it's predictability at those specific states, not
+   overall play quality, that a challenger exploits.
 
-Littman introduced the soccer game *because* it needs mixed strategies "in the
-place where they had to have it" -- yet a discrete minimax-Q solver on the
-usual A10 formulation returns a pure strategy at every state. The reason is the
-**collision rule**, not the solver:
+**Neural Nash-Q is validation, not the headline.** With the full stochastic
+transition distribution and exact minimax backups, a network can learn this
+game -- but a policy net that names the right move 96&ndash;99% of the time
+can still be the most exploitable of the baselines tested; a network with
+worse action accuracy that hedges correctly where it counts is not
+(`nash_dqn_random.py --seeds 5`,
+[docs/report.md](docs/report.md) §8: *"action accuracy is not equilibrium
+accuracy"*).
 
-| how a contested square resolves | mixed stage games | pure equilibrium? |
-|---|---|---|
-| `deterministic` -- the carrier wins the square (A10) | **0** of 238 000 (state × step) | yes, everywhere |
-| `coinflip` -- a fair coin, independent of the actions | **0** | yes |
-| `random` -- Littman's rule: the two moves in a random *order* | 3 148 over 404 states | **no** |
+**Proof status.** Claims A and B below (deterministic game) are exact,
+machine-checked results. The goal-width switch (headline result 1) is an
+*empirical* result over the tested parameter grid. The single-cell case has a
+closed-form, machine-verified defender strategy, but a board-size-free proof
+of the carrier's half is still open -- see the claim table in
+[docs/assumptions.md](docs/assumptions.md) and the "empirical / proved /
+open" distinction in [docs/report.md](docs/report.md) §10.
 
-Under any rule where the contest outcome is fixed once the joint action is
-known, the carrier has a weakly-dominant reply and every stage game has a pure
-saddle -- the LP is right to return pure. Littman's random *move order* makes a
-ball-steal depend on *both* players' targets at once, which turns the contested
-cell into a matching-pennies game. Switch `move_order="random"` and **94 of the
-2380 stage games** (γ = 0.9) have no pure saddle -- exactly the rock-paper-
-scissors structure Littman's paper is about ([docs/numerics.md](docs/numerics.md),
-[docs/mechanism.md](docs/mechanism.md)).
+## Reproduce
 
-## Results at a glance
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -e .
+make lint            # ruff check
+make test             # fast suite; `make test-all` adds the slow solver runs
+make reproduce-core   # regenerate only the headline figures/tables above (~5 min)
+make report           # docs/report.pdf from docs/report.html
+```
 
-The A10 game is undiscounted; its exact solution is 100-step backward induction.
-The stationary `gamma < 1` solve agrees and is faster: 0 no-saddle stage games
-on the deterministic game at every `gamma` in 0.5–0.995; `94 / 2380` on the
-random game at `gamma = 0.9`. The mixed count does not depend on the kickoff.
+`make experiments` regenerates the full `experiments/*.csv` sweep (slower,
+includes the board sweep); `make reproduce-core` is the fast path for just
+what this README and the report's core sections cite. CI
+(`.github/workflows/tests.yml`) runs `ruff check` and the full `pytest` on
+every push and pull request; `make coverage` reports line coverage (99%).
 
-The pure-first hybrid solver reproduces the all-LP value function to `4e-16`
-while calling the LP on only 3.95% of states (~25x fewer per sweep); mirror
-symmetry halves the remaining work. LP-solve reduction and wall-clock speedup
-are reported separately &mdash; the former is a property of the game, the latter
-depends on the machine and LP backend.
-
-**Neural Nash-Q was also evaluated on a random-order game containing genuine
-mixed equilibria**, not only the deterministic game
-(`nash_dqn_random.py --seeds 5`, [docs/report.md](docs/report.md) §8) &mdash;
-action agreement plateaus around 60% regardless of network size while
-equilibrium exploitability keeps improving, the report's headline "action
-accuracy is not equilibrium accuracy" finding.
+On very recent macOS builds the PyPI SciPy wheel can fail to load
+(`_spropack.so` dyld error). If so, create the venv against a working
+interpreter instead: `python -m venv --system-site-packages .venv`.
 
 ## Repository map
 
@@ -106,119 +131,43 @@ accuracy is not equilibrium accuracy" finding.
 | `soccer_nash/nash_q.py` | Nash Q-iteration (`pure` / `mixed` / `hybrid`, VI and PI) |
 | `soccer_nash/support_enum.py`, `markov_game.py` | all equilibria / general-sum extension |
 | `soccer_nash/numerics.py` | value bracket, stage-game classification, rounding |
+| `soccer_nash/certificate.py` | per-stage-game pure/mixed certificate, no LP |
 | `soccer_nash/geometry.py`, `tree.py` | state features and the mixed-state decision tree |
 | `soccer_nash/symmetry.py` | mirror states, symmetric solve |
-| `soccer_nash/render.py` | draw a state as SVG (player 0 blue, player 1 green) |
-| `soccer_nash/viz.py` | policy fans, mixing maps, value heatmaps (`scripts/gallery.py`) |
+| `soccer_nash/render.py`, `viz.py` | draw a state / policy fans / value heatmaps as SVG |
 | `soccer_nash/a10.py`, `mlp.py`, `opponents.py`, `best_response.py` | A10 deliverables |
 | `soccer_nash/shaping.py`, `exploit.py`, `nash_dqn.py` | reward shaping, self-play, neural Nash-Q |
-| `scripts/` | one entry point per analysis; all write to `docs/` or `results/` |
+| `scripts/` | one entry point per analysis; `make <name>` runs most of them |
+| `docs/*.md` | one page per topic, cross-linked from the report and `docs/README.md` |
 | `experiments/*.csv` | committed sweep outputs the report tables read from |
 
-## Plan
+Full script-by-script and doc-by-doc index: [docs/methods.md](docs/methods.md)
+(the experiments table) and [docs/README.md](docs/README.md).
 
-1. **Environment** — reproduce the A10 two-player soccer Markov game on a 7x5
-   grid. Three move-resolution rules: `deterministic` (A10), `random` (Littman's
-   random move order), `coinflip` (a fair-coin tie-break).
-2. **Stage-game solvers** — pure saddle-point finder and an LP solver for
-   zero-sum mixed Nash.
-3. **Nash Q-iteration** — three stage solvers (`pure` / `mixed` / `hybrid`),
-   run by either value iteration (`run()`) or freeze-then-iterate policy
-   iteration (`run_policy_iteration()`).
-4. **Analysis** — where the value functions and policies agree / diverge,
-   self-play, exploitability, reward shaping.
+## The A10 collision rules: specified vs. interpreted
 
-## Headline result
+This repo's `A10SoccerGame` follows the assignment
+([CS&nbsp;540 A10](https://pages.cs.wisc.edu/~yw/CS540S26A10.html)) where it
+speaks, and makes an explicit, documented choice everywhere it does not. The
+A10 page directly specifies: a 7×5 grid; two players choosing `U D L R`
+simultaneously; "if the two players try to occupy the same square, only the
+player with the ball will move to that square, and the other player will get
+the ball"; "if the two players try to swap squares, they will swap, and the
+other player will get the ball"; a tie after 100 steps; `+1` / `-1` / `0`
+reward, undiscounted. It does **not** specify what happens when a carrier
+moves into a *stationary* opponent, when a non-carrier bumps into the
+carrier, which rows count as the goal mouth, or (in the public version of the
+page) this project's own netID's start positions -- those are this repo's
+interpretations, made explicit rather than presented as uniquely mandated.
+**[docs/assumptions.md](docs/assumptions.md)** is the full quoted-vs-interpreted
+table, which sub-cases are load-bearing for the headline result (the goal-row
+choice is), and what would need re-measuring if course staff intended
+something different.
 
-- **Deterministic game (exact A10):** solved exactly, undiscounted, by
-  backward induction -- every one of the 238 000 (state × step) stage games has
-  a pure saddle. A pure equilibrium exists; the discount was never load-bearing.
-- **Random move order (Littman):** 3.95% of stage games on the 7x5 3-cell-goal
-  board have no pure saddle, so no pure stationary equilibrium exists; the
-  `pure` solver then under-values the kickoff by 0.16. **Within the tested
-  Littman random-move-order family, one-cell goals produced no no-pure-saddle
-  states, while every tested wider-goal configuration produced at least
-  one** ([docs/geometry.md](docs/geometry.md), phase diagram) -- a different
-  transition family (movement `slip`, this project's own `tackle` rule)
-  breaks the switch even on a one-cell goal ([generalize.md](docs/generalize.md)),
-  so this is an empirical result scoped to the tested family, not a theorem
-  about goal width in general.
-- **Coinflip tie-break:** stochastic, yet its value function is identical to the
-  deterministic game's -- it is Littman's move *order*, not randomness, that
-  forces mixed strategies.
-
-See [docs/findings.md](docs/findings.md) and [docs/README.md](docs/README.md).
-
-## The pieces
-
-| script | what | doc |
-|---|---|---|
-| `a10_part1.py` / `a10_part2.py` / `a10_competition.py` | the A10 deliverables (successor tables; imitation network; competition networks). `--seeds N` on the last two reports fit accuracy + exploitability over N seeds. | `docs/a10_*.md` |
-| `selfplay.py --seeds 5` | Nash-vs-Nash return and exploitability | [docs/selfplay.md](docs/selfplay.md) |
-| `policy_iteration.py` | value iteration vs. freeze-then-iterate: same fixed point, ~5x fewer LP solves | -- |
-| `numerics.py` | value bracket, five-way stage-game classification, rounding | [docs/numerics.md](docs/numerics.md) |
-| `templates.py` | the 94 no-pure-saddle states -> 8 geometric templates, with a board+matrix figure per template | [docs/templates.md](docs/templates.md) |
-| `degeneracy.py` | classifies all 94: unique forced mix vs. degenerate (a zero-weight action tied with the reported LP support) | [docs/degeneracy.md](docs/degeneracy.md) |
-| `distance_table.py` | no-pure-saddle / forced / degenerate counts by Manhattan distance between the players | [docs/showcase.md](docs/showcase.md) |
-| `positions.py` / `pure_vs_mixed_exploit.py` | twelve worked player-position cases with the exact 4x4 Q matrix, plus a pure-vs-mixed exploitability table at those same states | [docs/positions.md](docs/positions.md) (also [docs/positions.pdf](docs/positions.pdf)) |
-| `showcase.py` | six mixed states worked by hand: weighted-arrow boards + the exact stage matrix | [docs/showcase.md](docs/showcase.md) |
-| `phase_diagram.py` | goal-width x board-size phase diagram (`--analyze` decomposes the variance) | -- |
-| `onecell_proof.py` | the single-cell pure-saddle certificate | [docs/proof.md](docs/proof.md) |
-| `benchmark.py` | repeated-run timing + LP-call rate of the hybrid | -- |
-| `tournament.py` / `tournament4.py` | Littman's Table 3, reproduced exactly: minimax exploits *and* survives its challenger, greedy does one or the other | [docs/tournament.md](docs/tournament.md) |
-| `tournament_deepdive.py` | the causal version of that claim: patching greedy with the exact mix at only the mixed states recovers 43% of its robustness gap | [docs/tournament_deepdive.md](docs/tournament_deepdive.md) |
-| `nash_dqn.py --seeds 5` | neural Nash-Q vs. the exact solver: from-zero, fit-to-exact, warm-start, and a policy net, on the deterministic game | [docs/report.md](docs/report.md) §8 |
-| `nash_dqn_random.py --seeds 5` | the same four baselines on the random-move-order game, where equilibria are genuinely mixed | [docs/report.md](docs/report.md) §8 |
-| `nash_dqn_ablation.py --seeds 2` | Q-net width/depth capacity sweep, up to 512-wide / 115x the original architecture | [docs/report.md](docs/report.md) §8 |
-
-`soccer_nash.shaping` adds intermediate rewards: potential-based shaping leaves
-the equilibrium unchanged (value shifts by exactly `-Phi`), a naive possession
-bonus changes it ([docs/shaping.md](docs/shaping.md)).
-
-## Environment assumptions
-
-The A10 page parameterises start positions and goal rows by student ID (redacted
-in the public page). This repo uses the standard Littman soccer geometry:
-
-- Grid: width 7 (`x` in `0..6`), height 5 (`y` in `0..4`).
-- Player 0 starts left and scores through the right edge (`x = 7`); player 1
-  starts right and scores through the left edge (`x = -1`).
-- Goal mouth: middle rows `y in {1, 2, 3}`.
-- Actions: `U, D, L, R` (no stay). Vertical moves clamp at the top/bottom walls;
-  horizontal moves clamp except a ball carrier moving into the opponent goal.
-- Collisions (`deterministic`): if both players target the same square, the ball
-  carrier takes it and possession flips to the other player; on a swap, players
-  swap and possession flips. A carrier blocked by a stationary opponent stays
-  put and loses the ball.
-- Collisions (`random`): the two moves are applied in a random order (each with
-  probability 1/2); a move into the other player's current cell fails, and
-  transfers the ball if the mover held it.
-- Collisions (`coinflip`): the A10 rule, but a fair coin (not possession)
-  decides who wins a contested square or a swap.
-- Rewards: `+1` win, `-1` loss, `0` otherwise (zero-sum). Game ties after 100
-  steps.
-
-## Setup
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt -e .
-make lint   # ruff check
-make test   # fast suite; `make test-all` adds the slow solver runs
-```
-
-CI (`.github/workflows/tests.yml`) runs `ruff check` and the full `pytest` on
-every push and pull request. `make coverage` reports line coverage (99%, with
-the gaps in degenerate-case guards).
-
-On very recent macOS builds the PyPI SciPy wheel can fail to load
-(`_spropack.so` dyld error). If so, create the venv against a working
-interpreter instead:
-
-```bash
-python -m venv --system-site-packages .venv
-```
+The `random` and `coinflip` move-resolution rules, and every reward/transition
+variant beyond that (`tackle`, `slip`, `blend`, `territory`), are this
+project's own research extensions -- not part of the A10 assignment at all;
+see [docs/design.md](docs/design.md).
 
 ## License
 

@@ -1,5 +1,9 @@
 # The A10 geometry instance, and its interpreted rules
 
+The assignment itself:
+[CS 540 A10](https://pages.cs.wisc.edu/~yw/CS540S26A10.html). Quoted text
+below is copied verbatim from that page.
+
 The game family and the design rationale are in [design.md](design.md). This
 page is about one instance -- the CS 540 A10 geometry, `A10SoccerGame` -- which
 is where the "every stage game admits a pure saddle" result is measured. The

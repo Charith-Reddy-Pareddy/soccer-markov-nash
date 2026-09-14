@@ -38,9 +38,10 @@ If time is short, follow exactly that, in that order:
   where that predictability would show up.
 - **Supporting validation** — numerical robustness across discount and
   tolerance (§5 RQ4); self-play and occupancy on the equilibrium path
-  ([occupancy.md](occupancy.md)); geometric templates and symmetry
-  ([templates.md](templates.md)); which of the 94 no-pure-saddle states are a
-  uniquely forced mix vs. degenerate ([degeneracy.md](degeneracy.md)).
+  ([occupancy.md](occupancy.md)); mirror symmetry (value *and* policy
+  equivariance); which of the 94 no-pure-saddle states are a uniquely
+  forced mix vs. degenerate — the 64/16/14 split
+  ([degeneracy.md](degeneracy.md)).
 - **Exploratory extensions**, groundwork for future work, not equal-weight
   contributions — neural function approximation, including on the harder
   random-move-order game (§8); general-sum solving (§8); reward shaping
@@ -652,13 +653,26 @@ stays ahead of its challenger; every deterministic policy -- greedy or
 hand-built -- does exactly one. This is Littman's "every deterministic offense
 has a perfect defense, like rock-paper-scissors": the mixed states are
 matching-pennies stage games, and a deterministic policy hands the challenger a
-column to punish. [tournament_deepdive.md](tournament_deepdive.md) turns that
+column to punish.
+
+> **The main practical conclusion of this report: randomization matters not
+> because it improves every matchup, but because it prevents a strong
+> opponent from exploiting predictability.** Greedy *beats* the minimax
+> policy against a weak opponent (+0.92 vs. +0.67 here); it loses that
+> advantage and more the instant something is built specifically to punish
+> it (−0.59 vs. minimax's +0.15). The 94 no-pure-saddle states are exactly
+> where a deterministic policy is predictable enough to hand a challenger
+> that column.
+
+[tournament_deepdive.md](tournament_deepdive.md) turns that
 into a measured, causal claim instead of an assertion: patching greedy's
 policy with the exact Nash mix at *only* the 7.4% of states that are
 genuinely mixed -- leaving every other state as greedy already plays it --
 recovers 43% of the gap to minimax against a freshly built challenger, with
 one concrete exploited state shown matrix and all, and a gamma sweep showing
 that recovered share shrinks (and briefly reverses) as the horizon lengthens.
+This is the causal version of the conclusion above: the robustness gap traces
+specifically to the no-pure-saddle states, not to greedy play in general.
 
 - Its duality gap `V0_br(s0) + V1_br(s0)` is `< 1e-9` for every move order -- no
   opponent beats the game value.
@@ -914,6 +928,20 @@ ones that matter most:
   games have no monotone strategy improvement.
 
 ## 10. Limitations
+
+**Proof status, at a glance.** Every numeric claim in this report falls into
+exactly one of three categories; the table exists so a reader never mistakes
+a swept parameter grid for a theorem (full detail and the exact claim
+wording: [assumptions.md](assumptions.md) §"Three claims, kept separate").
+
+| status | claim |
+|---|---|
+| **Proved** | Deterministic A10 game: every stage game has a pure saddle -- exact 100-step backward induction (238 000 state×step stage games) and stationary value iteration at every tested `gamma`, both undiscounted-equivalent (Claim A). |
+| **Proved** | The deterministic game has an explicit **pure memoryless** equilibrium -- each player's win-attractor strategy, verified to realize `V*` at every state, goal widths 1 and 3 tested (Claim B). |
+| **Proved, single-cell case** | Random move order, one goal cell per side: every stage game has a pure saddle. Defender's optimal strategy closed-form and machine-verified; every board up to 11x5 dominance-solvable, every `gamma` 0.5-0.99 (Claim C'). |
+| **Empirical result** | The goal-width switch -- 1-cell goal -> 0 no-pure-saddle stage games, >= 2-cell goal -> some -- verified over 127 tested board/goal-width configurations. **Not** a theorem for arbitrary `W, H`. |
+| **Empirical result** | The 94 -> 47 mirror pairs -> 8 templates collapse, the Manhattan-distance-1/2 geometry, and the 64/16/14 forced/degenerate split -- measured on the canonical 7x5 board; not proved to hold on every board. |
+| **Open conjecture** | A board-size-free proof that the carrier's half of the single-cell defense is optimal for arbitrary `W, H` (the general-goal-mouth Claim C is not attempted at all). |
 
 - The A10 page redacts the ID-specific start position and goal rows; this repo
   uses the standard Littman geometry (configurable). Qualitative results are
