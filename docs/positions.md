@@ -1,15 +1,23 @@
 # Player positions and the 4×4 Q matrix
 
-We examine twelve representative soccer states. For each, the **left panel**
-shows the physical player configuration and every action either player
-actually takes in equilibrium, drawn as probability arrows (thick = likely,
-thin = unlikely, no arrow at all = zero probability). The **right panel**
-shows the complete **`4x4` stage-game Q matrix** -- the payoff table
-`Q(s, a0, a1)` at that one state, not the value function `V(s)` -- redrawn as
-a node-and-arrow graph, one node per cell, an arrow toward whichever cell
-either player would rather deviate to. Always the full grid, never reduced.
-The goal is not simply to show *where* mixing happens on the board, but
-**what the players are actually doing when it does**.
+I examine twelve representative soccer states. Each is identified by its
+**state, five numbers `(x0, y0, x1, y1, b)`**: player 0's cell `(x0, y0)`,
+player 1's cell `(x1, y1)`, and `b` (which player currently has the ball,
+`0` or `1`). That five-number state is not part of the Q matrix -- it just
+names *which* stage game is being shown; the Q matrix itself is the `4x4`
+table of payoffs indexed by the two players' *actions* (`U D L R` each), not
+by coordinates.
+
+For each state, the **left panel** shows the physical player configuration
+and every action either player actually takes in equilibrium, drawn as
+probability arrows (thick = likely, thin = unlikely, no arrow at all = zero
+probability). The **right panel** shows the complete **`4x4` stage-game Q
+matrix** -- the payoff table `Q(s, a0, a1)` at that one state, not the value
+function `V(s)` -- redrawn as a node-and-arrow graph, one node per cell, an
+arrow toward whichever cell either player would rather deviate to. Always
+the full grid, never reduced. The goal is not simply to show *where* mixing
+happens on the board, but **what the players are actually doing when it
+does**.
 
 A player's **support** is the set of actions it assigns positive probability
 in an equilibrium strategy -- support `(2,2)` means the carrier mixes over 2
@@ -57,9 +65,9 @@ on the board, mirrored). This page shows one example of each of the four
 canonical support shapes, plus every distinct *mechanism* studied in the
 project that can force a mix: a stochastic move order, this project's own
 tackle rule, a dense reward with zero transition noise, and movement slip on
-a goal shape that is otherwise always pure.
-
-![Twelve cases, board and Q-matrix graph side by side.](figures/png/positions.png)
+a goal shape that is otherwise always pure. Every one of the twelve gets its
+own full-size board-and-matrix figure below -- no combined overview image,
+so nothing here is ever cropped by a page break.
 
 ## Reading the board and the Q matrix
 

@@ -105,7 +105,18 @@
 
 <h1>Player positions and the 4&times;4 Q matrix</h1>
 <p class="lede">
-We examine twelve representative soccer states. For each, the
+I examine twelve representative soccer states. Each is identified by its
+<strong>state, five numbers <span class="mono">(x0, y0, x1, y1, b)</span></strong>:
+player 0's cell <span class="mono">(x0, y0)</span>, player 1's cell
+<span class="mono">(x1, y1)</span>, and <span class="mono">b</span> (which
+player currently has the ball, 0 or 1). That five-number state is not part
+of the Q matrix &mdash; it just names <em>which</em> stage game is shown;
+the Q matrix itself is the <span class="mono">4&times;4</span> table of
+payoffs indexed by the two players' <em>actions</em> (U D L R each), not by
+coordinates.
+</p>
+<p class="lede">
+For each state, the
 <strong>left panel</strong> shows the physical player configuration and
 every action either player actually takes in equilibrium, drawn as
 probability arrows (thick = likely, thin = unlikely, no arrow at all = zero
@@ -161,12 +172,9 @@ elsewhere on the board, mirrored). This page shows one example of each of
 the four canonical support shapes, plus every distinct mechanism studied in
 the project that can force a mix: a stochastic move order, this project's
 own tackle rule, a dense reward with zero transition noise, and movement
-slip on a goal shape that is otherwise always pure.</p>
-
-<figure>
-  <img src="figures/png/positions.png" alt="Twelve cases, board and Q-matrix graph side by side.">
-  <figcaption>All twelve cases: board position with probability arrows (left) and the full 4&times;4 Q matrix redrawn as a node-and-arrow graph (right). A lit node with no outgoing arrow is a pure saddle; a closed best-response cycle means no pure action pair is stable.</figcaption>
-</figure>
+slip on a goal shape that is otherwise always pure. Every one of the twelve
+gets its own full-size board-and-matrix figure below &mdash; no combined
+overview image, so nothing here is ever cropped by a page break.</p>
 
 <h2>Reading the board and the Q matrix</h2>
 <p>
