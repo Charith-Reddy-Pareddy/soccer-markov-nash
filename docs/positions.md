@@ -104,9 +104,8 @@ support is exactly what it is.
 For a focused read: the typical two-action mix, the cleanest indifference
 example, a genuine three-action mix, the sharpest LP-degeneracy example, and
 a case where a completely different mechanism (the reward, not the
-transition) forces the mix. Seven more cases -- the remaining canonical
-support shape, near-pure hedges, a mirrored symmetry check, and every other
-mechanism studied -- are in the appendix below, for completeness.
+transition) forces the mix. All twelve cases, these five included, follow in
+full below in numbered order.
 
 ## Case 2 — `(0, 1, 1, 1, 0)`: the primary example -- the typical mix
 
@@ -283,8 +282,8 @@ minimax doesn't -- but at the level of the *tournament*, not any one of
 these states. This table connects the two directly: at each state, force
 the carrier to its single most likely ("greedy") action and let the
 defender best-respond *within that one stage game*, then compare to the
-actual Nash mixed value. Three rows (Cases 4, 6, 10) reference the appendix
-below; the other four are the lead cases above.
+actual Nash mixed value. Three rows (Cases 4, 6, 10) are detailed further
+down in the complete set below; the other four are the lead cases above.
 
 | case | greedy pure value vs. BR | Nash mixed value vs. BR | value of mixing |
 |---|---:|---:|---:|
@@ -307,16 +306,18 @@ the deepest gap of any case in this doc -- are also the two largest values
 of mixing here: the states where the matrix punishes commitment hardest are
 the same ones where committing costs the most.
 
-## Appendix: seven more cases
+## All twelve cases, in full
 
-For completeness: a pure state for contrast, the fourth and last canonical
-support shape, a hedge so shallow that rounding it would misread the game,
-this project's own tackle rule producing the same duel by a different
-mechanism, the exact mirror of Case 2, a case worth discussing on its own
-(Case 9's twin structural finding, the three-lane mix), and a single-cell
-goal forced to mix anyway once movement noise is added -- each with its
-board, its node-and-arrow graph, its exact `4x4` Q matrix, and its type
-label.
+The five above are the ones to read first. What follows is the complete
+set, `Case 1` through `Case 12` in order -- the same five again, in their
+numbered place, plus the seven not covered above: a pure state for
+contrast, the fourth and last canonical support shape, a hedge so shallow
+that rounding it would misread the game, this project's own tackle rule
+producing the same duel by a different mechanism, the exact mirror of
+Case 2, a case worth discussing on its own (Case 9's twin structural
+finding, the three-lane mix), and a single-cell goal forced to mix anyway
+once movement noise is added -- each with its board, its node-and-arrow
+graph, its exact `4x4` Q matrix, and its type label.
 
 ## Case 1 — `(4, 0, 5, 0, 0)`: a pure state, for contrast
 
@@ -338,6 +339,68 @@ for contrast with everything else on this page.
   D   0.151    0.211    0.211    0.222
   L   0.161    0.182    0.172    0.190
   R   0.012   -0.095    0.058    0.098
+```
+
+## Case 2 — `(0, 1, 1, 1, 0)`: the primary example -- the typical mix
+
+**This is the case to lead with.** Gap `0.0136`. The carrier mixes
+`U 63.5% / D 36.5%`; the defender answers `U 36.5% / R 63.5%`. This is not
+one strange state among many -- it is the dominant pattern in the entire
+mixed-state set: **90 of the 94 no-pure-saddle states on the canonical board** cross
+a vertical pair exactly like this one, the carrier deciding which goal row
+to attack and the defender guessing which one. Everything that follows is
+either this same shape recurring (Case 7), or a genuinely different shape
+worth contrasting against it (Cases 3, 4, 5, 9, 10).
+
+**Type:** forced mixed equilibrium -- the reported 63.5%/36.5% split is the
+whole indifference class, not one point on a larger face.
+
+**Support:** carrier `{U, D}` (63.5% / 36.5%) · defender `{U, R}`
+(36.5% / 63.5%).
+
+**Why indifferent:** Carrier `E[U]`=`E[D]`=+0.094, strictly above `E[L]`=+0.091 and `E[R]`=−0.015. Defender `E[U]`=`E[R]`=+0.094, strictly below `E[L]`=+0.212 and `E[D]`=+0.332.
+
+![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
+
+```
+        U        D        L        R
+  U   0.086    0.478    0.286    0.099
+  D   0.109    0.076    0.085    0.086
+  L   0.103    0.103    0.085    0.084
+  R   0.082    0.187   -0.108   -0.071
+```
+
+## Case 3 — `(1, 1, 1, 0, 1)`: a clean L/R indifference example
+
+Placed directly after the primary example on purpose: this is the cleanest
+demonstration of the intuition Case 2 only implies --
+
+> "when we move right and when we move left, there's an equal chance of me
+> winning. That's why I am indifferent between the two."
+
+Gap `0.0445`. The carrier's entire live option set is **exactly `{L, R}`**
+-- no vertical option survives at all, which is what makes this state (rather
+than Case 4, which crosses `U/L`) the cleanest match to that description:
+two actions genuinely equally good against the defender's own mix. This is
+the *rarer* shape overall: only 4 of 94 no-pure-saddle states cross a purely
+horizontal pair instead of a vertical one.
+
+**Type:** forced mixed equilibrium -- both sides' splits are the whole
+indifference class.
+
+**Support:** carrier `{L, R}` (7.7% / 92.3%) · defender `{D, L}`
+(18% / 82%).
+
+**Why indifferent:** Carrier `E[L]`=`E[R]`=+0.206, strictly above `E[D]`=+0.162 and `E[U]`=+0.050. Defender `E[D]`=`E[L]`=+0.206, strictly below `E[R]`=+0.216 and `E[U]`=+0.257.
+
+![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
+
+```
+        U        D        L        R
+  U   0.139   -0.173    0.099    0.110
+  D   0.171    0.185    0.157    0.171
+  L   0.810    0.500    0.141    0.810
+  R   0.211    0.181    0.211    0.167
 ```
 
 ## Case 4 — `(0, 0, 1, 1, 0)`: the corner duel
@@ -370,6 +433,37 @@ in the right proportion is an equally valid equilibrium, not just the
   D   0.109    0.076    0.101    0.086
   L   0.109    0.076    0.101    0.086
   R   0.112   -0.075    0.112    0.088
+```
+
+## Case 5 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
+
+Six cells from goal, as far as this board allows, with the defender close
+enough to threaten three different rows at once: no single row is safely
+better than the other two, so three actions are simultaneously undominated
+on both sides. This is one of only **4 states on the whole canonical board**
+with support shape `(3,3)` -- mixing is not always a 50/50 split between two
+actions. (Entropy 1.109 bits, the richest mix on this page, if a single
+summary number is wanted -- but the three-way split itself is the point.)
+
+**Type:** degenerate equilibrium face (carrier) -- see "why indifferent"
+below: a fourth, unweighted carrier action ties the reported three-way split
+exactly, so the printed 43.3%/0%/54.7%/1.9% is one point on a larger face,
+not a forced ratio. The defender's own reported split is a genuine forced
+mix.
+
+**Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%) · defender
+`{U, D, L}` (91.9% / 5.9% / 2.3%).
+
+**Why indifferent:** Carrier `E[U]`=`E[L]`=`E[R]`=+0.0848 (the three actions weighted) -- and `E[D]`=+0.0848 too: **all four actions tie exactly**, so the 43.3%/0%/54.7%/1.9% split printed is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender `E[U]`=`E[D]`=`E[L]`=+0.0848, below `E[R]`=+0.097.
+
+![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
+
+```
+        U        D        L        R
+  U   0.084    0.095    0.103    0.110
+  D   0.086    0.076    0.076    0.086
+  L   0.086    0.076    0.076    0.086
+  R   0.088    0.095   -0.088    0.110
 ```
 
 ## Case 6 — `(1, 1, 2, 0, 1)`: a near-pure hedge, where rounding would lie
@@ -459,6 +553,47 @@ move-order-driven cases above, under a completely different mechanism.
   R  -0.007   -0.026   -0.006   -0.039
 ```
 
+## Case 9 — `(0, 2, 1, 2, 0)`: the asymmetric mix -- the sharpest LP-degeneracy example
+
+Support `(2, 1)` -- gap `0.0095`. The odd one out: the carrier's equilibrium
+still mixes two actions (`U 2.6% / D 97.4%`), but the **defender's**
+equilibrium is a *single fixed move* (`R`, 100%). Every other case on this
+page is a symmetric duel -- both players genuinely guessing. Here only one
+side is.
+
+**Type:** pure-tied / fractional LP output (defender). The defender's
+official policy is printed pure `R` (100%), but `D` ties it exactly -- the
+defender's choice of `R` over `D` is exactly as arbitrary as a printed
+fractional split, it just isn't drawn as a percentage because the LP put
+all the weight on one action. This is the sharpest example on this page
+that **a fractional LP output is not automatically a strategically required
+mixed strategy.**
+
+**Support:** carrier `{U, D}` (2.6% / 97.4%) · defender `{R}` (100%).
+
+**Why indifferent:** Carrier `E[U]`=`E[D]`=+0.095, above `E[L]`=+0.093 and `E[R]`=−0.072 (worked out fully below). The defender's official policy is pure `R` (100%), but `E[R]`=+0.095 and `E[D]`=+0.095 tie **too**: the defender's own choice of `R` over `D` is exactly as arbitrary as the carrier's `U`/`D` split, it just isn't printed as a percentage because the solver put all the weight on one side.
+
+![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
+
+```
+        U        D        L        R
+  U   0.085    0.478    0.291    0.095
+  D   0.478    0.085    0.291    0.095
+  L   0.093    0.093    0.086    0.093
+  R   0.082    0.082   -0.122   -0.072
+```
+
+Why the carrier still needs two actions against a defender who never
+varies: against the defender's pure `R`, column `R` reads `U 0.095, D 0.095,
+L 0.093, R -0.072` -- **`U` and `D` are exactly tied**, both strictly better
+than `L` or `R`. Nothing in the payoffs favours one over the other, so any
+split of `U`/`D` is an equally valid best reply; the solver's LP reports one
+particular split (`2.6% / 97.4%`), not a probability forced by the game the
+way Case 3's `7.7% / 92.3%` is. `soccer_nash/certificate.py`'s `gap` field
+still distinguishes the two: a tie is a **degenerate** saddle (row `L`'s pure
+security value, `0.086`, sits within `0.0095` of the mixed value), while
+Case 3's cycle has no pure security value anywhere near it.
+
 ## Case 10 — `(0, 2, 2, 2, 1)`: the three-lane mix
 
 Support `(3, 2)` -- gap `0.0699`, the **deepest gap of any state on this
@@ -488,6 +623,38 @@ forced mix.
   D   0.330    0.247    0.272    0.317
   L   0.366    0.366    0.330    0.110
   R   0.228    0.228    0.220    0.205
+```
+
+## Case 11 — `(4, 4, 5, 4, 0)`, deterministic: mixing forced by reward alone, not transition
+
+An advanced case, illustrating a fundamentally different mechanism from the
+four above. Every case so far gets its coin flip from a stochastic
+*transition* -- the random move order. This one has **no transition
+stochasticity at all** (`move_order="deterministic"`): the mix comes
+entirely from `scoring="territory"`, a dense per-step reward for the ball
+in the opponent's final third, layered on top of the ordinary win/loss
+score. Gap `0.0653` -- close to a fair coin (entropy 0.996 bits), forced
+purely by coupling the reward to both players' actions. **Mixing does not
+require stochastic transitions; it can come from the payoff structure
+alone.**
+
+**Type:** forced mixed equilibrium -- the reward-coupling forces a genuine
+indifference on both sides, the same as a transition-coupled matching-pennies
+core.
+
+**Support:** carrier `{D, R}` (53.8% / 46.2%) · defender `{U, L}`
+(95.1% / 4.9%).
+
+**Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473.
+
+![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
+
+```
+        U        D        L        R
+  U   0.116    0.105    0.170    0.136
+  D   0.094    0.415    0.815    0.450
+  L   0.094    0.105    0.000    0.105
+  R   0.170    0.500   -0.671    0.500
 ```
 
 ## Case 12 — `(1, 3, 1, 4, 1)`: movement slip on a single-cell goal
