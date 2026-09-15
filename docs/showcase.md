@@ -16,13 +16,15 @@ both players' action probabilities drawn as weighted arrows.](figures/png/showca
 
 ## Does mixing depend on *where* the players are, or their *relative* position?
 
-The meeting's question, directly: every one of the 94 no-pure-saddle states (canonical
+A direct question worth asking: every one of the 94 no-pure-saddle states (canonical
 `7x5` board, 3-cell goal, random move order, γ = 0.9) has the two players
 within **2 cells of each other** (Manhattan distance) -- 40 at distance 1, 54
-at distance 2, **zero at distance ≥ 3**. Proximity to the *opponent*, not
-distance to the goal, is what forces a guess. State 2 below is the sharpest
-evidence: the carrier is 6 cells from goal (as far as this board allows) and
-still faces a genuine 3-way mix, because the defender is right there.
+at distance 2, **zero at distance ≥ 3**. Mixing is spatially localized
+around the opponent: all 94 no-pure-saddle states occur at player distance
+1 or 2, while goal-mouth geometry determines whether competing scoring
+lanes exist in the first place. State 2 below is the sharpest evidence: the
+carrier is 6 cells from goal (as far as this board allows) and still faces
+a genuine 3-way mix, because the defender is right there.
 
 `scripts/distance_table.py` gives the full breakdown, every distance on the
 board, not just the two where anything happens, and further splits the

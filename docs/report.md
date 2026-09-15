@@ -6,7 +6,7 @@ structure.*
 A research report on a configurable family of two-player soccer Markov games
 ([design.md](design.md)). Scope and caveats are in `docs/assumptions.md`; how
 every number was produced is in [methods.md](methods.md); the open questions and
-what the mixed region depends on are in [discussion.md](discussion.md). Every
+what the no-pure-saddle region depends on are in [discussion.md](discussion.md). Every
 table regenerates from `experiments/*.csv`. This report is the technical
 notebook by design -- for the plain-language, non-technical companion, see
 [The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)
@@ -70,26 +70,38 @@ soccer environment determine *when* such mixed equilibria arise, and whether
 their computational cost can be avoided except where mixing is genuinely
 necessary. `docs/littman.md` reproduces his Figure 2 and his Table 3.
 
-## Two contributions
+## Three contributions
 
-1. **Algorithmic.** A pure-first hybrid Nash-Q backup: at each stage game check
+1. **C1 — Computational.** A pure-first hybrid Nash-Q backup: at each stage game check
    for a pure saddle (`O(A²)`, no LP), use its value when one exists, fall back
    to the LP only where it does not. Exact everywhere. Its portable claim is
    that **it eliminates LP work on almost every stage game** (0% of states on
    the deterministic game, 3.95% on the random one); the observed wall-clock
    speedup is reported separately because it also depends on the machine and the
    LP backend.
-2. **Empirical structural characterization.** Mixed equilibria in the studied
-   soccer family are not distributed arbitrarily: across the tested boards they
+2. **C2 — Structural.** Characterization of where the no-pure-saddle states occur
+   and why. They are not distributed arbitrarily: across the tested boards they
    are localized to states combining a *stochastic move order*, a *multi-cell
    goal mouth*, and a *defender with insufficient one-step coverage*, and most
-   such states reduce to matching-pennies-like 2×2 supports. The region is
-   invariant to the kickoff and to how the horizon is scored (`win` vs `rate`),
-   but not to a dense per-step reward that couples to both actions
+   such states reduce to matching-pennies-like 2×2 supports. This is the
+   goal-width switch, local player geometry (Manhattan distance 1–2, never
+   further), the collapse to 8 geometric templates, and the certified
+   matching-pennies mechanism (§5 RQ3, §6). The region is invariant to the
+   kickoff and to how the horizon is scored (`win` vs `rate`), but not to a
+   dense per-step reward that couples to both actions
    ([discussion.md](discussion.md) §5); it carries 41% of the equilibrium-path
    occupancy despite being 4% of the state space ([occupancy.md](occupancy.md)).
    This is an empirical characterization over the tested parameter grid, not a
    theorem.
+3. **C3 — Practical.** Demonstration that the strategically mixed region matters
+   disproportionately under equilibrium play, and specifically that it is what
+   prevents exploitation by a best-response opponent: a minimax policy presses
+   an advantage against weak play *and* survives a challenger built to beat it,
+   while every deterministic policy tested does one or the other, never both;
+   patching a greedy policy with the exact Nash mix at *only* the no-pure-saddle
+   states recovers 43% of its robustness gap to minimax against a freshly built
+   challenger (§7, [tournament_deepdive.md](tournament_deepdive.md)) — a causal
+   result, not just a correlation with "mixed states exist."
 
 ## Central hypothesis
 
@@ -228,7 +240,7 @@ concurrent stochastic games have no monotone policy improvement
 
 ## 5. Results
 
-![Summary: goal width branches to PURE-only vs candidate mixed states; with a
+![Summary: goal width branches to PURE-only vs candidate no-pure-saddle states; with a
 stochastic move order and a defender that can't cover both lanes, the best
 replies cross into a 2x2 matching-pennies stage game that needs the LP. Beside
 it, the pure / hybrid / mixed triangle: deterministic pure = hybrid = mixed,
@@ -318,11 +330,11 @@ zero for every board.](figures/png/phase_diagram.png)
 - **Goal width ≥ 2: at least one no-pure-saddle stage game — on all 87 tested
   wider-goal configs**, at a fraction of 2.7–12% (mean 5%).
 
-The precise statement: **a multi-cell goal is necessary for the mixed region in
-the studied family, and across our tested boards it is sufficient for at least
-one mixed state to exist.** It is *not* a proof that every board with a
-multi-cell goal must have a mixed state, nor that every state on such a board is
-mixed.
+The precise statement: **a multi-cell goal is necessary for a no-pure-saddle
+region in the studied family, and across our tested boards it is sufficient
+for at least one no-pure-saddle state to exist.** It is *not* a proof that
+every board with a multi-cell goal must have a no-pure-saddle state, nor
+that every state on such a board is no-pure-saddle.
 
 **Two structural facts worth reading before the mechanism below.** First, the
 94 no-pure-saddle states are all close together on the board:
@@ -345,8 +357,9 @@ forces (`scripts/degeneracy.py`, full detail in [degeneracy.md](degeneracy.md)):
 > 94 = 64 unique forced + 16 degenerate faces + 14 pure-tied
 
 `scripts/phase_diagram.py --analyze` decomposes the variance. Over the tested
-grid, whether a board has *any* mixed state is a perfect function of goal width
-(1 vs ≥ 2). Among the boards that do, an OLS of the mixed *fraction* is carried
+grid, whether a board has *any* no-pure-saddle state is a perfect function of
+goal width (1 vs ≥ 2). Among the boards that do, an OLS of the no-pure-saddle
+*fraction* is carried
 by board area (R² 0.64 — a dilution effect, more midfield filler), with goal
 width adding little (R² 0.27 alone) and a *negative* fitted coefficient. Every
 state is reachable from the kickoff, so the fraction over reachable states
@@ -359,10 +372,12 @@ decision tree separates `mixed` from the rest with **precision 0.96, recall
 forward cell (`P(mixed) = 0.44` vs `0.002`). Sharper still (`scripts/showcase.py`):
 every one of the 94 no-pure-saddle states has the two players within 2 cells
 of each other -- the distance-1/2 split is stated above, with the full
-per-distance breakdown in [showcase.md](showcase.md). Distance to the
-*opponent*, not distance to the goal, is what forces a guess -- one worked
-example is a 3-action mix 6 cells from goal, the farthest this board allows,
-because the defender is adjacent.
+per-distance breakdown in [showcase.md](showcase.md). **Mixing is spatially
+localized around the opponent: all 94 no-pure-saddle states occur at player
+distance 1 or 2, while goal-mouth geometry determines whether competing
+scoring lanes exist in the first place** -- one worked example is a
+3-action mix 6 cells from goal, the farthest this board allows, because the
+defender is adjacent.
 
 Beyond prediction, the 94 no-pure-saddle states canonicalize under the board mirror to 47
 pairs and cluster into **8 geometric templates** (`scripts/templates.py`,
@@ -442,7 +457,7 @@ project's own `tackle` rule — the defender commits to a challenge that wins th
 ball with probability `tackle_prob` or bounces off ([tackle.md](tackle.md)). So
 the switch is a property of Littman's move-order rule, where the unresolved coin
 only bites where the carrier has two lanes; `slip` and `tackle` supply that coin
-everywhere. Reading the `2×2` cores of the `7×5` mixed states, the carrier's
+everywhere. Reading the `2×2` cores of the `7×5` no-pure-saddle states, the carrier's
 crossing pair is a vertical move in 90 of 94 — it is choosing which goal row to
 head for, and the defender is guessing it.
 
@@ -462,7 +477,7 @@ sharply above ≈ 0.5 — the random order has to *outweigh* the deterministic
 tie-break. Whether `p_c = 0.5` has a structural explanation is open; it is a
 property of this family, not a universal threshold.
 
-The mixed states are also where the game is actually played: under the Nash
+The no-pure-saddle states are also where the game is actually played: under the Nash
 policy only 456 of 2380 states are reachable from the kickoff, and the 94
 no-pure-saddle states carry **41%** of the discounted occupancy
 (`soccer_nash/occupancy.py`, [occupancy.md](occupancy.md)).
@@ -474,7 +489,7 @@ games is within `0.07` of a pure saddle (`minimax − maximin`, median `0.029`),
 and the carrier's **mixing entropy** has median `0.55` bits — most are near-pure
 hedges (≈ 87/13), not real randomisation. Only **26 of 94** reach `≥ 0.9` bits
 (near an even 2-way split); those are the states with genuine indifference. So
-the mixed region is 94 states, but the *strongly* mixed core is ~26.
+the no-pure-saddle region is 94 states, but the *strongly* mixed core is ~26.
 
 The robust structural facts: 68 have a 2×2 matching-pennies support, and the
 **value of mixing** — `V(hybrid) − V(pure maximin)` — averages `+0.13` at those
@@ -482,7 +497,7 @@ states. It compounds along a path: at the centred kickoff a pure-strategy player
 secures only a draw where mixing is worth `+0.15` (`scripts/mixing.py`,
 [mixing.md](mixing.md)).
 
-#### Which reward objectives move the mixed region
+#### Which reward objectives move the no-pure-saddle region
 
 Three objectives on the same dynamics (`scripts/reward.py`, `make reward`,
 [reward.md](reward.md)): `win` (first goal ends it), `rate` (goal scores `±1`
@@ -587,7 +602,7 @@ not a practical problem. If it were, the row player takes the *guaranteed* value
 `min_j (pM)_j` -- always a safe lower bound on the true minimax.
 
 **Discounting mildly changes which states mix** (`experiments/gamma_sweep.csv`):
-the 7x5 random game's mixed count runs 122 -> 94 -> 102 as gamma goes
+the 7x5 random game's no-pure-saddle count runs 122 -> 94 -> 102 as gamma goes
 0.5 -> 0.9 -> 0.995 (non-monotonic); the deterministic game stays 0 at every
 gamma. Iterations scale from 26 to 373; the kickoff value rises monotonically
 from 0.001 to 0.32.
@@ -625,7 +640,7 @@ the goal row, slide toward the goal cell, never onto the carrier — machine-
 verified to secure `V*` from every state (so `minimax(M_s) = V*(s)` by weak
 duality), and every single-cell stage game is iterated-weak-dominance-solvable
 (machine-checked, all boards ≤ 11×5, all discounts 0.5–0.99, 0 exceptions). This
-supports the mechanism above per finite board. Per the meeting feedback, a
+supports the mechanism above per finite board. A
 board-size-free proof is *not* being pursued as a deliverable; the attractor /
 dominance code stands as conjecture-plus-evidence.
 
@@ -651,7 +666,7 @@ opponent ~76% of games), and a per-policy best-response challenger:
 Only the minimax policy both presses an advantage against a weak opponent *and*
 stays ahead of its challenger; every deterministic policy -- greedy or
 hand-built -- does exactly one. This is Littman's "every deterministic offense
-has a perfect defense, like rock-paper-scissors": the mixed states are
+has a perfect defense, like rock-paper-scissors": the no-pure-saddle states are
 matching-pennies stage games, and a deterministic policy hands the challenger a
 column to punish.
 
@@ -695,211 +710,45 @@ specifically to the no-pure-saddle states, not to greedy play in general.
 ## 8. Exploratory: function approximation and general-sum
 
 *Groundwork for the eventual continuous-action work, not equal-weight
-contributions.* The exact solver is the point of both — it is the ground truth.
+contributions.* The exact solver is the point of both -- it is the ground
+truth they are measured against. Full tables and worked discussion for
+everything below: [neural.md](neural.md).
 
-### Three starting points for the Q net, and where the approximation breaks
-
-On the deterministic 7×5 game, over **5 seeds** (`experiments/nash_dqn_seeds.csv`):
-a **Q net** regresses toward the stage matrices `Q(s, a0, a1)` and extracts a
-policy by minimax; a **policy net** regresses *directly* onto the exact
-equilibrium strategies `(p(s), q(s))`. The Q net is tried from three starting
-points, all the same architecture and all scored the same way: **from zero**
-(random init, pure TD bootstrap, 600 epochs), **fit to exact** (supervised
-regression straight onto `Q_exact`, no bootstrap at all, 600 epochs), and
-**warm start** (the fit-to-exact weights, then the same 600-epoch TD
-bootstrap as "from zero").
-
-| (5 seeds) | exact | from zero | fit to exact | warm start | policy net |
-|---|---|---|---|---|---|
-| max `\|V − V_exact\|` | 0 | 0.55 ± 0.02 | 0.38 ± 0.05 | 0.49 ± 0.06 | — |
-| action agreement | 100% | 43% ± 2% | 45% ± 2% | 45% ± 2% | **99.9% ± 0.0%** |
-| pure/mixed classification | 100% | 67% ± 2% | 47% ± 2% | 65% ± 2% | — |
-| max equilibrium regret `ε_NE` | 0 | — | — | — | 0.46 ± 0.02 |
-| exploitability (duality gap) | `<1e-9` | 0.44 ± 0.05 | 0.47 ± 0.04 | **0.38 ± 0.06** | 0.84 ± 0.00 |
-
-**Fitting the Q net directly to `Q_exact` -- no bootstrap, no target network,
-nothing but supervised regression against the ground truth -- still only
-reaches 45% action agreement, barely above the 43% a random init gets from
-600 epochs of TD bootstrap.** That is the headline result of the warm-start
-ablation: the bottleneck is not bootstrap noise. A network of this size,
-extracting a policy via minimax of its own predicted matrix, cannot represent
-`Q_exact` closely enough for the *argmax* to survive, even when it is simply
-told the answer. Continuing training from that fit-to-exact starting point
-(warm start) leaves action agreement essentially unchanged (45% either way)
-but does buy back some of what pure supervised fitting lost: pure/mixed
-classification recovers from 47% back to 65% (against from-zero's 67%), and
-exploitability drops to 0.38 -- the best of the three, beating both from-zero
-(0.44) and fit-to-exact alone (0.47), in 4 of 5 seeds. So the warm start does
-not fix the underlying representational problem, but it is not wasted either:
-the extra bootstrapped training pulls the network back toward respecting the
-game's saddle structure without giving up the head start on value error.
-
-**The policy net names the exact-optimal action at 99.9% of states and is
-still *more* exploitable than any of the three Q nets** (duality gap 0.84 vs
-0.38-0.47). Two reasons: the ~0.1% wrong states are exactly the ones a
-best-responder attacks (the rock-paper-scissors trap again), and a softmax
-head necessarily smears what should be pure strategies into exploitable
-near-indifference. So the failure is not primarily value approximation --
-"name the right action" is not "play a Nash", and neither is "be told
-`Q_exact` outright". Even on a small discrete game where the exact solution
-is a 0.3 s computation, a straightforward neural approximation does not
-preserve game-theoretic robustness. Keep the exact solver as ground truth.
+**Three starting points for the Q net** (deterministic 7x5 game, 5 seeds):
+fitting a Q-net directly to the exact stage matrices, with no bootstrap at
+all, still only reaches **45% action agreement** -- barely above the 43% a
+random init gets from 600 epochs of TD bootstrap. A policy net trained to
+match the equilibrium strategies directly reaches **99.9%** action
+agreement and is still the *most* exploitable of the four baselines tested
+(duality gap 0.84 vs 0.38-0.47) -- the states it gets wrong are exactly the
+ones a best-responder attacks.
 
 > **Action accuracy is not equilibrium accuracy.** A network that names the
 > textbook-optimal move nearly every time can still be trivially exploited,
 > because the states where it is wrong are not random -- they are exactly
-> the ones a best-responder is looking for. Simple single-agent RL that
-> optimizes for "predict the right action" produces a policy that looks
-> excellent on that metric and is not robust in the game-theoretic sense at
-> all; this is the discrete, measured version of that concern.
+> the ones a best-responder is looking for.
 
-### The harder game: random move order, genuinely mixed equilibria
+**The harder game** (random move order, genuine mixed equilibria, 5 seeds):
+the same lesson holds, sharper. The policy net reaches 95.8% action
+agreement and the *worst* exploitability of the four (1.20); fitting
+directly to the exact matrices is the closest numerical fit (60% agreement,
+lowest Frobenius error) and yet the second-most exploitable (1.01) --
+matching a continuous target well and matching a discrete equilibrium well
+are different objectives.
 
-Everything above runs on `A10SoccerGame` -- the **deterministic** game,
-where every stage game already has a pure saddle. That made the
-from-zero/fit-to-exact/warm-start comparison a genuine function-approximation
-study, but not yet an answer to the harder question the review of this
-section raised directly:
+**Capacity** (width 32-512, depth 1-4, up to 115x the original parameter
+count): action agreement plateaus around 45-48% regardless of size, but
+exploitability keeps falling with capacity -- 0.79 down to 0.05, a 15x
+reduction, with no sign of flattening. A bigger network keeps getting closer
+to the exact matrices in the sense that matters for robustness; it just
+never turns that into a better *argmax*.
 
-> Can neural Nash-Q reproduce the exact solver on the game where mixed
-> equilibria actually matter?
-
-Two real fixes were needed in `soccer_nash/nash_dqn.py`, not just a
-different game object, since the deterministic-only version was silently
-wrong on this one: `train_nash_dqn`'s bootstrap target used to be the
-vectorised *maximin* of the target network's predicted matrix -- exact only
-when every stage game has a pure saddle -- and the transition precompute
-used `game.step`, which *samples* one outcome, exact only when a joint
-action has a single outcome. Both are now general: `_minimax_batch` is the
-same pure-fast-path check, vectorised, falling back to the LP only for the
-predicted-mixed matrices; `game.transitions` supplies the full outcome
-distribution, averaged exactly. `scripts/nash_dqn_random.py` reruns all four
-baselines on the same plain 4x4 board as `tournament4.py`/
-`tournament_deepdive.py` (5x4, two-cell goals, **random move order**), where
-56 of 760 states (7.4%) have no pure saddle -- a game the deterministic-game
-experiment never actually exercised (5 seeds, 600 epochs;
-`experiments/nash_dqn_random_seeds.csv`):
-
-| (5 seeds) | exact | from zero | fit to exact | warm start | policy net |
-|---|---|---|---|---|---|
-| action agreement | 100% | 57% ± 3% | 60% ± 2% | 59% ± 2% | **95.8% ± 0.4%** |
-| exploitability | `<1e-9` | 0.36 ± 0.04 | **1.01 ± 0.27** | 0.36 ± 0.08 | 1.20 ± 0.01 |
-| mean Frobenius error | 0 | 0.42 ± 0.02 | **0.32 ± 0.01** | 0.39 ± 0.02 | — |
-| mean equilibrium regret | 0 | 0.014 ± 0.001 | 0.015 ± 0.002 | **0.011 ± 0.001** | — |
-
-**On this board, fitting directly to `Q_exact` is the best *fit* and the
-worst *policy*.** Fit-to-exact has the lowest matrix error (0.32) and the
-highest action agreement of the three Q nets (60%) -- it is, numerically,
-the closest to the exact answer -- and yet its exploitability (1.01) is
-roughly 3x *worse* than from-zero's (0.36). Minimizing per-state MSE with no
-regard for the game's structure can produce a matrix that is uniformly close
-to correct and still names an exploitable policy, because the states that
-matter for exploitability are not weighted any differently than the states
-that don't. TD bootstrapping, even though it fits the matrix values less
-precisely, produces a policy that is harder to punish -- the bootstrap target
-itself depends on downstream states' *minimax* values, which couples
-consistency across states in a way independent per-state regression cannot.
-**Warm-starting recovers almost all of it**: continuing training from the
-fit-to-exact weights lands at from-zero's exploitability (0.36) while
-keeping better action agreement (59% vs 57%) and the best regret of the
-three (0.011) -- on this harder game, unlike the deterministic one, warm
-start is the best of the three Q-net variants outright, not just a partial
-recovery.
-
-**The policy net's own failure is starker here than on the deterministic
-game.** 95.8% action agreement is far better than any Q net's, and its
-exploitability (1.20) is still the worst of the four -- the same "action
-accuracy is not equilibrium accuracy" lesson, now demonstrated on a game
-that genuinely requires randomization rather than one where the right
-answer always happens to be a single action.
-
-### Width/depth ablation: is 45% a capacity limit?
-
-Back on the deterministic game (`A10SoccerGame`, where the warm-start result
-earlier in this section was also measured): more *training* doesn't move
-action agreement there -- fitting straight to `Q_exact` with zero bootstrap
-noise lands at the same ~45% as 600 epochs of TD bootstrap from scratch. The
-remaining question (item 15 of the DQN checklist, "use a sufficiently
-expressive network") is whether more *capacity* does.
-`scripts/nash_dqn_ablation.py` sweeps width (2 hidden layers, 32-512 wide --
-extended to 512 specifically because the review this answers said not to
-limit the network size) and depth (1-4 hidden layers, width 96 fixed) using
-the fit-to-exact method above (2 seeds/config, 600 epochs;
-`experiments/nash_dqn_ablation.csv`):
-
-| width sweep (depth 2) | 32 | 64 | 96 | 128 | 192 | 256 | 512 |
-|---|---|---|---|---|---|---|---|
-| params | 1.8k | 5.6k | 11.4k | 19.3k | 41.3k | 71.4k | 273.9k |
-| action agreement | 43% | 47% | 45% | 45% | 46% | 45% | 47% |
-| exploitability | 0.79 | 0.56 | 0.47 | 0.41 | 0.38 | 0.25 | 0.18 |
-
-| depth sweep (width 96) | 1 | 2 | 3 | 4 | 3, width 256 | 3, width 512 |
-|---|---|---|---|---|---|---|
-| params | 2.1k | 11.4k | 20.8k | 30.1k | 137.2k | 536.6k |
-| action agreement | 44% | 45% | 46% | 48% | **48.1%** | 47.5% |
-| exploitability | 0.82 | 0.47 | 0.37 | 0.25 | 0.08 | **0.05** |
-
-**Action agreement plateaus -- and stays plateaued all the way to 115x the
-original parameter count.** The best action agreement in the whole grid is
-depth-3/width-256 (137k params, 48.1%); depth-3/width-512 (537k params, 3.9x
-more parameters than the best config, 115x the original `5->96->96->16`
-architecture) does not beat it -- it is slightly *lower*, 47.5%. Nowhere in
-this grid, including its largest member, does capacity buy a path toward the
-policy net's 99.9%. Item 15 is answered as firmly as this experiment can
-answer it: this is not an expressiveness problem in the sense of "the
-network can't fit the numbers, give it more room" -- more room stops
-mattering for this metric long before the grid runs out.
-**Exploitability and value error, on the other hand, never stop improving
-with capacity** -- exploitability falls monotonically from 0.79 (1.8k
-params) to 0.05 (537k params, a 15x reduction) with no sign of flattening
-out even at the largest size tested, and max value error falls from 0.53 to
-0.03 over the same range. A bigger net genuinely keeps getting *closer* to
-`Q_exact` in the numbers that matter for robustness; it just stops getting
-closer in a way the discrete argmax reflects, well before it stops getting
-closer in every other sense. That is the same lesson as the policy net's own
-failure, from the other direction: matching a continuous target well (small
-MSE) and matching a discrete decision well (correct argmax) are different
-objectives, and this architecture is much better at the former than the
-latter, regardless of size. **Depth beats width at matched budget**:
-depth-3/width-96 (20.8k params) beats width-128/depth-2 (19.3k params, the
-nearest matched budget) on every metric -- action agreement, exploitability,
-and value error alike -- and depth-4/width-96 (30.1k params) beats
-width-256/depth-2 (71.4k params, 2.4x the parameters) outright on all three.
-The single best configuration in the grid for action agreement -- depth 3,
-width 256, 137k params -- is still 52 points short of the policy net; the
-single best for exploitability and value error -- depth 3, width 512, 537k
-params -- does not even improve on the 137k-param configuration's action
-agreement while using 3.9x the parameters to chase the other two metrics
-further.
-
-### Roadmap: this is not the eventual challenge
-
-Everything in this section is discrete: a 4x4 (or 5x5) action grid, a
-network that outputs a matrix over it. The actual eventual challenge is a
-**continuous-action** version of this game -- a continuous dog-and-sheep /
-continuous soccer pursuit problem -- and the point of that future work is
-*not* to discretize a continuous action space back down to a grid and reuse
-everything above unchanged. The intended path:
-
-```
-exact discrete game  -->  neural reproduction of it (this section)  -->
-continuous-action stage-game solver
-```
-
-The discrete work above is what a continuous solver will be checked against
-close to the boundary (fine grids should approach the continuous answer),
-not a component it reuses directly. This repository deliberately does not
-contain a half-finished continuous solver: that is future work, kept out of
-this codebase until it is ready to be done properly rather than bolted onto
-the discrete `_QNet` architecture above.
-
-### General-sum — a sanity check, not a second paper
-
-`soccer_nash/markov_game.py` extends pure-first beyond zero-sum: enumerate *all*
-stage equilibria (`support_enum.py`), select one by "largest sum of values". On
-Battle of the Sexes this correctly avoids the mixed equilibrium whose value is
-below either pure one; the soccer game is zero-sum, so it does not touch the
-main result. Future work.
+**General-sum** (`soccer_nash/markov_game.py`, `support_enum.py`): pure-first
+extends beyond zero-sum by enumerating all stage equilibria and selecting one
+by largest sum of values, correctly handling Battle of the Sexes; the soccer
+game itself is zero-sum, so this does not touch the main result. Future
+work, alongside the eventual continuous-action extension -- see
+[neural.md](neural.md)'s roadmap.
 
 ## 9. Open questions
 
@@ -916,7 +765,7 @@ ones that matter most:
   claimed and is a question for a literature pass.
 - **The `blend` threshold.** Is `p_c ≈ 0.5` structural, and is the overshoot a
   phase transition? ([blend.md](blend.md), [discussion.md](discussion.md) §7)
-- **Reward-invariance, precisely.** The mixed region is identical under `win`
+- **Reward-invariance, precisely.** The no-pure-saddle region is identical under `win`
   and `rate` (horizon rescaling) but moves under `territory` (a dense per-step
   reward). The conjecture: it is invariant to any change that only rescales
   `M(s)` through `V(s′)` — potential-based shaping, monotone rescaling of `V` —
@@ -946,8 +795,8 @@ wording: [assumptions.md](assumptions.md) §"Three claims, kept separate").
 - The A10 page redacts the ID-specific start position and goal rows; this repo
   uses the standard Littman geometry (configurable). Qualitative results are
   geometry-robust: across the phase-diagram sweep, every one-cell-goal board has
-  0 mixed states and every wider-goal board has some. The exact `3.95%` mixed
-  fraction is for the 7x5 / 3-cell-goal case only.
+  0 no-pure-saddle states and every wider-goal board has some. The exact `3.95%`
+  no-pure-saddle fraction is for the 7x5 / 3-cell-goal case only.
 - Several collision sub-cases (carrier vs. stationary opponent, non-carrier
   bump = steal, swap possession) are *interpreted* from the two stated A10
   rules, not quoted. If course staff intended a different rule, Claim A must be
@@ -978,7 +827,7 @@ Not all of the experiments are equal-weight contributions.
 **Core.**
 - pure vs. mixed by collision rule (RQ1)
 - the pure-first hybrid: LP eliminated on 96–100% of stage games, exact (RQ2)
-- the phase diagram: goal width, not board size, gates the mixed region (RQ3)
+- the phase diagram: goal width, not board size, gates the no-pure-saddle region (RQ3)
 - the geometry → templates → 2×2 matching-pennies reduction (RQ3)
 - numerical robustness: the three value numbers, the rounding trap, the
   classifier (RQ4)
@@ -990,7 +839,7 @@ Not all of the experiments are equal-weight contributions.
 
 **Strong supporting evidence.**
 - occupancy: 4% of states, 41% of the equilibrium path
-- reward-objective comparison: the mixed region is invariant, the value range
+- reward-objective comparison: the no-pure-saddle region is invariant, the value range
   is not
 - symmetry: value *and* policy equivariance where the equilibrium is unique
 - the `blend` interpolation and its threshold
@@ -1002,6 +851,25 @@ Not all of the experiments are equal-weight contributions.
 - the general-sum extension (§8)
 - freeze-then-iterate and the `eval_value` choice
 - the single-cell dominance / attractor proof machinery
+
+## Questions and findings
+
+One page, the questions this report set out to answer and the exact
+sections that answer them.
+
+| question | finding |
+|---|---|
+| Where does mixing occur? | 94 of 2380 stage games (7×5 board, 3-cell goal, γ = 0.9) have no pure saddle, all at player distance 1–2 (§5 RQ3, [showcase.md](showcase.md)) |
+| Are these 94 distinct situations? | No — they canonicalize to 47 mirror pairs, collapsing to 8 geometric templates (§5 RQ3, [templates.md](templates.md)) |
+| What are the players actually doing? | Mostly choosing between two competing scoring/coverage lanes — 68 of 94 are 2×2 matching pennies (§5 RQ3, [positions.md](positions.md)) |
+| Are fractional LP outputs always a forced mix? | No — 64 uniquely forced, 16 degenerate equilibrium faces, 14 pure-tied (§5 RQ3, [degeneracy.md](degeneracy.md)) |
+| Does mixing occur when players are far apart? | Never, at Manhattan distance ≥ 3, in any tested configuration (§5 RQ3) |
+| Is randomness alone sufficient? | No — the `coinflip` variant stays pure everywhere; it is Littman's random move *order* that creates the coupling (§5 RQ1) |
+| Does goal width matter? | Yes, empirically: every tested 1-cell-goal board has 0 no-pure-saddle stage games, every tested ≥ 2-cell board has some (§5 RQ3, [result.md](result.md)) |
+| Why does mixing matter in practice? | A predictable deterministic policy is exploitable by a challenger built specifically to beat it; minimax exploits weak play *and* survives its own challenger (§7, C3) |
+| Can neural approximation reproduce the equilibrium? | Not reliably — high action-naming accuracy does not imply low exploitability (§8) |
+| Does a larger network fix that? | Capacity substantially lowers exploitability, but action agreement plateaus regardless of width or depth (§8) |
+| What remains open? | A board-size-free proof for the single-cell case; the continuous-action extension (§9, §10) |
 
 ## 12. Related work — what this project stands on
 
@@ -1023,9 +891,9 @@ Not all of the experiments are equal-weight contributions.
   shaping — the frame for the `shaping.py` result that PBRS leaves the
   equilibrium exact.
 
-*What is prior work:* mixed strategies can be necessary in soccer (A); pure-first
-enumeration before LP (the meeting). *What this project adds:* an empirical map
-of where the mixed region is, what parameter switches it on, how much of the
+*What is prior work:* mixed strategies can be necessary in soccer (A).
+*What this project adds:* an empirical map
+of where the no-pure-saddle region is, what parameter switches it on, how much of the
 equilibrium path it covers, and a hybrid solver that pays LP cost only there.
 [result.md §6](result.md) states the goal-width result against Littman (1994),
 the ordered-field property, concurrent reachability games, and pursuit-evasion

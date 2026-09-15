@@ -68,7 +68,7 @@ be the converged stage game (player 0 maximises, player 1 minimises).
 - Not a board-size-free theorem. Direction 1 has a closed-form defender strategy
   and a dominance-solvability certificate per finite board
   ([proof.md](proof.md)); direction 2 is a finite exhaustive check with a
-  per-stage-game certificate. Per the meeting feedback, a general proof is not a
+  per-stage-game certificate. A general proof is not a
   project deliverable.
 
 ---

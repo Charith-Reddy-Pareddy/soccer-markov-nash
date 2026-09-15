@@ -98,11 +98,12 @@ technical answer, start with **[report.pdf](report.pdf)**
 - [selfplay.md](selfplay.md) — Nash-vs-Nash return and exploitability.
 - [shaping.md](shaping.md) — potential-based reward shaping leaves the
   equilibrium fixed; a naive possession bonus does not.
-- Neural Nash-Q vs. the exact solver — report section 8, multi-seed, three
-  Q-net starting points (from-zero, fit-to-exact, warm-start) plus a policy
-  net, on both the deterministic game (`experiments/nash_dqn_seeds.csv`,
-  `make dqn`) and the random-move-order game where equilibria are genuinely
-  mixed (`experiments/nash_dqn_random_seeds.csv`, `make dqn-random`); a
+- [neural.md](neural.md) — Neural Nash-Q vs. the exact solver (full tables;
+  report section 8 has the summary): multi-seed, three Q-net starting points
+  (from-zero, fit-to-exact, warm-start) plus a policy net, on both the
+  deterministic game (`experiments/nash_dqn_seeds.csv`, `make dqn`) and the
+  random-move-order game where equilibria are genuinely mixed
+  (`experiments/nash_dqn_random_seeds.csv`, `make dqn-random`); a
   width/depth capacity sweep up to 512-wide / 115x the original architecture
   (`experiments/nash_dqn_ablation.csv`, `make dqn-ablation`).
 
