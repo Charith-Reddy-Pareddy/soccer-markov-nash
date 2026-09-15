@@ -14,7 +14,7 @@ and, across the tested boards, *sufficient* for at least one mixed state. This
 page sketches *why* the single-cell case comes out pure, and [proof.md](proof.md)
 takes it most of the way to a per-board theorem (the defender's optimal strategy
 in closed form, dominance-solvability per finite board). A board-size-free proof
-is **not** being pursued as a deliverable, per the meeting feedback -- this is
+is **not** being pursued as a deliverable -- this is
 conjecture plus machine-checked evidence.
 
 ## Setup
@@ -84,6 +84,6 @@ the defender to be *between*.
 Together these settle each *finite* board that was checked. A board-size-free
 argument for the carrier's half (`maximin(M_s) = V*(s)` via a closed-form
 carrier strategy, or a termination proof for the elimination) would make it a
-theorem — but per the meeting feedback that is **not** a project deliverable.
+theorem — but that is **not** a project deliverable.
 The value of this section is the *mechanism* it names: one target ⟹ no guess ⟹
 pure; two targets + interception geometry ⟹ crossing best replies ⟹ mixed.
