@@ -43,6 +43,12 @@ _WARM = (194, 90, 42)       # value ramp: player 1 ahead
 _ARROW = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0)}   # U D L R, y up
 
 
+def _wall_mask(x: int, y: int, w: int, h: int) -> np.ndarray:
+    """True for each of U/D/L/R that a board edge clamps back onto ``(x, y)``
+    -- a legal action that does not move the player at all."""
+    return np.array([y == h - 1, y == 0, x == 0, x == w - 1])
+
+
 def _marker(colour: str) -> str:
     return (
         f'<marker id="ah-{colour[-7:-1]}" viewBox="0 0 8 8" refX="6" refY="4" '
@@ -67,25 +73,38 @@ def _svg(w: float, h: float, body: list[str], label: str, pad: float = 0) -> str
 
 # --------------------------------------------------------------- policy_svg
 
-def _action_fan(cx: float, cy: float, dist: np.ndarray, colour: str) -> list[str]:
+def _action_fan(
+    cx: float, cy: float, dist: np.ndarray, colour: str,
+    wall: np.ndarray | None = None,
+) -> list[str]:
+    """``wall`` marks which of U/D/L/R a board edge clamps back onto the
+    player's own cell -- mechanically legal but physically identical to
+    standing still. Their probability (plus any real STAND weight) draws as
+    one dashed "hold" ring, the same treatment as STAND, instead of a
+    directional arrow: an arrow into a wall would show movement that never
+    happens."""
     out = []
-    top = float(dist.max())
-    for a, p in enumerate(dist):
-        if p < 0.02:
-            continue
-        if a == 4:  # STAND -- a ring around the player, no arrow
+    dist = np.asarray(dist, dtype=float)
+    hold = float(dist[4]) if len(dist) > 4 else 0.0
+    if wall is not None:
+        hold += float(dist[:4][np.asarray(wall)].sum())
+    top = max(float(dist.max()), hold, 1e-9)
+    if hold >= 0.02:
+        out.append(
+            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="15" fill="none" '
+            f'stroke="{colour}" stroke-width="{1.6 + 2.2 * (hold / top):.1f}" '
+            f'stroke-dasharray="2 2" '
+            f'opacity="{0.4 + 0.55 * hold:.2f}"/>'
+        )
+        if hold < 0.985:
             out.append(
-                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="15" fill="none" '
-                f'stroke="{colour}" stroke-width="{1.6 + 2.2 * (p / top):.1f}" '
-                f'stroke-dasharray="2 2" '
-                f'opacity="{0.4 + 0.55 * p:.2f}"/>'
+                f'<text x="{cx:.1f}" y="{cy + 26:.1f}" text-anchor="middle" '
+                f'font-family="ui-monospace,monospace" font-size="9" '
+                f'fill="{colour}">hold {hold * 100:.0f}%</text>'
             )
-            if p < 0.985:
-                out.append(
-                    f'<text x="{cx:.1f}" y="{cy + 26:.1f}" text-anchor="middle" '
-                    f'font-family="ui-monospace,monospace" font-size="9" '
-                    f'fill="{colour}">hold {p * 100:.0f}%</text>'
-                )
+    for a in range(4):
+        p = float(dist[a])
+        if p < 0.02 or (wall is not None and wall[a]):
             continue
         dx, dy = _ARROW[a]
         start = 13                                  # clear the player disc
@@ -139,8 +158,8 @@ def policy_svg(
         f'<circle cx="{bx + 10:.1f}" cy="{by - 10:.1f}" r="4.5" '
         f'fill="{BALL}" stroke="{PAPER}" stroke-width="1.2"/>'
     )
-    body += _action_fan(cx0, cy0, p0, P0)
-    body += _action_fan(cx1, cy1, p1, P1)
+    body += _action_fan(cx0, cy0, p0, P0, wall=_wall_mask(x0, y0, w, h))
+    body += _action_fan(cx1, cy1, p1, P1, wall=_wall_mask(x1, y1, w, h))
 
     tag = "mixed" if (mixed0 or mixed1) else "pure"
     sub = f"{tag} equilibrium" + (f" · V = {value:+.3f}" if value is not None else "")

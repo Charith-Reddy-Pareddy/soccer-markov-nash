@@ -21,8 +21,8 @@
 <circle cx="52.0" cy="140.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="140.0" cy="140.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="150.0" cy="130.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<line x1="39.0" y1="140.0" x2="18.0" y2="140.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.83" marker-end="url(#ah-2f6bb0)"/>
-<text x="7.0" y="143.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">78%</text>
+<circle cx="52.0" cy="140.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.83"/>
+<text x="52.0" y="166.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 78%</text>
 <line x1="65.0" y1="140.0" x2="76.0" y2="140.0" stroke="var(--p0, #2f6bb0)" stroke-width="2.5" stroke-linecap="round" opacity="0.52" marker-end="url(#ah-2f6bb0)"/>
 <text x="87.0" y="143.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">22%</text>
 <line x1="140.0" y1="127.0" x2="140.0" y2="117.0" stroke="var(--p1, #2f8a52)" stroke-width="2.4" stroke-linecap="round" opacity="0.49" marker-end="url(#ah-2f8a52)"/>

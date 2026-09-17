@@ -25,8 +25,8 @@
 <text x="228.0" y="95.7" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">54%</text>
 <line x1="241.0" y1="52.0" x2="256.3" y2="52.0" stroke="var(--p0, #2f6bb0)" stroke-width="3.9" stroke-linecap="round" opacity="0.65" marker-end="url(#ah-2f6bb0)"/>
 <text x="267.3" y="55.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">46%</text>
-<line x1="272.0" y1="39.0" x2="272.0" y2="14.9" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.92" marker-end="url(#ah-2f8a52)"/>
-<text x="272.0" y="6.9" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">95%</text>
+<circle cx="272.0" cy="52.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.92"/>
+<text x="272.0" y="78.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold 95%</text>
 <line x1="259.0" y1="52.0" x2="251.1" y2="52.0" stroke="var(--p1, #2f8a52)" stroke-width="1.9" stroke-linecap="round" opacity="0.43" marker-end="url(#ah-2f8a52)"/>
 <text x="240.1" y="55.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">5%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.129</text>

@@ -99,6 +99,17 @@ support is exactly what it is.
   they chase each other around a closed best-response cycle: no pure action
   pair is stable, which is exactly why the board shows more than one arrow.
 
+**A wall clamp is a hold, not a move.** A few of the states below have a
+player already against an edge of the board -- attempting to move further
+that way (`U` at the top row, `D` at the bottom, `L` at the left column, `R`
+at the right) does not move the player at all; it silently returns the same
+cell. Where the equilibrium puts real weight on one of these no-ops, the
+board figure draws it as a dashed **hold** ring around the player (the same
+treatment as an explicit `STAND` action), not a directional arrow -- an
+arrow pointing into a wall would show movement that never happens. Cases 4,
+5, 6, 8, 10 and 11 below each have at least one player pinned this way;
+each is called out explicitly where it matters.
+
 **A third piece, below the board and the Q matrix: the successor-state
 coordinates.** Every case also gets a `4x4` table, same orientation as the Q
 matrix, whose *cells* are the actual `(x0, y0, x1, y1, b)` state reached by
@@ -207,16 +218,31 @@ with support shape `(3,3)` -- mixing is not always a 50/50 split between two
 actions. (Entropy 1.109 bits, the richest mix on this page, if a single
 summary number is wanted -- but the three-way split itself is the point.)
 
+**Both players are pinned against an edge here**, so read the raw action
+letters with that in mind: the carrier sits at `(0, 0)`, so `L` is a wall
+no-op -- it clamps straight back to `(0, 0)`, physically identical to `D` --
+which is why the board figure draws that 54.7% as a dashed **hold** ring,
+not a leftward arrow. The three genuinely distinct carrier choices are
+*attack up* (`U`, 43.3%), *hold ground* (`D`/`L` combined, 54.7%), and
+*sneak right* (`R`, 1.9%) -- still a real three-way mix, just not the
+three-arrows picture the raw letters would suggest. The defender at `(2, 0)`
+has the same issue in miniature: `D` is its own wall no-op (5.9%, folded
+into its own hold ring), alongside real moves `U` (91.9%) and `L` (2.3%).
+
 **Type:** degenerate equilibrium face (carrier) -- see "why indifferent"
 below: a fourth, unweighted carrier action ties the reported three-way split
 exactly, so the printed 43.3%/0%/54.7%/1.9% is one point on a larger face,
-not a forced ratio. The defender's own reported split is a genuine forced
-mix.
+not a forced ratio. Here that tie is not a coincidence of the LP: `D` and
+`L` are the *same physical action* from `(0, 0)`, so `E[D]`=`E[L]` is a
+mechanical certainty, not a numerical accident -- the LP's split of that
+54.7% between the labels `D` and `L` is arbitrary, but the 43.3%/54.7%/1.9%
+split between *attack*/*hold*/*sneak* is not. The defender's own reported
+split is a genuine forced mix.
 
-**Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%) · defender
-`{U, D, L}` (91.9% / 5.9% / 2.3%).
+**Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%, `L` a wall hold) ·
+defender `{U, D, L}` (91.9% / 5.9% / 2.3%, `D` a wall hold).
 
-**Why indifferent:** Carrier `E[U]`=`E[L]`=`E[R]`=+0.0848 (the three actions weighted) -- and `E[D]`=+0.0848 too: **all four actions tie exactly**, so the 43.3%/0%/54.7%/1.9% split printed is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender `E[U]`=`E[D]`=`E[L]`=+0.0848, below `E[R]`=+0.097.
+**Why indifferent:** Carrier `E[U]`=`E[L]`=`E[R]`=+0.0848 (the three actions weighted) -- and `E[D]`=+0.0848 too: **all four actions tie exactly**, and `E[D]`=`E[L]` here is guaranteed before any LP runs, since `D` and `L` are the same wall-clamped no-op from `(0, 0)`. The printed 43.3%/0%/54.7%/1.9% split is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender `E[U]`=`E[D]`=`E[L]`=+0.0848, below `E[R]`=+0.097.
 
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
@@ -298,16 +324,18 @@ in the opponent's final third, layered on top of the ordinary win/loss
 score. Gap `0.0653` -- close to a fair coin (entropy 0.996 bits), forced
 purely by coupling the reward to both players' actions. **Mixing does not
 require stochastic transitions; it can come from the payoff structure
-alone.**
+alone.** The defender sits at `(5, 4)`, the top edge, so its reported
+majority action `U` (95.1%) is a wall no-op: it holds position 95.1% of the
+time and slides left (`L`) the other 4.9%.
 
 **Type:** forced mixed equilibrium -- the reward-coupling forces a genuine
 indifference on both sides, the same as a transition-coupled matching-pennies
 core.
 
-**Support:** carrier `{D, R}` (53.8% / 46.2%) · defender `{U, L}`
-(95.1% / 4.9%).
+**Support:** carrier `{D, R}` (53.8% / 46.2%, both real moves) · defender
+`{hold, L}` (95.1% / 4.9%, printed as `U`/`L`).
 
-**Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473.
+**Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473 -- `U` here is the defender holding at the top edge, tied with a real move left.
 
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
@@ -490,22 +518,25 @@ indifference class.
 The board position sketched at the meeting: the carrier at `(0, 0)` -- the
 back corner, right against its own goal -- and the defender diagonally
 adjacent at `(1, 1)`. This is the closest match, coordinate for coordinate,
-to that sketch. Distinct from both cases before it -- Case 2 crosses `U/D`,
-Case 3 a clean `L/R` -- this one crosses `U/L` for the carrier and `D/L` for
-the defender: pinned in the corner, the carrier's two live escapes are
-straight up the sideline (`U`) or across along the back line (`L`), and the
-defender is guessing which. Gap `0.0121`; the mix is lopsided but genuine --
-the corner leaves little room, but not zero.
+to that sketch. Read the carrier's split with the corner in mind: at
+`(0, 0)`, `L` is a wall no-op -- it clamps straight back onto the same cell,
+physically identical to `D` -- so the 95.4% is not the carrier "escaping
+across the back line," it is the carrier **holding its ground** in the
+corner. Its only genuine escape is straight up the sideline (`U`, 4.6%);
+the defender, one cell away, is guessing whether the carrier bolts or stays
+put. Gap `0.0121`; the mix is lopsided but genuine -- the corner leaves
+little room, but not zero.
 
 **Type:** degenerate equilibrium face (carrier) -- see "why indifferent"
-below: `D` ties the reported `U`/`L` split exactly, so any mix of `U`/`D`/`L`
-in the right proportion is an equally valid equilibrium, not just the
-4.6%/95.4% split shown.
+below: `D` ties the reported `L` split exactly, which here is not an LP
+coincidence -- `D` and `L` are the *same physical no-op* from `(0, 0)`, so
+any split of that 95.4% between the labels `D` and `L` is an equally valid
+equilibrium; only the `U`/hold split (4.6%/95.4%) is actually forced.
 
-**Support:** carrier `{U, L}` (4.6% / 95.4%) · defender `{D, L}`
-(94.9% / 5.1%).
+**Support:** carrier `{U, hold}` (4.6% / 95.4%, printed as `L`) · defender
+`{D, L}` (94.9% / 5.1%, both real moves -- the defender is not cornered).
 
-**Why indifferent:** Carrier `E[U]`=`E[L]`=+0.078, above `E[R]`=−0.066 -- but `E[D]`=+0.078 too, an **exact** tie the solver simply didn't weight: any mix of `U`/`D`/`L` in the right proportion is an equally valid equilibrium, not just the 4.6%/95.4% split shown. Defender `E[D]`=`E[L]`=+0.078, below `E[R]`=+0.086 and `E[U]`=+0.109.
+**Why indifferent:** Carrier `E[U]`=+0.078, above `E[R]`=−0.066; `E[D]`=`E[L]`=+0.078 too, guaranteed rather than coincidental since `D` and `L` are the same wall-clamped hold from this corner -- any split of that 95.4% between the two labels is an equally valid equilibrium, not just the 0%/95.4% split shown. Defender `E[D]`=`E[L]`=+0.078, below `E[R]`=+0.086 and `E[U]`=+0.109.
 
 ![Case 4 board position and Q matrix graph.](figures/png/positions_case04.png)
 
@@ -536,16 +567,31 @@ with support shape `(3,3)` -- mixing is not always a 50/50 split between two
 actions. (Entropy 1.109 bits, the richest mix on this page, if a single
 summary number is wanted -- but the three-way split itself is the point.)
 
+**Both players are pinned against an edge here**, so read the raw action
+letters with that in mind: the carrier sits at `(0, 0)`, so `L` is a wall
+no-op -- it clamps straight back to `(0, 0)`, physically identical to `D` --
+which is why the board figure draws that 54.7% as a dashed **hold** ring,
+not a leftward arrow. The three genuinely distinct carrier choices are
+*attack up* (`U`, 43.3%), *hold ground* (`D`/`L` combined, 54.7%), and
+*sneak right* (`R`, 1.9%) -- still a real three-way mix, just not the
+three-arrows picture the raw letters would suggest. The defender at `(2, 0)`
+has the same issue in miniature: `D` is its own wall no-op (5.9%, folded
+into its own hold ring), alongside real moves `U` (91.9%) and `L` (2.3%).
+
 **Type:** degenerate equilibrium face (carrier) -- see "why indifferent"
 below: a fourth, unweighted carrier action ties the reported three-way split
 exactly, so the printed 43.3%/0%/54.7%/1.9% is one point on a larger face,
-not a forced ratio. The defender's own reported split is a genuine forced
-mix.
+not a forced ratio. Here that tie is not a coincidence of the LP: `D` and
+`L` are the *same physical action* from `(0, 0)`, so `E[D]`=`E[L]` is a
+mechanical certainty, not a numerical accident -- the LP's split of that
+54.7% between the labels `D` and `L` is arbitrary, but the 43.3%/54.7%/1.9%
+split between *attack*/*hold*/*sneak* is not. The defender's own reported
+split is a genuine forced mix.
 
-**Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%) · defender
-`{U, D, L}` (91.9% / 5.9% / 2.3%).
+**Support:** carrier `{U, L, R}` (43.3% / 54.7% / 1.9%, `L` a wall hold) ·
+defender `{U, D, L}` (91.9% / 5.9% / 2.3%, `D` a wall hold).
 
-**Why indifferent:** Carrier `E[U]`=`E[L]`=`E[R]`=+0.0848 (the three actions weighted) -- and `E[D]`=+0.0848 too: **all four actions tie exactly**, so the 43.3%/0%/54.7%/1.9% split printed is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender `E[U]`=`E[D]`=`E[L]`=+0.0848, below `E[R]`=+0.097.
+**Why indifferent:** Carrier `E[U]`=`E[L]`=`E[R]`=+0.0848 (the three actions weighted) -- and `E[D]`=+0.0848 too: **all four actions tie exactly**, and `E[D]`=`E[L]` here is guaranteed before any LP runs, since `D` and `L` are the same wall-clamped no-op from `(0, 0)`. The printed 43.3%/0%/54.7%/1.9% split is one point on a whole face of equally-good carrier mixes, not a uniquely forced ratio. Defender `E[U]`=`E[D]`=`E[L]`=+0.0848, below `E[R]`=+0.097.
 
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
@@ -573,15 +619,20 @@ Gap `0.0043`. The **defender** plays `R 97.5% / D 2.5%` -- entropy only
 real rounding mistake: the gap is certified and real, twelve times smaller
 than a 0.1 rounding grid would resolve. The carrier's own mix is more
 balanced (`D 73.9% / L 26.1%`) -- it is the defender's near-pure hedge that
-makes this case worth including, not the carrier's.
+makes this case worth including, not the carrier's. Read the carrier's `D`
+with the board in mind: the carrier sits at `(2, 0)`, the bottom row, so
+`D` is a wall no-op -- 73.9% of the time it **holds position** rather than
+moving down, and the other 26.1% it slides left (`L`). Unlike Case 4 or 5,
+this tie is a genuine strategic indifference between two *different*
+physical options (hold vs. move), not two labels for the same action.
 
 **Type:** forced mixed equilibrium -- lopsided, but neither side has a tied
 outsider action.
 
-**Support:** carrier `{D, L}` (73.9% / 26.1%) · defender `{D, R}`
-(2.5% / 97.5%).
+**Support:** carrier `{hold, L}` (73.9% / 26.1%, printed as `D`/`L`) ·
+defender `{D, R}` (2.5% / 97.5%, both real moves).
 
-**Why indifferent:** Carrier `E[D]`=`E[L]`=+0.168, above `E[R]`=+0.136 and `E[U]`=−0.166. Defender `E[D]`=`E[R]`=+0.168, below `E[L]`=+0.197 and `E[U]`=+0.201.
+**Why indifferent:** Carrier `E[D]`=`E[L]`=+0.168, above `E[R]`=+0.136 and `E[U]`=−0.166 -- `D` here is the carrier holding its position at the bottom edge, genuinely tied with a real move left. Defender `E[D]`=`E[R]`=+0.168, below `E[L]`=+0.197 and `E[U]`=+0.201.
 
 ![Case 6 board position and Q matrix graph.](figures/png/positions_case06.png)
 
@@ -651,15 +702,18 @@ This one is solved under [the tackle rule](tackle.md)
 challenge that wins the ball with some fixed probability or bounces off, a
 mechanism with nothing to do with move order at all. It produces the same
 kind of duel (gap 0.0223): the carrier mixes `U 32.1% / D 67.9%`, the
-defender mixes `D 60.7% / R 39.3%`. Different cause, same structure.
+defender mixes `D 60.7% / R 39.3%`. Different cause, same structure. The
+carrier sits at `(3, 3)`, the top row of this 5x4 board, so `U` is a wall
+no-op: 32.1% of the time it holds its ground rather than pushing up, and
+67.9% of the time it drives down (`D`), a real move.
 
 **Type:** forced mixed equilibrium -- same classification as the
 move-order-driven cases above, under a completely different mechanism.
 
-**Support:** carrier `{U, D}` (32.1% / 67.9%) · defender `{D, R}`
-(60.7% / 39.3%).
+**Support:** carrier `{hold, D}` (32.1% / 67.9%, printed as `U`/`D`) ·
+defender `{D, R}` (60.7% / 39.3%, both real moves).
 
-**Why indifferent:** Carrier `E[U]`=`E[D]`=−0.013, above `E[R]`=−0.031 and `E[L]`=−0.065. Defender `E[D]`=`E[R]`=−0.013, below `E[L]`=+0.011 and `E[U]`=+0.045.
+**Why indifferent:** Carrier `E[U]`=`E[D]`=−0.013, above `E[R]`=−0.031 and `E[L]`=−0.065 -- `U` here is the carrier holding at the top edge, genuinely tied with a real move down. Defender `E[D]`=`E[R]`=−0.013, below `E[L]`=+0.011 and `E[U]`=+0.045.
 
 ![Case 8 board position and Q matrix graph.](figures/png/positions_case08.png)
 
@@ -739,17 +793,21 @@ three live actions, while the defender only ever needs two. Combined with
 Case 9, this settles a structural question the certificates make checkable
 rather than assumed: **the defender never needs strictly more actions than
 the carrier**, across all 94 no-pure-saddle states on the canonical board.
+The defender sits at `(0, 2)`, the left edge, so its reported majority
+action `L` (77.9%) is a wall no-op -- it holds position rather than moving
+left; the genuine move in its support is `R` (22.1%).
 
 **Type:** degenerate equilibrium face (defender) -- see "why indifferent"
 below: `D` ties the reported `{L, R}` split exactly, so the defender is
 really indifferent among three actions even though the LP only split weight
-over two of them. The carrier's own reported three-way split is a genuine
-forced mix.
+over two of them -- and one of those two, `L`, is itself the wall-clamped
+hold, not a real move. The carrier's own reported three-way split is a
+genuine forced mix.
 
-**Support:** carrier `{U, D, L}` (16.9% / 66% / 17.1%) · defender `{L, R}`
-(77.9% / 22.1%).
+**Support:** carrier `{U, D, L}` (16.9% / 66% / 17.1%) · defender
+`{hold, R}` (77.9% / 22.1%, printed as `L`/`R`).
 
-**Why indifferent:** Carrier `E[U]`=`E[D]`=`E[L]`=+0.282, above `E[R]`=+0.217 -- a genuine three-way tie. The defender's official support is `{L, R}` at +0.282, below `E[U]`=+0.322 -- but `E[D]`=+0.282 too: the defender is really indifferent among `D`, `L`, and `R`, even though the LP only split weight over two of them.
+**Why indifferent:** Carrier `E[U]`=`E[D]`=`E[L]`=+0.282, above `E[R]`=+0.217 -- a genuine three-way tie. The defender's official support is `{L, R}` at +0.282, below `E[U]`=+0.322 -- but `E[D]`=+0.282 too: the defender is really indifferent among *holding* (`L`), moving down (`D`), and moving right (`R`), even though the LP only split weight over two of them.
 
 ![Case 10 board position and Q matrix graph.](figures/png/positions_case10.png)
 
@@ -781,16 +839,18 @@ in the opponent's final third, layered on top of the ordinary win/loss
 score. Gap `0.0653` -- close to a fair coin (entropy 0.996 bits), forced
 purely by coupling the reward to both players' actions. **Mixing does not
 require stochastic transitions; it can come from the payoff structure
-alone.**
+alone.** The defender sits at `(5, 4)`, the top edge, so its reported
+majority action `U` (95.1%) is a wall no-op: it holds position 95.1% of the
+time and slides left (`L`) the other 4.9%.
 
 **Type:** forced mixed equilibrium -- the reward-coupling forces a genuine
 indifference on both sides, the same as a transition-coupled matching-pennies
 core.
 
-**Support:** carrier `{D, R}` (53.8% / 46.2%) · defender `{U, L}`
-(95.1% / 4.9%).
+**Support:** carrier `{D, R}` (53.8% / 46.2%, both real moves) · defender
+`{hold, L}` (95.1% / 4.9%, printed as `U`/`L`).
 
-**Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473.
+**Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473 -- `U` here is the defender holding at the top edge, tied with a real move left.
 
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
