@@ -76,6 +76,24 @@
   }
   table.legend { text-align: left; }
   table.legend th, table.legend td { text-align: left; }
+  table.coordmatrix {
+    border-collapse: collapse; width: 100%; margin: .8rem 0 1.2rem;
+    font-family: "IBM Plex Mono", monospace; font-size: .72rem; line-height: 1.5;
+    page-break-inside: avoid;
+  }
+  table.coordmatrix th, table.coordmatrix td {
+    border: 1px solid var(--rule); padding: .35rem .5rem; text-align: center;
+  }
+  table.coordmatrix thead th {
+    font-family: "Barlow Semi Condensed", sans-serif; font-weight: 600;
+    background: var(--tint); text-transform: uppercase; font-size: .64rem;
+    letter-spacing: .04em; color: var(--ink-soft);
+  }
+  table.coordmatrix td:first-child, table.coordmatrix th:first-child {
+    background: var(--tint); font-weight: 600;
+  }
+  p.coord-note { font-size: .88rem; color: var(--ink-soft); margin: 1rem 0 0; }
+  p.coord-caveat { font-size: .84rem; color: var(--ink-faint); font-style: italic; margin: .4rem 0 0; }
   .takeaway {
     margin: 1.2rem 0 1.6rem; padding: 1rem 1.3rem; background: var(--tint);
     border: 1px solid var(--rule-strong); border-radius: 8px; color: var(--ink);
@@ -207,6 +225,18 @@ arrows everywhere: every node points somewhere, so they chase each other
 around a closed best-response cycle &mdash; no pure action pair is stable,
 which is exactly why the board shows more than one arrow.
 </p>
+<p>
+<strong>A third piece, below the board and the Q matrix: the successor-state
+coordinates.</strong> Every case also gets a <span class="mono">4&times;4</span>
+table, same orientation as the Q matrix, whose <em>cells</em> are the actual
+<span class="mono">(x0, y0, x1, y1, b)</span> state reached by each joint
+action &mdash; what <span class="mono">game.transitions()</span> returns, not
+what the payoff is. Where the transition is stochastic (random move order, or
+the tackle rule), a cell lists both possible successors and their
+probabilities. This is the direct answer to &ldquo;where do the numbers in
+the Q matrix actually come from&rdquo;: each payoff is the expected value
+over exactly these successor states.
+</p>
 
 <h2>Five representative cases</h2>
 <p>For a focused read: the typical two-action mix, the cleanest indifference
@@ -238,6 +268,16 @@ different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
   D   0.109    0.076    0.085    0.086
   L   0.103    0.103    0.085    0.084
   R   0.082    0.187   -0.108   -0.071</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,2,1,2,0)</td><td>(0,2,1,0,0)</td><td>50%: (0,2,0,1,0)<br>50%: (0,2,1,1,0)</td><td>(0,2,2,1,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>50%: (0,0,0,1,0)<br>50%: (0,0,1,1,0)</td><td>(0,0,2,1,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,1,1,2,0)</td><td>(0,1,1,0,0)</td><td>(0,1,1,1,0)</td><td>(0,1,2,1,0)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (0,1,1,2,1)<br>50%: (1,1,1,2,0)</td><td>50%: (0,1,1,0,1)<br>50%: (1,1,1,0,0)</td><td>50%: (0,1,1,1,0)<br>50%: (0,1,1,1,1)</td><td>50%: (0,1,2,1,1)<br>50%: (1,1,2,1,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -266,6 +306,16 @@ a vertical one.</span></p>
   D   0.171    0.185    0.157    0.171
   L   0.810    0.500    0.141    0.810
   R   0.211    0.181    0.211    0.167</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0)</td><td>50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1)</td><td>50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0)</td><td>50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0)</td></tr>
+    <tr><td><b>D</b></td><td>(1,2,1,0,1)</td><td>(1,1,1,0,1)</td><td>(0,1,1,0,1)</td><td>(2,1,1,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>(1,2,0,0,1)</td><td>50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1)</td><td>(0,1,0,0,1)</td><td>(2,1,0,0,1)</td></tr>
+    <tr><td><b>R</b></td><td>(1,2,2,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -291,6 +341,16 @@ the point.)</p>
   D   0.086    0.076    0.076    0.086
   L   0.086    0.076    0.076    0.086
   R   0.088    0.095   -0.088    0.110</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,1,2,1,0)</td><td>(0,1,2,0,0)</td><td>(0,1,1,0,0)</td><td>(0,1,3,0,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
+    <tr><td><b>R</b></td><td>(1,0,2,1,0)</td><td>(1,0,2,0,0)</td><td>50%: (1,0,2,0,0)<br>50%: (0,0,1,0,1)</td><td>(1,0,3,0,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -314,6 +374,16 @@ is.</p>
   D   0.478    0.085    0.291    0.095
   L   0.093    0.093    0.086    0.093
   R   0.082    0.082   -0.122   -0.072</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,3,1,3,0)</td><td>(0,3,1,1,0)</td><td>50%: (0,3,0,2,0)<br>50%: (0,3,1,2,0)</td><td>(0,3,2,2,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,1,1,3,0)</td><td>(0,1,1,1,0)</td><td>50%: (0,1,0,2,0)<br>50%: (0,1,1,2,0)</td><td>(0,1,2,2,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,2,1,3,0)</td><td>(0,2,1,1,0)</td><td>(0,2,1,2,0)</td><td>(0,2,2,2,0)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (0,2,1,3,1)<br>50%: (1,2,1,3,0)</td><td>50%: (0,2,1,1,1)<br>50%: (1,2,1,1,0)</td><td>50%: (0,2,1,2,0)<br>50%: (0,2,1,2,1)</td><td>50%: (0,2,2,2,1)<br>50%: (1,2,2,2,0)</td></tr>
+  </tbody>
+</table>
 <p>Why the carrier still needs two actions against a defender who never
 varies: against the defender's pure <span class="mono">R</span>, column
 <span class="mono">R</span> reads <span class="mono">U 0.095, D 0.095,
@@ -355,6 +425,16 @@ come from the payoff structure alone.</span></p>
   D   0.094    0.415    0.815    0.450
   L   0.094    0.105    0.000    0.105
   R   0.170    0.500   -0.671    0.500</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(4,4,5,4,0)</td><td>(4,4,5,3,0)</td><td>(4,4,5,4,1)</td><td>(4,4,6,4,0)</td></tr>
+    <tr><td><b>D</b></td><td>(4,3,5,4,0)</td><td>(4,3,5,3,0)</td><td>(4,3,4,4,0)</td><td>(4,3,6,4,0)</td></tr>
+    <tr><td><b>L</b></td><td>(3,4,5,4,0)</td><td>(3,4,5,3,0)</td><td>(3,4,4,4,0)</td><td>(3,4,6,4,0)</td></tr>
+    <tr><td><b>R</b></td><td>(4,4,5,4,1)</td><td>(5,4,5,3,0)</td><td>(5,4,4,4,1)</td><td>(5,4,6,4,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <h2>From worked cases to exploitability: pure vs. mixed, at these exact states</h2>
@@ -428,6 +508,16 @@ answers U always; neither has any reason to deviate.</p>
   D   0.151    0.211    0.211    0.222
   L   0.161    0.182    0.172    0.190
   R   0.012   -0.095    0.058    0.098</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(4,1,5,1,0)</td><td>(4,1,5,0,0)</td><td>50%: (4,1,4,0,0)<br>50%: (4,1,5,0,0)</td><td>(4,1,6,0,0)</td></tr>
+    <tr><td><b>D</b></td><td>(4,0,5,1,0)</td><td>(4,0,5,0,0)</td><td>(4,0,5,0,0)</td><td>(4,0,6,0,0)</td></tr>
+    <tr><td><b>L</b></td><td>(3,0,5,1,0)</td><td>(3,0,5,0,0)</td><td>50%: (3,0,4,0,0)<br>50%: (3,0,5,0,0)</td><td>(3,0,6,0,0)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (4,0,5,1,1)<br>50%: (5,0,5,1,0)</td><td>(4,0,5,0,1)</td><td>50%: (4,0,5,0,0)<br>50%: (4,0,5,0,1)</td><td>50%: (4,0,6,0,1)<br>50%: (5,0,6,0,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -453,6 +543,16 @@ different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
   D   0.109    0.076    0.085    0.086
   L   0.103    0.103    0.085    0.084
   R   0.082    0.187   -0.108   -0.071</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,2,1,2,0)</td><td>(0,2,1,0,0)</td><td>50%: (0,2,0,1,0)<br>50%: (0,2,1,1,0)</td><td>(0,2,2,1,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>50%: (0,0,0,1,0)<br>50%: (0,0,1,1,0)</td><td>(0,0,2,1,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,1,1,2,0)</td><td>(0,1,1,0,0)</td><td>(0,1,1,1,0)</td><td>(0,1,2,1,0)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (0,1,1,2,1)<br>50%: (1,1,1,2,0)</td><td>50%: (0,1,1,0,1)<br>50%: (1,1,1,0,0)</td><td>50%: (0,1,1,1,0)<br>50%: (0,1,1,1,1)</td><td>50%: (0,1,2,1,1)<br>50%: (1,1,2,1,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -481,6 +581,16 @@ a vertical one.</span></p>
   D   0.171    0.185    0.157    0.171
   L   0.810    0.500    0.141    0.810
   R   0.211    0.181    0.211    0.167</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0)</td><td>50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1)</td><td>50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0)</td><td>50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0)</td></tr>
+    <tr><td><b>D</b></td><td>(1,2,1,0,1)</td><td>(1,1,1,0,1)</td><td>(0,1,1,0,1)</td><td>(2,1,1,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>(1,2,0,0,1)</td><td>50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1)</td><td>(0,1,0,0,1)</td><td>(2,1,0,0,1)</td></tr>
+    <tr><td><b>R</b></td><td>(1,2,2,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -509,6 +619,16 @@ the corner leaves little room, but not zero.</p>
   D   0.109    0.076    0.101    0.086
   L   0.109    0.076    0.101    0.086
   R   0.112   -0.075    0.112    0.088</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,1,1,2,0)</td><td>(0,1,1,0,0)</td><td>50%: (0,1,1,1,0)<br>50%: (0,0,0,1,1)</td><td>(0,1,2,1,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>(0,0,0,1,0)</td><td>(0,0,2,1,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>(0,0,0,1,0)</td><td>(0,0,2,1,0)</td></tr>
+    <tr><td><b>R</b></td><td>(1,0,1,2,0)</td><td>50%: (1,0,1,1,0)<br>50%: (0,0,1,0,1)</td><td>(1,0,0,1,0)</td><td>(1,0,2,1,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -534,6 +654,16 @@ the point.)</p>
   D   0.086    0.076    0.076    0.086
   L   0.086    0.076    0.076    0.086
   R   0.088    0.095   -0.088    0.110</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,1,2,1,0)</td><td>(0,1,2,0,0)</td><td>(0,1,1,0,0)</td><td>(0,1,3,0,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
+    <tr><td><b>R</b></td><td>(1,0,2,1,0)</td><td>(1,0,2,0,0)</td><td>50%: (1,0,2,0,0)<br>50%: (0,0,1,0,1)</td><td>(1,0,3,0,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -558,6 +688,16 @@ hedge that makes this case worth including, not the carrier's.</span></p>
   D   0.211    0.211    0.211    0.167
   L   0.171    0.045    0.157    0.171
   R   0.182    0.182    0.182    0.135</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(1,2,2,1,1)</td><td>(1,0,2,1,1)</td><td>(0,1,2,1,1)</td><td>50%: (2,1,2,0,0)<br>50%: (1,1,2,1,1)</td></tr>
+    <tr><td><b>D</b></td><td>(1,2,2,0,1)</td><td>(1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>(1,2,1,0,1)</td><td>50%: (1,0,2,0,0)<br>50%: (1,1,1,0,1)</td><td>(0,1,1,0,1)</td><td>(2,1,1,0,1)</td></tr>
+    <tr><td><b>R</b></td><td>(1,2,3,0,1)</td><td>(1,0,3,0,1)</td><td>(0,1,3,0,1)</td><td>(2,1,3,0,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -583,6 +723,16 @@ mirrored, wherever the same relative configuration recurs.</p>
   D   0.109    0.076    0.086    0.085
   L   0.082    0.187   -0.071   -0.108
   R   0.103    0.103    0.084    0.085</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(5,2,6,2,1)</td><td>(5,0,6,2,1)</td><td>(4,1,6,2,1)</td><td>50%: (5,1,6,2,1)<br>50%: (6,1,6,2,1)</td></tr>
+    <tr><td><b>D</b></td><td>(5,2,6,0,1)</td><td>(5,0,6,0,1)</td><td>(4,1,6,0,1)</td><td>50%: (5,1,6,0,1)<br>50%: (6,1,6,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>50%: (5,2,5,1,1)<br>50%: (5,2,6,1,0)</td><td>50%: (5,0,5,1,1)<br>50%: (5,0,6,1,0)</td><td>50%: (4,1,5,1,1)<br>50%: (4,1,6,1,0)</td><td>50%: (5,1,6,1,0)<br>50%: (5,1,6,1,1)</td></tr>
+    <tr><td><b>R</b></td><td>(5,2,6,1,1)</td><td>(5,0,6,1,1)</td><td>(4,1,6,1,1)</td><td>(5,1,6,1,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -607,6 +757,16 @@ same kind of duel</span> (gap 0.0223): the carrier mixes
   D   0.072   -0.022    0.009    0.000
   L  -0.019   -0.080    0.019   -0.042
   R  -0.007   -0.026   -0.006   -0.039</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(2,3,3,3,1)</td><td>(2,2,3,3,1)</td><td>(1,3,3,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1)</td></tr>
+    <tr><td><b>D</b></td><td>(2,3,3,2,1)</td><td>(2,2,3,2,1)</td><td>(1,3,3,2,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,2,1)</td></tr>
+    <tr><td><b>L</b></td><td>(2,3,3,3,0)</td><td>(2,2,2,3,1)</td><td>(1,3,2,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1)</td></tr>
+    <tr><td><b>R</b></td><td>(2,3,4,3,1)</td><td>(2,2,4,3,1)</td><td>(1,3,4,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,4,3,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -630,6 +790,16 @@ is.</p>
   D   0.478    0.085    0.291    0.095
   L   0.093    0.093    0.086    0.093
   R   0.082    0.082   -0.122   -0.072</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,3,1,3,0)</td><td>(0,3,1,1,0)</td><td>50%: (0,3,0,2,0)<br>50%: (0,3,1,2,0)</td><td>(0,3,2,2,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,1,1,3,0)</td><td>(0,1,1,1,0)</td><td>50%: (0,1,0,2,0)<br>50%: (0,1,1,2,0)</td><td>(0,1,2,2,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,2,1,3,0)</td><td>(0,2,1,1,0)</td><td>(0,2,1,2,0)</td><td>(0,2,2,2,0)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (0,2,1,3,1)<br>50%: (1,2,1,3,0)</td><td>50%: (0,2,1,1,1)<br>50%: (1,2,1,1,0)</td><td>50%: (0,2,1,2,0)<br>50%: (0,2,1,2,1)</td><td>50%: (0,2,2,2,1)<br>50%: (1,2,2,2,0)</td></tr>
+  </tbody>
+</table>
 <p>Why the carrier still needs two actions against a defender who never
 varies: against the defender's pure <span class="mono">R</span>, column
 <span class="mono">R</span> reads <span class="mono">U 0.095, D 0.095,
@@ -668,6 +838,16 @@ the carrier</strong>, across all 94 no-pure-saddle states on the canonical board
   D   0.330    0.247    0.272    0.317
   L   0.366    0.366    0.330    0.110
   R   0.228    0.228    0.220    0.205</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,3,2,3,1)</td><td>(0,1,2,3,1)</td><td>(0,2,2,3,1)</td><td>(1,2,2,3,1)</td></tr>
+    <tr><td><b>D</b></td><td>(0,3,2,1,1)</td><td>(0,1,2,1,1)</td><td>(0,2,2,1,1)</td><td>(1,2,2,1,1)</td></tr>
+    <tr><td><b>L</b></td><td>(0,3,1,2,1)</td><td>(0,1,1,2,1)</td><td>(0,2,1,2,1)</td><td>50%: (1,2,2,2,0)<br>50%: (0,2,1,2,1)</td></tr>
+    <tr><td><b>R</b></td><td>(0,3,3,2,1)</td><td>(0,1,3,2,1)</td><td>(0,2,3,2,1)</td><td>(1,2,3,2,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -695,6 +875,16 @@ come from the payoff structure alone.</span></p>
   D   0.094    0.415    0.815    0.450
   L   0.094    0.105    0.000    0.105
   R   0.170    0.500   -0.671    0.500</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(4,4,5,4,0)</td><td>(4,4,5,3,0)</td><td>(4,4,5,4,1)</td><td>(4,4,6,4,0)</td></tr>
+    <tr><td><b>D</b></td><td>(4,3,5,4,0)</td><td>(4,3,5,3,0)</td><td>(4,3,4,4,0)</td><td>(4,3,6,4,0)</td></tr>
+    <tr><td><b>L</b></td><td>(3,4,5,4,0)</td><td>(3,4,5,3,0)</td><td>(3,4,4,4,0)</td><td>(3,4,6,4,0)</td></tr>
+    <tr><td><b>R</b></td><td>(4,4,5,4,1)</td><td>(5,4,5,3,0)</td><td>(5,4,4,4,1)</td><td>(5,4,6,4,0)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <div class="case">
@@ -723,6 +913,17 @@ of goal width.</p>
   D  -0.031    0.069    0.057    0.450
   L   0.396    0.083    0.039    0.450
   R   0.039    0.020    0.015    0.092</pre>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <p class="coord-caveat">Shown: the intended successor before movement slip is applied (<span class="mono">slip=0</span> isolates it, for readability). The actual game has <span class="mono">slip=0.15</span>; running <span class="mono">python scripts/positions.py</span> on this state prints the full noisy distribution &mdash; up to 16 outcomes per cell, each intended move landing on its target around 79% of the time and spreading over nearby cells the rest. See <span class="mono">docs/generalize.md</span>.</p>
+    <table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(1,3,1,4,0)</td><td>(1,2,1,4,1)</td><td>(0,3,1,4,1)</td><td>(2,3,1,4,1)</td></tr>
+    <tr><td><b>D</b></td><td>(1,4,1,3,0)</td><td>(1,2,1,3,1)</td><td>(0,3,1,3,1)</td><td>(2,3,1,3,1)</td></tr>
+    <tr><td><b>L</b></td><td>(1,4,0,4,1)</td><td>(1,2,0,4,1)</td><td>(0,3,0,4,1)</td><td>(2,3,0,4,1)</td></tr>
+    <tr><td><b>R</b></td><td>(1,4,2,4,1)</td><td>(1,2,2,4,1)</td><td>(0,3,2,4,1)</td><td>(2,3,2,4,1)</td></tr>
+  </tbody>
+</table>
 </div>
 
 <h2>The mathematics behind all twelve</h2>
@@ -744,7 +945,7 @@ opponent) can produce the same <em>symptom</em> &mdash; a fractional policy
 Reproduce with <span class="mono">python scripts/positions.py</span>
 (<span class="mono">make positions</span>) &mdash; writes
 <span class="mono">figures/gallery/positions.svg</span> and prints every
-matrix, policy, and support shown here.
+matrix, policy, support, and successor-state coordinate table shown here.
 <span class="mono">python scripts/pure_vs_mixed_exploit.py</span> reproduces
 the pure-vs-mixed exploitability table above.
 <span class="mono">python scripts/degeneracy.py</span> reproduces the

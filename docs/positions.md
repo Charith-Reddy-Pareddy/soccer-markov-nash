@@ -99,6 +99,16 @@ support is exactly what it is.
   they chase each other around a closed best-response cycle: no pure action
   pair is stable, which is exactly why the board shows more than one arrow.
 
+**A third piece, below the board and the Q matrix: the successor-state
+coordinates.** Every case also gets a `4x4` table, same orientation as the Q
+matrix, whose *cells* are the actual `(x0, y0, x1, y1, b)` state reached by
+each joint action -- what `game.transitions()` returns, not what the payoff
+is. Where the transition is stochastic (random move order, or the tackle
+rule), a cell lists both possible successors and their probabilities. This
+is the direct answer to "where do the numbers in the Q matrix actually come
+from": each payoff is the expected value over exactly these successor
+states.
+
 ## Five representative cases
 
 For a focused read: the typical two-action mix, the cleanest indifference
@@ -136,6 +146,15 @@ whole indifference class, not one point on a larger face.
   R   0.082    0.187   -0.108   -0.071
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,2,1,2,0) | (0,2,1,0,0) | 50%: (0,2,0,1,0)<br>50%: (0,2,1,1,0) | (0,2,2,1,0) |
+| **D** | (0,0,1,2,0) | (0,0,1,0,0) | 50%: (0,0,0,1,0)<br>50%: (0,0,1,1,0) | (0,0,2,1,0) |
+| **L** | (0,1,1,2,0) | (0,1,1,0,0) | (0,1,1,1,0) | (0,1,2,1,0) |
+| **R** | 50%: (0,1,1,2,1)<br>50%: (1,1,1,2,0) | 50%: (0,1,1,0,1)<br>50%: (1,1,1,0,0) | 50%: (0,1,1,1,0)<br>50%: (0,1,1,1,1) | 50%: (0,1,2,1,1)<br>50%: (1,1,2,1,0) |
+
 ## Case 3 — `(1, 1, 1, 0, 1)`: a clean L/R indifference example
 
 Placed directly after the primary example on purpose: this is the cleanest
@@ -169,6 +188,15 @@ indifference class.
   R   0.211    0.181    0.211    0.167
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | 50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0) | 50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1) | 50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0) | 50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0) |
+| **D** | (1,2,1,0,1) | (1,1,1,0,1) | (0,1,1,0,1) | (2,1,1,0,1) |
+| **L** | (1,2,0,0,1) | 50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1) | (0,1,0,0,1) | (2,1,0,0,1) |
+| **R** | (1,2,2,0,1) | 50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1) | (0,1,2,0,1) | (2,1,2,0,1) |
+
 ## Case 5 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
 
 Six cells from goal, as far as this board allows, with the defender close
@@ -200,6 +228,15 @@ mix.
   R   0.088    0.095   -0.088    0.110
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,1,2,1,0) | (0,1,2,0,0) | (0,1,1,0,0) | (0,1,3,0,0) |
+| **D** | (0,0,2,1,0) | (0,0,2,0,0) | (0,0,1,0,0) | (0,0,3,0,0) |
+| **L** | (0,0,2,1,0) | (0,0,2,0,0) | (0,0,1,0,0) | (0,0,3,0,0) |
+| **R** | (1,0,2,1,0) | (1,0,2,0,0) | 50%: (1,0,2,0,0)<br>50%: (0,0,1,0,1) | (1,0,3,0,0) |
+
 ## Case 9 — `(0, 2, 1, 2, 0)`: the asymmetric mix -- the sharpest LP-degeneracy example
 
 Support `(2, 1)` -- gap `0.0095`. The odd one out: the carrier's equilibrium
@@ -229,6 +266,15 @@ mixed strategy.**
   L   0.093    0.093    0.086    0.093
   R   0.082    0.082   -0.122   -0.072
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,3,1,3,0) | (0,3,1,1,0) | 50%: (0,3,0,2,0)<br>50%: (0,3,1,2,0) | (0,3,2,2,0) |
+| **D** | (0,1,1,3,0) | (0,1,1,1,0) | 50%: (0,1,0,2,0)<br>50%: (0,1,1,2,0) | (0,1,2,2,0) |
+| **L** | (0,2,1,3,0) | (0,2,1,1,0) | (0,2,1,2,0) | (0,2,2,2,0) |
+| **R** | 50%: (0,2,1,3,1)<br>50%: (1,2,1,3,0) | 50%: (0,2,1,1,1)<br>50%: (1,2,1,1,0) | 50%: (0,2,1,2,0)<br>50%: (0,2,1,2,1) | 50%: (0,2,2,2,1)<br>50%: (1,2,2,2,0) |
 
 Why the carrier still needs two actions against a defender who never
 varies: against the defender's pure `R`, column `R` reads `U 0.095, D 0.095,
@@ -272,6 +318,15 @@ core.
   L   0.094    0.105    0.000    0.105
   R   0.170    0.500   -0.671    0.500
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (4,4,5,4,0) | (4,4,5,3,0) | (4,4,5,4,1) | (4,4,6,4,0) |
+| **D** | (4,3,5,4,0) | (4,3,5,3,0) | (4,3,4,4,0) | (4,3,6,4,0) |
+| **L** | (3,4,5,4,0) | (3,4,5,3,0) | (3,4,4,4,0) | (3,4,6,4,0) |
+| **R** | (4,4,5,4,1) | (5,4,5,3,0) | (5,4,4,4,1) | (5,4,6,4,0) |
 
 ## From worked cases to exploitability: pure vs. mixed, at these exact states
 
@@ -341,6 +396,15 @@ for contrast with everything else on this page.
   R   0.012   -0.095    0.058    0.098
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (4,1,5,1,0) | (4,1,5,0,0) | 50%: (4,1,4,0,0)<br>50%: (4,1,5,0,0) | (4,1,6,0,0) |
+| **D** | (4,0,5,1,0) | (4,0,5,0,0) | (4,0,5,0,0) | (4,0,6,0,0) |
+| **L** | (3,0,5,1,0) | (3,0,5,0,0) | 50%: (3,0,4,0,0)<br>50%: (3,0,5,0,0) | (3,0,6,0,0) |
+| **R** | 50%: (4,0,5,1,1)<br>50%: (5,0,5,1,0) | (4,0,5,0,1) | 50%: (4,0,5,0,0)<br>50%: (4,0,5,0,1) | 50%: (4,0,6,0,1)<br>50%: (5,0,6,0,0) |
+
 ## Case 2 — `(0, 1, 1, 1, 0)`: the primary example -- the typical mix
 
 **This is the case to lead with.** Gap `0.0136`. The carrier mixes
@@ -369,6 +433,15 @@ whole indifference class, not one point on a larger face.
   L   0.103    0.103    0.085    0.084
   R   0.082    0.187   -0.108   -0.071
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,2,1,2,0) | (0,2,1,0,0) | 50%: (0,2,0,1,0)<br>50%: (0,2,1,1,0) | (0,2,2,1,0) |
+| **D** | (0,0,1,2,0) | (0,0,1,0,0) | 50%: (0,0,0,1,0)<br>50%: (0,0,1,1,0) | (0,0,2,1,0) |
+| **L** | (0,1,1,2,0) | (0,1,1,0,0) | (0,1,1,1,0) | (0,1,2,1,0) |
+| **R** | 50%: (0,1,1,2,1)<br>50%: (1,1,1,2,0) | 50%: (0,1,1,0,1)<br>50%: (1,1,1,0,0) | 50%: (0,1,1,1,0)<br>50%: (0,1,1,1,1) | 50%: (0,1,2,1,1)<br>50%: (1,1,2,1,0) |
 
 ## Case 3 — `(1, 1, 1, 0, 1)`: a clean L/R indifference example
 
@@ -403,6 +476,15 @@ indifference class.
   R   0.211    0.181    0.211    0.167
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | 50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0) | 50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1) | 50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0) | 50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0) |
+| **D** | (1,2,1,0,1) | (1,1,1,0,1) | (0,1,1,0,1) | (2,1,1,0,1) |
+| **L** | (1,2,0,0,1) | 50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1) | (0,1,0,0,1) | (2,1,0,0,1) |
+| **R** | (1,2,2,0,1) | 50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1) | (0,1,2,0,1) | (2,1,2,0,1) |
+
 ## Case 4 — `(0, 0, 1, 1, 0)`: the corner duel
 
 The board position sketched at the meeting: the carrier at `(0, 0)` -- the
@@ -435,6 +517,15 @@ in the right proportion is an equally valid equilibrium, not just the
   R   0.112   -0.075    0.112    0.088
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,1,1,2,0) | (0,1,1,0,0) | 50%: (0,1,1,1,0)<br>50%: (0,0,0,1,1) | (0,1,2,1,0) |
+| **D** | (0,0,1,2,0) | (0,0,1,0,0) | (0,0,0,1,0) | (0,0,2,1,0) |
+| **L** | (0,0,1,2,0) | (0,0,1,0,0) | (0,0,0,1,0) | (0,0,2,1,0) |
+| **R** | (1,0,1,2,0) | 50%: (1,0,1,1,0)<br>50%: (0,0,1,0,1) | (1,0,0,1,0) | (1,0,2,1,0) |
+
 ## Case 5 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
 
 Six cells from goal, as far as this board allows, with the defender close
@@ -466,6 +557,15 @@ mix.
   R   0.088    0.095   -0.088    0.110
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,1,2,1,0) | (0,1,2,0,0) | (0,1,1,0,0) | (0,1,3,0,0) |
+| **D** | (0,0,2,1,0) | (0,0,2,0,0) | (0,0,1,0,0) | (0,0,3,0,0) |
+| **L** | (0,0,2,1,0) | (0,0,2,0,0) | (0,0,1,0,0) | (0,0,3,0,0) |
+| **R** | (1,0,2,1,0) | (1,0,2,0,0) | 50%: (1,0,2,0,0)<br>50%: (0,0,1,0,1) | (1,0,3,0,0) |
+
 ## Case 6 — `(1, 1, 2, 0, 1)`: a near-pure hedge, where rounding would lie
 
 Gap `0.0043`. The **defender** plays `R 97.5% / D 2.5%` -- entropy only
@@ -492,6 +592,15 @@ outsider action.
   L   0.171    0.045    0.157    0.171
   R   0.182    0.182    0.182    0.135
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (1,2,2,1,1) | (1,0,2,1,1) | (0,1,2,1,1) | 50%: (2,1,2,0,0)<br>50%: (1,1,2,1,1) |
+| **D** | (1,2,2,0,1) | (1,0,2,0,1) | (0,1,2,0,1) | (2,1,2,0,1) |
+| **L** | (1,2,1,0,1) | 50%: (1,0,2,0,0)<br>50%: (1,1,1,0,1) | (0,1,1,0,1) | (2,1,1,0,1) |
+| **R** | (1,2,3,0,1) | (1,0,3,0,1) | (0,1,3,0,1) | (2,1,3,0,1) |
 
 ## Case 7 — `(5, 1, 6, 1, 1)`: the typical mix, mirrored
 
@@ -525,6 +634,15 @@ mirrored.
   R   0.103    0.103    0.084    0.085
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (5,2,6,2,1) | (5,0,6,2,1) | (4,1,6,2,1) | 50%: (5,1,6,2,1)<br>50%: (6,1,6,2,1) |
+| **D** | (5,2,6,0,1) | (5,0,6,0,1) | (4,1,6,0,1) | 50%: (5,1,6,0,1)<br>50%: (6,1,6,0,1) |
+| **L** | 50%: (5,2,5,1,1)<br>50%: (5,2,6,1,0) | 50%: (5,0,5,1,1)<br>50%: (5,0,6,1,0) | 50%: (4,1,5,1,1)<br>50%: (4,1,6,1,0) | 50%: (5,1,6,1,0)<br>50%: (5,1,6,1,1) |
+| **R** | (5,2,6,1,1) | (5,0,6,1,1) | (4,1,6,1,1) | (5,1,6,1,1) |
+
 ## Case 8 — `(2, 3, 3, 3, 1)`, on a 5×4 board: this project's own tackle rule
 
 Every other case here gets its coin flip from Littman's random move order.
@@ -552,6 +670,15 @@ move-order-driven cases above, under a completely different mechanism.
   L  -0.019   -0.080    0.019   -0.042
   R  -0.007   -0.026   -0.006   -0.039
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (2,3,3,3,1) | (2,2,3,3,1) | (1,3,3,3,1) | 50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1) |
+| **D** | (2,3,3,2,1) | (2,2,3,2,1) | (1,3,3,2,1) | 50%: (3,3,4,3,0)<br>50%: (2,3,3,2,1) |
+| **L** | (2,3,3,3,0) | (2,2,2,3,1) | (1,3,2,3,1) | 50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1) |
+| **R** | (2,3,4,3,1) | (2,2,4,3,1) | (1,3,4,3,1) | 50%: (3,3,4,3,0)<br>50%: (2,3,4,3,1) |
 
 ## Case 9 — `(0, 2, 1, 2, 0)`: the asymmetric mix -- the sharpest LP-degeneracy example
 
@@ -582,6 +709,15 @@ mixed strategy.**
   L   0.093    0.093    0.086    0.093
   R   0.082    0.082   -0.122   -0.072
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,3,1,3,0) | (0,3,1,1,0) | 50%: (0,3,0,2,0)<br>50%: (0,3,1,2,0) | (0,3,2,2,0) |
+| **D** | (0,1,1,3,0) | (0,1,1,1,0) | 50%: (0,1,0,2,0)<br>50%: (0,1,1,2,0) | (0,1,2,2,0) |
+| **L** | (0,2,1,3,0) | (0,2,1,1,0) | (0,2,1,2,0) | (0,2,2,2,0) |
+| **R** | 50%: (0,2,1,3,1)<br>50%: (1,2,1,3,0) | 50%: (0,2,1,1,1)<br>50%: (1,2,1,1,0) | 50%: (0,2,1,2,0)<br>50%: (0,2,1,2,1) | 50%: (0,2,2,2,1)<br>50%: (1,2,2,2,0) |
 
 Why the carrier still needs two actions against a defender who never
 varies: against the defender's pure `R`, column `R` reads `U 0.095, D 0.095,
@@ -625,6 +761,15 @@ forced mix.
   R   0.228    0.228    0.220    0.205
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,3,2,3,1) | (0,1,2,3,1) | (0,2,2,3,1) | (1,2,2,3,1) |
+| **D** | (0,3,2,1,1) | (0,1,2,1,1) | (0,2,2,1,1) | (1,2,2,1,1) |
+| **L** | (0,3,1,2,1) | (0,1,1,2,1) | (0,2,1,2,1) | 50%: (1,2,2,2,0)<br>50%: (0,2,1,2,1) |
+| **R** | (0,3,3,2,1) | (0,1,3,2,1) | (0,2,3,2,1) | (1,2,3,2,1) |
+
 ## Case 11 — `(4, 4, 5, 4, 0)`, deterministic: mixing forced by reward alone, not transition
 
 An advanced case, illustrating a fundamentally different mechanism from the
@@ -656,6 +801,15 @@ core.
   L   0.094    0.105    0.000    0.105
   R   0.170    0.500   -0.671    0.500
 ```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (4,4,5,4,0) | (4,4,5,3,0) | (4,4,5,4,1) | (4,4,6,4,0) |
+| **D** | (4,3,5,4,0) | (4,3,5,3,0) | (4,3,4,4,0) | (4,3,6,4,0) |
+| **L** | (3,4,5,4,0) | (3,4,5,3,0) | (3,4,4,4,0) | (3,4,6,4,0) |
+| **R** | (4,4,5,4,1) | (5,4,5,3,0) | (5,4,4,4,1) | (5,4,6,4,0) |
 
 ## Case 12 — `(1, 3, 1, 4, 1)`: movement slip on a single-cell goal
 
@@ -690,6 +844,17 @@ otherwise always pure.
   R   0.039    0.020    0.015    0.092
 ```
 
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+*Shown: the intended successor before movement slip is applied (`slip=0` isolates it, for readability). The actual game has `slip=0.15`; running `python scripts/positions.py` on this state prints the full noisy distribution -- up to 16 outcomes per cell, each intended move landing on its target around 79% of the time and spreading over nearby cells the rest. See [generalize.md](generalize.md).*
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (1,3,1,4,0) | (1,2,1,4,1) | (0,3,1,4,1) | (2,3,1,4,1) |
+| **D** | (1,4,1,3,0) | (1,2,1,3,1) | (0,3,1,3,1) | (2,3,1,3,1) |
+| **L** | (1,4,0,4,1) | (1,2,0,4,1) | (0,3,0,4,1) | (2,3,0,4,1) |
+| **R** | (1,4,2,4,1) | (1,2,2,4,1) | (0,3,2,4,1) | (2,3,2,4,1) |
+
 ## The mathematics behind all twelve
 
 A mixed equilibrium is exactly the strategy pair where every action in a
@@ -706,8 +871,9 @@ cycle anywhere in the matrix.
 
 ## Reproduction
 
-`python scripts/positions.py` prints the exact `4x4` Q matrix, policy, and
-action support for all twelve states and writes
+`python scripts/positions.py` prints the exact `4x4` Q matrix, policy,
+action support, and the successor-state coordinate table for all twelve
+states, and writes
 `figures/gallery/positions.svg`. A PDF write-up of this page is at
 [positions.pdf](positions.pdf). `python scripts/pure_vs_mixed_exploit.py`
 reproduces the pure-vs-mixed exploitability table above. `python

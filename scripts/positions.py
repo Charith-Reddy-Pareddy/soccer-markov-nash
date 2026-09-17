@@ -70,7 +70,8 @@ noise, and movement slip on an otherwise-always-pure single-cell goal):
 Writes `docs/figures/gallery/positions.svg` (all twelve, composite) plus one
 `docs/figures/gallery/positions_caseNN.svg` per case (board and Q matrix,
 sized to read on its own), and prints each state's exact Q matrix, policy,
-and action support.
+action support, and the successor-state coordinates behind every payoff
+(`game.transitions()`, reoriented the same way as the Q matrix).
 """
 
 from __future__ import annotations
@@ -83,7 +84,7 @@ import numpy as np
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.certificate import certify_game
-from soccer_nash.game import SoccerGame
+from soccer_nash.game import MOVE_ACTIONS, SoccerGame
 from soccer_nash.geometry import features
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.symmetry import mirror_state
@@ -109,6 +110,19 @@ def _solve(**kw):
     g = SoccerGame(**kw)
     s = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
     return g, s, s.run()
+
+
+def _successor_grid(g: SoccerGame, state) -> list[list[list[tuple[float, tuple, tuple]]]]:
+    """The 4x4 grid of `game.transitions()` outcome lists, reoriented so rows
+    are the carrier's action and columns the defender's -- same convention as
+    `_oriented_matrix`, minus the payoff negation (coordinates aren't signed).
+    Each cell is a list of `(probability, next_state, reward)`; length > 1
+    means the outcome depends on move order (random/tackle/slip)."""
+    raw = [[g.transitions(state, MOVE_ACTIONS[i], MOVE_ACTIONS[j]) for j in range(4)]
+           for i in range(4)]
+    if state[4] == 0:
+        return raw
+    return [[raw[j][i] for j in range(4)] for i in range(4)]
 
 
 def _support(policy_vec, tol: float = 1e-6) -> tuple[str, ...]:
@@ -168,6 +182,12 @@ def _report(label, g, solver, r, state, panels, case_no=None):
           "(support actions should tie; others should lose):")
     print("    carrier  " + "  ".join(f"{a}={v:+.4f}" for a, v in zip(_ACT, e_carrier)))
     print("    defender " + "  ".join(f"{a}={v:+.4f}" for a, v in zip(_ACT, e_defender)))
+    print("  Successor states -- (x0, y0, x1, y1, b) reached by each joint action, "
+          "same carrier/defender orientation (2 outcomes = order-dependent):")
+    succ = _successor_grid(g, state)
+    for i, a in enumerate(_ACT):
+        cells = [" | ".join(f"{p:.2f}:{ns}" for p, ns, _r in succ[i][j]) for j in range(4)]
+        print(f"    {a:>3} " + "   ".join(cells))
     print()
 
     board = policy_svg(g, state, r.row_policy, r.col_policy,
