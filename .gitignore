@@ -28,3 +28,7 @@ results/
 
 # figure rasterizer scratch
 .png-wrap/
+
+# React site source (docs/ holds the built output, which is committed)
+site/node_modules/
+site/dist/

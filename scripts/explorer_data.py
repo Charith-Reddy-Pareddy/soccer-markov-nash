@@ -1,5 +1,6 @@
 """Export every board used in docs/positions.pdf, exactly solved, to a
-compact JS data file for the interactive board explorer (docs/explorer.html).
+compact JSON file for the interactive board explorer (the React app in
+``site/``, built to ``docs/explorer.html``).
 
 For every non-terminal state of each board, writes ``V`` (player 0's exact
 value), ``row_policy`` / ``col_policy`` (player 0 / player 1's 4-action
@@ -12,9 +13,7 @@ they are not precomputed here.
 
     python scripts/explorer_data.py
 
-Writes ``docs/data/explorer.js`` (a single ``window.EXPLORER = {...}``
-assignment, not JSON-over-fetch, so the page works from a plain ``file://``
-open with no local server and no CORS friction).
+Writes ``docs/data/explorer.json``, fetched at runtime by the explorer page.
 """
 from __future__ import annotations
 
@@ -27,7 +26,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 
-OUT = pathlib.Path("docs/data/explorer.js")
+OUT = pathlib.Path("docs/data/explorer.json")
 
 # Every board any case in docs/positions.md is solved on.
 BOARDS: dict[str, dict] = {
@@ -94,8 +93,7 @@ def main() -> None:
 
     payload = {"gamma": 0.9, "boards": boards}
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    text = "window.EXPLORER = " + json.dumps(payload, separators=(",", ":")) + ";\n"
-    OUT.write_text(text)
+    OUT.write_text(json.dumps(payload, separators=(",", ":")))
     total_states = sum(b["state_count"] for b in boards.values())
     print(f"wrote {OUT} ({OUT.stat().st_size / 1024:.0f} KiB, "
           f"{len(boards)} boards, {total_states} states total)")

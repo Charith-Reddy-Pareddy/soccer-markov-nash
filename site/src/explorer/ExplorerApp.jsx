@@ -1,0 +1,229 @@
+import { useEffect, useMemo, useState } from "react";
+import Nav from "../Nav.jsx";
+import Footer from "../Footer.jsx";
+import Board from "./Board.jsx";
+import QMatrixTable from "./QMatrixTable.jsx";
+import QMatrixGraph from "./QMatrixGraph.jsx";
+import { ACT, certify, fmtPct, kickoffState, orient, stateKey, support } from "./helpers.js";
+import "./explorer.css";
+
+const BOARD_ORDER = ["canonical", "tackle", "territory", "slip"];
+
+// case number -> {board, state}, coordinates as printed in docs/positions.md
+const PRESETS = {
+  1: { board: "canonical", state: [4, 0, 5, 0, 0], label: "Case 1 — pure, for contrast" },
+  2: { board: "canonical", state: [0, 1, 1, 1, 0], label: "Case 2 — the typical mix" },
+  3: { board: "canonical", state: [1, 1, 1, 0, 1], label: "Case 3 — L/R indifference" },
+  4: { board: "canonical", state: [0, 0, 1, 1, 0], label: "Case 4 — the corner duel" },
+  5: { board: "canonical", state: [0, 0, 2, 0, 0], label: "Case 5 — 3-action mix" },
+  6: { board: "canonical", state: [1, 1, 2, 0, 1], label: "Case 6 — near-pure hedge" },
+  7: { board: "canonical", state: [5, 1, 6, 1, 1], label: "Case 7 — mirrored" },
+  8: { board: "tackle", state: [2, 3, 3, 3, 1], label: "Case 8 — the tackle rule" },
+  9: { board: "canonical", state: [0, 2, 1, 2, 0], label: "Case 9 — asymmetric mix" },
+  10: { board: "canonical", state: [0, 2, 2, 2, 1], label: "Case 10 — three-lane mix" },
+  11: { board: "territory", state: [4, 4, 5, 4, 0], label: "Case 11 — reward forces the mix" },
+  12: { board: "slip", state: [1, 3, 1, 4, 1], label: "Case 12 — movement slip" },
+};
+
+function toState(arr) {
+  return { x0: arr[0], y0: arr[1], x1: arr[2], y1: arr[3], b: arr[4] };
+}
+
+export default function ExplorerApp() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [currentBoard, setCurrentBoard] = useState("canonical");
+  const [activePlayer, setActivePlayer] = useState(0);
+  const [qview, setQview] = useState("table");
+  const [st, setSt] = useState(null);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}data/explorer.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json();
+      })
+      .then((json) => {
+        setData(json);
+        setSt(kickoffState(json.boards.canonical));
+      })
+      .catch((e) => setError(e.message));
+  }, []);
+
+  const board = data ? data.boards[currentBoard] : null;
+
+  const mixedKeys = useMemo(() => {
+    if (!board) return [];
+    return Object.keys(board.states).filter((k) => certify(board.states[k][3]).kind === "mixed");
+  }, [board]);
+
+  if (error) {
+    return (
+      <>
+        <Nav current="explorer" />
+        <section><div className="wrap"><p className="loading-note">Couldn't load the explorer data ({error}). Try refreshing.</p></div></section>
+        <Footer />
+      </>
+    );
+  }
+  if (!data || !st) {
+    return (
+      <>
+        <Nav current="explorer" />
+        <section><div className="wrap"><p className="loading-note">Loading the exact solve&hellip;</p></div></section>
+        <Footer />
+      </>
+    );
+  }
+
+  function switchBoard(id) {
+    setCurrentBoard(id);
+    setActivePlayer(0);
+    setSt(kickoffState(data.boards[id]));
+  }
+
+  function onCellClick(x, y) {
+    const other = activePlayer === 0 ? [st.x1, st.y1] : [st.x0, st.y0];
+    if (x === other[0] && y === other[1]) return; // occupied, no swap
+    setSt(activePlayer === 0 ? { ...st, x0: x, y0: y } : { ...st, x1: x, y1: y });
+  }
+
+  function randomState() {
+    const keys = Object.keys(board.states);
+    return toState(keys[Math.floor(Math.random() * keys.length)].split(",").map(Number));
+  }
+  function randomMixedState() {
+    const k = mixedKeys[Math.floor(Math.random() * mixedKeys.length)];
+    return toState(k.split(",").map(Number));
+  }
+
+  function applyPreset(n) {
+    const p = PRESETS[n];
+    setCurrentBoard(p.board);
+    setActivePlayer(0);
+    setSt(toState(p.state));
+  }
+
+  const rec = board.states[stateKey(st)];
+  const [V, rowPol, colPol, Q] = rec;
+  const carrierPol = st.b === 0 ? rowPol : colPol;
+  const defenderPol = st.b === 0 ? colPol : rowPol;
+  const M = orient(Q, st.b);
+  const cert = certify(M);
+  const cs = support(carrierPol), ds = support(defenderPol);
+
+  return (
+    <>
+      <Nav current="explorer" />
+      <section>
+        <div className="wrap">
+          <div className="eyebrow"><span className="badge">Live</span>Board explorer</div>
+          <h1>Place both players anywhere. Watch the equilibrium update live.</h1>
+          <p className="lede">All 6,720 legal positions across the four boards used in{" "}
+            <a href="positions.pdf">positions.pdf</a> &mdash; the canonical board, this
+            project's own tackle rule, the territory-reward game, and movement slip
+            &mdash; were solved exactly, <a href="positions.md">not approximated by an
+            iterative solver</a>, with <code>NashQIteration.run_exact()</code>. Move
+            either player, hand either one the ball, switch boards, and the
+            equilibrium policy and the full 4&times;4 Q matrix &mdash; as a table or
+            as the same best-response graph the PDF draws &mdash; update instantly:
+            no server, no recomputation, just a lookup into the exact solve.</p>
+
+          <div className="explorer-grid">
+            <div className="panel">
+              <div className="controls" style={{ margin: "0 0 1.2rem" }}>
+                <label className="board-select-label" htmlFor="board-select">Board</label>
+                <select id="board-select" className="board-select" value={currentBoard}
+                  onChange={(e) => switchBoard(e.target.value)}>
+                  {BOARD_ORDER.map((id) => (
+                    <option key={id} value={id}>
+                      {data.boards[id].label} ({data.boards[id].width}&times;{data.boards[id].height})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="board-svg-wrap">
+                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} />
+              </div>
+              <div className="controls">
+                <div className="seg" role="group" aria-label="which player clicking the board moves">
+                  <button className={activePlayer === 0 ? "active p0" : ""} onClick={() => setActivePlayer(0)}>Move: Player 0</button>
+                  <button className={activePlayer === 1 ? "active p1" : ""} onClick={() => setActivePlayer(1)}>Move: Player 1</button>
+                </div>
+                <div className="seg" role="group" aria-label="ball possession">
+                  <button className={st.b === 0 ? "active p0" : ""} onClick={() => setSt({ ...st, b: 0 })}>Ball: 0</button>
+                  <button className={st.b === 1 ? "active p1" : ""} onClick={() => setSt({ ...st, b: 1 })}>Ball: 1</button>
+                </div>
+              </div>
+              <div className="controls">
+                <button className="iconbtn" onClick={() => setSt(kickoffState(board))}>Kickoff</button>
+                <button className="iconbtn" onClick={() => setSt(randomState())}>Random position</button>
+                <button className="iconbtn" onClick={() => setSt(randomMixedState())}>Random must-guess position</button>
+              </div>
+              <p className="hint">Click a cell to move the selected player there.{" "}
+                <span style={{ color: "var(--p0)" }}>Blue</span> is player 0, attacking the
+                right goal; <span style={{ color: "var(--p1)" }}>green</span> is player 1,
+                attacking the left. The small dot marks the ball.</p>
+            </div>
+
+            <div className="panel">
+              <div className={"readout-kind " + cert.kind}>
+                {cert.kind === "pure"
+                  ? `Pure equilibrium — saddle at ${ACT[cert.i]} / ${ACT[cert.j]}`
+                  : `Mixed equilibrium — gap ${cert.gap.toFixed(4)}`}
+              </div>
+              <div className="state-key mono">
+                state ({st.x0}, {st.y0}, {st.x1}, {st.y1}, {st.b}) &mdash; {board.label}
+              </div>
+              <div className="vbar-row">
+                <span className="vbar-val">V = {V >= 0 ? "+" : ""}{V.toFixed(3)}</span>
+                <div className="vbar">
+                  <div className="mid"></div>
+                  <div className="fill" style={{ left: `${50 + 50 * Math.max(Math.min(V, 1), -1)}%` }}></div>
+                </div>
+              </div>
+
+              <div className="controls" style={{ margin: "0 0 .6rem" }}>
+                <div className="seg" role="group" aria-label="Q matrix view">
+                  <button className={qview === "table" ? "active view" : ""} onClick={() => setQview("table")}>Table</button>
+                  <button className={qview === "graph" ? "active view" : ""} onClick={() => setQview("graph")}>Best-response graph</button>
+                </div>
+              </div>
+              {qview === "table" ? <QMatrixTable M={M} /> : <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>}
+
+              <div className="support-block">
+                <div className="row">
+                  <span className="dot" style={{ background: st.b === 0 ? "var(--p0)" : "var(--p1)" }}></span>
+                  <span><b>Carrier</b> &mdash; {cs.map((i) => `${ACT[i]} ${fmtPct(carrierPol[i])}`).join(" / ")}</span>
+                </div>
+                <div className="row">
+                  <span className="dot" style={{ background: st.b === 0 ? "var(--p1)" : "var(--p0)" }}></span>
+                  <span><b>Defender</b> &mdash; {ds.map((i) => `${ACT[i]} ${fmtPct(defenderPol[i])}`).join(" / ")}</span>
+                </div>
+              </div>
+              <div className="legend-row">
+                <span className="k"><span className="swatch" style={{ background: "var(--pitch)" }}></span>high for the carrier</span>
+                <span className="k"><span className="swatch" style={{ background: "var(--ember)" }}></span>low for the carrier</span>
+                <span className="k">dashed ring &mdash; a wall clamp, not a move (see <a href="positions.md">positions.md</a>)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="presets">
+            <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
+            {Object.keys(PRESETS).map((n) => (
+              <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
+            ))}
+          </div>
+
+          <div className="stat-strip">
+            <div><div className="s-k">States solved exactly</div><div className="s-v">{board.state_count.toLocaleString()}</div></div>
+            <div><div className="s-k">No pure saddle</div><div className="s-v">{board.no_saddle_count} of {board.state_count}</div></div>
+            <div><div className="s-k">Exact vs. iterative</div><div className="s-v">{board.exact_vs_iterative.toExponential(1)}</div></div>
+          </div>
+        </div>
+      </section>
+      <Footer />
+    </>
+  );
+}

@@ -1,0 +1,74 @@
+/* ---------- hero ---------- */
+.hero {
+  position: relative; overflow: hidden; color: var(--on-dark);
+  background: radial-gradient(120% 140% at 15% -10%, var(--pitch-mid), var(--pitch-deep) 55%);
+  padding: 4.6rem 0 5rem;
+}
+.hero .pitch-lines { position: absolute; inset: 0; opacity: .55; pointer-events: none; }
+.hero-grid {
+  max-width: 1080px; margin: 0 auto; padding: 0 28px;
+  display: grid; grid-template-columns: 1.05fr .95fr; gap: 3rem; align-items: center;
+  position: relative;
+}
+@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
+.hero .kicker {
+  font-size: .8rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--on-dark-soft);
+  display: flex; align-items: center; gap: .55rem;
+}
+.hero .kicker::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ember-hi); }
+.hero p.lede { color: var(--on-dark-soft); margin-top: 1.15rem; }
+.hero-card {
+  background: var(--raise); border-radius: 14px; padding: 1.1rem 1.1rem 1rem;
+  box-shadow: var(--shadow-lg); border: 1px solid rgba(0,0,0,.04);
+}
+.hero-card img { border-radius: 8px; border: none; }
+.hero-card .fig-cap { color: var(--ink-faint); margin-top: .7rem; }
+
+/* ---------- sections ---------- */
+.band-tint { background: var(--tint); }
+.band-dark {
+  background: linear-gradient(180deg, var(--pitch-deep), color-mix(in srgb, var(--pitch-deep) 85%, black) 85%);
+  color: var(--on-dark);
+}
+.band-dark p, .band-dark .lede { color: var(--on-dark-soft); }
+.band-dark h2 { color: var(--on-dark); }
+.band-dark .fig-cap { color: var(--on-dark-soft); }
+
+/* ---------- stat pair ---------- */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; margin: 2.2rem 0 2.6rem; }
+@media (max-width: 640px) { .stat-row { grid-template-columns: 1fr; } }
+.stat-card { background: var(--raise); border: 1px solid var(--rule); border-radius: 12px; padding: 1.7rem 1.6rem; }
+.stat-card.hit { border-color: color-mix(in srgb, var(--ember) 45%, var(--rule)); }
+.stat-k { font-size: .78rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: .6rem; }
+.stat-v { font-size: 2.5rem; font-weight: 600; line-height: 1; color: var(--ink); }
+.stat-v .unit { font-size: 1.1rem; color: var(--ink-faint); margin-left: .35rem; }
+.stat-card p { margin-top: .8rem; margin-bottom: 0; font-size: .95rem; color: var(--ink-soft); max-width: none; }
+
+/* ---------- compass icon ---------- */
+.compass-row { display: flex; align-items: center; gap: 2.2rem; flex-wrap: wrap; margin: 1.6rem 0 2rem; }
+.compass-row .compass { flex: none; }
+.compass-row .legend { display: grid; gap: .5rem; font-family: "IBM Plex Mono", monospace; font-size: .88rem; color: var(--ink-soft); }
+.legend .k { color: var(--ink); font-weight: 600; }
+
+/* ---------- showcase caption grid ---------- */
+.case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem 1.6rem; margin-top: 1.6rem; }
+@media (max-width: 760px) { .case-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .case-grid { grid-template-columns: 1fr; } }
+.case { display: flex; gap: .7rem; font-size: .92rem; color: var(--ink-soft); }
+.case .n {
+  flex: none; width: 22px; height: 22px; border-radius: 50%; font-family: "IBM Plex Mono", monospace;
+  font-size: .72rem; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff;
+  margin-top: .1rem;
+}
+.case b { color: var(--ink); display: block; font-weight: 600; font-family: "Barlow Semi Condensed", sans-serif; }
+
+/* ---------- table ---------- */
+.tbl-wrap { overflow-x: auto; margin: 1.6rem 0 2rem; border: 1px solid var(--rule); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: .86rem; min-width: 560px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: .65rem .9rem; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; font-family: "Barlow Semi Condensed", sans-serif; font-weight: 600; }
+thead th { color: var(--ink-faint); font-weight: 600; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; background: var(--tint); }
+tbody tr:last-child td { border-bottom: none; }
+td.hi { color: var(--pitch); font-weight: 600; }
+td.lo { color: var(--ember); font-weight: 600; }

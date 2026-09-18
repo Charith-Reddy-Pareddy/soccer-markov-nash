@@ -56,8 +56,9 @@ technical answer, start with **[report.pdf](report.pdf)**
 - [explorer.html](explorer.html) — interactive board: place both players
   anywhere on any of the four boards from positions.md and get the live
   equilibrium policy and exact Q matrix (table or best-response graph) for
-  all 6,720 states, no server (`make explorer-data`, from
-  `scripts/explorer_data.py`).
+  all 6,720 states. A React app (source in [../site/](../site/), data from
+  `make explorer-data` / `scripts/explorer_data.py`, built with `make site`
+  into this page and [index.html](index.html) — see `site/README.md`).
 - [gallery.html](gallery.html) — every policy and value surface, drawn
   (`make gallery`, from `soccer_nash/viz.py`).
 - [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).
