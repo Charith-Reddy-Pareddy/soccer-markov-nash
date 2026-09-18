@@ -1,13 +1,14 @@
-"""Export the exact-solved canonical board to a compact JS data file for the
-interactive board explorer (docs/explorer.html).
+"""Export every board used in docs/positions.pdf, exactly solved, to a
+compact JS data file for the interactive board explorer (docs/explorer.html).
 
-For every non-terminal state, writes ``V`` (player 0's exact value),
-``row_policy`` / ``col_policy`` (player 0 / player 1's 4-action equilibrium
-mix), and the raw (unoriented) ``Q`` matrix (player 0 = row, player 1 =
-col) -- the same ``NashQIteration.run_exact()`` values docs/positions.pdf
-is built from, so the site and the PDF never disagree. Reorientation
-(carrier = row) and wall-clamp ("hold") detection are cheap enough to do
-client-side, so they are not precomputed here.
+For every non-terminal state of each board, writes ``V`` (player 0's exact
+value), ``row_policy`` / ``col_policy`` (player 0 / player 1's 4-action
+equilibrium mix), and the raw (unoriented) ``Q`` matrix (player 0 = row,
+player 1 = col) -- the same ``NashQIteration.run_exact()`` values
+docs/positions.pdf is built from, so the site and the PDF never disagree.
+Reorientation (carrier = row), wall-clamp ("hold") detection, and the
+best-response node-and-arrow graph are cheap enough to do client-side, so
+they are not precomputed here.
 
     python scripts/explorer_data.py
 
@@ -27,18 +28,40 @@ from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 
 OUT = pathlib.Path("docs/data/explorer.js")
-CANON = {"width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "random"}
+
+# Every board any case in docs/positions.md is solved on.
+BOARDS: dict[str, dict] = {
+    "canonical": {"width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "random"},
+    "tackle": {
+        "width": 5, "height": 4, "goal_rows": (1, 2),
+        "move_order": "tackle", "tackle_prob": 0.5,
+    },
+    "territory": {
+        "width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "deterministic",
+        "scoring": "territory", "territory_reward": 0.05,
+    },
+    "slip": {
+        "width": 5, "height": 5, "goal_rows": (2,),
+        "move_order": "deterministic", "slip": 0.15,
+    },
+}
+BOARD_LABELS = {
+    "canonical": "Canonical board — random move order",
+    "tackle": "Tackle rule",
+    "territory": "Territory reward, deterministic",
+    "slip": "Movement slip, deterministic",
+}
 
 
 def r4(x: float) -> float:
     return round(float(x), 4)
 
 
-def main() -> None:
-    g = SoccerGame(**CANON)
+def solve_board(bid: str, kw: dict) -> dict:
+    g = SoccerGame(**kw)
     solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
     result = solver.run_exact()
-    print(f"exact solve: |V_exact - V_iterative| = {result.exact_vs_iterative:.2e} "
+    print(f"  {bid}: |V_exact - V_iterative| = {result.exact_vs_iterative:.2e} "
           f"over {len(result.values)} states")
 
     states = {}
@@ -53,21 +76,29 @@ def main() -> None:
             [[r4(M[i, j]) for j in range(4)] for i in range(4)],
         ]
 
-    payload = {
+    return {
+        "label": BOARD_LABELS[bid],
         "width": g.width,
         "height": g.height,
         "goal_rows": list(g.goal_rows),
-        "gamma": solver.gamma,
         "exact_vs_iterative": result.exact_vs_iterative,
         "no_saddle_count": len(result.no_saddle_states),
         "state_count": len(states),
         "states": states,
     }
 
+
+def main() -> None:
+    print("exact solve, one board at a time:")
+    boards = {bid: solve_board(bid, kw) for bid, kw in BOARDS.items()}
+
+    payload = {"gamma": 0.9, "boards": boards}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     text = "window.EXPLORER = " + json.dumps(payload, separators=(",", ":")) + ";\n"
     OUT.write_text(text)
-    print(f"wrote {OUT} ({OUT.stat().st_size / 1024:.0f} KiB, {len(states)} states)")
+    total_states = sum(b["state_count"] for b in boards.values())
+    print(f"wrote {OUT} ({OUT.stat().st_size / 1024:.0f} KiB, "
+          f"{len(boards)} boards, {total_states} states total)")
 
 
 if __name__ == "__main__":

@@ -115,8 +115,20 @@
   .seg button:not(:last-child) { border-right: 1px solid var(--rule-strong); }
   .seg button.active.p0 { background: var(--p0); color: #fff; }
   .seg button.active.p1 { background: var(--p1); color: #fff; }
+  .seg button.active.view { background: var(--pitch); color: #fff; }
   .iconbtn { border: 1px solid var(--rule-strong); background: var(--raise); color: var(--ink); border-radius: 8px; padding: .5rem .95rem; font-weight: 600; font-size: .86rem; cursor: pointer; }
   .iconbtn:hover { border-color: var(--ink-faint); }
+
+  .board-select-label { font-weight: 600; font-size: .82rem; color: var(--ink-faint); align-self: center; }
+  select.board-select {
+    font-family: "Barlow Semi Condensed", sans-serif; font-weight: 600; font-size: .88rem;
+    color: var(--ink); background: var(--raise); border: 1px solid var(--rule-strong);
+    border-radius: 8px; padding: .48rem 2rem .48rem .8rem; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%2377817a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat; background-position: right .75rem center; background-size: 10px;
+  }
+  select.board-select:hover { border-color: var(--ink-faint); }
 
   .hint { font-size: .86rem; color: var(--ink-faint); margin-top: .9rem; }
 
@@ -192,16 +204,22 @@
   <div class="wrap">
     <div class="eyebrow"><span class="badge">Live</span>Board explorer</div>
     <h1>Place both players anywhere. Watch the equilibrium update live.</h1>
-    <p class="lede">Every one of this board's 2,380 legal positions was solved
-    exactly &mdash; <a href="positions.md">not approximated by an iterative
-    solver</a> &mdash; with <code>NashQIteration.run_exact()</code>, the same
-    method behind <a href="positions.pdf">positions.pdf</a>. Move either
-    player, hand either one the ball, and both the equilibrium policy and the
-    full 4&times;4 Q matrix update instantly &mdash; no server, no
-    recomputation, just a lookup into the exact solve.</p>
+    <p class="lede">All 6,720 legal positions across the four boards used in
+    <a href="positions.pdf">positions.pdf</a> &mdash; the canonical board, this
+    project's own tackle rule, the territory-reward game, and movement slip
+    &mdash; were solved exactly, <a href="positions.md">not approximated by an
+    iterative solver</a>, with <code>NashQIteration.run_exact()</code>. Move
+    either player, hand either one the ball, switch boards, and the
+    equilibrium policy and the full 4&times;4 Q matrix &mdash; as a table or
+    as the same best-response graph the PDF draws &mdash; update instantly:
+    no server, no recomputation, just a lookup into the exact solve.</p>
 
     <div class="explorer-grid">
       <div class="panel">
+        <div class="controls" style="margin:0 0 1.2rem;">
+          <label class="board-select-label" for="board-select">Board</label>
+          <select class="board-select" id="board-select"></select>
+        </div>
         <div class="board-svg-wrap" id="board"></div>
         <div class="controls">
           <div class="seg" role="group" aria-label="which player clicking the board moves">
@@ -231,7 +249,14 @@
           <span class="vbar-val" id="v-label">V = +0.000</span>
           <div class="vbar"><div class="mid"></div><div class="fill" id="v-fill" style="left:50%"></div></div>
         </div>
+        <div class="controls" style="margin:0 0 .6rem;">
+          <div class="seg" role="group" aria-label="Q matrix view">
+            <button id="view-table" class="active view">Table</button>
+            <button id="view-graph" class="view">Best-response graph</button>
+          </div>
+        </div>
         <table class="qmatrix" id="qmatrix"></table>
+        <div class="board-svg-wrap" id="qgraph" style="display:none; margin: .4rem 0 1.3rem;"></div>
         <div class="support-block" id="support"></div>
         <div class="legend-row">
           <span class="k"><span class="swatch" style="background:var(--pitch)"></span>high for the carrier</span>
@@ -242,15 +267,19 @@
     </div>
 
     <div class="presets">
-      <span class="hint" style="margin:0 .3rem 0 0;">Jump to a documented case (<a href="positions.pdf">positions.pdf</a>):</span>
+      <span class="hint" style="margin:0 .3rem 0 0;">Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
+      <button class="preset-btn" data-preset="1">Case 1 &mdash; pure, for contrast</button>
       <button class="preset-btn" data-preset="2">Case 2 &mdash; the typical mix</button>
       <button class="preset-btn" data-preset="3">Case 3 &mdash; L/R indifference</button>
       <button class="preset-btn" data-preset="4">Case 4 &mdash; the corner duel</button>
       <button class="preset-btn" data-preset="5">Case 5 &mdash; 3-action mix</button>
       <button class="preset-btn" data-preset="6">Case 6 &mdash; near-pure hedge</button>
       <button class="preset-btn" data-preset="7">Case 7 &mdash; mirrored</button>
+      <button class="preset-btn" data-preset="8">Case 8 &mdash; the tackle rule</button>
       <button class="preset-btn" data-preset="9">Case 9 &mdash; asymmetric mix</button>
       <button class="preset-btn" data-preset="10">Case 10 &mdash; three-lane mix</button>
+      <button class="preset-btn" data-preset="11">Case 11 &mdash; reward forces the mix</button>
+      <button class="preset-btn" data-preset="12">Case 12 &mdash; movement slip</button>
     </div>
 
     <div class="stat-strip">
@@ -308,34 +337,68 @@
 <script>
 (function () {
   "use strict";
-  var D = window.EXPLORER;
-  var W = D.width, H = D.height, GOALS = D.goal_rows;
+  var BOARDS = window.EXPLORER.boards;
+  var BOARD_ORDER = ["canonical", "tackle", "territory", "slip"];
   var CELL = 62, MARGIN = 34;
   var ACT = ["U", "D", "L", "R"];
   var ARROW = { U: [0, 1], D: [0, -1], L: [-1, 0], R: [1, 0] };
 
-  var st = { x0: 0, y0: Math.floor(H / 2), x1: W - 1, y1: Math.floor(H / 2), b: 0 };
+  var currentBoard = "canonical";
+  var qview = "table"; // "table" | "graph"
   var activePlayer = 0;
+  var st = null;
+  var mixedKeysCache = {};
 
-  // ---- precompute the no-pure-saddle key list once (cheap: 2380 x 16 ops) ----
-  var mixedKeys = [];
-  Object.keys(D.states).forEach(function (k) {
-    var rec = D.states[k];
-    var cert = certify(rec[3]);
-    if (cert.kind === "mixed") mixedKeys.push(k);
-  });
-  document.getElementById("stat-states").textContent = D.state_count.toLocaleString();
-  document.getElementById("stat-mixed").textContent = D.no_saddle_count + " of " + D.state_count;
-  document.getElementById("stat-exact").textContent = D.exact_vs_iterative.toExponential(1);
+  function D() { return BOARDS[currentBoard]; }
+
+  function kickoffState(b) {
+    return { x0: 0, y0: Math.floor(b.height / 2), x1: b.width - 1, y1: Math.floor(b.height / 2), b: 0 };
+  }
+  st = kickoffState(D());
+
+  function mixedKeys() {
+    if (!mixedKeysCache[currentBoard]) {
+      var out = [];
+      var states = D().states;
+      Object.keys(states).forEach(function (k) {
+        if (certify(states[k][3]).kind === "mixed") out.push(k);
+      });
+      mixedKeysCache[currentBoard] = out;
+    }
+    return mixedKeysCache[currentBoard];
+  }
+
+  function updateStats() {
+    var b = D();
+    document.getElementById("stat-states").textContent = b.state_count.toLocaleString();
+    document.getElementById("stat-mixed").textContent = b.no_saddle_count + " of " + b.state_count;
+    document.getElementById("stat-exact").textContent = b.exact_vs_iterative.toExponential(1);
+  }
+
+  function populateBoardSelect() {
+    var sel = document.getElementById("board-select");
+    sel.innerHTML = BOARD_ORDER.map(function (id) {
+      var b = BOARDS[id];
+      return '<option value="' + id + '">' + b.label + " (" + b.width + "×" + b.height + ")</option>";
+    }).join("");
+    sel.value = currentBoard;
+    sel.addEventListener("change", function () {
+      currentBoard = sel.value;
+      activePlayer = 0;
+      st = kickoffState(D());
+      updateStats();
+      render();
+    });
+  }
 
   function key(s) { return s.x0 + "," + s.y0 + "," + s.x1 + "," + s.y1 + "," + s.b; }
 
-  function cellCenter(x, y) {
-    return [MARGIN + x * CELL + CELL / 2, MARGIN + (H - 1 - y) * CELL + CELL / 2];
+  function cellCenter(x, y, h) {
+    return [MARGIN + x * CELL + CELL / 2, MARGIN + (h - 1 - y) * CELL + CELL / 2];
   }
 
-  function wallMask(x, y) {
-    return { U: y === H - 1, D: y === 0, L: x === 0, R: x === W - 1 };
+  function wallMask(x, y, w, h) {
+    return { U: y === h - 1, D: y === 0, L: x === 0, R: x === w - 1 };
   }
 
   // rows = player0's actions, cols = player1's actions, always
@@ -370,6 +433,8 @@
 
   // ------------------------------------------------------------------ board
   function renderBoard() {
+    var b = D();
+    var W = b.width, H = b.height, GOALS = b.goal_rows;
     var boardW = W * CELL, boardH = H * CELL;
     var totalW = boardW + 2 * MARGIN, totalH = boardH + 2 * MARGIN;
     var svg = [];
@@ -392,18 +457,18 @@
     // click targets, drawn under the players/arrows
     for (var x = 0; x < W; x++) {
       for (var y = 0; y < H; y++) {
-        var c = cellCenter(x, y);
+        var c = cellCenter(x, y, H);
         svg.push('<rect class="cell-hit" data-x="' + x + '" data-y="' + y + '" x="' + (c[0] - CELL / 2) + '" y="' + (c[1] - CELL / 2) + '" width="' + CELL + '" height="' + CELL + '" fill="transparent"/>');
       }
     }
 
-    var c0 = cellCenter(st.x0, st.y0), c1 = cellCenter(st.x1, st.y1);
-    var rec = D.states[key(st)];
+    var c0 = cellCenter(st.x0, st.y0, H), c1 = cellCenter(st.x1, st.y1, H);
+    var rec = b.states[key(st)];
     var rowPol = rec[1], colPol = rec[2];
     var p0pol = rowPol, p1pol = colPol;
 
-    svg.push(actionFan(c0[0], c0[1], p0pol, "var(--p0)", wallMask(st.x0, st.y0)));
-    svg.push(actionFan(c1[0], c1[1], p1pol, "var(--p1)", wallMask(st.x1, st.y1)));
+    svg.push(actionFan(c0[0], c0[1], p0pol, "var(--p0)", wallMask(st.x0, st.y0, W, H)));
+    svg.push(actionFan(c1[0], c1[1], p1pol, "var(--p1)", wallMask(st.x1, st.y1, W, H)));
 
     svg.push(player(c0[0], c0[1], "0", "var(--p0)", st.b === 0, activePlayer === 0));
     svg.push(player(c1[0], c1[1], "1", "var(--p1)", st.b === 1, activePlayer === 1));
@@ -477,6 +542,75 @@
     render();
   }
 
+  // mirrors soccer_nash/viz.py's bestresponse_graph_svg exactly: one node per
+  // cell, a blue arrow from a cell to the higher-payoff cell in its column
+  // (the carrier's reason to switch rows), a green arrow to the lower-payoff
+  // cell in its row (the defender's reason to switch columns).
+  function bestResponseGraph(M) {
+    var gapX = 92, gapY = 78, lm = 46, tm = 34, r = 15;
+    function cx(j) { return lm + j * gapX; }
+    function cy(i) { return tm + i * gapY; }
+
+    var rowBest = [0, 1, 2, 3].map(function (j) {
+      var col = [0, 1, 2, 3].map(function (i) { return M[i][j]; });
+      return col.indexOf(Math.max.apply(null, col));
+    });
+    var colBest = [0, 1, 2, 3].map(function (i) {
+      return M[i].indexOf(Math.min.apply(null, M[i]));
+    });
+    var saddle = null;
+    for (var j = 0; j < 4; j++) {
+      var i = rowBest[j];
+      if (colBest[i] === j) { saddle = [i, j]; break; }
+    }
+
+    var body = ['<defs>' + marker("p0") + marker("p1") + '</defs>'];
+    ACT.forEach(function (lab, j) {
+      body.push('<text x="' + cx(j) + '" y="' + (tm - 22) + '" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1)">' + lab + '</text>');
+    });
+    ACT.forEach(function (lab, i) {
+      body.push('<text x="' + (lm - 34) + '" y="' + (cy(i) + 4) + '" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0)">' + lab + '</text>');
+    });
+
+    for (var jj = 0; jj < 4; jj++) {
+      var bi = rowBest[jj];
+      for (var ii = 0; ii < 4; ii++) {
+        if (ii === bi) continue;
+        var x = cx(jj) - 7, y0 = cy(ii), y1 = cy(bi);
+        var sign = y1 > y0 ? 1 : -1;
+        body.push('<line x1="' + x + '" y1="' + (y0 + sign * r) + '" x2="' + x + '" y2="' + (y1 - sign * r) + '" stroke="var(--p0)" stroke-width="2" marker-end="url(#ah-p0)" opacity=".85"/>');
+      }
+    }
+    for (var ri = 0; ri < 4; ri++) {
+      var bj = colBest[ri];
+      for (var rj = 0; rj < 4; rj++) {
+        if (rj === bj) continue;
+        var y = cy(ri) + 7, x0 = cx(rj), x1 = cx(bj);
+        var sgn = x1 > x0 ? 1 : -1;
+        body.push('<line x1="' + (x0 + sgn * r) + '" y1="' + y + '" x2="' + (x1 - sgn * r) + '" y2="' + y + '" stroke="var(--p1)" stroke-width="2" marker-end="url(#ah-p1)" opacity=".85"/>');
+      }
+    }
+
+    for (var a = 0; a < 4; a++) {
+      for (var c = 0; c < 4; c++) {
+        var isSaddle = saddle && saddle[0] === a && saddle[1] === c;
+        var fill = isSaddle ? "var(--ember)" : "var(--tint)";
+        var stroke = isSaddle ? "var(--ember)" : "var(--rule-strong)";
+        body.push('<circle cx="' + cx(c) + '" cy="' + cy(a) + '" r="' + r + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.6"/>');
+        var txt = isSaddle ? "var(--raise)" : "var(--ink)";
+        body.push('<text x="' + cx(c) + '" y="' + (cy(a) + 4) + '" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="' + txt + '">' + (M[a][c] >= 0 ? "+" : "") + M[a][c].toFixed(2) + "</text>");
+      }
+    }
+
+    var sub = saddle
+      ? "pure saddle at " + ACT[saddle[0]] + "/" + ACT[saddle[1]]
+      : "arrows cycle — no cell is a stable outcome, must mix";
+    var th = tm + 3 * gapY + 34;
+    body.push('<text x="' + lm + '" y="' + (th - 4) + '" font-family="ui-monospace,monospace" font-size="9.5" fill="' + (saddle ? "var(--ink-faint)" : "var(--ember)") + '">' + sub + "</text>");
+    var tw = Math.max(lm + 3 * gapX + gapX / 2, lm + sub.length * 6.0);
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + tw + ' ' + th + '" role="img" aria-label="best-response graph">' + body.join("") + "</svg>";
+  }
+
   // ------------------------------------------------------------------ readout
   function heat(v, lo, hi) {
     var t = hi > lo ? (v - lo) / (hi - lo) : 0.5;
@@ -487,14 +621,14 @@
   }
 
   function renderReadout() {
-    var rec = D.states[key(st)];
+    var rec = D().states[key(st)];
     var V = rec[0], rowPol = rec[1], colPol = rec[2], Q = rec[3];
     var carrierPol = st.b === 0 ? rowPol : colPol;
     var defenderPol = st.b === 0 ? colPol : rowPol;
     var M = orient(Q, st.b);
     var cert = certify(M);
 
-    document.getElementById("state-key").textContent = "state (" + st.x0 + ", " + st.y0 + ", " + st.x1 + ", " + st.y1 + ", " + st.b + ")";
+    document.getElementById("state-key").textContent = "state (" + st.x0 + ", " + st.y0 + ", " + st.x1 + ", " + st.y1 + ", " + st.b + ")  —  " + D().label;
     var kEl = document.getElementById("readout-kind");
     if (cert.kind === "pure") {
       kEl.className = "readout-kind pure";
@@ -507,20 +641,29 @@
     document.getElementById("v-label").textContent = "V = " + (V >= 0 ? "+" : "") + V.toFixed(3);
     document.getElementById("v-fill").style.left = (50 + 50 * Math.max(Math.min(V, 1), -1)) + "%";
 
-    var vals = [];
-    for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) vals.push(M[i][j]);
-    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
-
-    var t = '<thead><tr><th></th>' + ACT.map(function (a) { return "<th>" + a + "</th>"; }).join("") + "</tr></thead><tbody>";
-    for (var r = 0; r < 4; r++) {
-      t += "<tr><th>" + ACT[r] + "</th>";
-      for (var c = 0; c < 4; c++) {
-        t += '<td class="cell" style="background:' + heat(M[r][c], lo, hi) + '">' + M[r][c].toFixed(3) + "</td>";
+    var qmatrixEl = document.getElementById("qmatrix");
+    var qgraphEl = document.getElementById("qgraph");
+    if (qview === "table") {
+      qmatrixEl.style.display = "";
+      qgraphEl.style.display = "none";
+      var vals = [];
+      for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) vals.push(M[i][j]);
+      var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+      var t = '<thead><tr><th></th>' + ACT.map(function (a) { return "<th>" + a + "</th>"; }).join("") + "</tr></thead><tbody>";
+      for (var r = 0; r < 4; r++) {
+        t += "<tr><th>" + ACT[r] + "</th>";
+        for (var c = 0; c < 4; c++) {
+          t += '<td class="cell" style="background:' + heat(M[r][c], lo, hi) + '">' + M[r][c].toFixed(3) + "</td>";
+        }
+        t += "</tr>";
       }
-      t += "</tr>";
+      t += "</tbody>";
+      qmatrixEl.innerHTML = t;
+    } else {
+      qmatrixEl.style.display = "none";
+      qgraphEl.style.display = "";
+      qgraphEl.innerHTML = bestResponseGraph(M);
     }
-    t += "</tbody>";
-    document.getElementById("qmatrix").innerHTML = t;
 
     var cs = support(carrierPol), ds = support(defenderPol);
     var sb = document.getElementById("support");
@@ -536,6 +679,9 @@
     document.getElementById("seg-p1").classList.toggle("active", activePlayer === 1);
     document.getElementById("ball-p0").classList.toggle("active", st.b === 0);
     document.getElementById("ball-p1").classList.toggle("active", st.b === 1);
+    document.getElementById("view-table").classList.toggle("active", qview === "table");
+    document.getElementById("view-graph").classList.toggle("active", qview === "graph");
+    document.getElementById("board-select").value = currentBoard;
   }
 
   function render() {
@@ -548,17 +694,20 @@
   document.getElementById("seg-p1").addEventListener("click", function () { activePlayer = 1; render(); });
   document.getElementById("ball-p0").addEventListener("click", function () { st.b = 0; render(); });
   document.getElementById("ball-p1").addEventListener("click", function () { st.b = 1; render(); });
+  document.getElementById("view-table").addEventListener("click", function () { qview = "table"; render(); });
+  document.getElementById("view-graph").addEventListener("click", function () { qview = "graph"; render(); });
 
   document.getElementById("btn-kickoff").addEventListener("click", function () {
-    st = { x0: 0, y0: Math.floor(H / 2), x1: W - 1, y1: Math.floor(H / 2), b: 0 };
+    st = kickoffState(D());
     render();
   });
   document.getElementById("btn-random").addEventListener("click", function () {
-    var keys = Object.keys(D.states);
+    var keys = Object.keys(D().states);
     setFromKey(keys[Math.floor(Math.random() * keys.length)]);
   });
   document.getElementById("btn-random-mixed").addEventListener("click", function () {
-    setFromKey(mixedKeys[Math.floor(Math.random() * mixedKeys.length)]);
+    var mk = mixedKeys();
+    setFromKey(mk[Math.floor(Math.random() * mk.length)]);
   });
 
   function setFromKey(k) {
@@ -567,18 +716,35 @@
     render();
   }
 
+  // case number -> {board, state}, coordinates as printed in docs/positions.md
   var PRESETS = {
-    2: [0, 1, 1, 1, 0], 3: [1, 1, 1, 0, 1], 4: [0, 0, 1, 1, 0], 5: [0, 0, 2, 0, 0],
-    6: [1, 1, 2, 0, 1], 7: [5, 1, 6, 1, 1], 9: [0, 2, 1, 2, 0], 10: [0, 2, 2, 2, 1]
+    1: { board: "canonical", state: [4, 0, 5, 0, 0] },
+    2: { board: "canonical", state: [0, 1, 1, 1, 0] },
+    3: { board: "canonical", state: [1, 1, 1, 0, 1] },
+    4: { board: "canonical", state: [0, 0, 1, 1, 0] },
+    5: { board: "canonical", state: [0, 0, 2, 0, 0] },
+    6: { board: "canonical", state: [1, 1, 2, 0, 1] },
+    7: { board: "canonical", state: [5, 1, 6, 1, 1] },
+    8: { board: "tackle", state: [2, 3, 3, 3, 1] },
+    9: { board: "canonical", state: [0, 2, 1, 2, 0] },
+    10: { board: "canonical", state: [0, 2, 2, 2, 1] },
+    11: { board: "territory", state: [4, 4, 5, 4, 0] },
+    12: { board: "slip", state: [1, 3, 1, 4, 1] }
   };
   Array.prototype.forEach.call(document.querySelectorAll(".preset-btn"), function (btn) {
     btn.addEventListener("click", function () {
       var p = PRESETS[btn.dataset.preset];
-      st = { x0: p[0], y0: p[1], x1: p[2], y1: p[3], b: p[4] };
+      currentBoard = p.board;
+      activePlayer = 0;
+      var s = p.state;
+      st = { x0: s[0], y0: s[1], x1: s[2], y1: s[3], b: s[4] };
+      updateStats();
       render();
     });
   });
 
+  populateBoardSelect();
+  updateStats();
   render();
 })();
 </script>
