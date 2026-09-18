@@ -61,6 +61,8 @@ class NashQResult:
     matrix_game_solves: int = 0  # LP calls (0 for a purely pure/saddle run)
     staleness_trace: list[float] | None = None  # policy iteration only
     residual_trace: list[float] | None = None  # max Bellman update per sweep
+    exact: bool = False  # values solved directly, not approximated by iteration
+    exact_vs_iterative: float | None = None  # max |V_exact - V_iterative|, if checked
 
     @property
     def pure_equilibrium_exists(self) -> bool:
@@ -406,6 +408,90 @@ class NashQIteration:
             gamma=self.gamma,
             matrix_game_solves=self._lp_calls,
             staleness_trace=staleness_trace,
+        )
+
+    def solve_exact(self, result: NashQResult) -> dict[State, float]:
+        """The value function for ``result``'s policy pair, solved directly --
+        no iteration, no tolerance, no residual.
+
+        ``run()`` finds the equilibrium *policy* at every state (which states
+        are a pure saddle, and the LP mixed strategy where they are not) by
+        repeated sweeps, stopping once the update is smaller than ``tol`` --
+        that stopping point is, by construction, an approximation to the true
+        fixed point, however close. But once the policy pair
+        ``(row_policy[s], col_policy[s])`` at every state is fixed, it induces
+        an ordinary (sub)stochastic Markov chain over states, and the value
+        function is the *unique exact solution* of the linear system
+        ``V = R + gamma * P @ V``, i.e. ``(I - gamma P) V = R`` -- solved here
+        in one sparse linear solve, not approximated by sweeping. This is
+        the same relationship ``run_policy_iteration()`` exploits for speed
+        (cheap linear sweeps instead of an LP every state, every sweep); this
+        method skips the sweeping too and solves the linear system outright.
+        """
+        from scipy.sparse import identity, lil_matrix
+        from scipy.sparse.linalg import spsolve
+
+        states = self._states
+        idx = {s: i for i, s in enumerate(states)}
+        n = len(states)
+        R = np.zeros(n)
+        P = lil_matrix((n, n))
+
+        for i, s in enumerate(states):
+            p = result.row_policy[s]
+            q = result.col_policy[s]
+            grid = self._out[s]
+            r_acc = 0.0
+            for a0 in range(self._n):
+                wa = p[a0]
+                if wa == 0.0:
+                    continue
+                for a1 in range(self._n):
+                    w = wa * q[a1]
+                    if w == 0.0:
+                        continue
+                    for prob, ns, r0 in grid[a0, a1]:
+                        pw = w * prob
+                        r_acc += pw * r0
+                        if not self.game.is_terminal(ns):
+                            P[i, idx[ns]] += pw
+            R[i] = r_acc
+
+        A = identity(n, format="csr") - self.gamma * P.tocsr()
+        V = spsolve(A, R)
+        return dict(zip(states, V.tolist(), strict=True))
+
+    def run_exact(self) -> NashQResult:
+        """``run()``, then replace its approximate fixed point with the exact
+        linear solve of the discovered policy's Bellman equation.
+
+        The iterative run still does the real work of *finding* the
+        equilibrium policy (which states are pure, and the LP strategy where
+        they are not); ``solve_exact`` then re-derives the value function for
+        that exact policy with no iteration at all, and the policies are
+        re-extracted from that exact ``V`` so the returned result is fully
+        self-consistent. ``exact_vs_iterative`` reports the largest
+        difference between the two value functions -- a direct, numeric
+        certificate that the iteration had actually converged, not just a
+        claim about the tolerance it was run with.
+        """
+        approx = self.run()
+        exact_values = self.solve_exact(approx)
+        exact_vs_iterative = max(
+            abs(exact_values[s] - approx.values[s]) for s in self._states
+        )
+        row_policy, col_policy, no_saddle = self._extract_policies(exact_values)
+        return NashQResult(
+            values=exact_values,
+            row_policy=row_policy,
+            col_policy=col_policy,
+            no_saddle_states=no_saddle,
+            iterations=approx.iterations,
+            mode=self.mode,
+            gamma=self.gamma,
+            matrix_game_solves=self._lp_calls,
+            exact=True,
+            exact_vs_iterative=exact_vs_iterative,
         )
 
     def value_bracket_gaps(self, result: NashQResult) -> np.ndarray:

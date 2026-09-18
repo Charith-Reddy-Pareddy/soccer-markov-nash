@@ -113,6 +113,39 @@ def test_deterministic_hybrid_needs_no_linear_program(hybrid_result):
     assert r.matrix_game_solves == 0
 
 
+# -------------------------------------------------------------- exact solve
+
+
+def test_exact_matches_iterative_value_function():
+    for game in (SMALL, SMALL_RANDOM):
+        solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-10)
+        approx = solver.run()
+        exact = solver.solve_exact(approx)
+        worst = max(abs(exact[s] - approx.values[s]) for s in approx.values)
+        assert worst < 1e-7
+
+
+def test_run_exact_reports_a_tiny_certificate():
+    r = NashQIteration(SMALL_RANDOM, gamma=0.9, mode="hybrid", tol=1e-9).run_exact()
+    assert r.exact
+    assert r.exact_vs_iterative is not None
+    assert r.exact_vs_iterative < 1e-6
+
+
+def test_run_exact_policy_still_an_equilibrium(hybrid_result):
+    # Re-extracting policies from the exact V should not change which states
+    # have no pure saddle -- same equilibrium, just an exact value function.
+    game, approx = hybrid_result
+    exact = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9).run_exact()
+    assert set(exact.no_saddle_states) == set(approx.no_saddle_states)
+
+
+def test_default_run_is_not_marked_exact(hybrid_result):
+    _, r = hybrid_result
+    assert not r.exact
+    assert r.exact_vs_iterative is None
+
+
 def test_policy_iteration_matches_value_iteration():
     for game in (SMALL, SMALL_RANDOM):
         vi = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-10).run()

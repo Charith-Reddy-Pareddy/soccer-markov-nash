@@ -110,6 +110,22 @@ arrow pointing into a wall would show movement that never happens. Cases 4,
 5, 6, 8, 10 and 11 below each have at least one player pinned this way;
 each is called out explicitly where it matters.
 
+**Every number on this page is exact, not an iterative approximation.**
+`NashQIteration.run()` finds the equilibrium policy at every state by
+sweeping until the largest update drops below a tolerance -- by
+construction, an approximation to the true fixed point, however tight. Once
+that policy (which states are a pure saddle, and the LP mixed strategy
+where they are not) is known, it induces a fixed Markov chain over states,
+and the value function is the *unique* solution of the linear system
+`V = R + gamma * P @ V`. `NashQIteration.run_exact()` solves that system
+directly with one sparse linear solve -- no sweeping, no residual, no
+tolerance -- and every Q matrix below is built from that exact `V`. The
+two never disagreed by more than `2.3e-10` on the canonical board (`4.2e-10`
+on the slip board, `8.2e-10` on the territory-reward board, `3.8e-11` on the
+tackle board) -- a direct, numeric certificate that the iterative solver
+had actually converged, not just a claim about the tolerance it was run
+with.
+
 **A third piece, below the board and the Q matrix: the successor-state
 coordinates.** Every case also gets a `4x4` table, same orientation as the Q
 matrix, whose *cells* are the actual `(x0, y0, x1, y1, b)` state reached by
@@ -150,11 +166,11 @@ whole indifference class, not one point on a larger face.
 ![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
 
 ```
-        U        D        L        R
-  U   0.086    0.478    0.286    0.099
-  D   0.109    0.076    0.085    0.086
-  L   0.103    0.103    0.085    0.084
-  R   0.082    0.187   -0.108   -0.071
+                  U          D          L          R
+    U    0.085599   0.478297   0.285670   0.099198
+    D    0.109260   0.076330   0.085331   0.085599
+    L    0.103381   0.103381   0.084811   0.083738
+    R    0.082480   0.187381  -0.108448  -0.070696
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -192,11 +208,11 @@ indifference class.
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
 ```
-        U        D        L        R
-  U   0.139   -0.173    0.099    0.110
-  D   0.171    0.185    0.157    0.171
-  L   0.810    0.500    0.141    0.810
-  R   0.211    0.181    0.211    0.167
+                  U          D          L          R
+    U    0.139279  -0.173204   0.099163   0.109755
+    D    0.170790   0.185032   0.156678   0.170790
+    L    0.810000   0.499883   0.141010   0.810000
+    R    0.211001   0.180940   0.211001   0.166529
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -247,11 +263,11 @@ defender `{U, D, L}` (91.9% / 5.9% / 2.3%, `D` a wall hold).
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
 ```
-        U        D        L        R
-  U   0.084    0.095    0.103    0.110
-  D   0.086    0.076    0.076    0.086
-  L   0.086    0.076    0.076    0.086
-  R   0.088    0.095   -0.088    0.110
+                  U          D          L          R
+    U    0.083738   0.095109   0.103381   0.110220
+    D    0.085599   0.076363   0.076330   0.085599
+    L    0.085599   0.076363   0.076330   0.085599
+    R    0.088459   0.095109  -0.088213   0.110220
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -286,11 +302,11 @@ mixed strategy.**
 ![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
 
 ```
-        U        D        L        R
-  U   0.085    0.478    0.291    0.095
-  D   0.478    0.085    0.291    0.095
-  L   0.093    0.093    0.086    0.093
-  R   0.082    0.082   -0.122   -0.072
+                  U          D          L          R
+    U    0.084811   0.478297   0.290839   0.095109
+    D    0.478297   0.084811   0.290839   0.095109
+    L    0.093043   0.093043   0.085599   0.093043
+    R    0.082303   0.082303  -0.122276  -0.071591
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -340,11 +356,11 @@ core.
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
 ```
-        U        D        L        R
-  U   0.116    0.105    0.170    0.136
-  D   0.094    0.415    0.815    0.450
-  L   0.094    0.105    0.000    0.105
-  R   0.170    0.500   -0.671    0.500
+                  U          D          L          R
+    U    0.116139   0.104525   0.169846   0.135972
+    D    0.094073   0.415483   0.814500   0.450000
+    L    0.094073   0.104525   0.000000   0.104525
+    R    0.169846   0.500000  -0.670721   0.500000
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -417,11 +433,11 @@ for contrast with everything else on this page.
 ![Case 1 board position and Q matrix graph.](figures/png/positions_case01.png)
 
 ```
-        U        D        L        R
-  U   0.234    0.317    0.523    0.272
-  D   0.151    0.211    0.211    0.222
-  L   0.161    0.182    0.172    0.190
-  R   0.012   -0.095    0.058    0.098
+                  U          D          L          R
+    U    0.234446   0.316945   0.522973   0.271536
+    D    0.150878   0.211001   0.211001   0.222362
+    L    0.161034   0.182213   0.171623   0.189901
+    R    0.012406  -0.095109   0.057946   0.097586
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -455,11 +471,11 @@ whole indifference class, not one point on a larger face.
 ![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
 
 ```
-        U        D        L        R
-  U   0.086    0.478    0.286    0.099
-  D   0.109    0.076    0.085    0.086
-  L   0.103    0.103    0.085    0.084
-  R   0.082    0.187   -0.108   -0.071
+                  U          D          L          R
+    U    0.085599   0.478297   0.285670   0.099198
+    D    0.109260   0.076330   0.085331   0.085599
+    L    0.103381   0.103381   0.084811   0.083738
+    R    0.082480   0.187381  -0.108448  -0.070696
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -497,11 +513,11 @@ indifference class.
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
 ```
-        U        D        L        R
-  U   0.139   -0.173    0.099    0.110
-  D   0.171    0.185    0.157    0.171
-  L   0.810    0.500    0.141    0.810
-  R   0.211    0.181    0.211    0.167
+                  U          D          L          R
+    U    0.139279  -0.173204   0.099163   0.109755
+    D    0.170790   0.185032   0.156678   0.170790
+    L    0.810000   0.499883   0.141010   0.810000
+    R    0.211001   0.180940   0.211001   0.166529
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -541,11 +557,11 @@ equilibrium; only the `U`/hold split (4.6%/95.4%) is actually forced.
 ![Case 4 board position and Q matrix graph.](figures/png/positions_case04.png)
 
 ```
-        U        D        L        R
-  U   0.103    0.103   -0.408    0.084
-  D   0.109    0.076    0.101    0.086
-  L   0.109    0.076    0.101    0.086
-  R   0.112   -0.075    0.112    0.088
+                  U          D          L          R
+    U    0.103381   0.103381  -0.407594   0.083738
+    D    0.109260   0.076330   0.100850   0.085599
+    L    0.109260   0.076330   0.100850   0.085599
+    R    0.112055  -0.075068   0.112055   0.088459
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -596,11 +612,11 @@ defender `{U, D, L}` (91.9% / 5.9% / 2.3%, `D` a wall hold).
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
 ```
-        U        D        L        R
-  U   0.084    0.095    0.103    0.110
-  D   0.086    0.076    0.076    0.086
-  L   0.086    0.076    0.076    0.086
-  R   0.088    0.095   -0.088    0.110
+                  U          D          L          R
+    U    0.083738   0.095109   0.103381   0.110220
+    D    0.085599   0.076363   0.076330   0.085599
+    L    0.085599   0.076363   0.076330   0.085599
+    R    0.088459   0.095109  -0.088213   0.110220
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -637,11 +653,11 @@ defender `{D, R}` (2.5% / 97.5%, both real moves).
 ![Case 6 board position and Q matrix graph.](figures/png/positions_case06.png)
 
 ```
-        U        D        L        R
-  U   0.317    0.317    0.247   -0.178
-  D   0.211    0.211    0.211    0.167
-  L   0.171    0.045    0.157    0.171
-  R   0.182    0.182    0.182    0.135
+                  U          D          L          R
+    U    0.316945   0.316945   0.247069  -0.178022
+    D    0.211001   0.211001   0.211001   0.166529
+    L    0.170790   0.044962   0.156678   0.170790
+    R    0.182213   0.182213   0.182213   0.135158
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -661,7 +677,7 @@ values negate to machine precision:
 
     V(case 2) = +0.094235
     V(mirror) = -0.094235
-    sum       = -1.39e-17   (zero, to floating-point noise)
+    sum       = +2.78e-17   (zero, to floating-point noise)
 
 Direct evidence for the repetition claim above: this is not a new shape, it
 is Case 2's identical mix reappearing, exactly mirrored, wherever the same
@@ -678,11 +694,11 @@ mirrored.
 ![Case 7 board position and Q matrix graph.](figures/png/positions_case07.png)
 
 ```
-        U        D        L        R
-  U   0.086    0.478    0.099    0.286
-  D   0.109    0.076    0.086    0.085
-  L   0.082    0.187   -0.071   -0.108
-  R   0.103    0.103    0.084    0.085
+                  U          D          L          R
+    U    0.085599   0.478297   0.099198   0.285670
+    D    0.109260   0.076330   0.085599   0.085331
+    L    0.082480   0.187381  -0.070696  -0.108448
+    R    0.103381   0.103381   0.083738   0.084811
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -718,11 +734,11 @@ defender `{D, R}` (60.7% / 39.3%, both real moves).
 ![Case 8 board position and Q matrix graph.](figures/png/positions_case08.png)
 
 ```
-        U        D        L        R
-  U  -0.012    0.005    0.016   -0.042
-  D   0.072   -0.022    0.009    0.000
-  L  -0.019   -0.080    0.019   -0.042
-  R  -0.007   -0.026   -0.006   -0.039
+                  U          D          L          R
+    U   -0.011944   0.005242   0.015879  -0.041869
+    D    0.072350  -0.022044   0.008641   0.000279
+    L   -0.018582  -0.080389   0.018582  -0.041869
+    R   -0.007062  -0.025575  -0.006356  -0.039427
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -757,11 +773,11 @@ mixed strategy.**
 ![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
 
 ```
-        U        D        L        R
-  U   0.085    0.478    0.291    0.095
-  D   0.478    0.085    0.291    0.095
-  L   0.093    0.093    0.086    0.093
-  R   0.082    0.082   -0.122   -0.072
+                  U          D          L          R
+    U    0.084811   0.478297   0.290839   0.095109
+    D    0.478297   0.084811   0.290839   0.095109
+    L    0.093043   0.093043   0.085599   0.093043
+    R    0.082303   0.082303  -0.122276  -0.071591
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -812,11 +828,11 @@ genuine forced mix.
 ![Case 10 board position and Q matrix graph.](figures/png/positions_case10.png)
 
 ```
-        U        D        L        R
-  U   0.247    0.330    0.272    0.317
-  D   0.330    0.247    0.272    0.317
-  L   0.366    0.366    0.330    0.110
-  R   0.228    0.228    0.220    0.205
+                  U          D          L          R
+    U    0.247069   0.330151   0.271536   0.316945
+    D    0.330151   0.247069   0.271536   0.316945
+    L    0.366481   0.366481   0.330151   0.109966
+    R    0.228062   0.228062   0.219944   0.205131
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -855,11 +871,11 @@ core.
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
 ```
-        U        D        L        R
-  U   0.116    0.105    0.170    0.136
-  D   0.094    0.415    0.815    0.450
-  L   0.094    0.105    0.000    0.105
-  R   0.170    0.500   -0.671    0.500
+                  U          D          L          R
+    U    0.116139   0.104525   0.169846   0.135972
+    D    0.094073   0.415483   0.814500   0.450000
+    L    0.094073   0.104525   0.000000   0.104525
+    R    0.169846   0.500000  -0.670721   0.500000
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -897,11 +913,11 @@ otherwise always pure.
 ![Case 12 board position and Q matrix graph.](figures/png/positions_case12.png)
 
 ```
-        U        D        L        R
-  U  -0.273    0.006    0.001    0.069
-  D  -0.031    0.069    0.057    0.450
-  L   0.396    0.083    0.039    0.450
-  R   0.039    0.020    0.015    0.092
+                  U          D          L          R
+    U   -0.273301   0.005960   0.001041   0.069053
+    D   -0.031430   0.068847   0.056711   0.449923
+    L    0.396398   0.083433   0.039473   0.449665
+    R    0.039469   0.020201   0.015300   0.091802
 ```
 
 **Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
@@ -931,9 +947,10 @@ cycle anywhere in the matrix.
 
 ## Reproduction
 
-`python scripts/positions.py` prints the exact `4x4` Q matrix, policy,
-action support, and the successor-state coordinate table for all twelve
-states, and writes
+`python scripts/positions.py` prints the exact `4x4` Q matrix -- from
+`NashQIteration.run_exact()`'s direct linear solve, not the iterative
+approximation to it -- policy, action support, and the successor-state
+coordinate table for all twelve states, and writes
 `figures/gallery/positions.svg`. A PDF write-up of this page is at
 [positions.pdf](positions.pdf). `python scripts/pure_vs_mixed_exploit.py`
 reproduces the pure-vs-mixed exploitability table above. `python

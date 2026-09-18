@@ -109,7 +109,12 @@ def _oriented_matrix(solver, state, values):
 def _solve(**kw):
     g = SoccerGame(**kw)
     s = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
-    return g, s, s.run()
+    r = s.run_exact()
+    print(f"  exact solve: |V_exact - V_iterative| = {r.exact_vs_iterative:.2e} "
+          f"over {len(r.values)} states (certifies the iteration had "
+          f"actually converged; the Q matrices below are built from the "
+          f"exact V, not the iterative approximation to it)")
+    return g, s, r
 
 
 def _successor_grid(g: SoccerGame, state) -> list[list[list[tuple[float, tuple, tuple]]]]:
@@ -166,22 +171,23 @@ def _report(label, g, solver, r, state, panels, case_no=None):
         print(f"  pure equilibrium, saddle at {_ACT[cert.saddle[0]]}/{_ACT[cert.saddle[1]]}")
     else:
         print(f"  mixed equilibrium, no pure saddle, gap {cert.gap:.4f}")
-    print("  Q matrix -- the stage-game payoff table at this one state "
+    print("  Q matrix -- the stage-game payoff table at this one state, built "
+          "from the exact solve, not the iterative approximation to it "
           "(carrier's payoff; rows = carrier, cols = defender):")
-    print("        " + "".join(f"{a:>8}" for a in _ACT))
+    print("        " + "".join(f"{a:>11}" for a in _ACT))
     for i, a in enumerate(_ACT):
-        print(f"    {a:>3} " + "".join(f"{M[i, j]:>8.3f}" for j in range(4)))
+        print(f"    {a:>3} " + "".join(f"{M[i, j]:>11.6f}" for j in range(4)))
     carrier_pol = r.row_policy[state] if state[4] == 0 else r.col_policy[state]
     defender_pol = r.col_policy[state] if state[4] == 0 else r.row_policy[state]
-    print(f"  row_policy (p0) = {np.round(r.row_policy[state], 3).tolist()}")
-    print(f"  col_policy (p1) = {np.round(r.col_policy[state], 3).tolist()}")
+    print(f"  row_policy (p0) = {np.round(r.row_policy[state], 6).tolist()}")
+    print(f"  col_policy (p1) = {np.round(r.col_policy[state], 6).tolist()}")
     print(f"  carrier support = {_support(carrier_pol)}   "
           f"defender support = {_support(defender_pol)}")
     e_carrier, e_defender = _indifference(M, carrier_pol, defender_pol)
     print("  E[action] against the opponent's actual mix "
           "(support actions should tie; others should lose):")
-    print("    carrier  " + "  ".join(f"{a}={v:+.4f}" for a, v in zip(_ACT, e_carrier)))
-    print("    defender " + "  ".join(f"{a}={v:+.4f}" for a, v in zip(_ACT, e_defender)))
+    print("    carrier  " + "  ".join(f"{a}={v:+.6f}" for a, v in zip(_ACT, e_carrier)))
+    print("    defender " + "  ".join(f"{a}={v:+.6f}" for a, v in zip(_ACT, e_defender)))
     print("  Successor states -- (x0, y0, x1, y1, b) reached by each joint action, "
           "same carrier/defender orientation (2 outcomes = order-dependent):")
     succ = _successor_grid(g, state)
