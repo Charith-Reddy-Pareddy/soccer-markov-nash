@@ -53,6 +53,10 @@ technical answer, start with **[report.pdf](report.pdf)**
 
 - [assumptions.md](assumptions.md) — the A10 geometry instance and which of its
   collision rules are quoted vs. interpreted.
+- [explorer.html](explorer.html) — interactive board: place both players
+  anywhere and get the live equilibrium policy and exact Q matrix for all
+  2,380 states, no server (`make explorer-data`, from
+  `scripts/explorer_data.py`).
 - [gallery.html](gallery.html) — every policy and value surface, drawn
   (`make gallery`, from `soccer_nash/viz.py`).
 - [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).

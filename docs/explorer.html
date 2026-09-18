@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board Explorer</title>
+<meta name="description" content="Place both players anywhere on the board and watch the exact Nash equilibrium -- policy arrows and the full 4x4 Q matrix -- update live, for all 2,380 states.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --paper: #f7f8f5;
+    --tint: #eef2ec;
+    --raise: #ffffff;
+    --ink: #19211c;
+    --ink-soft: #4b564e;
+    --ink-faint: #77817a;
+    --rule: #d9e2db;
+    --rule-strong: #c2cec5;
+    --pitch: #2f6b48;
+    --pitch-deep: #142a1c;
+    --pitch-mid: #1e4a30;
+    --pitch-soft: #dfeae1;
+    --pitch-line: rgba(247, 248, 245, .14);
+    --ember: #a94e18;
+    --ember-hi: #c96326;
+    --ember-soft: #f2e5da;
+    --p0: #2f6bb0;
+    --p1: #2f8a52;
+    --ball: #cf7a20;
+    --on-dark: #eef3ec;
+    --on-dark-soft: #a9c0ac;
+    --shadow: 24px 24px 60px -30px rgba(25, 45, 33, .28);
+    --shadow-lg: 40px 50px 90px -40px rgba(10, 20, 14, .5);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #11150f; --tint: #171c14; --raise: #1a2017; --ink: #e7ece2;
+      --ink-soft: #a9b3a6; --ink-faint: #7c867a; --rule: #2b342a; --rule-strong: #3b463a;
+      --pitch: #7cba95; --pitch-soft: #1a241b; --ember: #dd9057; --ember-hi: #eaa876;
+      --ember-soft: #241b13; --p0: #6ea8de; --p1: #7cba95;
+      --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
+      --shadow-lg: 40px 50px 90px -40px rgba(0, 0, 0, .7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #11150f; --tint: #171c14; --raise: #1a2017; --ink: #e7ece2;
+    --ink-soft: #a9b3a6; --ink-faint: #7c867a; --rule: #2b342a; --rule-strong: #3b463a;
+    --pitch: #7cba95; --pitch-soft: #1a241b; --ember: #dd9057; --ember-hi: #eaa876;
+    --ember-soft: #241b13; --p0: #6ea8de; --p1: #7cba95;
+    --shadow: 24px 24px 60px -30px rgba(0, 0, 0, .6);
+    --shadow-lg: 40px 50px 90px -40px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Spectral", Georgia, "Times New Roman", serif;
+    font-size: 18px; line-height: 1.62; font-feature-settings: "onum" 1;
+  }
+  h1, h2, h3, .kicker, .eyebrow, .mono, th, .stat-k, nav a, .btn, .seg button, .iconbtn, .brand {
+    font-family: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  }
+  code, .data, .qmatrix, .preset-btn, .state-key, .support-block, .stat-v {
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+  section { padding: 2.6rem 0 4.4rem; }
+  @media (max-width: 640px) { section { padding: 1.8rem 0 3rem; } }
+
+  h1 { font-weight: 700; font-size: clamp(2.1rem, 5vw, 3rem); line-height: 1.03; letter-spacing: -.01em; text-wrap: balance; margin: .5rem 0 0; }
+  p.lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 62ch; margin: 1rem 0 0; }
+  p { margin: 0 0 1.05rem; max-width: 66ch; }
+  strong { font-weight: 600; }
+
+  .eyebrow {
+    display: flex; align-items: center; gap: .6rem; font-size: .82rem; font-weight: 600;
+    letter-spacing: .09em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 1rem;
+  }
+  .badge { width: 26px; height: 26px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; color: #fff; font-family: "IBM Plex Mono", monospace; font-size: .72rem; font-weight: 600; background: var(--pitch); }
+
+  /* ---------- nav (shared with the rest of the site) ---------- */
+  header.site { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(10px) saturate(1.1); border-bottom: 1px solid var(--rule); }
+  nav { max-width: 1080px; margin: 0 auto; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+  .brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1.02rem; text-decoration: none; color: var(--ink); }
+  .brand .mark { display: flex; }
+  .brand .mark span { width: 11px; height: 11px; border-radius: 50%; margin-left: -4px; border: 1.5px solid var(--paper); }
+  .brand .mark span:first-child { margin-left: 0; background: var(--p0); }
+  .brand .mark span:last-child { background: var(--p1); }
+  nav .links { display: flex; align-items: center; gap: 1.5rem; font-size: .88rem; font-weight: 500; }
+  nav .links a { text-decoration: none; color: var(--ink-soft); }
+  nav .links a:hover { color: var(--ink); }
+  nav .links a.current { color: var(--ink); }
+  nav .links a.cta { color: #fff; background: var(--pitch); padding: .4rem .85rem; border-radius: 5px; }
+  nav .links a.cta:hover { background: var(--pitch-mid); }
+  @media (max-width: 760px) { nav .links a:not(.cta):not(.current) { display: none; } }
+
+  /* ---------- explorer layout ---------- */
+  .explorer-grid { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 2rem; align-items: start; margin-top: 2rem; }
+  @media (max-width: 960px) { .explorer-grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--raise); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow); padding: 1.4rem; }
+  .board-svg-wrap { line-height: 0; }
+  .board-svg-wrap svg { width: 100%; height: auto; display: block; }
+  .cell-hit { cursor: pointer; }
+  .cell-hit:hover { fill: color-mix(in srgb, var(--pitch) 12%, transparent); }
+  .cell-hit.occupied { cursor: not-allowed; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.2rem; }
+  .seg { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 8px; overflow: hidden; }
+  .seg button { border: none; background: var(--raise); color: var(--ink-soft); font-weight: 600; font-size: .86rem; padding: .5rem .95rem; cursor: pointer; }
+  .seg button:not(:last-child) { border-right: 1px solid var(--rule-strong); }
+  .seg button.active.p0 { background: var(--p0); color: #fff; }
+  .seg button.active.p1 { background: var(--p1); color: #fff; }
+  .iconbtn { border: 1px solid var(--rule-strong); background: var(--raise); color: var(--ink); border-radius: 8px; padding: .5rem .95rem; font-weight: 600; font-size: .86rem; cursor: pointer; }
+  .iconbtn:hover { border-color: var(--ink-faint); }
+
+  .hint { font-size: .86rem; color: var(--ink-faint); margin-top: .9rem; }
+
+  .readout-kind { font-size: 1.15rem; font-weight: 700; margin: 0 0 .2rem; }
+  .readout-kind.pure { color: var(--pitch); }
+  .readout-kind.mixed { color: var(--ember); }
+  .state-key { color: var(--ink-faint); font-size: .8rem; margin-bottom: 1.1rem; }
+
+  .vbar-row { display: flex; align-items: center; gap: .7rem; margin: .2rem 0 1.3rem; }
+  .vbar { position: relative; flex: 1; height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--ember-soft), var(--rule) 50%, var(--pitch-soft)); overflow: hidden; }
+  .vbar .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--rule-strong); }
+  .vbar .fill { position: absolute; top: 0; bottom: 0; width: 3px; border-radius: 2px; background: var(--ink); }
+  .vbar-val { font-family: "IBM Plex Mono", monospace; font-size: .85rem; color: var(--ink-soft); white-space: nowrap; }
+
+  table.qmatrix { border-collapse: collapse; width: 100%; font-size: .86rem; margin: .4rem 0 1.3rem; }
+  table.qmatrix th, table.qmatrix td { padding: .5rem .3rem; text-align: center; border: 1px solid var(--rule); }
+  table.qmatrix th { background: var(--tint); font-weight: 600; color: var(--ink-soft); font-size: .78rem; }
+  table.qmatrix th:first-child, table.qmatrix td:empty { background: transparent; border: none; }
+  table.qmatrix td.cell { font-weight: 600; }
+
+  .support-block { display: grid; gap: .55rem; font-size: .85rem; color: var(--ink-soft); }
+  .support-block .row { display: flex; gap: .5rem; align-items: baseline; }
+  .support-block .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; margin-top: .3rem; }
+  .support-block b { color: var(--ink); }
+
+  .legend-row { display: flex; flex-wrap: wrap; gap: 1.4rem; margin-top: 1.4rem; font-size: .84rem; color: var(--ink-faint); }
+  .legend-row .k { display: inline-flex; align-items: center; gap: .4rem; }
+  .legend-row .swatch { width: 18px; height: 3px; border-radius: 2px; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.5rem; }
+  .preset-btn { border: 1px solid var(--rule-strong); background: var(--raise); border-radius: 7px; padding: .42rem .8rem; font-size: .78rem; color: var(--ink-soft); cursor: pointer; }
+  .preset-btn:hover { border-color: var(--pitch); color: var(--ink); }
+  .preset-btn.mixed { border-color: color-mix(in srgb, var(--ember) 40%, var(--rule-strong)); }
+
+  .stat-strip { display: flex; flex-wrap: wrap; gap: 2.2rem; margin-top: 2.6rem; padding-top: 1.8rem; border-top: 1px solid var(--rule); }
+  .stat-strip .s-k { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat-strip .s-v { font-family: "IBM Plex Mono", monospace; font-size: 1.3rem; font-weight: 600; color: var(--ink); }
+
+  /* ---------- footer (shared) ---------- */
+  footer { background: var(--pitch-deep); color: var(--on-dark-soft); padding: 3.2rem 0 2.2rem; }
+  .foot-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 2.4rem; }
+  @media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+  footer h4 { font-family: "Barlow Semi Condensed", sans-serif; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--on-dark); margin: 0 0 .9rem; font-weight: 600; }
+  footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; font-size: .92rem; }
+  footer a { text-decoration: none; color: var(--on-dark-soft); }
+  footer a:hover { color: var(--on-dark); }
+  footer p { color: var(--on-dark-soft); font-size: .95rem; max-width: 34ch; }
+  .foot-bottom { max-width: 1080px; margin: 3rem auto 0; padding: 1.4rem 28px 0; border-top: 1px solid var(--pitch-line); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-family: "IBM Plex Mono", monospace; font-size: .78rem; color: var(--on-dark-soft); }
+  .credit-mark { display: flex; align-items: center; gap: .5rem; }
+  .credit-mark span { width: 9px; height: 9px; border-radius: 50%; }
+  .credit-mark span:nth-child(1) { background: var(--p0); }
+  .credit-mark span:nth-child(2) { background: var(--p1); margin-left: -3px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <nav>
+    <a class="brand" href="index.html">
+      <span class="mark"><span></span><span></span></span>
+      Soccer &times; Nash
+    </a>
+    <div class="links">
+      <a href="index.html#switch">The switch</a>
+      <a href="explorer.html" class="current">Board explorer</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="report.pdf" class="cta">Full report</a>
+    </div>
+  </nav>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="badge">Live</span>Board explorer</div>
+    <h1>Place both players anywhere. Watch the equilibrium update live.</h1>
+    <p class="lede">Every one of this board's 2,380 legal positions was solved
+    exactly &mdash; <a href="positions.md">not approximated by an iterative
+    solver</a> &mdash; with <code>NashQIteration.run_exact()</code>, the same
+    method behind <a href="positions.pdf">positions.pdf</a>. Move either
+    player, hand either one the ball, and both the equilibrium policy and the
+    full 4&times;4 Q matrix update instantly &mdash; no server, no
+    recomputation, just a lookup into the exact solve.</p>
+
+    <div class="explorer-grid">
+      <div class="panel">
+        <div class="board-svg-wrap" id="board"></div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="which player clicking the board moves">
+            <button id="seg-p0" class="active p0">Move: Player 0</button>
+            <button id="seg-p1" class="p1">Move: Player 1</button>
+          </div>
+          <div class="seg" role="group" aria-label="ball possession">
+            <button id="ball-p0" class="active p0">Ball: 0</button>
+            <button id="ball-p1" class="p1">Ball: 1</button>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="iconbtn" id="btn-kickoff">Kickoff</button>
+          <button class="iconbtn" id="btn-random">Random position</button>
+          <button class="iconbtn" id="btn-random-mixed">Random must-guess position</button>
+        </div>
+        <p class="hint">Click a cell to move the selected player there.
+        <span style="color:var(--p0)">Blue</span> is player 0, attacking the
+        right goal; <span style="color:var(--p1)">green</span> is player 1,
+        attacking the left. The small dot marks the ball.</p>
+      </div>
+
+      <div class="panel">
+        <div id="readout-kind" class="readout-kind">&nbsp;</div>
+        <div id="state-key" class="state-key mono">&nbsp;</div>
+        <div class="vbar-row">
+          <span class="vbar-val" id="v-label">V = +0.000</span>
+          <div class="vbar"><div class="mid"></div><div class="fill" id="v-fill" style="left:50%"></div></div>
+        </div>
+        <table class="qmatrix" id="qmatrix"></table>
+        <div class="support-block" id="support"></div>
+        <div class="legend-row">
+          <span class="k"><span class="swatch" style="background:var(--pitch)"></span>high for the carrier</span>
+          <span class="k"><span class="swatch" style="background:var(--ember)"></span>low for the carrier</span>
+          <span class="k">dashed ring &mdash; a wall clamp, not a move (see <a href="positions.md">positions.md</a>)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="presets">
+      <span class="hint" style="margin:0 .3rem 0 0;">Jump to a documented case (<a href="positions.pdf">positions.pdf</a>):</span>
+      <button class="preset-btn" data-preset="2">Case 2 &mdash; the typical mix</button>
+      <button class="preset-btn" data-preset="3">Case 3 &mdash; L/R indifference</button>
+      <button class="preset-btn" data-preset="4">Case 4 &mdash; the corner duel</button>
+      <button class="preset-btn" data-preset="5">Case 5 &mdash; 3-action mix</button>
+      <button class="preset-btn" data-preset="6">Case 6 &mdash; near-pure hedge</button>
+      <button class="preset-btn" data-preset="7">Case 7 &mdash; mirrored</button>
+      <button class="preset-btn" data-preset="9">Case 9 &mdash; asymmetric mix</button>
+      <button class="preset-btn" data-preset="10">Case 10 &mdash; three-lane mix</button>
+    </div>
+
+    <div class="stat-strip">
+      <div><div class="s-k">States solved exactly</div><div class="s-v" id="stat-states">&mdash;</div></div>
+      <div><div class="s-k">No pure saddle</div><div class="s-v" id="stat-mixed">&mdash;</div></div>
+      <div><div class="s-k">Exact vs. iterative</div><div class="s-v" id="stat-exact">&mdash;</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="credit-mark" style="margin-bottom:.9rem;"><span></span><span></span></div>
+        <p>An exact, no-learning-curve solver for a discrete soccer Markov
+        game &mdash; and a map of exactly where, and why, its equilibrium stops
+        being deterministic.</p>
+      </div>
+      <div>
+        <h4>Read</h4>
+        <ul>
+          <li><a href="report.pdf">Full report (PDF)</a></li>
+          <li><a href="result.md">The goal-width switch</a></li>
+          <li><a href="positions.pdf">Twelve positions, as a PDF</a></li>
+          <li><a href="tournament.md">The tournament, in full</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="explorer.html">Board explorer</a></li>
+          <li><a href="gallery.html">Diagram gallery</a></li>
+          <li><a href="generalize.md">How far it generalizes</a></li>
+          <li><a href="templates.md">The 8 geometric templates</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">GitHub repository</a></li>
+          <li><a href="README.md">Documentation index</a></li>
+          <li><a href="methods.md">Methods &amp; reproducibility</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>Charith Reddy Pareddy &mdash; soccer-markov-nash</span>
+    <span>Solved exactly. Nothing on this page was learned by a neural network.</span>
+  </div>
+</footer>
+
+<script src="data/explorer.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.EXPLORER;
+  var W = D.width, H = D.height, GOALS = D.goal_rows;
+  var CELL = 62, MARGIN = 34;
+  var ACT = ["U", "D", "L", "R"];
+  var ARROW = { U: [0, 1], D: [0, -1], L: [-1, 0], R: [1, 0] };
+
+  var st = { x0: 0, y0: Math.floor(H / 2), x1: W - 1, y1: Math.floor(H / 2), b: 0 };
+  var activePlayer = 0;
+
+  // ---- precompute the no-pure-saddle key list once (cheap: 2380 x 16 ops) ----
+  var mixedKeys = [];
+  Object.keys(D.states).forEach(function (k) {
+    var rec = D.states[k];
+    var cert = certify(rec[3]);
+    if (cert.kind === "mixed") mixedKeys.push(k);
+  });
+  document.getElementById("stat-states").textContent = D.state_count.toLocaleString();
+  document.getElementById("stat-mixed").textContent = D.no_saddle_count + " of " + D.state_count;
+  document.getElementById("stat-exact").textContent = D.exact_vs_iterative.toExponential(1);
+
+  function key(s) { return s.x0 + "," + s.y0 + "," + s.x1 + "," + s.y1 + "," + s.b; }
+
+  function cellCenter(x, y) {
+    return [MARGIN + x * CELL + CELL / 2, MARGIN + (H - 1 - y) * CELL + CELL / 2];
+  }
+
+  function wallMask(x, y) {
+    return { U: y === H - 1, D: y === 0, L: x === 0, R: x === W - 1 };
+  }
+
+  // rows = player0's actions, cols = player1's actions, always
+  function orient(Q, b) {
+    if (b === 0) return Q;
+    var out = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) out[i][j] = -Q[j][i];
+    return out;
+  }
+
+  function certify(Q, tol) {
+    tol = tol || 1e-6;
+    var rowMin = Q.map(function (row) { return Math.min.apply(null, row); });
+    var maximin = Math.max.apply(null, rowMin);
+    var colMax = [0, 1, 2, 3].map(function (j) { return Math.max.apply(null, Q.map(function (r) { return r[j]; })); });
+    var minimax = Math.min.apply(null, colMax);
+    var gap = minimax - maximin;
+    if (gap <= tol) {
+      return { kind: "pure", i: rowMin.indexOf(maximin), j: colMax.indexOf(minimax), gap: gap };
+    }
+    return { kind: "mixed", gap: gap };
+  }
+
+  function support(pol, tol) {
+    tol = tol || 0.005;
+    var out = [];
+    for (var i = 0; i < 4; i++) if (pol[i] > tol) out.push(i);
+    return out;
+  }
+
+  function fmtPct(p) { return (p * 100).toFixed(1) + "%"; }
+
+  // ------------------------------------------------------------------ board
+  function renderBoard() {
+    var boardW = W * CELL, boardH = H * CELL;
+    var totalW = boardW + 2 * MARGIN, totalH = boardH + 2 * MARGIN;
+    var svg = [];
+    svg.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + totalW + ' ' + totalH + '" role="img" aria-label="interactive soccer board">');
+    svg.push('<defs>' + marker("p0") + marker("p1") + '</defs>');
+    svg.push('<rect x="' + MARGIN + '" y="' + MARGIN + '" width="' + boardW + '" height="' + boardH + '" fill="var(--tint)" stroke="var(--rule-strong)" stroke-width="1.5"/>');
+    for (var i = 1; i < W; i++) {
+      var gx = MARGIN + i * CELL;
+      svg.push('<line x1="' + gx + '" y1="' + MARGIN + '" x2="' + gx + '" y2="' + (MARGIN + boardH) + '" stroke="var(--rule)"/>');
+    }
+    for (var j = 1; j < H; j++) {
+      var gy = MARGIN + j * CELL;
+      svg.push('<line x1="' + MARGIN + '" y1="' + gy + '" x2="' + (MARGIN + boardW) + '" y2="' + gy + '" stroke="var(--rule)"/>');
+    }
+    GOALS.forEach(function (row) {
+      var gy = MARGIN + (H - 1 - row) * CELL;
+      svg.push('<rect x="' + (MARGIN - 7) + '" y="' + gy + '" width="7" height="' + CELL + '" fill="var(--p1)"/>');
+      svg.push('<rect x="' + (MARGIN + boardW) + '" y="' + gy + '" width="7" height="' + CELL + '" fill="var(--p0)"/>');
+    });
+    // click targets, drawn under the players/arrows
+    for (var x = 0; x < W; x++) {
+      for (var y = 0; y < H; y++) {
+        var c = cellCenter(x, y);
+        svg.push('<rect class="cell-hit" data-x="' + x + '" data-y="' + y + '" x="' + (c[0] - CELL / 2) + '" y="' + (c[1] - CELL / 2) + '" width="' + CELL + '" height="' + CELL + '" fill="transparent"/>');
+      }
+    }
+
+    var c0 = cellCenter(st.x0, st.y0), c1 = cellCenter(st.x1, st.y1);
+    var rec = D.states[key(st)];
+    var rowPol = rec[1], colPol = rec[2];
+    var p0pol = rowPol, p1pol = colPol;
+
+    svg.push(actionFan(c0[0], c0[1], p0pol, "var(--p0)", wallMask(st.x0, st.y0)));
+    svg.push(actionFan(c1[0], c1[1], p1pol, "var(--p1)", wallMask(st.x1, st.y1)));
+
+    svg.push(player(c0[0], c0[1], "0", "var(--p0)", st.b === 0, activePlayer === 0));
+    svg.push(player(c1[0], c1[1], "1", "var(--p1)", st.b === 1, activePlayer === 1));
+
+    var bc = st.b === 0 ? c0 : c1;
+    svg.push('<circle cx="' + (bc[0] + 15) + '" cy="' + (bc[1] - 15) + '" r="5.5" fill="var(--ball)" stroke="var(--raise)" stroke-width="1.3"/>');
+
+    svg.push("</svg>");
+    document.getElementById("board").innerHTML = svg.join("");
+
+    Array.prototype.forEach.call(document.querySelectorAll(".cell-hit"), function (el) {
+      el.addEventListener("click", onCellClick);
+    });
+  }
+
+  function marker(id) {
+    return '<marker id="ah-' + id + '" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto">' +
+      '<path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--' + id + ')"/></marker>';
+  }
+
+  function player(cx, cy, label, colour, carrier, active) {
+    var out = "";
+    if (active) {
+      out += '<circle cx="' + cx + '" cy="' + cy + '" r="19" fill="none" stroke="' + colour + '" stroke-width="2" stroke-dasharray="1 3" opacity=".55"/>';
+    }
+    out += '<circle cx="' + cx + '" cy="' + cy + '" r="15" fill="' + colour + '"/>';
+    if (carrier) {
+      out += '<circle cx="' + cx + '" cy="' + cy + '" r="21" fill="none" stroke="' + colour + '" stroke-width="1.5" stroke-dasharray="3 4"/>';
+    }
+    out += '<text x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="14" fill="var(--raise)">' + label + "</text>";
+    return out;
+  }
+
+  // mirrors soccer_nash/viz.py's _action_fan: a wall-clamped action is drawn
+  // as a dashed hold ring, never as a directional arrow.
+  function actionFan(cx, cy, pol, colour, wall) {
+    var out = [];
+    var hold = 0;
+    ACT.forEach(function (a) { if (wall[a]) hold += pol[ACT.indexOf(a)]; });
+    var top = Math.max.apply(null, pol.concat([hold, 1e-9]));
+    if (hold >= 0.02) {
+      out.push('<circle cx="' + cx + '" cy="' + cy + '" r="15" fill="none" stroke="' + colour + '" stroke-width="' + (1.6 + 2.2 * (hold / top)).toFixed(1) + '" stroke-dasharray="2 2" opacity="' + (0.4 + 0.55 * hold).toFixed(2) + '"/>');
+      if (hold < 0.985) {
+        out.push('<text x="' + cx + '" y="' + (cy + 30) + '" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="' + colour + '">hold ' + Math.round(hold * 100) + "%</text>");
+      }
+    }
+    ACT.forEach(function (a, idx) {
+      if (wall[a]) return;
+      var p = pol[idx];
+      if (p < 0.02) return;
+      var dx = ARROW[a][0], dy = ARROW[a][1];
+      var start = 13, length = start + 8 + 22 * p;
+      var sx = cx + dx * start, sy = cy - dy * start;
+      var ex = cx + dx * length, ey = cy - dy * length;
+      var wgt = 1.9 + 2.6 * (p / top);
+      out.push('<line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="' + colour + '" stroke-width="' + wgt.toFixed(1) + '" stroke-linecap="round" opacity="' + (0.4 + 0.55 * p).toFixed(2) + '" marker-end="url(#ah-' + (colour.indexOf("p0") > -1 ? "p0" : "p1") + ')"/>');
+      if (p < 0.985) {
+        var lx = cx + dx * (length + 13), ly = cy - dy * (length + 13);
+        out.push('<text x="' + lx + '" y="' + (ly + 4) + '" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="' + colour + '">' + Math.round(p * 100) + "%</text>");
+      }
+    });
+    return out.join("");
+  }
+
+  function onCellClick(e) {
+    var x = parseInt(e.currentTarget.dataset.x, 10);
+    var y = parseInt(e.currentTarget.dataset.y, 10);
+    var other = activePlayer === 0 ? [st.x1, st.y1] : [st.x0, st.y0];
+    if (x === other[0] && y === other[1]) return; // occupied, no swap
+    if (activePlayer === 0) { st.x0 = x; st.y0 = y; } else { st.x1 = x; st.y1 = y; }
+    render();
+  }
+
+  // ------------------------------------------------------------------ readout
+  function heat(v, lo, hi) {
+    var t = hi > lo ? (v - lo) / (hi - lo) : 0.5;
+    t = Math.min(Math.max(t, 0), 1);
+    // ember (low) -> paper (mid) -> pitch (high), via inline colour-mix
+    if (t < 0.5) return "color-mix(in srgb, var(--ember-soft) " + Math.round((0.5 - t) * 2 * 70) + "%, var(--raise))";
+    return "color-mix(in srgb, var(--pitch-soft) " + Math.round((t - 0.5) * 2 * 70) + "%, var(--raise))";
+  }
+
+  function renderReadout() {
+    var rec = D.states[key(st)];
+    var V = rec[0], rowPol = rec[1], colPol = rec[2], Q = rec[3];
+    var carrierPol = st.b === 0 ? rowPol : colPol;
+    var defenderPol = st.b === 0 ? colPol : rowPol;
+    var M = orient(Q, st.b);
+    var cert = certify(M);
+
+    document.getElementById("state-key").textContent = "state (" + st.x0 + ", " + st.y0 + ", " + st.x1 + ", " + st.y1 + ", " + st.b + ")";
+    var kEl = document.getElementById("readout-kind");
+    if (cert.kind === "pure") {
+      kEl.className = "readout-kind pure";
+      kEl.textContent = "Pure equilibrium — saddle at " + ACT[cert.i] + " / " + ACT[cert.j];
+    } else {
+      kEl.className = "readout-kind mixed";
+      kEl.textContent = "Mixed equilibrium — gap " + cert.gap.toFixed(4);
+    }
+
+    document.getElementById("v-label").textContent = "V = " + (V >= 0 ? "+" : "") + V.toFixed(3);
+    document.getElementById("v-fill").style.left = (50 + 50 * Math.max(Math.min(V, 1), -1)) + "%";
+
+    var vals = [];
+    for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) vals.push(M[i][j]);
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+
+    var t = '<thead><tr><th></th>' + ACT.map(function (a) { return "<th>" + a + "</th>"; }).join("") + "</tr></thead><tbody>";
+    for (var r = 0; r < 4; r++) {
+      t += "<tr><th>" + ACT[r] + "</th>";
+      for (var c = 0; c < 4; c++) {
+        t += '<td class="cell" style="background:' + heat(M[r][c], lo, hi) + '">' + M[r][c].toFixed(3) + "</td>";
+      }
+      t += "</tr>";
+    }
+    t += "</tbody>";
+    document.getElementById("qmatrix").innerHTML = t;
+
+    var cs = support(carrierPol), ds = support(defenderPol);
+    var sb = document.getElementById("support");
+    sb.innerHTML =
+      '<div class="row"><span class="dot" style="background:var(--' + (st.b === 0 ? "p0" : "p1") + ')"></span>' +
+      "<span><b>Carrier</b> — " + cs.map(function (i) { return ACT[i] + " " + fmtPct(carrierPol[i]); }).join(" / ") + "</span></div>" +
+      '<div class="row"><span class="dot" style="background:var(--' + (st.b === 0 ? "p1" : "p0") + ')"></span>' +
+      "<span><b>Defender</b> — " + ds.map(function (i) { return ACT[i] + " " + fmtPct(defenderPol[i]); }).join(" / ") + "</span></div>";
+  }
+
+  function updateSegButtons() {
+    document.getElementById("seg-p0").classList.toggle("active", activePlayer === 0);
+    document.getElementById("seg-p1").classList.toggle("active", activePlayer === 1);
+    document.getElementById("ball-p0").classList.toggle("active", st.b === 0);
+    document.getElementById("ball-p1").classList.toggle("active", st.b === 1);
+  }
+
+  function render() {
+    renderBoard();
+    renderReadout();
+    updateSegButtons();
+  }
+
+  document.getElementById("seg-p0").addEventListener("click", function () { activePlayer = 0; render(); });
+  document.getElementById("seg-p1").addEventListener("click", function () { activePlayer = 1; render(); });
+  document.getElementById("ball-p0").addEventListener("click", function () { st.b = 0; render(); });
+  document.getElementById("ball-p1").addEventListener("click", function () { st.b = 1; render(); });
+
+  document.getElementById("btn-kickoff").addEventListener("click", function () {
+    st = { x0: 0, y0: Math.floor(H / 2), x1: W - 1, y1: Math.floor(H / 2), b: 0 };
+    render();
+  });
+  document.getElementById("btn-random").addEventListener("click", function () {
+    var keys = Object.keys(D.states);
+    setFromKey(keys[Math.floor(Math.random() * keys.length)]);
+  });
+  document.getElementById("btn-random-mixed").addEventListener("click", function () {
+    setFromKey(mixedKeys[Math.floor(Math.random() * mixedKeys.length)]);
+  });
+
+  function setFromKey(k) {
+    var parts = k.split(",").map(Number);
+    st = { x0: parts[0], y0: parts[1], x1: parts[2], y1: parts[3], b: parts[4] };
+    render();
+  }
+
+  var PRESETS = {
+    2: [0, 1, 1, 1, 0], 3: [1, 1, 1, 0, 1], 4: [0, 0, 1, 1, 0], 5: [0, 0, 2, 0, 0],
+    6: [1, 1, 2, 0, 1], 7: [5, 1, 6, 1, 1], 9: [0, 2, 1, 2, 0], 10: [0, 2, 2, 2, 1]
+  };
+  Array.prototype.forEach.call(document.querySelectorAll(".preset-btn"), function (btn) {
+    btn.addEventListener("click", function () {
+      var p = PRESETS[btn.dataset.preset];
+      st = { x0: p[0], y0: p[1], x1: p[2], y1: p[3], b: p[4] };
+      render();
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

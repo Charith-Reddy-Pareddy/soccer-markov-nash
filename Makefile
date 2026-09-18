@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions explorer-data a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -33,6 +33,7 @@ help:
 	@echo "make showcase     - 6 hand-picked mixed states: weighted-arrow diagrams + exact matrices"
 	@echo "make positions    - player positions + stage game as a best-response-graph"
 	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
+	@echo "make explorer-data - regenerate docs/data/explorer.js for the interactive board explorer"
 	@echo "make numerics     - numerical-robustness analysis + figures"
 	@echo "make templates    - print the mixed-state geometric templates"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
@@ -153,6 +154,9 @@ showcase:
 positions:
 	$(PY) scripts/positions.py
 	$(PY) scripts/figures_png.py positions
+
+explorer-data:
+	$(PY) scripts/explorer_data.py
 
 numerics:
 	$(PY) scripts/numerics.py --move-orders deterministic random --figures
