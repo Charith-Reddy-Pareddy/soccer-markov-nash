@@ -945,6 +945,110 @@ shows the boundary of that story: indifference alone (a tie against a fixed
 opponent) can produce the same *symptom* -- a fractional policy -- without a
 cycle anywhere in the matrix.
 
+## Deterministic vs. stochastic transitions
+
+Every one of the twelve cases above is tagged by which kind of transition
+produced it, because that tag is the entire finding, not incidental detail:
+
+| Case | Board / rule | Transition |
+|---|---|---|
+| 1 | canonical | deterministic outcome (the joint action happens to have a pure saddle) |
+| 2, 3, 4, 6, 7, 9, 10 | canonical, `move_order="random"` | **stochastic** -- a coin decides who moves first |
+| 5 | canonical, `move_order="random"` | stochastic, but the mix is forced by geometry (three lanes at once), not by the coin alone |
+| 8 | this project's own tackle rule | stochastic -- a duel resolves with probability `tackle_prob` |
+| 11 | `move_order="deterministic"`, `scoring="territory"` | **deterministic** transition, mixed anyway -- the reward, not the transition, forces it |
+| 12 | `move_order="deterministic"`, `slip=0.15` | deterministic *policy* outcome, but movement itself is noisy |
+
+Case 1 and Case 11 are the pair worth holding side by side: both have a
+**deterministic transition function** -- no coin anywhere -- and yet Case 1
+is pure while Case 11 is mixed. The switch is not "is there randomness in
+the rules"; it is the collision/reward structure of that specific case (see
+[docs/report.md](report.md) §5's coinflip-vs-random-order comparison, which
+makes the same point the other way: adding *deterministic* randomness --
+`coinflip`, a fair coin whose outcome doesn't depend on the joint action --
+leaves every stage game pure). Randomness alone is neither necessary
+(Case 11 above) nor sufficient (`coinflip`) for mixing; the switch is
+`move_order="random"` specifically, because it is the only rule where the
+*same* joint action resolves differently depending on the coin, coupling the
+transition to the players' choices instead of merely adding noise to them.
+
+**On the live site**, the [Board Explorer](explorer.html) makes this a
+direct comparison rather than a table: its board dropdown includes both
+**Canonical board -- random move order** and **Canonical board --
+deterministic (A10-style)**, same `7x5` geometry, so switching between them
+holds everything else fixed. Its **Simulate** panel makes the consequence
+concrete -- self-play the exact equilibrium from kickoff and the
+deterministic board settles into essentially all draws, while the random
+board produces a decisive, lopsided result, the same contrast a research
+group member's own site demoed live.
+
+### Does mixing depend on *where* on the board, or the *configuration*?
+
+**The configuration, not the raw location.** [generalize.md](generalize.md)
+tests this directly by sweeping board size, aspect ratio, and goal shape: the
+same switch -- a goal wide enough that the defender cannot cover every
+scoring cell at once -- keeps flipping mixing on, on boards from the
+smallest tested up to roughly 7,800 states, regardless of where that goal
+sits or how large the board is around it. [templates.md](templates.md) makes
+the "configuration" half precise: every one of the 94 no-pure-saddle states
+on the canonical board reduces, after the board mirror and a carrier-frame
+reorientation, to just **8 canonical templates**, and every one of them
+occurs at Manhattan distance 1 or 2 *between the two players* -- never
+distance 3 or more, regardless of how far either player is from the goal
+itself. So the honest answer has two parts: it is not "this square of the
+board is special" (raw location doesn't predict it -- the same relative
+geometry recurs all over the board and across board sizes); it *is* "this
+relationship between the two players is special" (defender-to-carrier
+distance, plus a goal too wide to cover from one cell) -- a property of the
+configuration that generalizes, not a property of any one place.
+
+## Minimax vs. always-left vs. random vs. best response
+
+The same four policies the live [Board Explorer](explorer.html)'s Simulate
+panel lets you play against each other, computed exactly here instead of by
+self-play sampling: **minimax** (the exact Nash policy), **always-left**
+(the simplest fixed opponent -- play `L` every step, Littman's own baseline),
+**random** (uniform over the four actions), and **best response** -- not a
+fixed policy at all, but whatever exactly maximises against the *other*
+side's actual policy that game. Every cell is **player 0's exact expected
+discounted goal difference from kickoff** (`scoring="rate"`, `gamma=0.9`, the
+same canonical `7x5` board every case above uses), row = player 0's policy,
+column = player 1's:
+
+| player 0 \\ player 1 | minimax | always-left | random | best response |
+|---|---:|---:|---:|---:|
+| **minimax** | +0.1323 | +0.6246 | +0.5350 | +0.1323 |
+| **always-left** | +0.0000 | +0.0000 | +0.0000 | &minus;0.0000 |
+| **random** | &minus;0.1423 | &minus;0.2160 | +0.0059 | &minus;0.4445 |
+| **best response** | +0.1323 | +0.7637 | +0.6842 | +0.1323 |
+
+Three things this table makes exact, not just plausible:
+
+1. **Minimax vs. best-response equals minimax vs. minimax.** Both read
+   `+0.1323` -- the defining property of a Nash policy: the best anyone can
+   do against it, *knowing its exact mixing probabilities*, is no better than
+   what minimax already guarantees itself. That is what "unexploitable"
+   means, made numeric instead of asserted.
+2. **Always-left is not merely bad, it is invariant.** Every one of its
+   cells reads `0.0000` (to rounding) regardless of the opponent, because a
+   player that only ever plays `L` at its own kickoff cell is a wall-clamped
+   no-op -- it never moves, never releases the ball, and never scores, so
+   there is nothing for either side's policy to react to. It is the
+   degenerate case of "a fixed action has a fixed counter": here the counter
+   is simply "do nothing back."
+3. **Every fixed (non-best-responding) policy has a ceiling a best-responder
+   reaches exactly.** Minimax's ceiling against best-response is its own
+   value (`+0.1323`, unchanged from minimax-vs-minimax); random's collapses
+   to its worst cell (`-0.4445`) once the opponent plays the exact best
+   reply instead of a random guess. This is `docs/tournament.md`'s "every
+   deterministic offense has a perfect defense" (Littman's Table 3, MR/MM
+   vs. QR/QQ collapsing to 0.0% won against a trained challenger),
+   reproduced here as the general **minimax-vs-everything** matrix rather
+   than one row of it.
+
+Reproduces with `python scripts/positions_policy_matrix.py`, which writes
+`experiments/positions_policy_matrix.csv`.
+
 ## Reproduction
 
 `python scripts/positions.py` prints the exact `4x4` Q matrix -- from
@@ -955,4 +1059,8 @@ coordinate table for all twelve states, and writes
 [positions.pdf](positions.pdf). `python scripts/pure_vs_mixed_exploit.py`
 reproduces the pure-vs-mixed exploitability table above. `python
 scripts/degeneracy.py` reproduces the forced/degenerate/pure-tied
-classification behind every "Type" label above.
+classification behind every "Type" label above. `python
+scripts/positions_policy_matrix.py` reproduces the minimax/always-left/
+random/best-response matrix above. Every number on this page, including
+these two new sections, is re-verified against the solver directly in
+`tests/test_positions_verification.py` (`pytest -m slow`).

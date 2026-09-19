@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions explorer-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix explorer-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -33,6 +33,7 @@ help:
 	@echo "make tournament-deepdive - causal test: patch greedy at the mixed states only, gamma sweep (~80s)"
 	@echo "make showcase     - 6 hand-picked mixed states: weighted-arrow diagrams + exact matrices"
 	@echo "make positions    - player positions + stage game as a best-response-graph"
+	@echo "make positions-matrix - minimax/always-left/random/best-response policy matrix"
 	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
 	@echo "make explorer-data - regenerate docs/data/explorer.json for the interactive board explorer"
 	@echo "make site         - build the React site (site/) into docs/ -- index.html + explorer.html"
@@ -159,6 +160,9 @@ showcase:
 positions:
 	$(PY) scripts/positions.py
 	$(PY) scripts/figures_png.py positions
+
+positions-matrix:
+	$(PY) scripts/positions_policy_matrix.py
 
 explorer-data:
 	$(PY) scripts/explorer_data.py
