@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, fmtPct, kickoffState, orient, simulateGames, stateKey, support } from "./helpers.js";
+import { ACT, certify, fmtPct, kickoffState, orient, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, support } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
@@ -40,6 +40,8 @@ export default function ExplorerApp() {
   const [trials, setTrials] = useState(2000);
   const [simResult, setSimResult] = useState(null);
   const [simming, setSimming] = useState(false);
+  const [p0Type, setP0Type] = useState("minimax");
+  const [p1Type, setP1Type] = useState("minimax");
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/explorer.json`)
@@ -130,7 +132,7 @@ export default function ExplorerApp() {
     // setTimeout so the "Simulating..." label actually paints before the
     // (synchronous, but non-trivial for 10k trials) simulation runs.
     setTimeout(() => {
-      setSimResult(simulateGames(board, stateKey(st), trials));
+      setSimResult(simulateGames(board, stateKey(st), trials, p0Type, p1Type));
       setSimming(false);
     }, 10);
   }
@@ -288,13 +290,35 @@ export default function ExplorerApp() {
           <div className="panel" style={{ marginTop: "1.4rem" }}>
             <div className="eyebrow" style={{ margin: "0 0 .6rem" }}>Simulate</div>
             <p className="hint" style={{ margin: "0 0 .8rem" }}>
-              Self-play both equilibrium policies against each other from the current
+              Self-play a policy for each side against the other from the current
               position, sampling real <code>game.transitions()</code> outcomes (precomputed,
               not a second transition engine written for the browser) &mdash; a goal ends the
-              game, {" "}100 steps with none counts as a draw, same as the A10 rule. Compare{" "}
-              <b>canonical</b> (random move order) against{" "}
-              <b>canonical (deterministic)</b> the way a member's own site did.
+              game, 100 steps with none counts as a draw, same as the A10 rule.
+              <b> Best response</b> re-solves the exact best pure reply to whatever the
+              other side is actually playing at every state, straight from the loaded
+              4&times;4 Q matrix &mdash; the same menu <a href="tournament.md">docs/tournament.md</a>{" "}
+              scores Littman's Table 3 against. Compare <b>canonical</b> (random move
+              order) against <b>canonical (deterministic)</b> the way a member's own
+              site did.
             </p>
+            <div className="controls" style={{ margin: "0 0 .7rem" }}>
+              <div className="seg" role="group" aria-label="player 0's policy">
+                {POLICY_TYPES.map((t) => (
+                  <button key={t} className={p0Type === t ? "active p0" : ""} onClick={() => setP0Type(t)}>
+                    P0: {POLICY_LABELS[t]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="controls" style={{ margin: "0 0 .7rem" }}>
+              <div className="seg" role="group" aria-label="player 1's policy">
+                {POLICY_TYPES.map((t) => (
+                  <button key={t} className={p1Type === t ? "active p1" : ""} onClick={() => setP1Type(t)}>
+                    P1: {POLICY_LABELS[t]}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="controls">
               <div className="seg" role="group" aria-label="number of simulated games">
                 {[500, 2000, 10000].map((n) => (
@@ -316,18 +340,68 @@ export default function ExplorerApp() {
                 </div>
                 <div className="legend-row" style={{ marginTop: ".6rem" }}>
                   <span className="k"><span className="swatch" style={{ background: "var(--p0)" }}></span>
-                    player 0 won {fmtPct(simResult.p0 / simResult.trials)}</span>
+                    player 0 ({POLICY_LABELS[p0Type]}) won {fmtPct(simResult.p0 / simResult.trials)}</span>
                   <span className="k"><span className="swatch" style={{ background: "var(--rule-strong)" }}></span>
                     draw (100 steps) {fmtPct(simResult.draw / simResult.trials)}</span>
                   <span className="k"><span className="swatch" style={{ background: "var(--p1)" }}></span>
-                    player 1 won {fmtPct(simResult.p1 / simResult.trials)}</span>
+                    player 1 ({POLICY_LABELS[p1Type]}) won {fmtPct(simResult.p1 / simResult.trials)}</span>
                 </div>
               </div>
             )}
           </div>
+
+          <LittmanTable />
         </div>
       </section>
       <Footer />
     </>
+  );
+}
+
+// Littman's own published Table 3 (1994) -- MR/MM by minimax-Q, QR/QQ by
+// ordinary Q-learning, each scored (his numbers, not this project's) against
+// a random opponent, a hand-built opponent, and a challenger trained
+// specifically to beat it. docs/tournament.md reproduces the *structure*
+// exactly with this project's solver instead of Littman's learned policies;
+// this is the historical table itself, kept verbatim for direct comparison.
+const LITTMAN_TABLE3 = [
+  { policy: "MR (minimax)", random: "99.3%", handBuilt: "48.1%", challenger: "35.0%" },
+  { policy: "MM (minimax)", random: "99.3%", handBuilt: "53.7%", challenger: "37.5%" },
+  { policy: "QR (Q-learning)", random: "99.4%", handBuilt: "26.1%", challenger: "0.0%" },
+  { policy: "QQ (Q-learning)", random: "99.5%", handBuilt: "76.3%", challenger: "0.0%" },
+];
+
+function LittmanTable() {
+  return (
+    <div className="panel" style={{ marginTop: "1.4rem" }}>
+      <div className="eyebrow" style={{ margin: "0 0 .6rem" }}>Littman (1994), Table 3</div>
+      <p className="hint" style={{ margin: "0 0 .8rem" }}>
+        Littman's own published result, kept verbatim (percentage of games won, his
+        learned policies, his board) &mdash; not this project's numbers. <b>MR / MM</b>{" "}
+        are minimax-Q; <b>QR / QQ</b> are ordinary Q-learning. Every deterministic
+        policy (QR, QQ) collapses to <b>0.0%</b> against a challenger trained to beat
+        it; only the minimax policies stay ahead. <a href="tournament.md">docs/tournament.md</a>{" "}
+        reproduces this structure exactly with this project's own exact solver instead
+        of Littman's learned policies &mdash; the <b>Simulate</b> panel above lets you
+        recreate the same shape live: set P0 to <b>Minimax</b> and P1 to{" "}
+        <b>Best response</b> to see the same "every deterministic offense has a perfect
+        defense" result the Q-learning rows show here.
+      </p>
+      <table className="qmatrix" style={{ width: "100%" }}>
+        <thead>
+          <tr><th>policy</th><th>vs. random</th><th>vs. hand-built</th><th>vs. its challenger</th></tr>
+        </thead>
+        <tbody>
+          {LITTMAN_TABLE3.map((row) => (
+            <tr key={row.policy}>
+              <th style={{ textAlign: "left" }}>{row.policy}</th>
+              <td className="cell">{row.random}</td>
+              <td className="cell">{row.handBuilt}</td>
+              <td className="cell">{row.challenger}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

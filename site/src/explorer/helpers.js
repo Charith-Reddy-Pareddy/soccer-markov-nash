@@ -69,32 +69,84 @@ function resolveOutcome(entry) {
   return entry[entry.length - 1][0];
 }
 
-// Self-play the exact equilibrium policies against each other from
-// `startKey`, sampling real `game.transitions()` outcomes (precomputed by
-// scripts/explorer_data.py, not a second transition engine reimplemented
-// here) -- the same "simulate N games, tally win/draw" a member's own site
-// demoed, run against this project's exact solve instead of an approximate
-// one. `maxSteps` mirrors the project's own `SoccerGame.max_steps` (100):
-// a game that hasn't ended by then counts as a draw, same as the A10 rule.
-export function simulateGames(board, startKey, trials, maxSteps = 100) {
+export const POLICY_TYPES = ["minimax", "left", "random", "br"];
+export const POLICY_LABELS = {
+  minimax: "Minimax (exact)",
+  left: "Always left",
+  random: "Random",
+  br: "Best response",
+};
+
+const UNIFORM = [0.25, 0.25, 0.25, 0.25];
+const ALWAYS_LEFT = [0, 0, 1, 0]; // absolute direction, not carrier-relative -- same convention as scripts/tournament4.py's always_left
+
+// Row player (0) maximises `M`; best pure reply to the column player's mix `q`.
+function bestResponseRow(M, q) {
+  let best = 0, bestV = -Infinity;
+  for (let i = 0; i < 4; i++) {
+    let v = 0;
+    for (let j = 0; j < 4; j++) v += M[i][j] * q[j];
+    if (v > bestV) { bestV = v; best = i; }
+  }
+  const out = [0, 0, 0, 0]; out[best] = 1; return out;
+}
+
+// Column player (1) minimises `M`; best pure reply to the row player's mix `p`.
+function bestResponseCol(M, p) {
+  let best = 0, bestV = Infinity;
+  for (let j = 0; j < 4; j++) {
+    let v = 0;
+    for (let i = 0; i < 4; i++) v += p[i] * M[i][j];
+    if (v < bestV) { bestV = v; best = j; }
+  }
+  const out = [0, 0, 0, 0]; out[best] = 1; return out;
+}
+
+// Resolve both players' actual mix at one state given their chosen policy
+// *type* -- "minimax" uses the exact equilibrium strategy already in the
+// data, "left"/"random" are fixed, and "br" best-responds to whatever the
+// other side turns out to play. If both sides are "br" there's no order to
+// resolve first, so both fall back to the exact equilibrium -- which is, not
+// coincidentally, the actual fixed point of "best-respond to a best-response".
+function resolvePolicies(type0, type1, rowPol, colPol, M) {
+  const fixed = (type, pol) => (type === "minimax" ? pol : type === "left" ? ALWAYS_LEFT : type === "random" ? UNIFORM : null);
+  let p0 = fixed(type0, rowPol);
+  let p1 = fixed(type1, colPol);
+  if (p0 === null && p1 === null) return [rowPol, colPol];
+  if (p1 === null) p1 = bestResponseCol(M, p0);
+  if (p0 === null) p0 = bestResponseRow(M, p1);
+  return [p0, p1];
+}
+
+// Self-play the chosen policies against each other from `startKey`, sampling
+// real `game.transitions()` outcomes (precomputed by scripts/explorer_data.py,
+// not a second transition engine reimplemented here) -- the same "simulate N
+// games, tally win/draw" a member's own site demoed, run against this
+// project's exact solve instead of an approximate one, and against the same
+// policy menu (minimax / always-left / random / best-response) as
+// docs/tournament.md's reproduction of Littman's Table 3. `maxSteps` mirrors
+// the project's own `SoccerGame.max_steps` (100): a game that hasn't ended by
+// then counts as a draw, same as the A10 rule.
+export function simulateGames(board, startKey, trials, type0, type1, maxSteps = 100) {
   const { state_list, states } = board;
-  let p0 = 0, p1 = 0, draw = 0;
+  let p0Wins = 0, p1Wins = 0, draw = 0;
   for (let t = 0; t < trials; t++) {
     let key = startKey;
     let winner = null;
     for (let step = 0; step < maxSteps; step++) {
-      const [, rowPol, colPol, , trans] = states[key];
-      const a0 = sampleAction(rowPol), a1 = sampleAction(colPol);
+      const [, rowPol, colPol, M, trans] = states[key];
+      const [p0, p1] = resolvePolicies(type0, type1, rowPol, colPol, M);
+      const a0 = sampleAction(p0), a1 = sampleAction(p1);
       const next = resolveOutcome(trans[a0 * 4 + a1]);
       if (next === -1) { winner = 0; break; }
       if (next === -2) { winner = 1; break; }
       key = state_list[next];
     }
-    if (winner === 0) p0++;
-    else if (winner === 1) p1++;
+    if (winner === 0) p0Wins++;
+    else if (winner === 1) p1Wins++;
     else draw++;
   }
-  return { p0, p1, draw, trials };
+  return { p0: p0Wins, p1: p1Wins, draw, trials };
 }
 
 // Shared by QMatrixTable (payoff cells) and Board (value heatmap): ember for
