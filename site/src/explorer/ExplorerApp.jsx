@@ -4,10 +4,10 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, fmtPct, kickoffState, orient, stateKey, support } from "./helpers.js";
+import { ACT, certify, fmtPct, kickoffState, orient, simulateGames, stateKey, support } from "./helpers.js";
 import "./explorer.css";
 
-const BOARD_ORDER = ["canonical", "tackle", "territory", "slip"];
+const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
 
 // case number -> {board, state}, coordinates as printed in docs/positions.md
 const PRESETS = {
@@ -37,6 +37,9 @@ export default function ExplorerApp() {
   const [qview, setQview] = useState("table");
   const [st, setSt] = useState(null);
   const [viewMode, setViewMode] = useState("pieces");
+  const [trials, setTrials] = useState(2000);
+  const [simResult, setSimResult] = useState(null);
+  const [simming, setSimming] = useState(false);
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/explorer.json`)
@@ -103,12 +106,14 @@ export default function ExplorerApp() {
     setCurrentBoard(id);
     setActivePlayer(0);
     setSt(kickoffState(data.boards[id]));
+    setSimResult(null); // a stale result from the old board would be misleading
   }
 
   function onCellClick(x, y) {
     const other = activePlayer === 0 ? [st.x1, st.y1] : [st.x0, st.y0];
     if (x === other[0] && y === other[1]) return; // occupied, no swap
     setSt(activePlayer === 0 ? { ...st, x0: x, y0: y } : { ...st, x1: x, y1: y });
+    setSimResult(null); // a stale result from the old position would be misleading
   }
 
   function randomState() {
@@ -120,11 +125,27 @@ export default function ExplorerApp() {
     return toState(k.split(",").map(Number));
   }
 
+  function runSimulation() {
+    setSimming(true);
+    // setTimeout so the "Simulating..." label actually paints before the
+    // (synchronous, but non-trivial for 10k trials) simulation runs.
+    setTimeout(() => {
+      setSimResult(simulateGames(board, stateKey(st), trials));
+      setSimming(false);
+    }, 10);
+  }
+
   function applyPreset(n) {
     const p = PRESETS[n];
     setCurrentBoard(p.board);
     setActivePlayer(0);
     setSt(toState(p.state));
+    setSimResult(null);
+  }
+
+  function moveTo(newSt) {
+    setSt(newSt);
+    setSimResult(null); // a stale result from the old position would be misleading
   }
 
   const rec = board.states[stateKey(st)];
@@ -142,13 +163,15 @@ export default function ExplorerApp() {
         <div className="wrap">
           <div className="eyebrow"><span className="badge">Live</span>Board explorer</div>
           <h1>Place both players anywhere. Watch the equilibrium update live.</h1>
-          <p className="lede">All 6,720 legal positions across the four boards used in{" "}
-            <a href="positions.pdf">positions.pdf</a> &mdash; the canonical board, this
-            project's own tackle rule, the territory-reward game, and movement slip
-            &mdash; were solved exactly, <a href="positions.md">not approximated by an
-            iterative solver</a>, with <code>NashQIteration.run_exact()</code>. Move
-            either player, hand either one the ball, switch boards, and the
-            equilibrium policy and the full 4&times;4 Q matrix &mdash; as a table or
+          <p className="lede">All 9,100 legal positions across five boards were solved
+            exactly, <a href="positions.md">not approximated by an iterative
+            solver</a>, with <code>NashQIteration.run_exact()</code>: the canonical
+            board and its deterministic, A10-style twin, side by side for comparison,
+            plus the three used in <a href="positions.pdf">positions.pdf</a> &mdash; this
+            project's own tackle rule, the territory-reward game, and movement slip. Move
+            either player, hand either one the ball, switch boards, self-play the
+            equilibrium for a win/draw readout, and the equilibrium policy and the full
+            4&times;4 Q matrix &mdash; as a table or
             as the same best-response graph the PDF draws &mdash; update instantly:
             no server, no recomputation, just a lookup into the exact solve.</p>
 
@@ -174,8 +197,8 @@ export default function ExplorerApp() {
                   <button className={activePlayer === 1 ? "active p1" : ""} onClick={() => setActivePlayer(1)}>Move: Player 1</button>
                 </div>
                 <div className="seg" role="group" aria-label="ball possession">
-                  <button className={st.b === 0 ? "active p0" : ""} onClick={() => setSt({ ...st, b: 0 })}>Ball: 0</button>
-                  <button className={st.b === 1 ? "active p1" : ""} onClick={() => setSt({ ...st, b: 1 })}>Ball: 1</button>
+                  <button className={st.b === 0 ? "active p0" : ""} onClick={() => moveTo({ ...st, b: 0 })}>Ball: 0</button>
+                  <button className={st.b === 1 ? "active p1" : ""} onClick={() => moveTo({ ...st, b: 1 })}>Ball: 1</button>
                 </div>
               </div>
               <div className="controls">
@@ -185,9 +208,9 @@ export default function ExplorerApp() {
                 </div>
               </div>
               <div className="controls">
-                <button className="iconbtn" onClick={() => setSt(kickoffState(board))}>Kickoff</button>
-                <button className="iconbtn" onClick={() => setSt(randomState())}>Random position</button>
-                <button className="iconbtn" onClick={() => setSt(randomMixedState())}>Random must-guess position</button>
+                <button className="iconbtn" onClick={() => moveTo(kickoffState(board))}>Kickoff</button>
+                <button className="iconbtn" onClick={() => moveTo(randomState())}>Random position</button>
+                <button className="iconbtn" onClick={() => moveTo(randomMixedState())}>Random must-guess position</button>
               </div>
               {viewMode === "heatmap" ? (
                 <p className="hint">Every cell is <b>V</b> for player {activePlayer} if it stood
@@ -260,6 +283,47 @@ export default function ExplorerApp() {
             <div><div className="s-k">States solved exactly</div><div className="s-v">{board.state_count.toLocaleString()}</div></div>
             <div><div className="s-k">No pure saddle</div><div className="s-v">{board.no_saddle_count} of {board.state_count}</div></div>
             <div><div className="s-k">Exact vs. iterative</div><div className="s-v">{board.exact_vs_iterative.toExponential(1)}</div></div>
+          </div>
+
+          <div className="panel" style={{ marginTop: "1.4rem" }}>
+            <div className="eyebrow" style={{ margin: "0 0 .6rem" }}>Simulate</div>
+            <p className="hint" style={{ margin: "0 0 .8rem" }}>
+              Self-play both equilibrium policies against each other from the current
+              position, sampling real <code>game.transitions()</code> outcomes (precomputed,
+              not a second transition engine written for the browser) &mdash; a goal ends the
+              game, {" "}100 steps with none counts as a draw, same as the A10 rule. Compare{" "}
+              <b>canonical</b> (random move order) against{" "}
+              <b>canonical (deterministic)</b> the way a member's own site did.
+            </p>
+            <div className="controls">
+              <div className="seg" role="group" aria-label="number of simulated games">
+                {[500, 2000, 10000].map((n) => (
+                  <button key={n} className={trials === n ? "active view" : ""} onClick={() => setTrials(n)}>
+                    {n.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+              <button className="iconbtn" onClick={runSimulation} disabled={simming}>
+                {simming ? "Simulating…" : `Simulate ${trials.toLocaleString()} games`}
+              </button>
+            </div>
+            {simResult && (
+              <div style={{ marginTop: "1rem" }}>
+                <div className="sim-bar">
+                  <div className="sim-seg p0" style={{ width: `${(100 * simResult.p0) / simResult.trials}%` }} />
+                  <div className="sim-seg draw" style={{ width: `${(100 * simResult.draw) / simResult.trials}%` }} />
+                  <div className="sim-seg p1" style={{ width: `${(100 * simResult.p1) / simResult.trials}%` }} />
+                </div>
+                <div className="legend-row" style={{ marginTop: ".6rem" }}>
+                  <span className="k"><span className="swatch" style={{ background: "var(--p0)" }}></span>
+                    player 0 won {fmtPct(simResult.p0 / simResult.trials)}</span>
+                  <span className="k"><span className="swatch" style={{ background: "var(--rule-strong)" }}></span>
+                    draw (100 steps) {fmtPct(simResult.draw / simResult.trials)}</span>
+                  <span className="k"><span className="swatch" style={{ background: "var(--p1)" }}></span>
+                    player 1 won {fmtPct(simResult.p1 / simResult.trials)}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

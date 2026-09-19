@@ -45,6 +45,58 @@ export function fmtPct(p) {
   return (p * 100).toFixed(1) + "%";
 }
 
+// Sample an action index from a length-4 probability vector.
+function sampleAction(pol) {
+  const r = Math.random();
+  let acc = 0;
+  for (let i = 0; i < pol.length; i++) {
+    acc += pol[i];
+    if (r <= acc) return i;
+  }
+  return pol.length - 1; // float rounding fallback
+}
+
+// One joint action's `trans` entry is either a bare state index / terminal
+// sentinel (the single-outcome case) or a list of [index, prob] pairs.
+function resolveOutcome(entry) {
+  if (typeof entry === "number") return entry;
+  const r = Math.random();
+  let acc = 0;
+  for (const [idx, prob] of entry) {
+    acc += prob;
+    if (r <= acc) return idx;
+  }
+  return entry[entry.length - 1][0];
+}
+
+// Self-play the exact equilibrium policies against each other from
+// `startKey`, sampling real `game.transitions()` outcomes (precomputed by
+// scripts/explorer_data.py, not a second transition engine reimplemented
+// here) -- the same "simulate N games, tally win/draw" a member's own site
+// demoed, run against this project's exact solve instead of an approximate
+// one. `maxSteps` mirrors the project's own `SoccerGame.max_steps` (100):
+// a game that hasn't ended by then counts as a draw, same as the A10 rule.
+export function simulateGames(board, startKey, trials, maxSteps = 100) {
+  const { state_list, states } = board;
+  let p0 = 0, p1 = 0, draw = 0;
+  for (let t = 0; t < trials; t++) {
+    let key = startKey;
+    let winner = null;
+    for (let step = 0; step < maxSteps; step++) {
+      const [, rowPol, colPol, , trans] = states[key];
+      const a0 = sampleAction(rowPol), a1 = sampleAction(colPol);
+      const next = resolveOutcome(trans[a0 * 4 + a1]);
+      if (next === -1) { winner = 0; break; }
+      if (next === -2) { winner = 1; break; }
+      key = state_list[next];
+    }
+    if (winner === 0) p0++;
+    else if (winner === 1) p1++;
+    else draw++;
+  }
+  return { p0, p1, draw, trials };
+}
+
 // Shared by QMatrixTable (payoff cells) and Board (value heatmap): ember for
 // low, pitch-green for high, centred at the midpoint of the given range.
 export function heatColor(v, lo, hi) {

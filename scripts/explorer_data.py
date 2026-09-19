@@ -4,12 +4,15 @@ compact JSON file for the interactive board explorer (the React app in
 
 For every non-terminal state of each board, writes ``V`` (player 0's exact
 value), ``row_policy`` / ``col_policy`` (player 0 / player 1's 4-action
-equilibrium mix), and the raw (unoriented) ``Q`` matrix (player 0 = row,
-player 1 = col) -- the same ``NashQIteration.run_exact()`` values
-docs/positions.pdf is built from, so the site and the PDF never disagree.
-Reorientation (carrier = row), wall-clamp ("hold") detection, and the
-best-response node-and-arrow graph are cheap enough to do client-side, so
-they are not precomputed here.
+equilibrium mix), the raw (unoriented) ``Q`` matrix (player 0 = row,
+player 1 = col), and ``trans`` -- the real ``game.transitions()`` outcome for
+every one of the 16 joint actions, so the explorer's "simulate N games"
+feature samples real transitions instead of a second, hand-rolled transition
+engine in JavaScript that could quietly drift from this one. All of it comes
+from the same ``NashQIteration.run_exact()`` solve docs/positions.pdf is
+built from, so the site and the PDF never disagree. Reorientation (carrier =
+row), wall-clamp ("hold") detection, and the best-response node-and-arrow
+graph are cheap enough to do client-side, so they are not precomputed here.
 
     python scripts/explorer_data.py
 
@@ -23,14 +26,20 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from soccer_nash.game import SoccerGame
+from soccer_nash.game import JOINT_ACTIONS, SoccerGame
 from soccer_nash.nash_q import NashQIteration
 
 OUT = pathlib.Path("docs/data/explorer.json")
 
-# Every board any case in docs/positions.md is solved on.
+# Every board any case in docs/positions.md is solved on, plus the
+# deterministic (A10-style) twin of the canonical board -- same geometry,
+# different move-order rule, so the two can be compared side by side (the
+# deterministic/stochastic contrast a member's own site demoed).
 BOARDS: dict[str, dict] = {
     "canonical": {"width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "random"},
+    "canonical_det": {
+        "width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "deterministic",
+    },
     "tackle": {
         "width": 5, "height": 4, "goal_rows": (1, 2),
         "move_order": "tackle", "tackle_prob": 0.5,
@@ -46,6 +55,7 @@ BOARDS: dict[str, dict] = {
 }
 BOARD_LABELS = {
     "canonical": "Canonical board — random move order",
+    "canonical_det": "Canonical board — deterministic (A10-style)",
     "tackle": "Tackle rule",
     "territory": "Territory reward, deterministic",
     "slip": "Movement slip, deterministic",
@@ -59,6 +69,32 @@ def r6(x: float) -> float:
     return round(float(x), 6)
 
 
+_TERM = {0: -1, 1: -2}  # sentinel indices for a terminal (goal) outcome
+
+
+def _outcome_repr(g: SoccerGame, state, a0, a1, index: dict) -> int | list[list]:
+    """One joint action's outcome, as compactly as it can be:
+
+    - a single outcome with probability 1 -> just its state *index* (into
+      this board's own state list, not a repeated ``"x0,y0,x1,y1,b"`` string)
+      -- the overwhelmingly common case (every deterministic-move-order
+      action, most tackle/slip actions too;
+    - otherwise -> ``[[index_or_sentinel, prob], ...]``, one pair per
+      outcome. ``-1`` / ``-2`` are sentinels for "the game ends here, player
+      0 / 1 scored" -- a scored state is terminal and so is never itself a
+      key in ``states``.
+    """
+    outcomes = g.transitions(state, a0, a1)
+    if len(outcomes) == 1:
+        _prob, ns, _reward = outcomes[0]
+        return _TERM[ns[4]] if g.is_terminal(ns) else index[ns]
+    out = []
+    for prob, ns, _reward in outcomes:
+        idx = _TERM[ns[4]] if g.is_terminal(ns) else index[ns]
+        out.append([idx, r6(prob)])
+    return out
+
+
 def solve_board(bid: str, kw: dict) -> dict:
     g = SoccerGame(**kw)
     solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
@@ -66,8 +102,11 @@ def solve_board(bid: str, kw: dict) -> dict:
     print(f"  {bid}: |V_exact - V_iterative| = {result.exact_vs_iterative:.2e} "
           f"over {len(result.values)} states")
 
+    state_list = list(solver._states)
+    index = {s: i for i, s in enumerate(state_list)}
+
     states = {}
-    for s in solver._states:
+    for i, s in enumerate(state_list):
         x0, y0, x1, y1, b = s
         M = solver._matrix(s, result.values)
         key = f"{x0},{y0},{x1},{y1},{b}"
@@ -75,10 +114,12 @@ def solve_board(bid: str, kw: dict) -> dict:
             r6(result.values[s]),
             [r6(p) for p in result.row_policy[s]],
             [r6(p) for p in result.col_policy[s]],
-            [[r6(M[i, j]) for j in range(4)] for i in range(4)],
+            [[r6(M[i2, j]) for j in range(4)] for i2 in range(4)],
+            [_outcome_repr(g, s, a0, a1, index) for a0, a1 in JOINT_ACTIONS],
         ]
 
     return {
+        "state_list": [f"{x0},{y0},{x1},{y1},{b}" for x0, y0, x1, y1, b in state_list],
         "label": BOARD_LABELS[bid],
         "width": g.width,
         "height": g.height,

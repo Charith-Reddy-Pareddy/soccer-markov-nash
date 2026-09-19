@@ -16,6 +16,12 @@
 .seg button.active.view { background: var(--pitch); color: #fff; }
 .iconbtn { border: 1px solid var(--rule-strong); background: var(--raise); color: var(--ink); border-radius: 8px; padding: .5rem .95rem; font-weight: 600; font-size: .86rem; cursor: pointer; font-family: "Barlow Semi Condensed", sans-serif; }
 .iconbtn:hover { border-color: var(--ink-faint); }
+.iconbtn:disabled { opacity: .55; cursor: default; }
+
+.sim-bar { display: flex; width: 100%; height: 22px; border-radius: 6px; overflow: hidden; border: 1px solid var(--rule-strong); }
+.sim-seg.p0 { background: var(--p0); }
+.sim-seg.p1 { background: var(--p1); }
+.sim-seg.draw { background: var(--rule-strong); }
 
 .board-select-label { font-weight: 600; font-size: .82rem; color: var(--ink-faint); align-self: center; font-family: "Barlow Semi Condensed", sans-serif; }
 select.board-select {
