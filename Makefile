@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions explorer-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions explorer-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -13,6 +13,7 @@ help:
 	@echo "make dqn          - multi-seed neural Nash-Q vs the exact solver (~16 min)"
 	@echo "make dqn-ablation - Q-net width/depth sweep vs the exact solver (~17 min)"
 	@echo "make dqn-random   - neural Nash-Q on the RANDOM move-order game (mixed equilibria) (~30 min)"
+	@echo "make policy-gradient - self-play REINFORCE vs the exact solver's Nash-equilibrium check"
 	@echo "make degeneracy   - classify the 94 no-pure-saddle states: unique vs degenerate"
 	@echo "make distance-table - no-pure-saddle counts by Manhattan player distance"
 	@echo "make pure-vs-mixed  - greedy-pure vs Nash-mixed exploitability at the positions.md cases"
@@ -93,6 +94,9 @@ benchmark:
 
 dqn:
 	$(PY) scripts/nash_dqn.py --seeds 5
+
+policy-gradient:
+	$(PY) scripts/policy_gradient.py --seeds 5
 
 dqn-ablation:
 	$(PY) scripts/nash_dqn_ablation.py --seeds 2

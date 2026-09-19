@@ -1,0 +1,6 @@
+seed,train_time_s,final_mean_reward,row_action_agreement,col_action_agreement,mean_equilibrium_regret,max_equilibrium_regret,duality_gap
+0,62.3,0.02,0.3126,0.4189,0.1257,1.3295,0.8051
+1,106.2,0.02,0.4176,0.5908,0.12,1.3585,0.9321
+2,61.5,0.0,0.1924,0.4731,0.1166,1.0567,0.7869
+3,88.0,-0.07,0.5563,0.5685,0.1087,1.3237,0.8981
+4,70.4,-0.07,0.1878,0.4971,0.1315,1.4291,0.8945

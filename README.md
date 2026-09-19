@@ -137,6 +137,7 @@ interpreter instead: `python -m venv --system-site-packages .venv`.
 | `soccer_nash/render.py`, `viz.py` | draw a state / policy fans / value heatmaps as SVG |
 | `soccer_nash/a10.py`, `mlp.py`, `opponents.py`, `best_response.py` | A10 deliverables |
 | `soccer_nash/shaping.py`, `exploit.py`, `nash_dqn.py` | reward shaping, self-play, neural Nash-Q |
+| `soccer_nash/policy_gradient.py` | self-play REINFORCE, checked against the exact solver |
 | `scripts/` | one entry point per analysis; `make <name>` runs most of them |
 | `docs/*.md` | one page per topic, cross-linked from the report and `docs/README.md` |
 | `experiments/*.csv` | committed sweep outputs the report tables read from |
