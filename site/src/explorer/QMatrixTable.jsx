@@ -21,7 +21,7 @@ export default function QMatrixTable({ M }) {
             <th>{rowLabel}</th>
             {ACT.map((_, c) => (
               <td key={c} className="cell" style={{ background: heat(M[r][c], lo, hi) }}>
-                {M[r][c].toFixed(3)}
+                {M[r][c].toFixed(6)}
               </td>
             ))}
           </tr>

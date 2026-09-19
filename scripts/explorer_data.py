@@ -52,8 +52,11 @@ BOARD_LABELS = {
 }
 
 
-def r4(x: float) -> float:
-    return round(float(x), 4)
+def r6(x: float) -> float:
+    # 6 places -- matches docs/positions.pdf's own printed precision, so the
+    # site and the PDF show the same "exact" Q matrix, not a coarser rounding
+    # of it.
+    return round(float(x), 6)
 
 
 def solve_board(bid: str, kw: dict) -> dict:
@@ -69,10 +72,10 @@ def solve_board(bid: str, kw: dict) -> dict:
         M = solver._matrix(s, result.values)
         key = f"{x0},{y0},{x1},{y1},{b}"
         states[key] = [
-            r4(result.values[s]),
-            [r4(p) for p in result.row_policy[s]],
-            [r4(p) for p in result.col_policy[s]],
-            [[r4(M[i, j]) for j in range(4)] for i in range(4)],
+            r6(result.values[s]),
+            [r6(p) for p in result.row_policy[s]],
+            [r6(p) for p in result.col_policy[s]],
+            [[r6(M[i, j]) for j in range(4)] for i in range(4)],
         ]
 
     return {
