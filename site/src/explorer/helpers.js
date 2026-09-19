@@ -44,3 +44,12 @@ export function support(pol, tol = 0.005) {
 export function fmtPct(p) {
   return (p * 100).toFixed(1) + "%";
 }
+
+// Shared by QMatrixTable (payoff cells) and Board (value heatmap): ember for
+// low, pitch-green for high, centred at the midpoint of the given range.
+export function heatColor(v, lo, hi) {
+  let t = hi > lo ? (v - lo) / (hi - lo) : 0.5;
+  t = Math.min(Math.max(t, 0), 1);
+  if (t < 0.5) return `color-mix(in srgb, var(--ember-soft) ${Math.round((0.5 - t) * 2 * 70)}%, var(--raise))`;
+  return `color-mix(in srgb, var(--pitch-soft) ${Math.round((t - 0.5) * 2 * 70)}%, var(--raise))`;
+}

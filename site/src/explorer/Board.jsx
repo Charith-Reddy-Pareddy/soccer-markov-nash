@@ -1,4 +1,4 @@
-import { ACT, ARROW, stateKey, wallMask } from "./helpers.js";
+import { ACT, ARROW, heatColor, stateKey, wallMask } from "./helpers.js";
 
 const CELL = 62;
 const MARGIN = 34;
@@ -77,7 +77,7 @@ function Player({ cx, cy, label, colour, carrier, active }) {
   );
 }
 
-export default function Board({ board, state, activePlayer, onCellClick }) {
+export default function Board({ board, state, activePlayer, onCellClick, heatmap }) {
   const W = board.width, H = board.height, GOALS = board.goal_rows;
   const boardW = W * CELL, boardH = H * CELL;
   const totalW = boardW + 2 * MARGIN, totalH = boardH + 2 * MARGIN;
@@ -87,15 +87,28 @@ export default function Board({ board, state, activePlayer, onCellClick }) {
   const c1 = cellCenter(state.x1, state.y1, H);
   const bc = state.b === 0 ? c0 : c1;
 
+  const heatVals = heatmap ? [...heatmap.values()] : [];
+  const heatLo = Math.min(...heatVals), heatHi = Math.max(...heatVals);
+
   const cells = [];
   for (let x = 0; x < W; x++) {
     for (let y = 0; y < H; y++) {
       const [cx, cy] = cellCenter(x, y, H);
+      const v = heatmap ? heatmap.get(`${x},${y}`) : undefined;
       cells.push(
         <rect key={`${x},${y}`} className="cell-hit" x={cx - CELL / 2} y={cy - CELL / 2}
-          width={CELL} height={CELL} fill="transparent"
+          width={CELL} height={CELL}
+          fill={v === undefined ? "transparent" : heatColor(v, heatLo, heatHi)}
           onClick={() => onCellClick(x, y)} />
       );
+      if (v !== undefined) {
+        cells.push(
+          <text key={`${x},${y}-v`} x={cx} y={cy + 4} textAnchor="middle" pointerEvents="none"
+            fontFamily="ui-monospace,monospace" fontSize="10.5" fill="var(--ink-soft)">
+            {v >= 0 ? "+" : ""}{v.toFixed(2)}
+          </text>
+        );
+      }
     }
   }
 
@@ -128,8 +141,10 @@ export default function Board({ board, state, activePlayer, onCellClick }) {
         );
       })}
       {cells}
-      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} />
-      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} />
+      {!heatmap && <>
+        <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} />
+        <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} />
+      </>}
       <Player cx={c0[0]} cy={c0[1]} label="0" colour="var(--p0)" carrier={state.b === 0} active={activePlayer === 0} />
       <Player cx={c1[0]} cy={c1[1]} label="1" colour="var(--p1)" carrier={state.b === 1} active={activePlayer === 1} />
       <circle cx={bc[0] + 15} cy={bc[1] - 15} r={5.5} fill="var(--ball)" stroke="var(--raise)" strokeWidth={1.3} />

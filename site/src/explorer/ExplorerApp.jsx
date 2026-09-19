@@ -36,6 +36,7 @@ export default function ExplorerApp() {
   const [activePlayer, setActivePlayer] = useState(0);
   const [qview, setQview] = useState("table");
   const [st, setSt] = useState(null);
+  const [viewMode, setViewMode] = useState("pieces");
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/explorer.json`)
@@ -56,6 +57,28 @@ export default function ExplorerApp() {
     if (!board) return [];
     return Object.keys(board.states).filter((k) => certify(board.states[k][3]).kind === "mixed");
   }, [board]);
+
+  // Value heatmap: sweep the active (movable) player over every legal cell,
+  // holding the other player and the ball fixed, reading V straight out of
+  // the exact solve -- no recomputation, same lookup the single-state view
+  // uses. V is always stored as player 0's value, so player 1's own view of
+  // it is the zero-sum negation.
+  const heatmap = useMemo(() => {
+    if (!board || !st || viewMode !== "heatmap") return null;
+    const m = new Map();
+    for (let x = 0; x < board.width; x++) {
+      for (let y = 0; y < board.height; y++) {
+        if (activePlayer === 0 ? (x === st.x1 && y === st.y1) : (x === st.x0 && y === st.y0)) continue;
+        const key = activePlayer === 0
+          ? stateKey({ x0: x, y0: y, x1: st.x1, y1: st.y1, b: st.b })
+          : stateKey({ x0: st.x0, y0: st.y0, x1: x, y1: y, b: st.b });
+        const rec = board.states[key];
+        if (!rec) continue;
+        m.set(`${x},${y}`, activePlayer === 0 ? rec[0] : -rec[0]);
+      }
+    }
+    return m;
+  }, [board, st, activePlayer, viewMode]);
 
   if (error) {
     return (
@@ -143,7 +166,7 @@ export default function ExplorerApp() {
                 </select>
               </div>
               <div className="board-svg-wrap">
-                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} />
+                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} heatmap={heatmap} />
               </div>
               <div className="controls">
                 <div className="seg" role="group" aria-label="which player clicking the board moves">
@@ -156,14 +179,31 @@ export default function ExplorerApp() {
                 </div>
               </div>
               <div className="controls">
+                <div className="seg" role="group" aria-label="board view">
+                  <button className={viewMode === "pieces" ? "active view" : ""} onClick={() => setViewMode("pieces")}>Pieces &amp; arrows</button>
+                  <button className={viewMode === "heatmap" ? "active view" : ""} onClick={() => setViewMode("heatmap")}>Value heatmap</button>
+                </div>
+              </div>
+              <div className="controls">
                 <button className="iconbtn" onClick={() => setSt(kickoffState(board))}>Kickoff</button>
                 <button className="iconbtn" onClick={() => setSt(randomState())}>Random position</button>
                 <button className="iconbtn" onClick={() => setSt(randomMixedState())}>Random must-guess position</button>
               </div>
-              <p className="hint">Click a cell to move the selected player there.{" "}
-                <span style={{ color: "var(--p0)" }}>Blue</span> is player 0, attacking the
-                right goal; <span style={{ color: "var(--p1)" }}>green</span> is player 1,
-                attacking the left. The small dot marks the ball.</p>
+              {viewMode === "heatmap" ? (
+                <p className="hint">Every cell is <b>V</b> for player {activePlayer} if it stood
+                  there instead &mdash; {activePlayer === 0 ? "player 1" : "player 0"} and the
+                  ball held fixed where they are now. Click a cell to actually move player{" "}
+                  {activePlayer} there and re-sweep from the new position.{" "}
+                  <span style={{ color: "var(--pitch)" }}>Green</span> means that cell is good for
+                  the player being swept; <span style={{ color: "var(--ember)" }}>orange</span>{" "}
+                  means it is bad &mdash; the same lookup as the single-state <b>V</b> above, run
+                  over every legal cell instead of just one.</p>
+              ) : (
+                <p className="hint">Click a cell to move the selected player there.{" "}
+                  <span style={{ color: "var(--p0)" }}>Blue</span> is player 0, attacking the
+                  right goal; <span style={{ color: "var(--p1)" }}>green</span> is player 1,
+                  attacking the left. The small dot marks the ball.</p>
+              )}
             </div>
 
             <div className="panel">
