@@ -25,6 +25,7 @@ FIELDS = [
     "seed", "train_time_s", "final_mean_reward",
     "row_action_agreement", "col_action_agreement",
     "mean_equilibrium_regret", "max_equilibrium_regret", "duality_gap",
+    "row_vs_random", "row_vs_best_response", "col_vs_random", "col_vs_best_response",
 ]
 
 
@@ -73,11 +74,17 @@ def main() -> None:
             "mean_equilibrium_regret": round(m["mean_equilibrium_regret"], 4),
             "max_equilibrium_regret": round(m["max_equilibrium_regret"], 4),
             "duality_gap": round(m["duality_gap"], 4),
+            "row_vs_random": round(m["row_vs_random"], 4),
+            "row_vs_best_response": round(m["row_vs_best_response"], 4),
+            "col_vs_random": round(m["col_vs_random"], 4),
+            "col_vs_best_response": round(m["col_vs_best_response"], 4),
         })
         print(f"  seed {seed}: row agree {rows[-1]['row_action_agreement']:.3f}  "
               f"col agree {rows[-1]['col_action_agreement']:.3f}  "
               f"mean regret {rows[-1]['mean_equilibrium_regret']:.3f}  "
-              f"exploit {rows[-1]['duality_gap']:.3f}")
+              f"exploit {rows[-1]['duality_gap']:.3f}  |  "
+              f"row vs random {rows[-1]['row_vs_random']:+.3f} "
+              f"vs best-response {rows[-1]['row_vs_best_response']:+.3f}")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="") as f:
@@ -93,6 +100,10 @@ def main() -> None:
     print(f"  mean equilibrium regret: {_fmt([r['mean_equilibrium_regret'] for r in rows])}")
     print(f"  max equilibrium regret : {_fmt([r['max_equilibrium_regret'] for r in rows])}")
     print(f"  exploitability         : {_fmt([r['duality_gap'] for r in rows])}")
+    print(f"  row vs random          : {_fmt([r['row_vs_random'] for r in rows])}")
+    print(f"  row vs best response   : {_fmt([r['row_vs_best_response'] for r in rows])}")
+    print(f"  col vs random          : {_fmt([r['col_vs_random'] for r in rows])}")
+    print(f"  col vs best response   : {_fmt([r['col_vs_best_response'] for r in rows])}")
     print(f"wrote {OUT.relative_to(OUT.parent.parent)}")
 
 

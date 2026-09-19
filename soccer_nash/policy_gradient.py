@@ -165,10 +165,20 @@ def evaluate_policy_gradient(
 ) -> dict[str, float]:
     """Score both self-play policies against the *exact* solver: action
     agreement, the per-state "pi1 Q = Q^T pi2" indifference check
-    (``epsilon_equilibrium``, mean and max over all states), and the
-    whole-game exploitability (``duality_gap``) -- never compared to each
-    other, always to the ground truth."""
-    from soccer_nash.exploit import duality_gap
+    (``epsilon_equilibrium``, mean and max over all states), the whole-game
+    exploitability (``duality_gap``) -- never compared to each other, always
+    to the ground truth -- and each net's own expected discounted goal
+    difference from kickoff against two fixed opponents: a **uniform-random**
+    policy (``vs_random``) and the **best response to it** (``vs_best_response``,
+    the exact worst case -- the opponent that has seen the net's mixing
+    probabilities and replies optimally, not a random draw from them). A net
+    that is close to the exact equilibrium should score similarly to
+    ``exact`` against both; a net that merely names the right action often
+    can still collapse against ``vs_best_response`` (see
+    ``docs/tournament.md``'s "every deterministic offense has a perfect
+    defense")."""
+    from soccer_nash.evaluate import policy_value
+    from soccer_nash.exploit import best_response_to, duality_gap, uniform_policy
     from soccer_nash.numerics import epsilon_equilibrium
 
     states = list(game.states())
@@ -189,10 +199,24 @@ def evaluate_policy_gradient(
         mean_regret += eps
     n = len(states)
     gap = duality_gap(game, row_pol, col_pol, gamma=gamma)
+
+    s0 = game.initial_state()
+    uniform = uniform_policy(game)
+    row_vs_random = policy_value(game, row_pol, uniform, gamma=gamma)[s0]
+    row_vs_br = best_response_to(game, row_pol, responder=1, gamma=gamma).values[s0]
+    row_vs_br = -row_vs_br  # best_response_to returns the *responder's* (player 1's) value
+    col_vs_random_vals = policy_value(game, uniform, col_pol, gamma=gamma)
+    col_vs_random = -col_vs_random_vals[s0]  # player 1's own return, not player 0's
+    col_vs_br = -best_response_to(game, col_pol, responder=0, gamma=gamma).values[s0]
+
     return {
         "row_action_agreement": agree0 / n,
         "col_action_agreement": agree1 / n,
         "mean_equilibrium_regret": mean_regret / n,
         "max_equilibrium_regret": max_regret,
         "duality_gap": gap,
+        "row_vs_random": row_vs_random,
+        "row_vs_best_response": row_vs_br,
+        "col_vs_random": col_vs_random,
+        "col_vs_best_response": col_vs_br,
     }

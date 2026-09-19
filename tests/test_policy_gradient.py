@@ -75,6 +75,11 @@ def test_evaluate_policy_gradient_against_exact_solver_is_well_formed():
     assert m["mean_equilibrium_regret"] >= 0.0
     assert m["max_equilibrium_regret"] >= m["mean_equilibrium_regret"]
     assert isinstance(m["duality_gap"], float)
+    # a best-responder is the worst-case opponent, so it can never do worse
+    # (for the net whose value is being reported) than a random one, for any
+    # fixed policy -- not just a well-trained one.
+    assert m["row_vs_random"] >= m["row_vs_best_response"] - 1e-6
+    assert m["col_vs_random"] >= m["col_vs_best_response"] - 1e-6
 
 
 def test_selfplay_rewards_are_zero_sum():
