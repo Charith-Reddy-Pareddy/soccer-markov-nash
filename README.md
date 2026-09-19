@@ -1,20 +1,15 @@
 # When Does a Soccer Markov Game Need Mixed Strategies?
 
-**Two documents, by design.** This repo is the technical notebook: every
-proof, every experiment, every figure, reproducible from the code in it —
-written for a reader who wants the exact math.
-[The Mixed Game](https://charith-reddy-pareddy.github.io/the-mixed-game/)
-(separate repo,
-[the-mixed-game](https://github.com/Charith-Reddy-Pareddy/the-mixed-game)) is
-the public companion: plain-language, figures, one live table, no proofs —
-written for a reader who does not want to read a research paper. Content
-flows one way only, this repo outward: `the-mixed-game/scripts/sync_assets.py`
-pulls its figures and live tournament data straight from this repo's own
-`docs/figures/png/` and `experiments/*.csv`, so nothing on the public site is
-a hand-copied number that can drift from the solver's output. Read whichever
-one matches what you're after; neither is a stub of the other. This repo's
-own documentation site is
-[the docs index](https://charith-reddy-pareddy.github.io/soccer-markov-nash/).
+This repo is the technical notebook: every proof, every experiment, every
+figure, reproducible from the code in it — written for a reader who wants the
+exact math.
+
+**Live site:**
+[charith-reddy-pareddy.github.io/soccer-markov-nash](https://charith-reddy-pareddy.github.io/soccer-markov-nash/)
+— the write-up, plus an
+[interactive board explorer](https://charith-reddy-pareddy.github.io/soccer-markov-nash/explorer.html)
+that places both players anywhere and solves that exact position live, in the
+browser, from the same solve this repo's figures and tables are built from.
 
 ## The problem
 
