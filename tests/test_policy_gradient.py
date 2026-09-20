@@ -7,6 +7,7 @@ from soccer_nash.policy_gradient import (
     PolicyNet,
     _discounted_returns,
     evaluate_policy_gradient,
+    pretrain_policy_nets,
     train_reinforce_selfplay,
 )
 
@@ -80,6 +81,50 @@ def test_evaluate_policy_gradient_against_exact_solver_is_well_formed():
     # fixed policy -- not just a well-trained one.
     assert m["row_vs_random"] >= m["row_vs_best_response"] - 1e-6
     assert m["col_vs_random"] >= m["col_vs_best_response"] - 1e-6
+
+
+def test_pretrain_policy_nets_moves_toward_the_exact_policy():
+    # Not a full fit -- just that supervised regression toward the exact
+    # policy actually reduces the distance from a random init, and produces
+    # valid distributions.
+    game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
+    exact = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9).run()
+    fresh = PolicyNet(hidden=8)
+    net0, net1 = pretrain_policy_nets(
+        game, exact.row_policy, exact.col_policy, hidden=8, epochs=60, seed=0
+    )
+    s0 = game.initial_state()
+    p_fresh = fresh.policy(s0)
+    p_fit = net0.policy(s0)
+    exact_p = exact.row_policy[s0]
+    assert np.abs(p_fit - exact_p).sum() < np.abs(p_fresh - exact_p).sum()
+    assert np.isclose(net1.policy(s0).sum(), 1.0)
+
+
+def test_train_reinforce_selfplay_init_net_is_the_actual_starting_point():
+    # epochs=0-equivalent: iterations=0 skips the training loop entirely, so
+    # the returned net's weights should be an exact copy of init_net's, not a
+    # fresh random init -- same property nash_dqn.py's train_nash_dqn tests
+    # for its own init_net.
+    game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
+    exact = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-9).run()
+    warm0, warm1 = pretrain_policy_nets(
+        game, exact.row_policy, exact.col_policy, hidden=8, epochs=20, seed=0
+    )
+    result = train_reinforce_selfplay(
+        game, gamma=0.9, hidden=8, iterations=0, rollout_len=10, seed=1,
+        init_net0=warm0, init_net1=warm1,
+    )
+    s0 = game.initial_state()
+    np.testing.assert_allclose(result.net0.policy(s0), warm0.policy(s0))
+    np.testing.assert_allclose(result.net1.policy(s0), warm1.policy(s0))
+
+    # and it must differ from what a from-scratch (seed=1) init would give --
+    # otherwise this test wouldn't actually be exercising init_net at all
+    from_scratch = train_reinforce_selfplay(
+        game, gamma=0.9, hidden=8, iterations=0, rollout_len=10, seed=1
+    )
+    assert not np.allclose(result.net0.policy(s0), from_scratch.net0.policy(s0))
 
 
 def test_selfplay_rewards_are_zero_sum():

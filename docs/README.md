@@ -29,11 +29,13 @@ technical answer, start with **[report.pdf](report.pdf)**
   diagrams, the exact stage matrix, and why relative position (not distance to
   goal) is what forces a guess (`make showcase`).
 - [positions.md](positions.md) (also [positions.pdf](positions.pdf)) —
-  twelve player-position cases, one per canonical equilibrium-support shape
+  fourteen player-position cases, one per canonical equilibrium-support shape
   and per mixing mechanism studied in the project (move order, tackle,
   reward, slip), including the exact board position drawn at the meeting,
   next to the full `4x4` Q matrix redrawn as a node-and-arrow best-response
-  graph (`make positions`, `make positions-pdf`).
+  graph (`make positions`, `make positions-pdf`) -- plus the
+  minimax/always-left/random/best-response policy matrix
+  (`make positions-matrix`).
 - [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
   (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
   structure, and the value of mixing (`make mixing`).
@@ -68,7 +70,9 @@ technical answer, start with **[report.pdf](report.pdf)**
 - [geometry.md](geometry.md) — RQ3: which spatial configurations force mixing,
   and the decision tree that predicts them.
 - [templates.md](templates.md) — the 94 no-pure-saddle states reduced to 8 geometric
-  templates, with the stage matrix and matching-pennies proof for each.
+  templates, with the stage matrix and matching-pennies proof for each; plus
+  whether the fifth action (`STAND`) changes the count (94→102, 8→9 --
+  `make templates-n5`).
 - [result.md](result.md) — the goal-width switch stated precisely: single cell →
   pure everywhere, goal ≥ 2 cells → a provably saddle-free stage game; the
   per-stage-game certificate, the robustness envelope, and the prior-work
@@ -112,4 +116,11 @@ technical answer, start with **[report.pdf](report.pdf)**
   (`experiments/nash_dqn_random_seeds.csv`, `make dqn-random`); a
   width/depth capacity sweep up to 512-wide / 115x the original architecture
   (`experiments/nash_dqn_ablation.csv`, `make dqn-ablation`).
+- [policy_gradient.md](policy_gradient.md) — self-play REINFORCE vs. the
+  exact solver: from a random init it does not reliably converge (33%
+  action agreement, exploitability 0.86); pre-training onto the exact
+  policy reaches 98% agreement, and 2000 further iterations of self-play
+  leave it numerically unchanged -- a vanishing score-function gradient
+  once the policy is peaked, not a fix (`make policy-gradient`,
+  `make policy-gradient-warmstart`).
 

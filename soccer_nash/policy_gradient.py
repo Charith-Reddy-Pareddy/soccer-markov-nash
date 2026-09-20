@@ -87,6 +87,44 @@ def _discounted_returns(rewards: list[float], gamma: float) -> list[float]:
     return out
 
 
+def pretrain_policy_nets(
+    game: SoccerGame,
+    exact_row_policy: dict[State, np.ndarray],
+    exact_col_policy: dict[State, np.ndarray],
+    hidden: int = 64,
+    epochs: int = 400,
+    lr: float = 3e-3,
+    seed: int = 0,
+) -> tuple[PolicyNet, PolicyNet]:
+    """Regress ``PolicyNet``s directly onto the exact equilibrium strategies
+    -- supervised cross-entropy against the target distribution, no rollouts,
+    no self-play -- so the meeting's "would pre-training help?" question has
+    an actual starting point to hand :func:`train_reinforce_selfplay`
+    (``init_net0``/``init_net1``), the same "fit to exact, then continue
+    training" shape as ``nash_dqn.fit_q_to_exact`` + ``train_nash_dqn``'s
+    warm start, adapted to REINFORCE's on-policy loop instead of TD
+    bootstrap."""
+    torch.manual_seed(seed)
+    states = list(game.states())
+    X = torch.tensor(np.array(states), dtype=torch.float32)
+    P0 = torch.tensor(np.array([exact_row_policy[s] for s in states]), dtype=torch.float32)
+    P1 = torch.tensor(np.array([exact_col_policy[s] for s in states]), dtype=torch.float32)
+
+    def _fit(net: PolicyNet, target: torch.Tensor) -> PolicyNet:
+        opt = torch.optim.Adam(net.parameters(), lr=lr)
+        for _epoch in range(epochs):
+            logp = torch.log_softmax(net(X), dim=-1)
+            loss = -(target * logp).sum(dim=-1).mean()  # cross-entropy to a soft target
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+        return net
+
+    net0 = _fit(PolicyNet(hidden), P0)
+    net1 = _fit(PolicyNet(hidden), P1)
+    return net0, net1
+
+
 def train_reinforce_selfplay(
     game: SoccerGame,
     gamma: float = 0.9,
@@ -95,14 +133,26 @@ def train_reinforce_selfplay(
     rollout_len: int = 100,
     lr: float = 1e-3,
     seed: int = 0,
+    init_net0: PolicyNet | None = None,
+    init_net1: PolicyNet | None = None,
 ) -> ReinforceResult:
     """Self-play REINFORCE: both players act simultaneously every step, from
     their own policy network, on the real (stochastic) transition -- sampled
     via ``game.step``, not the exact expectation ``nash_dqn.py`` uses,
-    because this is genuine on-policy reinforcement learning, not fitted-Q."""
+    because this is genuine on-policy reinforcement learning, not fitted-Q.
+
+    ``init_net0``/``init_net1``, when given, seed the starting weights (e.g.
+    from :func:`pretrain_policy_nets`) instead of a random initialization --
+    lets a caller compare "from scratch" against "warm-started" self-play,
+    same shape as ``nash_dqn.train_nash_dqn``'s ``init_net``."""
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
-    net0, net1 = PolicyNet(hidden), PolicyNet(hidden)
+    net0 = PolicyNet(hidden)
+    net1 = PolicyNet(hidden)
+    if init_net0 is not None:
+        net0.load_state_dict(init_net0.state_dict())
+    if init_net1 is not None:
+        net1.load_state_dict(init_net1.state_dict())
     opt0 = torch.optim.Adam(net0.parameters(), lr=lr)
     opt1 = torch.optim.Adam(net1.parameters(), lr=lr)
 
