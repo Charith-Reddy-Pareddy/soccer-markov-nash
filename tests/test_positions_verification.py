@@ -1,10 +1,10 @@
 """Independent numeric verification of the exact claims docs/positions.md and
 docs/positions.pdf make -- both "every printed policy is a genuine Nash
-equilibrium" (not just a plausible-looking fractional split) and "the twelve
-documented cases are classified pure/mixed as the doc claims". This is the
-canonical board every one of the twelve cases (except 8, 11, 12, which use
-their own board) is drawn from, so it verifies the actual content on the page,
-not a smaller stand-in board.
+equilibrium" (not just a plausible-looking fractional split) and "the
+fourteen documented cases are classified pure/mixed as the doc claims". This
+is the canonical board every one of them (except 8, 11, 12, which use their
+own board) is drawn from, so it verifies the actual content on the page, not
+a smaller stand-in board.
 """
 
 import numpy as np
@@ -41,6 +41,8 @@ DOCUMENTED_CASES = {
     (1, 1, 2, 0, 1): True,    # Case 6 -- near-pure hedge
     (0, 2, 1, 2, 0): True,    # Case 9 -- asymmetric mix
     (0, 2, 2, 2, 1): True,    # Case 10 -- three-lane mix
+    (1, 1, 3, 1, 1): True,    # Case 13 -- template 3
+    (0, 2, 2, 2, 0): True,    # Case 14 -- template 8, rarest shape
 }
 
 
@@ -84,3 +86,19 @@ def test_case2_and_case3_indifference_matches_positions_pdf_exactly(solved):
     p, q = result.row_policy[case3], result.col_policy[case3]
     np.testing.assert_allclose(p, [0.0, 0.18, 0.82, 0.0], atol=5e-4)
     np.testing.assert_allclose(q, [0.0, 0.0, 0.077, 0.923], atol=5e-4)
+
+
+def test_case13_and_case14_indifference_matches_positions_pdf_exactly(solved):
+    """Same cross-check as Case 2/3, for the two templates (3 and 8) added to
+    fill in the last gaps in docs/templates.md's 8-template coverage."""
+    _solver, result = solved
+
+    case13 = (1, 1, 3, 1, 1)
+    p, q = result.row_policy[case13], result.col_policy[case13]
+    np.testing.assert_allclose(p, [0.656, 0.0, 0.0, 0.344], atol=5e-4)
+    np.testing.assert_allclose(q, [0.823, 0.0, 0.177, 0.0], atol=5e-4)
+
+    case14 = (0, 2, 2, 2, 0)
+    p, q = result.row_policy[case14], result.col_policy[case14]
+    np.testing.assert_allclose(p, [0.675, 0.325, 0.0, 0.0], atol=5e-4)
+    np.testing.assert_allclose(q, [0.0, 0.0, 1.0, 0.0], atol=5e-4)

@@ -1,6 +1,6 @@
 # Player positions and the 4×4 Q matrix
 
-I examine twelve representative soccer states. Each is identified by its
+I examine fourteen representative soccer states. Each is identified by its
 **state, five numbers `(x0, y0, x1, y1, b)`**: player 0's cell `(x0, y0)`,
 player 1's cell `(x1, y1)`, and `b` (which player currently has the ball,
 `0` or `1`). That five-number state is not part of the Q matrix -- it just
@@ -65,9 +65,13 @@ on the board, mirrored). This page shows one example of each of the four
 canonical support shapes, plus every distinct *mechanism* studied in the
 project that can force a mix: a stochastic move order, this project's own
 tackle rule, a dense reward with zero transition noise, and movement slip on
-a goal shape that is otherwise always pure. Every one of the twelve gets its
-own full-size board-and-matrix figure below -- no combined overview image,
-so nothing here is ever cropped by a page break.
+a goal shape that is otherwise always pure. Cases 13 and 14 complete a
+stronger claim: [templates.md](templates.md) reduces the 94 no-pure-saddle
+states to **8 canonical geometric templates**, and with those two, every one
+of the 8 now has its own full case here too (`template -> case`:
+`1->4, 2->2, 3->13, 4->9, 5->10, 6->5, 7->3, 8->14`). Every one of the
+fourteen gets its own full-size board-and-matrix figure below -- no combined
+overview image, so nothing here is ever cropped by a page break.
 
 ## Reading the board and the Q matrix
 
@@ -141,8 +145,8 @@ states.
 For a focused read: the typical two-action mix, the cleanest indifference
 example, a genuine three-action mix, the sharpest LP-degeneracy example, and
 a case where a completely different mechanism (the reward, not the
-transition) forces the mix. All twelve cases, these five included, follow in
-full below in numbered order.
+transition) forces the mix. All fourteen cases, these five included, follow
+in full below in numbered order.
 
 ## Case 2 — `(0, 1, 1, 1, 0)`: the primary example -- the typical mix
 
@@ -405,7 +409,7 @@ the deepest gap of any case in this doc -- are also the two largest values
 of mixing here: the states where the matrix punishes commitment hardest are
 the same ones where committing costs the most.
 
-## All twelve cases, in full
+## All fourteen cases, in full
 
 The five above are the ones to read first. What follows is the complete
 set, `Case 1` through `Case 12` in order -- the same five again, in their
@@ -931,7 +935,100 @@ otherwise always pure.
 | **L** | (1,4,0,4,1) | (1,2,0,4,1) | (0,3,0,4,1) | (2,3,0,4,1) |
 | **R** | (1,4,2,4,1) | (1,2,2,4,1) | (0,3,2,4,1) | (2,3,2,4,1) |
 
-## The mathematics behind all twelve
+## Case 13 — `(1, 1, 3, 1, 1)`: template 3, the last un-cased matching-pennies shape
+
+[templates.md](templates.md) reduces the 94 no-pure-saddle states to 8
+canonical geometric templates; Cases 2, 3, 4, 5, 9, and 10 above turn out to
+already be instances of six of them (`template 2, 7, 1, 6, 4, 5`
+respectively — confirmed by recomputing each state's own geometry key, not
+assumed). This case and Case 14 are the two that were missing: this one is
+**template 3** (16 of the 94 states) -- the defender two cells ahead of the
+carrier, on the same goal row. Gap `0.0419`.
+
+Player 1 carries. The carrier's live moves are `U` (step to the next goal
+row) and `L` (drive straight down the row at the defender); the defender
+answers with `U` (cover the row above) or `R` (hold the lane it is already
+in). Same crossing shape as Case 2 and Case 7, one row further apart.
+
+**Type:** forced mixed equilibrium -- both sides' splits are the whole
+indifference class. The nearest unweighted action is the defender's `L`,
+`0.0064` above its support's tied value -- a real gap, not a rounding-level
+tie the way Case 9's `D` is.
+
+**Support:** carrier `{U, L}` (82.3% / 17.7%) · defender `{U, R}`
+(65.6% / 34.4%).
+
+**Why indifferent:** Carrier `E[U]`=`E[L]`=+0.225, above `E[D]`=+0.166 and
+`E[R]`=+0.175. Defender `E[U]`=`E[R]`=+0.225, below `E[D]`=+0.289 and
+`E[L]`=+0.231.
+
+![Case 13 board position and Q matrix graph.](figures/png/positions_case13.png)
+
+```
+                  U          D          L          R
+    U    0.205131   0.283411   0.228062   0.262831
+    D    0.182213   0.182213   0.182213   0.135158
+    L    0.316945   0.316945   0.247069   0.049186
+    R    0.182213   0.182213   0.182213   0.162618
+```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (1,2,3,2,1) | (1,0,3,2,1) | (0,1,3,2,1) | (2,1,3,2,1) |
+| **D** | (1,2,3,0,1) | (1,0,3,0,1) | (0,1,3,0,1) | (2,1,3,0,1) |
+| **L** | (1,2,2,1,1) | (1,0,2,1,1) | (0,1,2,1,1) | 50%: (2,1,3,1,0)<br>50%: (1,1,2,1,1) |
+| **R** | (1,2,4,1,1) | (1,0,4,1,1) | (0,1,4,1,1) | (2,1,4,1,1) |
+
+## Case 14 — `(0, 2, 2, 2, 0)`: template 8, the rarest shape on the board
+
+**Template 8** covers only **2 of the 94** no-pure-saddle states -- the
+rarest of the eight, a wall-clamped variant of template 4's `2x1` shape
+(carrier two actions, defender one): the defender two cells ahead of the
+carrier, same goal row, with the carrier pinned against its own back wall
+(`x=0`). Gap `0.0178`.
+
+Player 0 carries, already at the leftmost column. Its only live moves are
+`U`/`D` (there is nowhere further left to go -- `L` is a wall no-op); the
+defender's reported reply is pure `L` (hold its lane).
+
+**Type:** pure-tied / fractional LP output (defender). The defender's
+printed policy is pure `L` (100%), but `U` ties it exactly (both
+`+0.1034`) -- the defender's choice of `L` over `U` is as arbitrary as a
+printed fractional split, the same phenomenon as Case 9, just on the other
+canonical `2x1` template. The carrier's `U`/`D` split, in contrast, is a
+genuine forced tie -- both strictly above `L` and `R` by a real margin.
+
+**Support:** carrier `{U, D}` (67.5% / 32.5%) · defender `{L}` (100%,
+tied with `U`).
+
+**Why indifferent:** Carrier `E[U]`=`E[D]`=+0.103, above `E[L]`=+0.086 and
+`E[R]`=&minus;0.110. The defender's official policy is pure `L` (+0.103),
+but `E[U]`=+0.103 too: `D`=+0.125 and `R`=+0.113 are both clearly worse for
+the defender, but the `L`/`U` choice is a coin flip the LP happened to call
+`L`.
+
+![Case 14 board position and Q matrix graph.](figures/png/positions_case14.png)
+
+```
+                  U          D          L          R
+    U    0.083738   0.144198   0.103381   0.112892
+    D    0.144198   0.083738   0.103381   0.112892
+    L    0.099198   0.099198   0.085599   0.099198
+    R    0.155749   0.155749  -0.109966   0.132828
+```
+
+**Successor states, by joint action** -- same orientation as the Q matrix above (`carrier` row, `defender` column), each cell the resulting `(x0, y0, x1, y1, b)`. Two lines in a cell means the outcome depends on who moves first (each 50%).
+
+| carrier \ defender | U | D | L | R |
+|---|---|---|---|---|
+| **U** | (0,3,2,3,0) | (0,3,2,1,0) | (0,3,1,2,0) | (0,3,3,2,0) |
+| **D** | (0,1,2,3,0) | (0,1,2,1,0) | (0,1,1,2,0) | (0,1,3,2,0) |
+| **L** | (0,2,2,3,0) | (0,2,2,1,0) | (0,2,1,2,0) | (0,2,3,2,0) |
+| **R** | (1,2,2,3,0) | (1,2,2,1,0) | 50%: (1,2,2,2,0)<br>50%: (0,2,1,2,1) | (1,2,3,2,0) |
+
+## The mathematics behind all fourteen
 
 A mixed equilibrium is exactly the strategy pair where every action in a
 player's support earns the **same expected payoff** against the opponent's
@@ -947,17 +1044,18 @@ cycle anywhere in the matrix.
 
 ## Deterministic vs. stochastic transitions
 
-Every one of the twelve cases above is tagged by which kind of transition
+Every one of the fourteen cases above is tagged by which kind of transition
 produced it, because that tag is the entire finding, not incidental detail:
 
 | Case | Board / rule | Transition |
 |---|---|---|
 | 1 | canonical | deterministic outcome (the joint action happens to have a pure saddle) |
-| 2, 3, 4, 6, 7, 9, 10 | canonical, `move_order="random"` | **stochastic** -- a coin decides who moves first |
+| 2, 3, 4, 6, 7, 9, 10, 13 | canonical, `move_order="random"` | **stochastic** -- a coin decides who moves first |
 | 5 | canonical, `move_order="random"` | stochastic, but the mix is forced by geometry (three lanes at once), not by the coin alone |
 | 8 | this project's own tackle rule | stochastic -- a duel resolves with probability `tackle_prob` |
 | 11 | `move_order="deterministic"`, `scoring="territory"` | **deterministic** transition, mixed anyway -- the reward, not the transition, forces it |
 | 12 | `move_order="deterministic"`, `slip=0.15` | deterministic *policy* outcome, but movement itself is noisy |
+| 14 | canonical, `move_order="random"` | stochastic -- a wall-clamped variant of Case 9's asymmetric shape |
 
 Case 1 and Case 11 are the pair worth holding side by side: both have a
 **deterministic transition function** -- no coin anywhere -- and yet Case 1
@@ -1054,7 +1152,7 @@ Reproduces with `python scripts/positions_policy_matrix.py`, which writes
 `python scripts/positions.py` prints the exact `4x4` Q matrix -- from
 `NashQIteration.run_exact()`'s direct linear solve, not the iterative
 approximation to it -- policy, action support, and the successor-state
-coordinate table for all twelve states, and writes
+coordinate table for all fourteen states, and writes
 `figures/gallery/positions.svg`. A PDF write-up of this page is at
 [positions.pdf](positions.pdf). `python scripts/pure_vs_mixed_exploit.py`
 reproduces the pure-vs-mixed exploitability table above. `python

@@ -23,6 +23,8 @@ const PRESETS = {
   10: { board: "canonical", state: [0, 2, 2, 2, 1], label: "Case 10 — three-lane mix" },
   11: { board: "territory", state: [4, 4, 5, 4, 0], label: "Case 11 — reward forces the mix" },
   12: { board: "slip", state: [1, 3, 1, 4, 1], label: "Case 12 — movement slip" },
+  13: { board: "canonical", state: [1, 1, 3, 1, 1], label: "Case 13 — template 3" },
+  14: { board: "canonical", state: [0, 2, 2, 2, 0], label: "Case 14 — rarest template" },
 };
 
 function toState(arr) {

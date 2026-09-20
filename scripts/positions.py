@@ -297,6 +297,24 @@ def main() -> None:
     print(f"  ({len(slip_mixed)} mixed states appear under slip=0.15 on a "
           f"goal shape that has exactly 0 at slip=0)\n")
 
+    # 13: template 3 -- defender 2 ahead, same row, carrier on a goal row --
+    # the one 2x2 matching-pennies template (16 of 94 states) with no case of
+    # its own above; templates 1, 2, 4, 5, 6, 7 are already Cases 4, 2, 9, 10,
+    # 5, 3 respectively (soccer_nash/templates.py's own geometry key confirms
+    # the match), so this and Case 14 are the only two genuinely missing.
+    t3state = (1, 1, 3, 1, 1)
+    why = "Template 3 -- defender two ahead on the goal row, the last un-cased shape"
+    assert t3state in mixed
+    _report(why, g, solver, r, t3state, panels, case_no=13)
+
+    # 14: template 8 -- defender 2 ahead, same row, near the back wall -- the
+    # rarest template (2 of 94 states): a wall-clamped variant of template 4's
+    # "defender pure, carrier indifferent" 2x1 shape.
+    t8state = (0, 2, 2, 2, 0)
+    why = "Template 8 -- the rarest shape (2 of 94 states), a wall-clamped defender-pure tie"
+    assert t8state in mixed
+    _report(why, g, solver, r, t8state, panels, case_no=14)
+
     FIG.parent.mkdir(parents=True, exist_ok=True)
     FIG.write_text(panel_svg(panels, cols=2))
     print(f"wrote {FIG}")
