@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix explorer-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix templates-n5 explorer-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -39,6 +39,7 @@ help:
 	@echo "make site         - build the React site (site/) into docs/ -- index.html + explorer.html"
 	@echo "make numerics     - numerical-robustness analysis + figures"
 	@echo "make templates    - print the mixed-state geometric templates"
+	@echo "make templates-n5 - same, with STAND: does the 5th action change the template count?"
 	@echo "make proof        - single-cell pure-saddle certificate (~4 min)"
 	@echo "make verify       - goal-width mixed-equilibrium certificate + robustness (~90 s)"
 	@echo "make generalize   - how far the goal-width switch holds: scale, goal shape, slip (~9 min)"
@@ -175,6 +176,9 @@ numerics:
 
 templates:
 	$(PY) scripts/templates.py
+
+templates-n5:
+	$(PY) scripts/templates.py --n-actions 5
 
 proof:
 	$(PY) scripts/onecell_proof.py

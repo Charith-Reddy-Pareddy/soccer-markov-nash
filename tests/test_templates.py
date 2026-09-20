@@ -106,3 +106,25 @@ def test_templates_of_the_random_game_are_matching_pennies():
     # every 2x2-support template is a genuine matching-pennies subgame
     assert all(t.mp.is_matching_pennies for t in two_by_two)
     assert sum(t.count for t in two_by_two) == 68
+
+
+@pytest.mark.slow
+def test_stand_action_changes_the_template_count_not_just_the_probabilities():
+    """docs/templates.md's "does the fifth action change the template count?"
+    section: 94 -> 102 mixed states, 8 -> 9 templates, and Case 5's own
+    3x3-support template (the carrier's three-lane mix) disappears entirely
+    -- becomes pure -- once STAND lets the carrier wait instead of commit."""
+    game = SoccerGame(move_order="random", n_actions=5)
+    solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-10)
+    result = solver.run()
+    mixed = set(result.no_saddle_states)
+    assert len(mixed) == 102
+
+    templates = mixed_state_templates(
+        game, list(mixed), lambda st: solver._matrix(st, result.values)
+    )
+    assert sum(t.count for t in templates) == 102
+    assert len(templates) == 9
+
+    # Case 5's exact state, mixed (3-way) with 4 actions, must be pure with 5.
+    assert (0, 0, 2, 0, 0) not in mixed

@@ -152,11 +152,64 @@ So the precise condition for an unavoidable mixed stage game in this model is:
 The decision tree's top split -- `defender_can_intercept` -- is exactly the
 third clause; templates 1–3 and 7 are exactly the states where all three hold.
 
+## Does the fifth action change the template count?
+
+Every result above uses the plain `{U, D, L, R}` action set. `docs/report.md`
+already checked that adding `STAND` (Littman's fifth action) doesn't flip the
+goal-width switch off on a small board; this asks the sharper question on the
+canonical board itself: does the **8-template reduction survive**, or does a
+"wait" option change the shapes, not just the count?
+
+```
+python scripts/templates.py --n-actions 5
+```
+
+**102 no-pure-saddle states (up from 94), reducing to 9 templates (up from
+8), mirror-closed.** `STAND` does not remove the phenomenon -- if anything it
+spreads slightly wider -- but it does not just pad the existing templates
+either. Two concrete, checkable things happen:
+
+1. **One entire template disappears -- into a pure saddle, not into a
+   different shape.** Template 6 (4 states, support `3x3`, the carrier's
+   genuine three-lane mix -- [Case 5](positions.md) is one of them) vanishes
+   completely with `STAND` available. Tracing its own 4 states one by one:
+   all 4 are pure once the carrier can hold position instead of committing to
+   one of three lanes. The three-way tie that forced the mix in the 4-action
+   game was a symptom of being *forced to move*; `STAND` gives the carrier a
+   credible "wait and see" reply that turns out to dominate.
+2. **The dominant mechanism itself changes its live actions, not just its
+   probabilities.** Template 2 -- the canonical mechanism, 24 of the 94/102
+   states, [Case 2](positions.md) among them -- keeps the same state count
+   and the same `2x2` matching-pennies structure, but the carrier's crossing
+   partner for `U` is no longer `D`: it is `STAND`. At Case 2's own state
+   `(0, 1, 1, 1, 0)`, the exact `n_actions=5` equilibrium is carrier
+   `{U 97.9%, STAND 2.1%}`, defender `{U 48%, STAND 52%}` -- `D` drops out of
+   both players' support entirely. "Which goal row to attack" (`U` vs. `D`)
+   becomes "commit now or wait" (`U` vs. `STAND`) once waiting is on the
+   table.
+3. **Two new templates appear, both involving `STAND` in a live support**:
+   one entirely new geometric class (4 states, defender two cells ahead
+   *and* one row off, support `2x2` with `STAND` in the defender's mix --
+   not present at all with 4 actions), and a rare 4-state `3x3` sub-case of
+   the dominant "defender two ahead, same row" geometry where `STAND` enters
+   *both* players' mixes at once (template 3's 16-state `2x2` majority is
+   otherwise unchanged). The template that was already the rarest
+   ([Case 14](positions.md), 2 states) is untouched.
+
+So the headline finding from the four-action game -- *mixing is a property
+of the configuration, not the raw board position* -- still holds with five
+actions (102 states still reduce to a small, named set of shapes, not a
+long tail). What changes is *which* configurations force a mix: `STAND`
+closes off the one case where the carrier had no choice but to gamble
+between three committed lanes, and opens a couple of new, narrower cases
+where waiting itself becomes part of the guess.
+
 ## Regenerating
 
 ```
 python scripts/templates.py --gamma 0.9
+python scripts/templates.py --n-actions 5
 ```
 
 Also writes `docs/figures/gallery/templates.svg` (the 8-template figure
-above).
+above) and, with `--n-actions 5`, `docs/figures/gallery/templates_n5.svg`.
