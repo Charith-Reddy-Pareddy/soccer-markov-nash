@@ -349,6 +349,35 @@ a vertical one.</span></p>
 <p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
+<p>Isolate the part of the matrix the &ldquo;why not just chase Right&rdquo;
+question turns on, before looking at the full grid &mdash; the carrier's
+<span class="mono">{L, R}</span> against the defender's
+<span class="mono">{L, R}</span> (holding <span class="mono">U</span> aside
+for both, since it is dominated regardless):</p>
+<table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>defends L</th><th>defends R</th></tr></thead>
+  <tbody>
+    <tr><td><b>goes L</b></td><td>0.141010</td><td>0.810000</td></tr>
+    <tr><td><b>goes R</b></td><td>0.211001</td><td>0.166529</td></tr>
+  </tbody>
+</table>
+<p>Read a column at a time, not the whole grid at once. Column &ldquo;defends
+R&rdquo;: if the defender is known to be committing to
+<span class="mono">R</span>, the carrier's best reply is not
+<span class="mono">R</span> (0.166529) but <span class="mono">L</span>
+(0.810000) &mdash; a nearly fivefold jump. That is the whole mechanism in one
+number: reacting to the carrier's <em>current</em> tendency with
+<span class="mono">R</span> looks locally correct (0.166529 beats the
+0.211001 that <span class="mono">R</span> would concede against
+<span class="mono">L</span>), but it is not a stable choice, because it
+hands the carrier a far better reply the instant the carrier notices. The
+defender's actual equilibrium mix (18% <span class="mono">D</span>, 82%
+<span class="mono">L</span>, <span class="mono">R</span> never played) is
+what neutralizes that jump &mdash; confirmed below against the full
+<span class="mono">4&times;4</span> matrix, since the
+<span class="mono">D</span> action (left out of this 2x2 view) is part of
+what makes <span class="mono">L</span> and <span class="mono">R</span>
+genuinely tie for the carrier.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -687,6 +716,35 @@ a vertical one.</span></p>
 <p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
+<p>Isolate the part of the matrix the &ldquo;why not just chase Right&rdquo;
+question turns on, before looking at the full grid &mdash; the carrier's
+<span class="mono">{L, R}</span> against the defender's
+<span class="mono">{L, R}</span> (holding <span class="mono">U</span> aside
+for both, since it is dominated regardless):</p>
+<table class="coordmatrix">
+  <thead><tr><th>carrier \ defender</th><th>defends L</th><th>defends R</th></tr></thead>
+  <tbody>
+    <tr><td><b>goes L</b></td><td>0.141010</td><td>0.810000</td></tr>
+    <tr><td><b>goes R</b></td><td>0.211001</td><td>0.166529</td></tr>
+  </tbody>
+</table>
+<p>Read a column at a time, not the whole grid at once. Column &ldquo;defends
+R&rdquo;: if the defender is known to be committing to
+<span class="mono">R</span>, the carrier's best reply is not
+<span class="mono">R</span> (0.166529) but <span class="mono">L</span>
+(0.810000) &mdash; a nearly fivefold jump. That is the whole mechanism in one
+number: reacting to the carrier's <em>current</em> tendency with
+<span class="mono">R</span> looks locally correct (0.166529 beats the
+0.211001 that <span class="mono">R</span> would concede against
+<span class="mono">L</span>), but it is not a stable choice, because it
+hands the carrier a far better reply the instant the carrier notices. The
+defender's actual equilibrium mix (18% <span class="mono">D</span>, 82%
+<span class="mono">L</span>, <span class="mono">R</span> never played) is
+what neutralizes that jump &mdash; confirmed below against the full
+<span class="mono">4&times;4</span> matrix, since the
+<span class="mono">D</span> action (left out of this 2x2 view) is part of
+what makes <span class="mono">L</span> and <span class="mono">R</span>
+genuinely tie for the carrier.</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>

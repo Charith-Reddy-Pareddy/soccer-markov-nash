@@ -218,6 +218,28 @@ indifference class.
 
 **Why indifferent:** Carrier `E[L]`=`E[R]`=+0.206, strictly above `E[D]`=+0.162 and `E[U]`=+0.050. Defender `E[D]`=`E[L]`=+0.206, strictly below `E[R]`=+0.216 and `E[U]`=+0.257.
 
+Isolate the part of the matrix the "why not just chase Right" question turns
+on, before looking at the full grid -- the carrier's `{L, R}` against the
+defender's `{L, R}` (holding `U` aside for both, since it is dominated
+regardless):
+
+| carrier \ defender | defends L | defends R |
+|---|---|---|
+| **goes L** | 0.141010 | 0.810000 |
+| **goes R** | 0.211001 | 0.166529 |
+
+Read a column at a time, not the whole grid at once. Column "defends R": if
+the defender is known to be committing to `R`, the carrier's best reply is
+not `R` (0.166529) but `L` (0.810000) -- a nearly fivefold jump. That is the
+whole mechanism in one number: reacting to the carrier's *current* tendency
+with `R` looks locally correct (0.166529 beats the 0.211001 that `R` would
+concede against `L`), but it is not a stable choice, because it hands the
+carrier a far better reply the instant the carrier notices. The defender's actual
+equilibrium mix (18% `D`, 82% `L`, `R` never played) is what neutralizes
+that jump -- confirmed below against the full `4x4` matrix, since the `D`
+action (left out of this 2x2 view) is part of what makes `L` and `R`
+genuinely tie for the carrier.
+
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
 | | |
@@ -609,6 +631,28 @@ indifference class.
 (18% / 82%).
 
 **Why indifferent:** Carrier `E[L]`=`E[R]`=+0.206, strictly above `E[D]`=+0.162 and `E[U]`=+0.050. Defender `E[D]`=`E[L]`=+0.206, strictly below `E[R]`=+0.216 and `E[U]`=+0.257.
+
+Isolate the part of the matrix the "why not just chase Right" question turns
+on, before looking at the full grid -- the carrier's `{L, R}` against the
+defender's `{L, R}` (holding `U` aside for both, since it is dominated
+regardless):
+
+| carrier \ defender | defends L | defends R |
+|---|---|---|
+| **goes L** | 0.141010 | 0.810000 |
+| **goes R** | 0.211001 | 0.166529 |
+
+Read a column at a time, not the whole grid at once. Column "defends R": if
+the defender is known to be committing to `R`, the carrier's best reply is
+not `R` (0.166529) but `L` (0.810000) -- a nearly fivefold jump. That is the
+whole mechanism in one number: reacting to the carrier's *current* tendency
+with `R` looks locally correct (0.166529 beats the 0.211001 that `R` would
+concede against `L`), but it is not a stable choice, because it hands the
+carrier a far better reply the instant the carrier notices. The defender's actual
+equilibrium mix (18% `D`, 82% `L`, `R` never played) is what neutralizes
+that jump -- confirmed below against the full `4x4` matrix, since the `D`
+action (left out of this 2x2 view) is part of what makes `L` and `R`
+genuinely tie for the carrier.
 
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
