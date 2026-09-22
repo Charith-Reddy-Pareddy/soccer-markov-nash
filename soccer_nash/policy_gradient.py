@@ -37,12 +37,23 @@ check from the meeting) and :func:`soccer_nash.exploit.duality_gap`.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Protocol
 
 import numpy as np
 import torch
 from torch import nn
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
+from soccer_nash.symmetry import flip_action, flip_distribution, mirror_state
+
+
+class _PolicySource(Protocol):
+    """Anything that maps a state to an action distribution -- a plain
+    ``PolicyNet`` (:func:`train_reinforce_selfplay`) or a
+    ``_MirrorPolicyView`` over a shared/partial-share net
+    (:func:`train_reinforce_selfplay_shared`)."""
+
+    def policy(self, state: State) -> np.ndarray: ...
 
 _SCALE = torch.tensor([1 / 6, 1 / 4, 1 / 6, 1 / 4, 1.0])
 
@@ -71,8 +82,8 @@ class PolicyNet(nn.Module):
 
 @dataclass
 class ReinforceResult:
-    net0: PolicyNet
-    net1: PolicyNet
+    net0: _PolicySource
+    net1: _PolicySource
     mean_reward_trace: list[float] = field(default_factory=list)
 
 
@@ -85,6 +96,39 @@ def _discounted_returns(rewards: list[float], gamma: float) -> list[float]:
         g = rewards[t] + gamma * g
         out[t] = g
     return out
+
+
+def _rollout(
+    game: SoccerGame,
+    net0: PolicyNet,
+    net1: PolicyNet,
+    start_state: State,
+    rollout_len: int,
+    rng: np.random.Generator,
+) -> tuple[list[State], list[int], list[int], list[float], State]:
+    """One on-policy self-play rollout of ``rollout_len`` steps from
+    ``start_state``. Returns the per-step states/actions/rewards plus the
+    state the rollout ended on (so a caller can continue from it)."""
+    state = start_state
+    states: list[State] = []
+    a0s: list[int] = []
+    a1s: list[int] = []
+    r0s: list[float] = []
+    for _t in range(rollout_len):
+        x = torch.tensor(state, dtype=torch.float32)
+        with torch.no_grad():
+            d0 = torch.distributions.Categorical(logits=net0(x))
+            d1 = torch.distributions.Categorical(logits=net1(x))
+        a0, a1 = int(d0.sample()), int(d1.sample())
+        ns, (r0, _r1), done = game.step(
+            state, MOVE_ACTIONS[a0], MOVE_ACTIONS[a1], rng=rng
+        )
+        states.append(state)
+        a0s.append(a0)
+        a1s.append(a1)
+        r0s.append(r0)
+        state = game.initial_state() if done else ns
+    return states, a0s, a1s, r0s, state
 
 
 def pretrain_policy_nets(
@@ -131,6 +175,7 @@ def train_reinforce_selfplay(
     hidden: int = 64,
     iterations: int = 2000,
     rollout_len: int = 100,
+    n_rollouts: int = 1,
     lr: float = 1e-3,
     seed: int = 0,
     init_net0: PolicyNet | None = None,
@@ -144,7 +189,20 @@ def train_reinforce_selfplay(
     ``init_net0``/``init_net1``, when given, seed the starting weights (e.g.
     from :func:`pretrain_policy_nets`) instead of a random initialization --
     lets a caller compare "from scratch" against "warm-started" self-play,
-    same shape as ``nash_dqn.train_nash_dqn``'s ``init_net``."""
+    same shape as ``nash_dqn.train_nash_dqn``'s ``init_net``.
+
+    ``n_rollouts`` (default 1, the original behaviour): with ``n_rollouts >
+    1``, each iteration collects ``n_rollouts`` independent rollouts instead
+    of one -- the *single* ongoing trajectory (rollout 0, carried over
+    between iterations exactly as before) plus ``n_rollouts - 1`` fresh
+    rollouts each restarted at ``game.initial_state()`` -- and trains on all
+    of them batched together in one gradient step. The single-trajectory
+    suffixes reused within each rollout are correlated by construction (each
+    state depends on the last); stacking several *independent* rollouts into
+    the same batch is the further variance-reduction step that on its own
+    -- each rollout's discounted returns are computed separately so a
+    boundary between two rollouts is never treated as a continuation of one
+    trajectory."""
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     net0 = PolicyNet(hidden)
@@ -162,31 +220,27 @@ def train_reinforce_selfplay(
         states: list[State] = []
         a0s: list[int] = []
         a1s: list[int] = []
-        r0s: list[float] = []
+        g0s: list[float] = []
+        raw_r0: list[float] = []
 
-        for _t in range(rollout_len):
-            x = torch.tensor(state, dtype=torch.float32)
-            with torch.no_grad():
-                d0 = torch.distributions.Categorical(logits=net0(x))
-                d1 = torch.distributions.Categorical(logits=net1(x))
-            a0, a1 = int(d0.sample()), int(d1.sample())
-            ns, (r0, _r1), done = game.step(
-                state, MOVE_ACTIONS[a0], MOVE_ACTIONS[a1], rng=rng
-            )
-            states.append(state)
-            a0s.append(a0)
-            a1s.append(a1)
-            r0s.append(r0)
-            state = game.initial_state() if done else ns
+        for k in range(n_rollouts):
+            start = state if k == 0 else game.initial_state()
+            s_k, a0_k, a1_k, r0_k, end_state = _rollout(game, net0, net1, start, rollout_len, rng)
+            if k == 0:
+                state = end_state  # only the "main" trajectory carries over between iterations
+            states += s_k
+            a0s += a0_k
+            a1s += a1_k
+            g0s += _discounted_returns(r0_k, gamma)  # per-rollout: no bleed across boundaries
+            raw_r0 += r0_k
 
-        g0 = _discounted_returns(r0s, gamma)
-        g1 = [-g for g in g0]  # zero-sum: r1 == -r0 at every step, always
+        g1s = [-g for g in g0s]  # zero-sum: r1 == -r0 at every step, always
 
         X = torch.tensor(np.array(states), dtype=torch.float32)
         A0 = torch.tensor(a0s, dtype=torch.long)
         A1 = torch.tensor(a1s, dtype=torch.long)
-        G0 = torch.tensor(g0, dtype=torch.float32)
-        G1 = torch.tensor(g1, dtype=torch.float32)
+        G0 = torch.tensor(g0s, dtype=torch.float32)
+        G1 = torch.tensor(g1s, dtype=torch.float32)
 
         logp0 = torch.log_softmax(net0(X), dim=-1).gather(1, A0[:, None]).squeeze(1)
         loss0 = -(logp0 * G0).mean()
@@ -200,7 +254,7 @@ def train_reinforce_selfplay(
         loss1.backward()
         opt1.step()
 
-        trace.append(float(np.mean(r0s)))
+        trace.append(float(np.mean(raw_r0)))
 
     return ReinforceResult(net0=net0, net1=net1, mean_reward_trace=trace)
 
@@ -270,3 +324,193 @@ def evaluate_policy_gradient(
         "col_vs_random": col_vs_random,
         "col_vs_best_response": col_vs_br,
     }
+
+
+class SharedTrunkPolicyNet(nn.Module):
+    """A shared body (geometry feature extraction, identical weights for
+    both players) with a separate linear head per player -- the "partial
+    sharing" architecture: the two players' final decision layer can
+    diverge, but the layers that turn raw coordinates into features cannot."""
+
+    def __init__(self, hidden: int = 64):
+        super().__init__()
+        self.body = nn.Sequential(
+            nn.Linear(5, hidden), nn.ReLU(),
+            nn.Linear(hidden, hidden), nn.ReLU(),
+        )
+        self.head0 = nn.Linear(hidden, 4)
+        self.head1 = nn.Linear(hidden, 4)
+
+    def forward(self, x: torch.Tensor, player: int) -> torch.Tensor:
+        z = self.body(x * _SCALE)
+        return self.head0(z) if player == 0 else self.head1(z)
+
+
+class _MirrorPolicyView:
+    """Adapter so :func:`evaluate_policy_gradient`'s ``result.net0.policy(s)``
+    / ``result.net1.policy(s)`` interface works for the shared/partial
+    architectures too. Player 0 reads ``logits_fn`` directly; player 1's
+    policy at ``state`` is defined by querying the *same* (possibly shared)
+    ``logits_fn`` at the board's left-right mirror image and flipping L/R
+    back -- ``soccer_nash/symmetry.py``'s proven equilibrium equivariance,
+    used here as a network parameterization, not assumed to hold mid-training."""
+
+    def __init__(self, logits_fn, player: int, width: int):
+        self._logits_fn = logits_fn
+        self.player = player
+        self.width = width
+
+    def policy(self, state: State) -> np.ndarray:
+        x_state = state if self.player == 0 else mirror_state(state, self.width)
+        with torch.no_grad():
+            x = torch.tensor(x_state, dtype=torch.float32)
+            p = torch.softmax(self._logits_fn(x), dim=-1).numpy()
+        return p if self.player == 0 else flip_distribution(p)
+
+
+def _rollout_shared(
+    game: SoccerGame,
+    logits0,
+    logits1,
+    start_state: State,
+    rollout_len: int,
+    rng: np.random.Generator,
+    width: int,
+) -> tuple[list[State], list[int], list[int], list[float], State]:
+    """Like :func:`_rollout`, but player 1's action is sampled from
+    ``logits1`` evaluated at the *mirrored* state -- the raw ("mirror-space")
+    sampled index is returned alongside the real board action actually
+    passed to ``game.step``, since that mirror-space index (not the
+    board-frame one) is what the loss must compute log-probabilities for."""
+    state = start_state
+    states: list[State] = []
+    a0s: list[int] = []
+    a1_mirrors: list[int] = []
+    r0s: list[float] = []
+    for _t in range(rollout_len):
+        x0 = torch.tensor(state, dtype=torch.float32)
+        x1m = torch.tensor(mirror_state(state, width), dtype=torch.float32)
+        with torch.no_grad():
+            d0 = torch.distributions.Categorical(logits=logits0(x0))
+            d1 = torch.distributions.Categorical(logits=logits1(x1m))
+        a0 = int(d0.sample())
+        a1_mirror = int(d1.sample())
+        a1 = flip_action(a1_mirror)
+        ns, (r0, _r1), done = game.step(
+            state, MOVE_ACTIONS[a0], MOVE_ACTIONS[a1], rng=rng
+        )
+        states.append(state)
+        a0s.append(a0)
+        a1_mirrors.append(a1_mirror)
+        r0s.append(r0)
+        state = game.initial_state() if done else ns
+    return states, a0s, a1_mirrors, r0s, state
+
+
+def train_reinforce_selfplay_shared(
+    game: SoccerGame,
+    architecture: str = "shared",
+    gamma: float = 0.9,
+    hidden: int = 64,
+    iterations: int = 2000,
+    rollout_len: int = 100,
+    n_rollouts: int = 1,
+    lr: float = 1e-3,
+    seed: int = 0,
+) -> ReinforceResult:
+    """Self-play REINFORCE with a network-sharing architecture, instead of
+    :func:`train_reinforce_selfplay`'s two fully independent ``PolicyNet``s
+    -- the "network architecture choices" question from the meeting: does
+    sharing weights between the two players' policies change self-play
+    training?
+
+    ``architecture="shared"``: **one** ``PolicyNet`` computes player 0's
+    policy directly; player 1's policy at state ``s`` is the mirror-image
+    policy induced by that *same* network -- query it at
+    ``mirror_state(s)`` and flip L/R in the result
+    (``soccer_nash/symmetry.py``, the game's proven left-right
+    anti-symmetry, used here as a parameterization choice rather than an
+    assumption about a partially trained net). One optimizer, one set of
+    weights, updated by both players' gradients every step.
+
+    ``architecture="partial"``: a :class:`SharedTrunkPolicyNet` -- the same
+    mirrored-input scheme, but the trunk is shared while each player keeps
+    its own final linear head, so the two policies can still diverge.
+
+    Not a drop-in replacement for :func:`train_reinforce_selfplay` (which
+    stays exactly as it was, fully independent nets, no mirroring) --
+    a separate function so that existing "separate" results and tests are
+    untouched by this addition."""
+    if architecture not in ("shared", "partial"):
+        raise ValueError(f"architecture must be 'shared' or 'partial', got {architecture!r}")
+    torch.manual_seed(seed)
+    rng = np.random.default_rng(seed)
+    width = game.width
+
+    if architecture == "shared":
+        net: nn.Module = PolicyNet(hidden)
+
+        def logits0(x: torch.Tensor) -> torch.Tensor:
+            return net(x)
+
+        def logits1(x: torch.Tensor) -> torch.Tensor:
+            return net(x)
+    else:
+        net = SharedTrunkPolicyNet(hidden)
+
+        def logits0(x: torch.Tensor) -> torch.Tensor:
+            return net(x, player=0)
+
+        def logits1(x: torch.Tensor) -> torch.Tensor:
+            return net(x, player=1)
+
+    opt = torch.optim.Adam(net.parameters(), lr=lr)
+
+    trace: list[float] = []
+    state = game.initial_state()
+    for _ in range(iterations):
+        states: list[State] = []
+        a0s: list[int] = []
+        a1_mirrors: list[int] = []
+        g0s: list[float] = []
+        raw_r0: list[float] = []
+
+        for k in range(n_rollouts):
+            start = state if k == 0 else game.initial_state()
+            s_k, a0_k, a1m_k, r0_k, end_state = _rollout_shared(
+                game, logits0, logits1, start, rollout_len, rng, width,
+            )
+            if k == 0:
+                state = end_state
+            states += s_k
+            a0s += a0_k
+            a1_mirrors += a1m_k
+            g0s += _discounted_returns(r0_k, gamma)
+            raw_r0 += r0_k
+
+        g1s = [-g for g in g0s]
+
+        X0 = torch.tensor(np.array(states), dtype=torch.float32)
+        X1m = torch.tensor(
+            np.array([mirror_state(s, width) for s in states]), dtype=torch.float32
+        )
+        A0 = torch.tensor(a0s, dtype=torch.long)
+        A1m = torch.tensor(a1_mirrors, dtype=torch.long)
+        G0 = torch.tensor(g0s, dtype=torch.float32)
+        G1 = torch.tensor(g1s, dtype=torch.float32)
+
+        logp0 = torch.log_softmax(logits0(X0), dim=-1).gather(1, A0[:, None]).squeeze(1)
+        logp1 = torch.log_softmax(logits1(X1m), dim=-1).gather(1, A1m[:, None]).squeeze(1)
+        # One combined loss, one backward pass: both players' gradients flow
+        # into the same shared parameters (all of them for "shared", the
+        # trunk for "partial") in a single step.
+        loss = -(logp0 * G0).mean() - (logp1 * G1).mean()
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+
+        trace.append(float(np.mean(raw_r0)))
+
+    net0_view = _MirrorPolicyView(logits0, player=0, width=width)
+    net1_view = _MirrorPolicyView(logits1, player=1, width=width)
+    return ReinforceResult(net0=net0_view, net1=net1_view, mean_reward_trace=trace)

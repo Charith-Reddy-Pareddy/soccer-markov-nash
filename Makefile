@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix templates-n5 explorer-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-architectures degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix templates-n5 explorer-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -15,6 +15,8 @@ help:
 	@echo "make dqn-random   - neural Nash-Q on the RANDOM move-order game (mixed equilibria) (~30 min)"
 	@echo "make policy-gradient - self-play REINFORCE vs the exact solver's Nash-equilibrium check"
 	@echo "make policy-gradient-warmstart - does pre-training onto the exact policy help self-play?"
+	@echo "make policy-gradient-batch - does batching independent rollouts beat one correlated trajectory?"
+	@echo "make policy-gradient-architectures - separate vs. shared vs. partial-share policy nets"
 	@echo "make degeneracy   - classify the 94 no-pure-saddle states: unique vs degenerate"
 	@echo "make distance-table - no-pure-saddle counts by Manhattan player distance"
 	@echo "make pure-vs-mixed  - greedy-pure vs Nash-mixed exploitability at the positions.md cases"
@@ -103,6 +105,12 @@ policy-gradient:
 
 policy-gradient-warmstart:
 	$(PY) scripts/policy_gradient_warmstart.py --seeds 3
+
+policy-gradient-batch:
+	$(PY) scripts/policy_gradient_batch.py --seeds 5
+
+policy-gradient-architectures:
+	$(PY) scripts/policy_gradient_architectures.py --seeds 5
 
 dqn-ablation:
 	$(PY) scripts/nash_dqn_ablation.py --seeds 2

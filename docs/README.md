@@ -121,6 +121,13 @@ technical answer, start with **[report.pdf](report.pdf)**
   action agreement, exploitability 0.86); pre-training onto the exact
   policy reaches 98% agreement, and 2000 further iterations of self-play
   leave it numerically unchanged -- a vanishing score-function gradient
-  once the policy is peaked, not a fix (`make policy-gradient`,
-  `make policy-gradient-warmstart`).
+  once the policy is peaked, not a fix; batching several independent
+  rollouts per gradient step (instead of one correlated trajectory) cuts
+  seed-to-seed variance to zero but by collapsing every seed onto the same
+  state-independent policy, not by converging closer to equilibrium; and
+  sharing weights between the two players' networks (fully, via the game's
+  own mirror symmetry, or via a shared trunk) makes the result *more*
+  exploitable on average than two fully independent nets, not less
+  (`make policy-gradient`, `make policy-gradient-warmstart`,
+  `make policy-gradient-batch`, `make policy-gradient-architectures`).
 
