@@ -256,6 +256,10 @@ export default function ExplorerApp() {
                   <button className={qview === "graph" ? "active view" : ""} onClick={() => setQview("graph")}>Best-response graph</button>
                 </div>
               </div>
+              <p className="hint mono" style={{ margin: "0 0 .5rem" }}>
+                rows = player {st.b === 0 ? 0 : 1} (carrier) &middot; columns = player{" "}
+                {st.b === 0 ? 1 : 0} (defender) &middot; cells = carrier's payoff
+              </p>
               {qview === "table" ? <QMatrixTable M={M} /> : <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>}
 
               <div className="support-block">
