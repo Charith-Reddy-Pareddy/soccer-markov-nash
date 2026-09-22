@@ -92,6 +92,12 @@
   table.coordmatrix td:first-child, table.coordmatrix th:first-child {
     background: var(--tint); font-weight: 600;
   }
+  table.reading-key {
+    border-collapse: collapse; margin: .8rem 0 1rem;
+    font-family: "IBM Plex Mono", monospace; font-size: .82rem; line-height: 1.5;
+  }
+  table.reading-key td { border: 1px solid var(--rule); padding: .35rem .7rem; }
+  table.reading-key td:first-child { background: var(--tint); font-weight: 600; color: var(--ink); }
   p.coord-note { font-size: .88rem; color: var(--ink-soft); margin: 1rem 0 0; }
   p.coord-caveat { font-size: .84rem; color: var(--ink-faint); font-style: italic; margin: .4rem 0 0; }
   .takeaway {
@@ -301,6 +307,14 @@ different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
   <img src="figures/png/positions_case02.png" alt="Case 2 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 1, 1, 1, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 1)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.085599   0.478297   0.285670   0.099198
     D    0.109260   0.076330   0.085331   0.085599
@@ -339,6 +353,14 @@ a vertical one.</span></p>
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(1, 1, 1, 0, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (1, 0)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.139279  -0.173204   0.099163   0.109755
     D    0.170790   0.185032   0.156678   0.170790
@@ -386,6 +408,14 @@ its own hold ring), alongside real moves U (91.9%) and L (2.3%).</p>
   <img src="figures/png/positions_case05.png" alt="Case 5 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 0, 2, 0, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 0)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (2, 0)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.083738   0.095109   0.103381   0.110220
     D    0.085599   0.076363   0.076330   0.085599
@@ -419,6 +449,14 @@ is.</p>
   <img src="figures/png/positions_case09.png" alt="Case 9 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 2, 1, 2, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 2)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (1, 2)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.084811   0.478297   0.290839   0.095109
     D    0.478297   0.084811   0.290839   0.095109
@@ -473,6 +511,14 @@ slides left (L) the other 4.9%.</p>
   <img src="figures/png/positions_case11.png" alt="Case 11 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(4, 4, 5, 4, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (4, 4)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (5, 4)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.116139   0.104525   0.169846   0.135972
     D    0.094073   0.415483   0.814500   0.450000
@@ -556,6 +602,14 @@ answers U always; neither has any reason to deviate.</p>
   <img src="figures/png/positions_case01.png" alt="Case 1 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(4, 0, 5, 0, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (4, 0)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (5, 0)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.234446   0.316945   0.522973   0.271536
     D    0.150878   0.211001   0.211001   0.222362
@@ -591,6 +645,14 @@ different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
   <img src="figures/png/positions_case02.png" alt="Case 2 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 1, 1, 1, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 1)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.085599   0.478297   0.285670   0.099198
     D    0.109260   0.076330   0.085331   0.085599
@@ -629,6 +691,14 @@ a vertical one.</span></p>
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(1, 1, 1, 0, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (1, 0)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.139279  -0.173204   0.099163   0.109755
     D    0.170790   0.185032   0.156678   0.170790
@@ -669,6 +739,14 @@ the corner leaves little room, but not zero.</p>
   <img src="figures/png/positions_case04.png" alt="Case 4 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 0, 1, 1, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 0)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.103381   0.103381  -0.407594   0.083738
     D    0.109260   0.076330   0.100850   0.085599
@@ -716,6 +794,14 @@ its own hold ring), alongside real moves U (91.9%) and L (2.3%).</p>
   <img src="figures/png/positions_case05.png" alt="Case 5 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 0, 2, 0, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 0)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (2, 0)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.083738   0.095109   0.103381   0.110220
     D    0.085599   0.076363   0.076330   0.085599
@@ -756,6 +842,14 @@ physical options (hold vs. move), not two labels for the same action.</p>
   <img src="figures/png/positions_case06.png" alt="Case 6 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(1, 1, 2, 0, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (2, 0)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.316945   0.316945   0.247069  -0.178022
     D    0.211001   0.211001   0.211001   0.166529
@@ -791,6 +885,14 @@ mirrored, wherever the same relative configuration recurs.</p>
   <img src="figures/png/positions_case07.png" alt="Case 7 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(5, 1, 6, 1, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (6, 1)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (5, 1)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.085599   0.478297   0.099198   0.285670
     D    0.109260   0.076330   0.085599   0.085331
@@ -829,6 +931,14 @@ real move.</p>
   <img src="figures/png/positions_case08.png" alt="Case 8 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(2, 3, 3, 3, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (3, 3)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (2, 3)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U   -0.011944   0.005242   0.015879  -0.041869
     D    0.072350  -0.022044   0.008641   0.000279
@@ -862,6 +972,14 @@ is.</p>
   <img src="figures/png/positions_case09.png" alt="Case 9 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 2, 1, 2, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 2)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (1, 2)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.084811   0.478297   0.290839   0.095109
     D    0.478297   0.084811   0.290839   0.095109
@@ -914,6 +1032,14 @@ position rather than moving left; the genuine move in its support is R
   <img src="figures/png/positions_case10.png" alt="Case 10 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 2, 2, 2, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (2, 2)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (0, 2)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.247069   0.330151   0.271536   0.316945
     D    0.330151   0.247069   0.271536   0.316945
@@ -954,6 +1080,14 @@ slides left (L) the other 4.9%.</p>
   <img src="figures/png/positions_case11.png" alt="Case 11 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(4, 4, 5, 4, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (4, 4)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (5, 4)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.116139   0.104525   0.169846   0.135972
     D    0.094073   0.415483   0.814500   0.450000
@@ -992,6 +1126,14 @@ of goal width.</p>
   <img src="figures/png/positions_case12.png" alt="Case 12 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(1, 3, 1, 4, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (1, 4)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (1, 3)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U   -0.273301   0.005960   0.001041   0.069053
     D   -0.031430   0.068847   0.056711   0.449923
@@ -1033,6 +1175,14 @@ one row further apart.</p>
   <img src="figures/png/positions_case13.png" alt="Case 13 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(1, 1, 3, 1, 1)</td></tr>
+  <tr><td>Carrier</td><td>player 1 at (3, 1)</td></tr>
+  <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
+  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.205131   0.283411   0.228062   0.262831
     D    0.182213   0.182213   0.182213   0.135158
@@ -1071,6 +1221,14 @@ lane).</p>
   <img src="figures/png/positions_case14.png" alt="Case 14 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
 </figure>
+<table class="reading-key">
+  <tr><td>State</td><td>(0, 2, 2, 2, 0)</td></tr>
+  <tr><td>Carrier</td><td>player 0 at (0, 2)</td></tr>
+  <tr><td>Defender</td><td>player 1 at (2, 2)</td></tr>
+  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
+  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
+  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+</table>
 <pre class="matrix">                  U          D          L          R
     U    0.083738   0.144198   0.103381   0.112892
     D    0.144198   0.083738   0.103381   0.112892

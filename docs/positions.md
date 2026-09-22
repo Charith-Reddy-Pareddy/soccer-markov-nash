@@ -169,6 +169,15 @@ whole indifference class, not one point on a larger face.
 
 ![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
 
+| | |
+|---|---|
+| **State** | `(0, 1, 1, 1, 0)` |
+| **Carrier** | player 0 at `(0, 1)` |
+| **Defender** | player 1 at `(1, 1)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.085599   0.478297   0.285670   0.099198
@@ -211,6 +220,15 @@ indifference class.
 
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
+| | |
+|---|---|
+| **State** | `(1, 1, 1, 0, 1)` |
+| **Carrier** | player 1 at `(1, 0)` |
+| **Defender** | player 0 at `(1, 1)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.139279  -0.173204   0.099163   0.109755
@@ -227,6 +245,39 @@ indifference class.
 | **D** | (1,2,1,0,1) | (1,1,1,0,1) | (0,1,1,0,1) | (2,1,1,0,1) |
 | **L** | (1,2,0,0,1) | 50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1) | (0,1,0,0,1) | (2,1,0,0,1) |
 | **R** | (1,2,2,0,1) | 50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1) | (0,1,2,0,1) | (2,1,2,0,1) |
+
+**Why not defend by moving right instead?** The natural reading of this
+state -- player 1 has the ball right next to player 0 -- is "close the
+distance," which on this board means `R`, not `L`. That reading misses one
+board detail: `goal_rows = (1, 2, 3)` on a 5-tall board, so **row `y=0`,
+where the carrier currently stands, is not a scoring row at all** --
+reaching `x=-1` from `y=0` does not score. The carrier is not a live
+threat yet; it first has to climb into a goal row before a leftward run
+means anything, and the cell it needs is `(0, 1)`, one step from the
+defender's own current cell `(1, 1)` by playing `L`. The defender's job
+here is to deny that *future* cell, not to react to the carrier's
+*current* one.
+
+The cost of getting this backwards is not subtle. Taking the worst case
+over the carrier's reply to each pure defender action, straight from the
+`Q` matrix above:
+
+| defender plays | worst case for defender | carrier's best reply | successor state |
+|---|---|---|---|
+| `U` | **-0.810** | `L` | `(1,2,0,0,1)` -- defender at `(1,2)`, corner wide open |
+| `R` | **-0.810** | `L` | `(2,1,0,0,1)` -- defender moves away, same open corner |
+| `L` | -0.211 | `R` | `(0,1,0,0,1)` -- defender now sits on the corner itself |
+
+`U` and `R` are not merely worse than `L`, they are close to the worst
+possible outcome on this board -- a goal is worth `±1`, and `-0.81` under
+`gamma=0.9` is what "the opponent is about to score" looks like in this
+game's own value scale. Playing `L` is not a retreat: the defender ends up
+standing on `(0, 1)`, exactly the cell the carrier would otherwise have
+walked into uncontested. Once that cell is covered, the carrier's own best
+reply shifts away from `L` toward `R` (92.3% of the mix) -- not because
+`R` is a good attacking move on its own, but because `L` only pays off if
+`(0, 1)` is left open, and the defender's 82% weight on `L` makes sure it
+usually is not.
 
 ## Case 5 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
 
@@ -266,6 +317,15 @@ defender `{U, D, L}` (91.9% / 5.9% / 2.3%, `D` a wall hold).
 
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
+| | |
+|---|---|
+| **State** | `(0, 0, 2, 0, 0)` |
+| **Carrier** | player 0 at `(0, 0)` |
+| **Defender** | player 1 at `(2, 0)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.083738   0.095109   0.103381   0.110220
@@ -304,6 +364,15 @@ mixed strategy.**
 **Why indifferent:** Carrier `E[U]`=`E[D]`=+0.095, above `E[L]`=+0.093 and `E[R]`=−0.072 (worked out fully below). The defender's official policy is pure `R` (100%), but `E[R]`=+0.095 and `E[D]`=+0.095 tie **too**: the defender's own choice of `R` over `D` is exactly as arbitrary as the carrier's `U`/`D` split, it just isn't printed as a percentage because the solver put all the weight on one side.
 
 ![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
+
+| | |
+|---|---|
+| **State** | `(0, 2, 1, 2, 0)` |
+| **Carrier** | player 0 at `(0, 2)` |
+| **Defender** | player 1 at `(1, 2)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -358,6 +427,15 @@ core.
 **Why indifferent:** Carrier `E[D]`=`E[R]`=+0.129, above `E[U]`=+0.119 and `E[L]`=+0.090. Defender `E[U]`=`E[L]`=+0.129, below `E[D]`=+0.455 and `E[R]`=+0.473 -- `U` here is the defender holding at the top edge, tied with a real move left.
 
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
+
+| | |
+|---|---|
+| **State** | `(4, 4, 5, 4, 0)` |
+| **Carrier** | player 0 at `(4, 4)` |
+| **Defender** | player 1 at `(5, 4)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -436,6 +514,15 @@ for contrast with everything else on this page.
 
 ![Case 1 board position and Q matrix graph.](figures/png/positions_case01.png)
 
+| | |
+|---|---|
+| **State** | `(4, 0, 5, 0, 0)` |
+| **Carrier** | player 0 at `(4, 0)` |
+| **Defender** | player 1 at `(5, 0)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.234446   0.316945   0.522973   0.271536
@@ -473,6 +560,15 @@ whole indifference class, not one point on a larger face.
 **Why indifferent:** Carrier `E[U]`=`E[D]`=+0.094, strictly above `E[L]`=+0.091 and `E[R]`=−0.015. Defender `E[U]`=`E[R]`=+0.094, strictly below `E[L]`=+0.212 and `E[D]`=+0.332.
 
 ![Case 2 board position and Q matrix graph.](figures/png/positions_case02.png)
+
+| | |
+|---|---|
+| **State** | `(0, 1, 1, 1, 0)` |
+| **Carrier** | player 0 at `(0, 1)` |
+| **Defender** | player 1 at `(1, 1)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -516,6 +612,15 @@ indifference class.
 
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
+| | |
+|---|---|
+| **State** | `(1, 1, 1, 0, 1)` |
+| **Carrier** | player 1 at `(1, 0)` |
+| **Defender** | player 0 at `(1, 1)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.139279  -0.173204   0.099163   0.109755
@@ -532,6 +637,39 @@ indifference class.
 | **D** | (1,2,1,0,1) | (1,1,1,0,1) | (0,1,1,0,1) | (2,1,1,0,1) |
 | **L** | (1,2,0,0,1) | 50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1) | (0,1,0,0,1) | (2,1,0,0,1) |
 | **R** | (1,2,2,0,1) | 50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1) | (0,1,2,0,1) | (2,1,2,0,1) |
+
+**Why not defend by moving right instead?** The natural reading of this
+state -- player 1 has the ball right next to player 0 -- is "close the
+distance," which on this board means `R`, not `L`. That reading misses one
+board detail: `goal_rows = (1, 2, 3)` on a 5-tall board, so **row `y=0`,
+where the carrier currently stands, is not a scoring row at all** --
+reaching `x=-1` from `y=0` does not score. The carrier is not a live
+threat yet; it first has to climb into a goal row before a leftward run
+means anything, and the cell it needs is `(0, 1)`, one step from the
+defender's own current cell `(1, 1)` by playing `L`. The defender's job
+here is to deny that *future* cell, not to react to the carrier's
+*current* one.
+
+The cost of getting this backwards is not subtle. Taking the worst case
+over the carrier's reply to each pure defender action, straight from the
+`Q` matrix above:
+
+| defender plays | worst case for defender | carrier's best reply | successor state |
+|---|---|---|---|
+| `U` | **-0.810** | `L` | `(1,2,0,0,1)` -- defender at `(1,2)`, corner wide open |
+| `R` | **-0.810** | `L` | `(2,1,0,0,1)` -- defender moves away, same open corner |
+| `L` | -0.211 | `R` | `(0,1,0,0,1)` -- defender now sits on the corner itself |
+
+`U` and `R` are not merely worse than `L`, they are close to the worst
+possible outcome on this board -- a goal is worth `±1`, and `-0.81` under
+`gamma=0.9` is what "the opponent is about to score" looks like in this
+game's own value scale. Playing `L` is not a retreat: the defender ends up
+standing on `(0, 1)`, exactly the cell the carrier would otherwise have
+walked into uncontested. Once that cell is covered, the carrier's own best
+reply shifts away from `L` toward `R` (92.3% of the mix) -- not because
+`R` is a good attacking move on its own, but because `L` only pays off if
+`(0, 1)` is left open, and the defender's 82% weight on `L` makes sure it
+usually is not.
 
 ## Case 4 — `(0, 0, 1, 1, 0)`: the corner duel
 
@@ -559,6 +697,15 @@ equilibrium; only the `U`/hold split (4.6%/95.4%) is actually forced.
 **Why indifferent:** Carrier `E[U]`=+0.078, above `E[R]`=−0.066; `E[D]`=`E[L]`=+0.078 too, guaranteed rather than coincidental since `D` and `L` are the same wall-clamped hold from this corner -- any split of that 95.4% between the two labels is an equally valid equilibrium, not just the 0%/95.4% split shown. Defender `E[D]`=`E[L]`=+0.078, below `E[R]`=+0.086 and `E[U]`=+0.109.
 
 ![Case 4 board position and Q matrix graph.](figures/png/positions_case04.png)
+
+| | |
+|---|---|
+| **State** | `(0, 0, 1, 1, 0)` |
+| **Carrier** | player 0 at `(0, 0)` |
+| **Defender** | player 1 at `(1, 1)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -615,6 +762,15 @@ defender `{U, D, L}` (91.9% / 5.9% / 2.3%, `D` a wall hold).
 
 ![Case 5 board position and Q matrix graph.](figures/png/positions_case05.png)
 
+| | |
+|---|---|
+| **State** | `(0, 0, 2, 0, 0)` |
+| **Carrier** | player 0 at `(0, 0)` |
+| **Defender** | player 1 at `(2, 0)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.083738   0.095109   0.103381   0.110220
@@ -655,6 +811,15 @@ defender `{D, R}` (2.5% / 97.5%, both real moves).
 **Why indifferent:** Carrier `E[D]`=`E[L]`=+0.168, above `E[R]`=+0.136 and `E[U]`=−0.166 -- `D` here is the carrier holding its position at the bottom edge, genuinely tied with a real move left. Defender `E[D]`=`E[R]`=+0.168, below `E[L]`=+0.197 and `E[U]`=+0.201.
 
 ![Case 6 board position and Q matrix graph.](figures/png/positions_case06.png)
+
+| | |
+|---|---|
+| **State** | `(1, 1, 2, 0, 1)` |
+| **Carrier** | player 1 at `(2, 0)` |
+| **Defender** | player 0 at `(1, 1)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -697,6 +862,15 @@ mirrored.
 
 ![Case 7 board position and Q matrix graph.](figures/png/positions_case07.png)
 
+| | |
+|---|---|
+| **State** | `(5, 1, 6, 1, 1)` |
+| **Carrier** | player 1 at `(6, 1)` |
+| **Defender** | player 0 at `(5, 1)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.085599   0.478297   0.099198   0.285670
@@ -737,6 +911,15 @@ defender `{D, R}` (60.7% / 39.3%, both real moves).
 
 ![Case 8 board position and Q matrix graph.](figures/png/positions_case08.png)
 
+| | |
+|---|---|
+| **State** | `(2, 3, 3, 3, 1)` |
+| **Carrier** | player 1 at `(3, 3)` |
+| **Defender** | player 0 at `(2, 3)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U   -0.011944   0.005242   0.015879  -0.041869
@@ -775,6 +958,15 @@ mixed strategy.**
 **Why indifferent:** Carrier `E[U]`=`E[D]`=+0.095, above `E[L]`=+0.093 and `E[R]`=−0.072 (worked out fully below). The defender's official policy is pure `R` (100%), but `E[R]`=+0.095 and `E[D]`=+0.095 tie **too**: the defender's own choice of `R` over `D` is exactly as arbitrary as the carrier's `U`/`D` split, it just isn't printed as a percentage because the solver put all the weight on one side.
 
 ![Case 9 board position and Q matrix graph.](figures/png/positions_case09.png)
+
+| | |
+|---|---|
+| **State** | `(0, 2, 1, 2, 0)` |
+| **Carrier** | player 0 at `(0, 2)` |
+| **Defender** | player 1 at `(1, 2)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -831,6 +1023,15 @@ genuine forced mix.
 
 ![Case 10 board position and Q matrix graph.](figures/png/positions_case10.png)
 
+| | |
+|---|---|
+| **State** | `(0, 2, 2, 2, 1)` |
+| **Carrier** | player 1 at `(2, 2)` |
+| **Defender** | player 0 at `(0, 2)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.247069   0.330151   0.271536   0.316945
@@ -874,6 +1075,15 @@ core.
 
 ![Case 11 board position and Q matrix graph.](figures/png/positions_case11.png)
 
+| | |
+|---|---|
+| **State** | `(4, 4, 5, 4, 0)` |
+| **Carrier** | player 0 at `(4, 4)` |
+| **Defender** | player 1 at `(5, 4)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.116139   0.104525   0.169846   0.135972
@@ -915,6 +1125,15 @@ otherwise always pure.
 **Why indifferent:** Carrier `E[D]`=`E[L]`=+0.053, above `E[R]`=+0.016 and `E[U]`=−0.010. Defender `E[U]`=`E[L]`=+0.053, below `E[D]`=+0.072 and `E[R]`=+0.450.
 
 ![Case 12 board position and Q matrix graph.](figures/png/positions_case12.png)
+
+| | |
+|---|---|
+| **State** | `(1, 3, 1, 4, 1)` |
+| **Carrier** | player 1 at `(1, 4)` |
+| **Defender** | player 0 at `(1, 3)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
@@ -964,6 +1183,15 @@ tie the way Case 9's `D` is.
 
 ![Case 13 board position and Q matrix graph.](figures/png/positions_case13.png)
 
+| | |
+|---|---|
+| **State** | `(1, 1, 3, 1, 1)` |
+| **Carrier** | player 1 at `(3, 1)` |
+| **Defender** | player 0 at `(1, 1)` |
+| **Rows** | player 1 / carrier actions |
+| **Columns** | player 0 / defender actions |
+| **Payoff** | carrier's Q-value |
+
 ```
                   U          D          L          R
     U    0.205131   0.283411   0.228062   0.262831
@@ -1010,6 +1238,15 @@ the defender, but the `L`/`U` choice is a coin flip the LP happened to call
 `L`.
 
 ![Case 14 board position and Q matrix graph.](figures/png/positions_case14.png)
+
+| | |
+|---|---|
+| **State** | `(0, 2, 2, 2, 0)` |
+| **Carrier** | player 0 at `(0, 2)` |
+| **Defender** | player 1 at `(2, 2)` |
+| **Rows** | player 0 / carrier actions |
+| **Columns** | player 1 / defender actions |
+| **Payoff** | carrier's Q-value |
 
 ```
                   U          D          L          R
