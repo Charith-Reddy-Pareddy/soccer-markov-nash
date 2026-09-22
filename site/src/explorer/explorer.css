@@ -65,6 +65,10 @@ table.qmatrix td.cell { font-weight: 600; }
 .preset-btn { border: 1px solid var(--rule-strong); background: var(--raise); border-radius: 7px; padding: .42rem .8rem; font-size: .78rem; color: var(--ink-soft); cursor: pointer; font-family: "IBM Plex Mono", monospace; }
 .preset-btn:hover { border-color: var(--pitch); color: var(--ink); }
 
+.sim-stats { display: flex; flex-wrap: wrap; gap: 1.6rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--rule); }
+.sim-stats .s-k { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); }
+.sim-stats .s-v { font-family: "IBM Plex Mono", monospace; font-size: 1.05rem; font-weight: 600; color: var(--ink); }
+
 table.rounding { border-collapse: collapse; width: 100%; font-size: .82rem; }
 table.rounding th, table.rounding td { padding: .4rem .5rem; text-align: left; border: 1px solid var(--rule); }
 table.rounding th { background: var(--tint); font-weight: 600; color: var(--ink-soft); font-size: .74rem; }

@@ -119,13 +119,22 @@ function resolvePolicies(type0, type1, rowPol, colPol, M) {
 // docs/tournament.md's reproduction of Littman's Table 3. `maxSteps` mirrors
 // the project's own `SoccerGame.max_steps` (100): a game that hasn't ended by
 // then counts as a draw, same as the A10 rule.
-export function simulateGames(board, startKey, trials, type0, type1, maxSteps = 100) {
+//
+// Also tracks each game's length and player 0's discounted return
+// (`gamma^step * (+1 win / -1 loss / 0 draw)`, reward is 0 at every
+// non-terminal step under the "win" objective) -- the same quantity
+// NashQIteration.run_exact()'s `V` is the exact expectation of
+// (soccer_nash/nash_q.py: `V(s) = val(E[R + gamma * V(s')])`), so the
+// simulated mean return is directly comparable to the certified V shown
+// above the Q matrix, not just a separate win/draw readout.
+export function simulateGames(board, startKey, trials, type0, type1, gamma, maxSteps = 100) {
   const { state_list, states } = board;
-  let p0Wins = 0, p1Wins = 0, draw = 0;
+  let p0Wins = 0, p1Wins = 0, draw = 0, totalSteps = 0, totalReturn = 0;
   for (let t = 0; t < trials; t++) {
     let key = startKey;
     let winner = null;
-    for (let step = 0; step < maxSteps; step++) {
+    let step = 0;
+    for (; step < maxSteps; step++) {
       const [, rowPol, colPol, M, trans] = states[key];
       const [p0, p1] = resolvePolicies(type0, type1, rowPol, colPol, M);
       const a0 = sampleAction(p0), a1 = sampleAction(p1);
@@ -134,11 +143,16 @@ export function simulateGames(board, startKey, trials, type0, type1, maxSteps = 
       if (next === -2) { winner = 1; break; }
       key = state_list[next];
     }
-    if (winner === 0) p0Wins++;
-    else if (winner === 1) p1Wins++;
+    if (winner === 0) { p0Wins++; totalReturn += gamma ** step; }
+    else if (winner === 1) { p1Wins++; totalReturn -= gamma ** step; }
     else draw++;
+    totalSteps += winner === null ? maxSteps : step + 1;
   }
-  return { p0: p0Wins, p1: p1Wins, draw, trials };
+  return {
+    p0: p0Wins, p1: p1Wins, draw, trials,
+    avgSteps: totalSteps / trials,
+    meanReturn: totalReturn / trials,
+  };
 }
 
 // Shared by QMatrixTable (payoff cells) and Board (value heatmap): ember for

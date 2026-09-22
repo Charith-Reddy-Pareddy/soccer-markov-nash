@@ -134,7 +134,7 @@ export default function ExplorerApp() {
     // setTimeout so the "Simulating..." label actually paints before the
     // (synchronous, but non-trivial for 10k trials) simulation runs.
     setTimeout(() => {
-      setSimResult(simulateGames(board, stateKey(st), trials, p0Type, p1Type));
+      setSimResult(simulateGames(board, stateKey(st), trials, p0Type, p1Type, data.gamma));
       setSimming(false);
     }, 10);
   }
@@ -360,6 +360,32 @@ export default function ExplorerApp() {
                   <span className="k"><span className="swatch" style={{ background: "var(--p1)" }}></span>
                     player 1 ({POLICY_LABELS[p1Type]}) won {fmtPct(simResult.p1 / simResult.trials)}</span>
                 </div>
+                <div className="sim-stats">
+                  <div>
+                    <div className="s-k">Average game length</div>
+                    <div className="s-v">{simResult.avgSteps.toFixed(1)} steps</div>
+                  </div>
+                  <div>
+                    <div className="s-k">Simulated mean return (player 0)</div>
+                    <div className="s-v">{simResult.meanReturn >= 0 ? "+" : ""}{simResult.meanReturn.toFixed(3)}</div>
+                  </div>
+                  <div>
+                    <div className="s-k">Certified V at this position</div>
+                    <div className="s-v">{V >= 0 ? "+" : ""}{V.toFixed(3)}</div>
+                  </div>
+                  <div>
+                    <div className="s-k">Gap (simulated &minus; certified)</div>
+                    <div className="s-v">{(simResult.meanReturn - V) >= 0 ? "+" : ""}{(simResult.meanReturn - V).toFixed(3)}</div>
+                  </div>
+                </div>
+                <p className="hint" style={{ margin: ".6rem 0 0" }}>
+                  The gap is exactly zero in expectation only when <b>both</b> sides play
+                  Minimax (exact) &mdash; that's the same discounted return{" "}
+                  <code>V(s) = val(E[R + &gamma;&middot;V(s')])</code> the solver itself certifies
+                  (<a href="numerics.md">docs/numerics.md</a>). A non-minimax policy on either
+                  side should show a gap favoring whoever deviated from equilibrium against a
+                  fixed opponent, or a wide one both ways when both deviate.
+                </p>
               </div>
             )}
           </div>
