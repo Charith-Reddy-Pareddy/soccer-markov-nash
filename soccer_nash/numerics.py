@@ -144,6 +144,70 @@ def rounding_changes_saddle(M: np.ndarray, decimals: int = 1) -> bool:
     return exact != rounded
 
 
+class RoundingDiagnostic(NamedTuple):
+    decimals: int | None  # None = full, unrounded precision
+    pure: bool
+    value: float
+    row: np.ndarray
+    col: np.ndarray
+
+
+def rounding_diagnostic(
+    M: np.ndarray, decimals: tuple[int | None, ...] = (None, 3, 2, 1)
+) -> list[RoundingDiagnostic]:
+    """Solve ``M`` fresh at each precision in ``decimals`` (``None`` = full,
+    unrounded precision) and report both whether the *rounded* game has a
+    pure saddle and what its own equilibrium actually is -- not just
+    whether classification flips (:func:`rounding_changes_saddle`'s
+    question), the policy itself, since that is the concrete thing "does
+    rounding the displayed matrix change the reported mix" asks.
+
+    This makes literal the "we definitely need some kind of approximation
+    rounding" request (the project's Sept research meetings): round the
+    *displayed* matrix, then solve that rounded matrix as its own game and
+    see what comes out, rather than reasoning about the exact value with a
+    scale-blind tolerance (that is what :func:`classify_stage_game` already
+    avoids doing). There is no single "correct" precision -- on
+    ``docs/positions.md``'s Case 3, rounding to 2 decimals reproduces the
+    exact mix to within a percentage point, and rounding to 1 decimal
+    manufactures a pure saddle that is not actually there. Both are
+    legitimate outputs of *this* function; picking one as "the" rounding
+    convention is a modeling choice this function deliberately does not
+    make for the caller.
+    """
+    M = np.asarray(M, dtype=float)
+    out = []
+    for d in decimals:
+        Mr = M if d is None else np.round(M, d)
+        pure = not (lambda lo, hi: hi - lo > _ABS)(*pure_bounds(Mr))
+        value, row, col = solve_zero_sum(Mr)
+        out.append(RoundingDiagnostic(decimals=d, pure=pure, value=value, row=row, col=col))
+    return out
+
+
+def _support_set(policy: np.ndarray, tol: float = 1e-6) -> frozenset[int]:
+    return frozenset(int(i) for i, p in enumerate(policy) if p > tol)
+
+
+def is_rounding_artifact(
+    full: RoundingDiagnostic, rounded: RoundingDiagnostic, tol: float = 1e-6
+) -> bool:
+    """Is ``rounded`` a genuine rounding artifact relative to ``full``?
+
+    True when rounding changes the pure/mixed classification, or changes
+    *which* actions carry non-trivial probability for either player --
+    never for a percentage-split drift within an unchanged support (e.g.
+    63.5% -> 66.7% on the same action is not an artifact; that action
+    dropping out of the support is).
+    """
+    if full.pure != rounded.pure:
+        return True
+    return (
+        _support_set(full.row, tol) != _support_set(rounded.row, tol)
+        or _support_set(full.col, tol) != _support_set(rounded.col, tol)
+    )
+
+
 def essential_subgame(
     M: np.ndarray, tol: float = 1e-9
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:

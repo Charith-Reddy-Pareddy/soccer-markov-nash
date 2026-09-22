@@ -193,6 +193,56 @@ light discounting the accumulated discount steps leave entries barely apart
 tolerance is stable across the whole range: `604 / 1682 / 94` pure /
 degenerate / mixed at every `rel_tol` from `1e-12` to `1e-3`.
 
+### 2b. Which of the fourteen documented cases survive rounding?
+
+`rounding_changes_saddle` answers *whether* fixed rounding flips a
+classification; `rounding_diagnostic(M)` goes one step further and solves
+the *rounded* matrix as its own game, reporting the policy that comes out,
+not just a pure/mixed label -- the concrete version of "we definitely need
+some kind of approximation rounding" (the project's own Sept 2026 research
+meetings). Run against every case in [positions.md](positions.md), at the
+full-precision matrix each one's own page actually prints:
+
+| case | what it's for | gap | 3 dec | 2 dec | 1 dec |
+|---|---|---|---|---|---|
+| 1 | pure, for contrast | 0.0000 | pure | pure | pure |
+| 2 | the primary example | 0.0136 | mixed | mixed | **pure** |
+| 3 | L/R indifference | 0.0445 | mixed | mixed | **pure** |
+| 4 | the corner duel | 0.0121 | mixed | mixed | **pure** |
+| 5 | 3-action mix | 0.0047 | mixed | mixed | **pure** |
+| 6 | near-pure hedge | 0.0043 | mixed | **pure** | **pure** |
+| 7 | mirrored | 0.0136 | mixed | mixed | **pure** |
+| 8 | tackle rule | 0.0223 | mixed | mixed | **pure** |
+| 9 | asymmetric mix | 0.0095 | mixed | mixed | **pure** |
+| 10 | three-lane mix | 0.0699 | mixed | mixed | mixed |
+| 11 | reward alone forces the mix | 0.0653 | mixed | mixed | mixed |
+| 12 | movement slip | 0.0172 | mixed | mixed | mixed |
+| 13 | template 3 | 0.0419 | mixed | mixed | **pure** |
+| 14 | template 8 | 0.0178 | mixed | mixed | **pure** |
+
+Bold = a rounding artifact: that precision reports a *different*
+equilibrium (usually pure) than the exact solve. Two patterns worth
+naming: **Case 6 is the only one that breaks at 2 decimals already** --
+consistent with its own page calling it "a near-pure hedge... where
+rounding would lie" before this table existed to check it. **Cases 10, 11,
+and 12 are the only three that survive even 1-decimal rounding** -- not
+coincidentally, `positions.md` already describes Case 10's gap as "the
+deepest, most rounding-proof gap of any state on this page." Gap size is
+correlated with rounding robustness but does not determine it outright --
+Case 12's gap (0.0172) is smaller than Case 8's (0.0223), yet 12 survives
+1-decimal rounding and 8 does not, because what actually matters is
+whether rounding closes the specific gap between the two matrix entries
+the equilibrium sits between, not the gap's raw size.
+
+**Ten of the thirteen genuinely mixed cases collapse to a different,
+pure equilibrium at 1-decimal precision.** That is not an argument for
+picking 1-decimal rounding *or* against it -- it is why this project's
+solver never rounds before solving, and why any rounded diagnostic is
+reported as a separate, explicit comparison (as here, and in
+[positions.md](positions.md)'s Case 3, which carries this same table
+worked out in full as the flagship example) rather than folded into the
+reported equilibrium.
+
 ## 3. Value iteration vs. freeze-then-iterate
 
 Three schemes were on the table: value iteration (re-solve every stage game

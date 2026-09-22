@@ -13,14 +13,6 @@ export function wallMask(x, y, w, h) {
   return { U: y === h - 1, D: y === 0, L: x === 0, R: x === w - 1 };
 }
 
-// rows = player0's actions, cols = player1's actions, always
-export function orient(Q, b) {
-  if (b === 0) return Q;
-  const out = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) out[i][j] = -Q[j][i];
-  return out;
-}
-
 // Mirrors soccer_nash/matrix_games.py's pure_bounds: the row player
 // maximises its worst case, the column player minimises its best case.
 export function certify(Q, tol = 1e-6) {

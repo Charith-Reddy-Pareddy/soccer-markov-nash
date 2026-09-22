@@ -218,23 +218,29 @@ mixed policy fans out into two or three arrows of different weights.
 <p>
 <strong>The Q matrix (right).</strong> Each node is one cell of the complete
 <span class="mono">4&times;4</span> stage matrix (<span class="mono">row =
-the carrier's action</span>, <span class="mono">col = the defender's
-action</span>, always reoriented so the printed payoff is the carrier's,
-regardless of which player id actually carries the ball). A blue arrow
-points from a cell to the cell in the same column with the higher payoff
-&mdash; the carrier's own reason to switch rows. A green arrow points from a
-cell to the cell in the same row with the <em>lower</em> payoff &mdash; the
-defender's reason to switch columns, since the defender minimises. Every
-case shows all 16 cells, so the shapes are directly comparable. This is the
-mathematical justification <em>for</em> what the board already shows: it is
-why the players' support is exactly what it is.
+player 0's action</span>, <span class="mono">col = player 1's
+action</span>, <strong>fixed for every state</strong>, never reoriented by
+who currently has the ball &mdash; the payoff shown is always player 0's).
+A blue arrow points from a cell to the cell in the same column with the
+higher payoff &mdash; player 0's own reason to switch rows, since player 0
+maximises. A green arrow points from a cell to the cell in the same row
+with the <em>lower</em> payoff &mdash; player 1's reason to switch columns,
+since player 1 minimises. Which player is carrying the ball at a given
+state is stated separately under each case; it does not change which row
+or column is which. Every case shows all 16 cells, so the shapes are
+directly comparable. This is the mathematical justification <em>for</em>
+what the board already shows: it is why the players' support is exactly
+what it is.
 </p>
 <p>
 A pure state has exactly one node with no outgoing arrow &mdash; that cell
 is the saddle, everything else eventually points to it. A mixed state has
-arrows everywhere: every node points somewhere, so they chase each other
-around a closed best-response cycle &mdash; no pure action pair is stable,
-which is exactly why the board shows more than one arrow.
+no such node: no single joint action is simultaneously stable for both
+players. At the equilibrium, every action either player assigns positive
+probability to gives that player the <em>same</em> expected payoff against
+the opponent's actual mix (worked out explicitly under &ldquo;why
+indifferent&rdquo; for each case below) &mdash; that is the substance of a
+mixed equilibrium, not merely that the arrows visually cycle.
 </p>
 <p>
 <strong>A third piece, below the board and the Q matrix: the successor-state
@@ -311,18 +317,28 @@ different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
   <tr><td>State</td><td>(0, 1, 1, 1, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 1)</td></tr>
   <tr><td>Defender</td><td>player 1 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.085599   0.478297   0.285670   0.099198
-    D    0.109260   0.076330   0.085331   0.085599
-    L    0.103381   0.103381   0.084811   0.083738
-    R    0.082480   0.187381  -0.108448  -0.070696</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.085599   0.478297   0.285670   0.099198
+      D    0.109260   0.076330   0.085331   0.085599
+      L    0.103381   0.103381   0.084811   0.083738
+      R    0.082480   0.187381  -0.108448  -0.070696</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 63.5% / D 36.5%</td><td>U 36.5% / R 63.5%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 63.9% / D 36.1%</td><td>U 36.1% / R 63.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 66.7% / D 33.3%</td><td>U 33.3% / R 66.7%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>U 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,2,1,2,0)</td><td>(0,2,1,0,0)</td><td>50%: (0,2,0,1,0)<br>50%: (0,2,1,1,0)</td><td>(0,2,2,1,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>50%: (0,0,0,1,0)<br>50%: (0,0,1,1,0)</td><td>(0,0,2,1,0)</td></tr>
@@ -349,37 +365,6 @@ a vertical one.</span></p>
 <p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
-<p>Isolate the part of the matrix this equilibrium actually lives on,
-before looking at the full grid: <b>each player's own equilibrium
-support</b>, not an arbitrary pair of actions picked for being easy to
-compare &mdash; the carrier's <span class="mono">{L, R}</span> against the
-defender's <span class="mono">{D, L}</span>:</p>
-<table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>defends D</th><th>defends L</th></tr></thead>
-  <tbody>
-    <tr><td><b>goes L</b></td><td>0.499883</td><td>0.141010</td></tr>
-    <tr><td><b>goes R</b></td><td>0.180940</td><td>0.211001</td></tr>
-  </tbody>
-</table>
-<p>This is a standard, checkable game-theory reduction, not an
-approximation: restrict a zero-sum matrix game to the rows and columns
-actually used in one of its equilibria, and the resulting smaller game has
-<em>that same equilibrium</em> as its own. Solved entirely on its own
-&mdash; no reference to <span class="mono">U</span> or to the defender's
-<span class="mono">R</span>, which is not part of the equilibrium at all
-&mdash; this <span class="mono">2x2</span> game's mixed equilibrium comes
-out to carrier <span class="mono">{L: 7.7%, R: 92.3%}</span>, defender
-<span class="mono">{D: 18%, L: 82%}</span>, exactly the numbers reported
-above, to the last decimal.</p>
-<p>(An earlier version of this table used <span class="mono">{L, R}</span>
-on <em>both</em> sides instead of matching each player's actual support.
-That mixed one of the defender's real equilibrium actions,
-<span class="mono">L</span>, with one it never plays,
-<span class="mono">R</span>, while leaving out <span class="mono">D</span>,
-the action it actually mixes in &mdash; every number in it was a correct
-Q-value, but the <em>reduction itself</em> was not a valid one, since
-solving that game on its own does not reproduce the real equilibrium. This
-is the corrected version.)</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -388,23 +373,34 @@ is the corrected version.)</p>
   <tr><td>State</td><td>(1, 1, 1, 0, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (1, 0)</td></tr>
   <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.139279  -0.173204   0.099163   0.109755
-    D    0.170790   0.185032   0.156678   0.170790
-    L    0.810000   0.499883   0.141010   0.810000
-    R    0.211001   0.180940   0.211001   0.166529</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U   -0.139279  -0.170790  -0.810000  -0.211001
+      D    0.173204  -0.185032  -0.499883  -0.180940
+      L   -0.099163  -0.156678  -0.141010  -0.211001
+      R   -0.109755  -0.170790  -0.810000  -0.166529</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0 (defender)</th><th>player 1 (carrier)</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0)</td><td>50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1)</td><td>50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0)</td><td>50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0)</td></tr>
-    <tr><td><b>D</b></td><td>(1,2,1,0,1)</td><td>(1,1,1,0,1)</td><td>(0,1,1,0,1)</td><td>(2,1,1,0,1)</td></tr>
-    <tr><td><b>L</b></td><td>(1,2,0,0,1)</td><td>50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1)</td><td>(0,1,0,0,1)</td><td>(2,1,0,0,1)</td></tr>
-    <tr><td><b>R</b></td><td>(1,2,2,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed, gap 0.0445</td><td>D 18.0% / L 82.0%</td><td>L 7.7% / R 92.3%</td></tr>
+    <tr><td>3 decimals</td><td>mixed</td><td>D 18.0% / L 82.0%</td><td>L 7.7% / R 92.3%</td></tr>
+    <tr><td>2 decimals</td><td>mixed</td><td>D 17.9% / L 82.1%</td><td>L 7.7% / R 92.3%</td></tr>
+    <tr><td>1 decimal</td><td><b>pure</b></td><td>L 100%</td><td>R 100%</td></tr>
+  </tbody>
+</table>
+<p>Two decimals reproduces the exact mix to within a percentage point. One decimal manufactures a pure saddle &mdash; value exactly <span class="mono">-0.2000</span>, defender pure <span class="mono">L</span>, carrier pure <span class="mono">R</span> &mdash; that is not actually there: it is an artifact of the rounding, not a feature of the game. There is no single mathematically privileged rounding precision; this table exists so that question is checkable rather than assumed one way or the other (<span class="mono">soccer_nash.numerics.rounding_diagnostic</span>).</p>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0)</td><td>(1,2,1,0,1)</td><td>(1,2,0,0,1)</td><td>(1,2,2,0,1)</td></tr>
+    <tr><td><b>D</b></td><td>50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1)</td><td>(1,1,1,0,1)</td><td>50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0)</td><td>(0,1,1,0,1)</td><td>(0,1,0,0,1)</td><td>(0,1,2,0,1)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0)</td><td>(2,1,1,0,1)</td><td>(2,1,0,0,1)</td><td>(2,1,2,0,1)</td></tr>
   </tbody>
 </table>
 <p><b>Why not defend by moving right instead?</b> The natural reading of
@@ -497,18 +493,28 @@ its own hold ring), alongside real moves U (91.9%) and L (2.3%).</p>
   <tr><td>State</td><td>(0, 0, 2, 0, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 0)</td></tr>
   <tr><td>Defender</td><td>player 1 at (2, 0)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.083738   0.095109   0.103381   0.110220
-    D    0.085599   0.076363   0.076330   0.085599
-    L    0.085599   0.076363   0.076330   0.085599
-    R    0.088459   0.095109  -0.088213   0.110220</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.083738   0.095109   0.103381   0.110220
+      D    0.085599   0.076363   0.076330   0.085599
+      L    0.085599   0.076363   0.076330   0.085599
+      R    0.088459   0.095109  -0.088213   0.110220</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 43.3% / L 54.7% / R 1.9%</td><td>U 91.9% / D 5.9% / L 2.3%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 46.0% / L 52.0% / R 2.0%</td><td>U 91.2% / D 6.9% / L 1.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td><b>mixed</b></td><td>U 33.3% / L 66.7%</td><td>U 66.7% / D 29.8% / L 3.5%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>L 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,1,2,1,0)</td><td>(0,1,2,0,0)</td><td>(0,1,1,0,0)</td><td>(0,1,3,0,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
@@ -538,18 +544,28 @@ is.</p>
   <tr><td>State</td><td>(0, 2, 1, 2, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 2)</td></tr>
   <tr><td>Defender</td><td>player 1 at (1, 2)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.084811   0.478297   0.290839   0.095109
-    D    0.478297   0.084811   0.290839   0.095109
-    L    0.093043   0.093043   0.085599   0.093043
-    R    0.082303   0.082303  -0.122276  -0.071591</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.084811   0.478297   0.290839   0.095109
+      D    0.478297   0.084811   0.290839   0.095109
+      L    0.093043   0.093043   0.085599   0.093043
+      R    0.082303   0.082303  -0.122276  -0.071591</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 2.6% / D 97.4%</td><td>R 100.0%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 2.5% / D 97.5%</td><td>R 100.0%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 5.0% / D 95.0%</td><td>R 100.0%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>D 100.0%</td><td>R 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,3,1,3,0)</td><td>(0,3,1,1,0)</td><td>50%: (0,3,0,2,0)<br>50%: (0,3,1,2,0)</td><td>(0,3,2,2,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,1,1,3,0)</td><td>(0,1,1,1,0)</td><td>50%: (0,1,0,2,0)<br>50%: (0,1,1,2,0)</td><td>(0,1,2,2,0)</td></tr>
@@ -600,18 +616,28 @@ slides left (L) the other 4.9%.</p>
   <tr><td>State</td><td>(4, 4, 5, 4, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (4, 4)</td></tr>
   <tr><td>Defender</td><td>player 1 at (5, 4)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.116139   0.104525   0.169846   0.135972
-    D    0.094073   0.415483   0.814500   0.450000
-    L    0.094073   0.104525   0.000000   0.104525
-    R    0.169846   0.500000  -0.670721   0.500000</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.116139   0.104525   0.169846   0.135972
+      D    0.094073   0.415483   0.814500   0.450000
+      L    0.094073   0.104525   0.000000   0.104525
+      R    0.169846   0.500000  -0.670721   0.500000</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>D 53.8% / R 46.2%</td><td>U 95.1% / L 4.9%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>D 53.8% / R 46.2%</td><td>U 95.1% / L 4.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>D 53.8% / R 46.2%</td><td>U 94.9% / L 5.1%</td></tr>
+    <tr><td>1 decimal(s)</td><td>mixed</td><td>D 56.2% / R 43.8%</td><td>U 93.8% / L 6.2%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(4,4,5,4,0)</td><td>(4,4,5,3,0)</td><td>(4,4,5,4,1)</td><td>(4,4,6,4,0)</td></tr>
     <tr><td><b>D</b></td><td>(4,3,5,4,0)</td><td>(4,3,5,3,0)</td><td>(4,3,4,4,0)</td><td>(4,3,6,4,0)</td></tr>
@@ -691,18 +717,28 @@ answers U always; neither has any reason to deviate.</p>
   <tr><td>State</td><td>(4, 0, 5, 0, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (4, 0)</td></tr>
   <tr><td>Defender</td><td>player 1 at (5, 0)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.234446   0.316945   0.522973   0.271536
-    D    0.150878   0.211001   0.211001   0.222362
-    L    0.161034   0.182213   0.171623   0.189901
-    R    0.012406  -0.095109   0.057946   0.097586</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.234446   0.316945   0.522973   0.271536
+      D    0.150878   0.211001   0.211001   0.222362
+      L    0.161034   0.182213   0.171623   0.189901
+      R    0.012406  -0.095109   0.057946   0.097586</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>pure</td><td>U 100.0%</td><td>U 100.0%</td></tr>
+    <tr><td>3 decimal(s)</td><td>pure</td><td>U 100.0%</td><td>U 100.0%</td></tr>
+    <tr><td>2 decimal(s)</td><td>pure</td><td>U 100.0%</td><td>U 100.0%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>U 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(4,1,5,1,0)</td><td>(4,1,5,0,0)</td><td>50%: (4,1,4,0,0)<br>50%: (4,1,5,0,0)</td><td>(4,1,6,0,0)</td></tr>
     <tr><td><b>D</b></td><td>(4,0,5,1,0)</td><td>(4,0,5,0,0)</td><td>(4,0,5,0,0)</td><td>(4,0,6,0,0)</td></tr>
@@ -734,18 +770,28 @@ different shape worth contrasting against it (Cases 3, 4, 5, 9, 10).</p>
   <tr><td>State</td><td>(0, 1, 1, 1, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 1)</td></tr>
   <tr><td>Defender</td><td>player 1 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.085599   0.478297   0.285670   0.099198
-    D    0.109260   0.076330   0.085331   0.085599
-    L    0.103381   0.103381   0.084811   0.083738
-    R    0.082480   0.187381  -0.108448  -0.070696</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.085599   0.478297   0.285670   0.099198
+      D    0.109260   0.076330   0.085331   0.085599
+      L    0.103381   0.103381   0.084811   0.083738
+      R    0.082480   0.187381  -0.108448  -0.070696</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 63.5% / D 36.5%</td><td>U 36.5% / R 63.5%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 63.9% / D 36.1%</td><td>U 36.1% / R 63.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 66.7% / D 33.3%</td><td>U 33.3% / R 66.7%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>U 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,2,1,2,0)</td><td>(0,2,1,0,0)</td><td>50%: (0,2,0,1,0)<br>50%: (0,2,1,1,0)</td><td>(0,2,2,1,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>50%: (0,0,0,1,0)<br>50%: (0,0,1,1,0)</td><td>(0,0,2,1,0)</td></tr>
@@ -772,37 +818,6 @@ a vertical one.</span></p>
 <p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
-<p>Isolate the part of the matrix this equilibrium actually lives on,
-before looking at the full grid: <b>each player's own equilibrium
-support</b>, not an arbitrary pair of actions picked for being easy to
-compare &mdash; the carrier's <span class="mono">{L, R}</span> against the
-defender's <span class="mono">{D, L}</span>:</p>
-<table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>defends D</th><th>defends L</th></tr></thead>
-  <tbody>
-    <tr><td><b>goes L</b></td><td>0.499883</td><td>0.141010</td></tr>
-    <tr><td><b>goes R</b></td><td>0.180940</td><td>0.211001</td></tr>
-  </tbody>
-</table>
-<p>This is a standard, checkable game-theory reduction, not an
-approximation: restrict a zero-sum matrix game to the rows and columns
-actually used in one of its equilibria, and the resulting smaller game has
-<em>that same equilibrium</em> as its own. Solved entirely on its own
-&mdash; no reference to <span class="mono">U</span> or to the defender's
-<span class="mono">R</span>, which is not part of the equilibrium at all
-&mdash; this <span class="mono">2x2</span> game's mixed equilibrium comes
-out to carrier <span class="mono">{L: 7.7%, R: 92.3%}</span>, defender
-<span class="mono">{D: 18%, L: 82%}</span>, exactly the numbers reported
-above, to the last decimal.</p>
-<p>(An earlier version of this table used <span class="mono">{L, R}</span>
-on <em>both</em> sides instead of matching each player's actual support.
-That mixed one of the defender's real equilibrium actions,
-<span class="mono">L</span>, with one it never plays,
-<span class="mono">R</span>, while leaving out <span class="mono">D</span>,
-the action it actually mixes in &mdash; every number in it was a correct
-Q-value, but the <em>reduction itself</em> was not a valid one, since
-solving that game on its own does not reproduce the real equilibrium. This
-is the corrected version.)</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -811,23 +826,34 @@ is the corrected version.)</p>
   <tr><td>State</td><td>(1, 1, 1, 0, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (1, 0)</td></tr>
   <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.139279  -0.173204   0.099163   0.109755
-    D    0.170790   0.185032   0.156678   0.170790
-    L    0.810000   0.499883   0.141010   0.810000
-    R    0.211001   0.180940   0.211001   0.166529</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U   -0.139279  -0.170790  -0.810000  -0.211001
+      D    0.173204  -0.185032  -0.499883  -0.180940
+      L   -0.099163  -0.156678  -0.141010  -0.211001
+      R   -0.109755  -0.170790  -0.810000  -0.166529</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0 (defender)</th><th>player 1 (carrier)</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0)</td><td>50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1)</td><td>50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0)</td><td>50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0)</td></tr>
-    <tr><td><b>D</b></td><td>(1,2,1,0,1)</td><td>(1,1,1,0,1)</td><td>(0,1,1,0,1)</td><td>(2,1,1,0,1)</td></tr>
-    <tr><td><b>L</b></td><td>(1,2,0,0,1)</td><td>50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1)</td><td>(0,1,0,0,1)</td><td>(2,1,0,0,1)</td></tr>
-    <tr><td><b>R</b></td><td>(1,2,2,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed, gap 0.0445</td><td>D 18.0% / L 82.0%</td><td>L 7.7% / R 92.3%</td></tr>
+    <tr><td>3 decimals</td><td>mixed</td><td>D 18.0% / L 82.0%</td><td>L 7.7% / R 92.3%</td></tr>
+    <tr><td>2 decimals</td><td>mixed</td><td>D 17.9% / L 82.1%</td><td>L 7.7% / R 92.3%</td></tr>
+    <tr><td>1 decimal</td><td><b>pure</b></td><td>L 100%</td><td>R 100%</td></tr>
+  </tbody>
+</table>
+<p>Two decimals reproduces the exact mix to within a percentage point. One decimal manufactures a pure saddle &mdash; value exactly <span class="mono">-0.2000</span>, defender pure <span class="mono">L</span>, carrier pure <span class="mono">R</span> &mdash; that is not actually there: it is an artifact of the rounding, not a feature of the game. There is no single mathematically privileged rounding precision; this table exists so that question is checkable rather than assumed one way or the other (<span class="mono">soccer_nash.numerics.rounding_diagnostic</span>).</p>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>50%: (1,2,1,1,1)<br>50%: (1,2,1,0,0)</td><td>(1,2,1,0,1)</td><td>(1,2,0,0,1)</td><td>(1,2,2,0,1)</td></tr>
+    <tr><td><b>D</b></td><td>50%: (1,1,1,0,0)<br>50%: (1,1,1,0,1)</td><td>(1,1,1,0,1)</td><td>50%: (1,1,0,0,1)<br>50%: (1,0,0,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>50%: (0,1,1,1,1)<br>50%: (0,1,1,0,0)</td><td>(0,1,1,0,1)</td><td>(0,1,0,0,1)</td><td>(0,1,2,0,1)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (2,1,1,1,1)<br>50%: (2,1,1,0,0)</td><td>(2,1,1,0,1)</td><td>(2,1,0,0,1)</td><td>(2,1,2,0,1)</td></tr>
   </tbody>
 </table>
 <p><b>Why not defend by moving right instead?</b> The natural reading of
@@ -913,18 +939,28 @@ the corner leaves little room, but not zero.</p>
   <tr><td>State</td><td>(0, 0, 1, 1, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 0)</td></tr>
   <tr><td>Defender</td><td>player 1 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.103381   0.103381  -0.407594   0.083738
-    D    0.109260   0.076330   0.100850   0.085599
-    L    0.109260   0.076330   0.100850   0.085599
-    R    0.112055  -0.075068   0.112055   0.088459</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.103381   0.103381  -0.407594   0.083738
+      D    0.109260   0.076330   0.100850   0.085599
+      L    0.109260   0.076330   0.100850   0.085599
+      R    0.112055  -0.075068   0.112055   0.088459</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 4.6% / L 95.4%</td><td>D 94.9% / L 5.1%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 4.7% / L 95.3%</td><td>D 95.0% / L 5.0%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 3.8% / L 96.2%</td><td>D 96.2% / L 3.8%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>D 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,1,1,2,0)</td><td>(0,1,1,0,0)</td><td>50%: (0,1,1,1,0)<br>50%: (0,0,0,1,1)</td><td>(0,1,2,1,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,0,1,2,0)</td><td>(0,0,1,0,0)</td><td>(0,0,0,1,0)</td><td>(0,0,2,1,0)</td></tr>
@@ -968,18 +1004,28 @@ its own hold ring), alongside real moves U (91.9%) and L (2.3%).</p>
   <tr><td>State</td><td>(0, 0, 2, 0, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 0)</td></tr>
   <tr><td>Defender</td><td>player 1 at (2, 0)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.083738   0.095109   0.103381   0.110220
-    D    0.085599   0.076363   0.076330   0.085599
-    L    0.085599   0.076363   0.076330   0.085599
-    R    0.088459   0.095109  -0.088213   0.110220</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.083738   0.095109   0.103381   0.110220
+      D    0.085599   0.076363   0.076330   0.085599
+      L    0.085599   0.076363   0.076330   0.085599
+      R    0.088459   0.095109  -0.088213   0.110220</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 43.3% / L 54.7% / R 1.9%</td><td>U 91.9% / D 5.9% / L 2.3%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 46.0% / L 52.0% / R 2.0%</td><td>U 91.2% / D 6.9% / L 1.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td><b>mixed</b></td><td>U 33.3% / L 66.7%</td><td>U 66.7% / D 29.8% / L 3.5%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>L 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,1,2,1,0)</td><td>(0,1,2,0,0)</td><td>(0,1,1,0,0)</td><td>(0,1,3,0,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
@@ -1016,23 +1062,33 @@ physical options (hold vs. move), not two labels for the same action.</p>
   <tr><td>State</td><td>(1, 1, 2, 0, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (2, 0)</td></tr>
   <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.316945   0.316945   0.247069  -0.178022
-    D    0.211001   0.211001   0.211001   0.166529
-    L    0.170790   0.044962   0.156678   0.170790
-    R    0.182213   0.182213   0.182213   0.135158</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U   -0.316945  -0.211001  -0.170790  -0.182213
+      D   -0.316945  -0.211001  -0.044962  -0.182213
+      L   -0.247069  -0.211001  -0.156678  -0.182213
+      R    0.178022  -0.166529  -0.170790  -0.135158</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>(1,2,2,1,1)</td><td>(1,0,2,1,1)</td><td>(0,1,2,1,1)</td><td>50%: (2,1,2,0,0)<br>50%: (1,1,2,1,1)</td></tr>
-    <tr><td><b>D</b></td><td>(1,2,2,0,1)</td><td>(1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
-    <tr><td><b>L</b></td><td>(1,2,1,0,1)</td><td>50%: (1,0,2,0,0)<br>50%: (1,1,1,0,1)</td><td>(0,1,1,0,1)</td><td>(2,1,1,0,1)</td></tr>
-    <tr><td><b>R</b></td><td>(1,2,3,0,1)</td><td>(1,0,3,0,1)</td><td>(0,1,3,0,1)</td><td>(2,1,3,0,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>D 2.5% / R 97.5%</td><td>D 73.9% / L 26.1%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>D 2.4% / R 97.6%</td><td>D 74.1% / L 25.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td><b>pure</b></td><td>R 100.0%</td><td>D 76.5% / L 23.5%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>R 100.0%</td><td>D 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(1,2,2,1,1)</td><td>(1,2,2,0,1)</td><td>(1,2,1,0,1)</td><td>(1,2,3,0,1)</td></tr>
+    <tr><td><b>D</b></td><td>(1,0,2,1,1)</td><td>(1,0,2,0,1)</td><td>50%: (1,0,2,0,0)<br>50%: (1,1,1,0,1)</td><td>(1,0,3,0,1)</td></tr>
+    <tr><td><b>L</b></td><td>(0,1,2,1,1)</td><td>(0,1,2,0,1)</td><td>(0,1,1,0,1)</td><td>(0,1,3,0,1)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (2,1,2,0,0)<br>50%: (1,1,2,1,1)</td><td>(2,1,2,0,1)</td><td>(2,1,1,0,1)</td><td>(2,1,3,0,1)</td></tr>
   </tbody>
 </table>
 </div>
@@ -1059,23 +1115,33 @@ mirrored, wherever the same relative configuration recurs.</p>
   <tr><td>State</td><td>(5, 1, 6, 1, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (6, 1)</td></tr>
   <tr><td>Defender</td><td>player 0 at (5, 1)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.085599   0.478297   0.099198   0.285670
-    D    0.109260   0.076330   0.085599   0.085331
-    L    0.082480   0.187381  -0.070696  -0.108448
-    R    0.103381   0.103381   0.083738   0.084811</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U   -0.085599  -0.109260  -0.082480  -0.103381
+      D   -0.478297  -0.076330  -0.187381  -0.103381
+      L   -0.099198  -0.085599   0.070696  -0.083738
+      R   -0.285670  -0.085331   0.108448  -0.084811</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>(5,2,6,2,1)</td><td>(5,0,6,2,1)</td><td>(4,1,6,2,1)</td><td>50%: (5,1,6,2,1)<br>50%: (6,1,6,2,1)</td></tr>
-    <tr><td><b>D</b></td><td>(5,2,6,0,1)</td><td>(5,0,6,0,1)</td><td>(4,1,6,0,1)</td><td>50%: (5,1,6,0,1)<br>50%: (6,1,6,0,1)</td></tr>
-    <tr><td><b>L</b></td><td>50%: (5,2,5,1,1)<br>50%: (5,2,6,1,0)</td><td>50%: (5,0,5,1,1)<br>50%: (5,0,6,1,0)</td><td>50%: (4,1,5,1,1)<br>50%: (4,1,6,1,0)</td><td>50%: (5,1,6,1,0)<br>50%: (5,1,6,1,1)</td></tr>
-    <tr><td><b>R</b></td><td>(5,2,6,1,1)</td><td>(5,0,6,1,1)</td><td>(4,1,6,1,1)</td><td>(5,1,6,1,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 36.5% / L 63.5%</td><td>U 63.5% / D 36.5%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 36.1% / L 63.9%</td><td>U 63.9% / D 36.1%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 33.3% / L 66.7%</td><td>U 66.7% / D 33.3%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>U 100.0%</td><td>R 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(5,2,6,2,1)</td><td>(5,2,6,0,1)</td><td>50%: (5,2,5,1,1)<br>50%: (5,2,6,1,0)</td><td>(5,2,6,1,1)</td></tr>
+    <tr><td><b>D</b></td><td>(5,0,6,2,1)</td><td>(5,0,6,0,1)</td><td>50%: (5,0,5,1,1)<br>50%: (5,0,6,1,0)</td><td>(5,0,6,1,1)</td></tr>
+    <tr><td><b>L</b></td><td>(4,1,6,2,1)</td><td>(4,1,6,0,1)</td><td>50%: (4,1,5,1,1)<br>50%: (4,1,6,1,0)</td><td>(4,1,6,1,1)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (5,1,6,2,1)<br>50%: (6,1,6,2,1)</td><td>50%: (5,1,6,0,1)<br>50%: (6,1,6,0,1)</td><td>50%: (5,1,6,1,0)<br>50%: (5,1,6,1,1)</td><td>(5,1,6,1,1)</td></tr>
   </tbody>
 </table>
 </div>
@@ -1105,23 +1171,33 @@ real move.</p>
   <tr><td>State</td><td>(2, 3, 3, 3, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (3, 3)</td></tr>
   <tr><td>Defender</td><td>player 0 at (2, 3)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U   -0.011944   0.005242   0.015879  -0.041869
-    D    0.072350  -0.022044   0.008641   0.000279
-    L   -0.018582  -0.080389   0.018582  -0.041869
-    R   -0.007062  -0.025575  -0.006356  -0.039427</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U    0.011944  -0.072350   0.018582   0.007062
+      D   -0.005242   0.022044   0.080389   0.025575
+      L   -0.015879  -0.008641  -0.018582   0.006356
+      R    0.041869  -0.000279   0.041869   0.039427</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>(2,3,3,3,1)</td><td>(2,2,3,3,1)</td><td>(1,3,3,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1)</td></tr>
-    <tr><td><b>D</b></td><td>(2,3,3,2,1)</td><td>(2,2,3,2,1)</td><td>(1,3,3,2,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,2,1)</td></tr>
-    <tr><td><b>L</b></td><td>(2,3,3,3,0)</td><td>(2,2,2,3,1)</td><td>(1,3,2,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1)</td></tr>
-    <tr><td><b>R</b></td><td>(2,3,4,3,1)</td><td>(2,2,4,3,1)</td><td>(1,3,4,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,4,3,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>D 60.7% / R 39.3%</td><td>U 32.1% / D 67.9%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>D 60.9% / R 39.1%</td><td>U 31.9% / D 68.1%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>D 57.1% / R 42.9%</td><td>U 28.6% / D 71.4%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>D 100.0%</td><td>D 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(2,3,3,3,1)</td><td>(2,3,3,2,1)</td><td>(2,3,3,3,0)</td><td>(2,3,4,3,1)</td></tr>
+    <tr><td><b>D</b></td><td>(2,2,3,3,1)</td><td>(2,2,3,2,1)</td><td>(2,2,2,3,1)</td><td>(2,2,4,3,1)</td></tr>
+    <tr><td><b>L</b></td><td>(1,3,3,3,1)</td><td>(1,3,3,2,1)</td><td>(1,3,2,3,1)</td><td>(1,3,4,3,1)</td></tr>
+    <tr><td><b>R</b></td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,2,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,3,3,1)</td><td>50%: (3,3,4,3,0)<br>50%: (2,3,4,3,1)</td></tr>
   </tbody>
 </table>
 </div>
@@ -1146,18 +1222,28 @@ is.</p>
   <tr><td>State</td><td>(0, 2, 1, 2, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 2)</td></tr>
   <tr><td>Defender</td><td>player 1 at (1, 2)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.084811   0.478297   0.290839   0.095109
-    D    0.478297   0.084811   0.290839   0.095109
-    L    0.093043   0.093043   0.085599   0.093043
-    R    0.082303   0.082303  -0.122276  -0.071591</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.084811   0.478297   0.290839   0.095109
+      D    0.478297   0.084811   0.290839   0.095109
+      L    0.093043   0.093043   0.085599   0.093043
+      R    0.082303   0.082303  -0.122276  -0.071591</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 2.6% / D 97.4%</td><td>R 100.0%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 2.5% / D 97.5%</td><td>R 100.0%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 5.0% / D 95.0%</td><td>R 100.0%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>D 100.0%</td><td>R 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,3,1,3,0)</td><td>(0,3,1,1,0)</td><td>50%: (0,3,0,2,0)<br>50%: (0,3,1,2,0)</td><td>(0,3,2,2,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,1,1,3,0)</td><td>(0,1,1,1,0)</td><td>50%: (0,1,0,2,0)<br>50%: (0,1,1,2,0)</td><td>(0,1,2,2,0)</td></tr>
@@ -1206,23 +1292,33 @@ position rather than moving left; the genuine move in its support is R
   <tr><td>State</td><td>(0, 2, 2, 2, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (2, 2)</td></tr>
   <tr><td>Defender</td><td>player 0 at (0, 2)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.247069   0.330151   0.271536   0.316945
-    D    0.330151   0.247069   0.271536   0.316945
-    L    0.366481   0.366481   0.330151   0.109966
-    R    0.228062   0.228062   0.219944   0.205131</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U   -0.247069  -0.330151  -0.366481  -0.228062
+      D   -0.330151  -0.247069  -0.366481  -0.228062
+      L   -0.271536  -0.271536  -0.330151  -0.219944
+      R   -0.316945  -0.316945  -0.109966  -0.205131</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>(0,3,2,3,1)</td><td>(0,1,2,3,1)</td><td>(0,2,2,3,1)</td><td>(1,2,2,3,1)</td></tr>
-    <tr><td><b>D</b></td><td>(0,3,2,1,1)</td><td>(0,1,2,1,1)</td><td>(0,2,2,1,1)</td><td>(1,2,2,1,1)</td></tr>
-    <tr><td><b>L</b></td><td>(0,3,1,2,1)</td><td>(0,1,1,2,1)</td><td>(0,2,1,2,1)</td><td>50%: (1,2,2,2,0)<br>50%: (0,2,1,2,1)</td></tr>
-    <tr><td><b>R</b></td><td>(0,3,3,2,1)</td><td>(0,1,3,2,1)</td><td>(0,2,3,2,1)</td><td>(1,2,3,2,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>L 77.9% / R 22.1%</td><td>U 16.9% / D 66.0% / L 17.1%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>L 78.1% / R 21.9%</td><td>U 17.6% / D 65.4% / L 17.0%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>L 77.8% / R 22.2%</td><td>U 11.1% / D 70.4% / L 18.5%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>mixed</b></td><td>U 28.6% / D 28.6% / R 42.9%</td><td>U 42.9% / D 42.9% / L 14.3%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,3,2,3,1)</td><td>(0,3,2,1,1)</td><td>(0,3,1,2,1)</td><td>(0,3,3,2,1)</td></tr>
+    <tr><td><b>D</b></td><td>(0,1,2,3,1)</td><td>(0,1,2,1,1)</td><td>(0,1,1,2,1)</td><td>(0,1,3,2,1)</td></tr>
+    <tr><td><b>L</b></td><td>(0,2,2,3,1)</td><td>(0,2,2,1,1)</td><td>(0,2,1,2,1)</td><td>(0,2,3,2,1)</td></tr>
+    <tr><td><b>R</b></td><td>(1,2,2,3,1)</td><td>(1,2,2,1,1)</td><td>50%: (1,2,2,2,0)<br>50%: (0,2,1,2,1)</td><td>(1,2,3,2,1)</td></tr>
   </tbody>
 </table>
 </div>
@@ -1254,18 +1350,28 @@ slides left (L) the other 4.9%.</p>
   <tr><td>State</td><td>(4, 4, 5, 4, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (4, 4)</td></tr>
   <tr><td>Defender</td><td>player 1 at (5, 4)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.116139   0.104525   0.169846   0.135972
-    D    0.094073   0.415483   0.814500   0.450000
-    L    0.094073   0.104525   0.000000   0.104525
-    R    0.169846   0.500000  -0.670721   0.500000</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.116139   0.104525   0.169846   0.135972
+      D    0.094073   0.415483   0.814500   0.450000
+      L    0.094073   0.104525   0.000000   0.104525
+      R    0.169846   0.500000  -0.670721   0.500000</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>D 53.8% / R 46.2%</td><td>U 95.1% / L 4.9%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>D 53.8% / R 46.2%</td><td>U 95.1% / L 4.9%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>D 53.8% / R 46.2%</td><td>U 94.9% / L 5.1%</td></tr>
+    <tr><td>1 decimal(s)</td><td>mixed</td><td>D 56.2% / R 43.8%</td><td>U 93.8% / L 6.2%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(4,4,5,4,0)</td><td>(4,4,5,3,0)</td><td>(4,4,5,4,1)</td><td>(4,4,6,4,0)</td></tr>
     <tr><td><b>D</b></td><td>(4,3,5,4,0)</td><td>(4,3,5,3,0)</td><td>(4,3,4,4,0)</td><td>(4,3,6,4,0)</td></tr>
@@ -1300,24 +1406,34 @@ of goal width.</p>
   <tr><td>State</td><td>(1, 3, 1, 4, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (1, 4)</td></tr>
   <tr><td>Defender</td><td>player 0 at (1, 3)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U   -0.273301   0.005960   0.001041   0.069053
-    D   -0.031430   0.068847   0.056711   0.449923
-    L    0.396398   0.083433   0.039473   0.449665
-    R    0.039469   0.020201   0.015300   0.091802</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <p class="coord-caveat">Shown: the intended successor before movement slip is applied (<span class="mono">slip=0</span> isolates it, for readability). The actual game has <span class="mono">slip=0.15</span>; running <span class="mono">python scripts/positions.py</span> on this state prints the full noisy distribution &mdash; up to 16 outcomes per cell, each intended move landing on its target around 79% of the time and spreading over nearby cells the rest. See <span class="mono">docs/generalize.md</span>.</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U    0.273301   0.031430  -0.396398  -0.039469
+      D   -0.005960  -0.068847  -0.083433  -0.020201
+      L   -0.001041  -0.056711  -0.039473  -0.015300
+      R   -0.069053  -0.449923  -0.449665  -0.091802</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>(1,3,1,4,0)</td><td>(1,2,1,4,1)</td><td>(0,3,1,4,1)</td><td>(2,3,1,4,1)</td></tr>
-    <tr><td><b>D</b></td><td>(1,4,1,3,0)</td><td>(1,2,1,3,1)</td><td>(0,3,1,3,1)</td><td>(2,3,1,3,1)</td></tr>
-    <tr><td><b>L</b></td><td>(1,4,0,4,1)</td><td>(1,2,0,4,1)</td><td>(0,3,0,4,1)</td><td>(2,3,0,4,1)</td></tr>
-    <tr><td><b>R</b></td><td>(1,4,2,4,1)</td><td>(1,2,2,4,1)</td><td>(0,3,2,4,1)</td><td>(2,3,2,4,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 3.9% / L 96.1%</td><td>D 80.2% / L 19.8%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 4.0% / L 96.0%</td><td>D 80.2% / L 19.8%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 4.4% / L 95.6%</td><td>D 80.0% / L 20.0%</td></tr>
+    <tr><td>1 decimal(s)</td><td>mixed</td><td>U 20.0% / L 80.0%</td><td>D 80.0% / L 20.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <p class="coord-note" style="font-style:italic">Shown: the intended successor before movement slip is applied (<span class="mono">slip=0</span> isolates it, for readability). The actual game has <span class="mono">slip=0.15</span>; running <span class="mono">python scripts/positions.py</span> on this state prints the full noisy distribution &mdash; up to 16 outcomes per cell, each intended move landing on its target around 79% of the time and spreading over nearby cells the rest. See <a href="generalize.md">generalize.md</a>.</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(1,3,1,4,0)</td><td>(1,4,1,3,0)</td><td>(1,4,0,4,1)</td><td>(1,4,2,4,1)</td></tr>
+    <tr><td><b>D</b></td><td>(1,2,1,4,1)</td><td>(1,2,1,3,1)</td><td>(1,2,0,4,1)</td><td>(1,2,2,4,1)</td></tr>
+    <tr><td><b>L</b></td><td>(0,3,1,4,1)</td><td>(0,3,1,3,1)</td><td>(0,3,0,4,1)</td><td>(0,3,2,4,1)</td></tr>
+    <tr><td><b>R</b></td><td>(2,3,1,4,1)</td><td>(2,3,1,3,1)</td><td>(2,3,0,4,1)</td><td>(2,3,2,4,1)</td></tr>
   </tbody>
 </table>
 </div>
@@ -1349,23 +1465,33 @@ one row further apart.</p>
   <tr><td>State</td><td>(1, 1, 3, 1, 1)</td></tr>
   <tr><td>Carrier</td><td>player 1 at (3, 1)</td></tr>
   <tr><td>Defender</td><td>player 0 at (1, 1)</td></tr>
-  <tr><td>Rows</td><td>player 1 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 0 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.205131   0.283411   0.228062   0.262831
-    D    0.182213   0.182213   0.182213   0.135158
-    L    0.316945   0.316945   0.247069   0.049186
-    R    0.182213   0.182213   0.182213   0.162618</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
-    <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+      U   -0.205131  -0.182213  -0.316945  -0.182213
+      D   -0.283411  -0.182213  -0.316945  -0.182213
+      L   -0.228062  -0.182213  -0.247069  -0.182213
+      R   -0.262831  -0.135158  -0.049186  -0.162618</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
   <tbody>
-    <tr><td><b>U</b></td><td>(1,2,3,2,1)</td><td>(1,0,3,2,1)</td><td>(0,1,3,2,1)</td><td>(2,1,3,2,1)</td></tr>
-    <tr><td><b>D</b></td><td>(1,2,3,0,1)</td><td>(1,0,3,0,1)</td><td>(0,1,3,0,1)</td><td>(2,1,3,0,1)</td></tr>
-    <tr><td><b>L</b></td><td>(1,2,2,1,1)</td><td>(1,0,2,1,1)</td><td>(0,1,2,1,1)</td><td>50%: (2,1,3,1,0)<br>50%: (1,1,2,1,1)</td></tr>
-    <tr><td><b>R</b></td><td>(1,2,4,1,1)</td><td>(1,0,4,1,1)</td><td>(0,1,4,1,1)</td><td>(2,1,4,1,1)</td></tr>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 65.6% / R 34.4%</td><td>U 82.3% / L 17.7%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 65.6% / R 34.4%</td><td>U 82.2% / L 17.8%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 65.6% / R 34.4%</td><td>U 84.4% / L 15.6%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>R 100.0%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+    <table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(1,2,3,2,1)</td><td>(1,2,3,0,1)</td><td>(1,2,2,1,1)</td><td>(1,2,4,1,1)</td></tr>
+    <tr><td><b>D</b></td><td>(1,0,3,2,1)</td><td>(1,0,3,0,1)</td><td>(1,0,2,1,1)</td><td>(1,0,4,1,1)</td></tr>
+    <tr><td><b>L</b></td><td>(0,1,3,2,1)</td><td>(0,1,3,0,1)</td><td>(0,1,2,1,1)</td><td>(0,1,4,1,1)</td></tr>
+    <tr><td><b>R</b></td><td>(2,1,3,2,1)</td><td>(2,1,3,0,1)</td><td>50%: (2,1,3,1,0)<br>50%: (1,1,2,1,1)</td><td>(2,1,4,1,1)</td></tr>
   </tbody>
 </table>
 </div>
@@ -1395,18 +1521,28 @@ lane).</p>
   <tr><td>State</td><td>(0, 2, 2, 2, 0)</td></tr>
   <tr><td>Carrier</td><td>player 0 at (0, 2)</td></tr>
   <tr><td>Defender</td><td>player 1 at (2, 2)</td></tr>
-  <tr><td>Rows</td><td>player 0 / carrier actions</td></tr>
-  <tr><td>Columns</td><td>player 1 / defender actions</td></tr>
-  <tr><td>Payoff</td><td>carrier&#8217;s Q-value</td></tr>
+  <tr><td>Rows</td><td>Player 0</td></tr>
+  <tr><td>Columns</td><td>Player 1</td></tr>
+  <tr><td>Payoff</td><td>Player 0&#8217;s Q-value &mdash; fixed for every state, never reoriented by who has the ball</td></tr>
 </table>
 <pre class="matrix">                  U          D          L          R
-    U    0.083738   0.144198   0.103381   0.112892
-    D    0.144198   0.083738   0.103381   0.112892
-    L    0.099198   0.099198   0.085599   0.099198
-    R    0.155749   0.155749  -0.109966   0.132828</pre>
-    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; same orientation as the Q matrix above (<span class="mono">carrier</span> row, <span class="mono">defender</span> column), each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
+      U    0.083738   0.144198   0.103381   0.112892
+      D    0.144198   0.083738   0.103381   0.112892
+      L    0.099198   0.099198   0.085599   0.099198
+      R    0.155749   0.155749  -0.109966   0.132828</pre>
+<p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
+<table class="coordmatrix">
+  <thead><tr><th>precision</th><th>classification</th><th>player 0</th><th>player 1</th></tr></thead>
+  <tbody>
+    <tr><td>full (unrounded)</td><td>mixed</td><td>U 67.5% / D 32.5%</td><td>L 100.0%</td></tr>
+    <tr><td>3 decimal(s)</td><td>mixed</td><td>U 68.3% / D 31.7%</td><td>L 100.0%</td></tr>
+    <tr><td>2 decimal(s)</td><td>mixed</td><td>U 66.7% / D 33.3%</td><td>L 100.0%</td></tr>
+    <tr><td>1 decimal(s)</td><td><b>pure</b></td><td>L 100.0%</td><td>D 66.7% / L 33.3%</td></tr>
+  </tbody>
+</table>
+    <p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, fixed, same as the Q matrix above, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>. Two lines in a cell means the outcome depends on who moves first (each 50%).</p>
     <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
   <tbody>
     <tr><td><b>U</b></td><td>(0,3,2,3,0)</td><td>(0,3,2,1,0)</td><td>(0,3,1,2,0)</td><td>(0,3,3,2,0)</td></tr>
     <tr><td><b>D</b></td><td>(0,1,2,3,0)</td><td>(0,1,2,1,0)</td><td>(0,1,1,2,0)</td><td>(0,1,3,2,0)</td></tr>

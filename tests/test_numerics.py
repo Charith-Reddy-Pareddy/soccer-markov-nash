@@ -8,8 +8,11 @@ from soccer_nash.numerics import (
     epsilon_equilibrium,
     essential_subgame,
     is_matching_pennies,
+    is_rounding_artifact,
     mixing_entropy,
     rounding_changes_saddle,
+    rounding_diagnostic,
+    RoundingDiagnostic,
     support_shape,
     value_bracket,
 )
@@ -108,6 +111,81 @@ def test_rounding_flips_saddle_on_a_scaled_rps():
     assert classify_stage_game(scaled) == "mixed"
     assert rounding_changes_saddle(scaled, decimals=1) is True
     assert rounding_changes_saddle(RPS, decimals=1) is False
+
+
+def test_rounding_diagnostic_full_precision_matches_solve_zero_sum():
+    diag = rounding_diagnostic(RPS, decimals=(None,))
+    value, row, col = solve_zero_sum(RPS)
+    assert diag[0].decimals is None
+    assert diag[0].pure is False
+    assert diag[0].value == pytest.approx(value)
+    np.testing.assert_allclose(diag[0].row, row)
+    np.testing.assert_allclose(diag[0].col, col)
+
+
+def test_rounding_diagnostic_reports_every_requested_precision_in_order():
+    diag = rounding_diagnostic(RPS, decimals=(None, 2, 1, 0))
+    assert [d.decimals for d in diag] == [None, 2, 1, 0]
+
+
+def test_rounding_diagnostic_reproduces_case3_sensitivity():
+    # The concrete Sept-meeting example this function exists to make
+    # checkable: Case 3's own matrix stays mixed through 2 decimals but
+    # manufactures a pure saddle at 1 decimal, at a value that lands
+    # exactly on a round number -- a strong sign the saddle is a rounding
+    # artifact, not a real feature of the game.
+    case3 = np.array([
+        [-0.139279, -0.17079, -0.81, -0.211001],
+        [0.173204, -0.185032, -0.499883, -0.18094],
+        [-0.099163, -0.156678, -0.14101, -0.211001],
+        [-0.109755, -0.17079, -0.81, -0.166529],
+    ])
+    diag = {d.decimals: d for d in rounding_diagnostic(case3, decimals=(None, 3, 2, 1))}
+    assert diag[None].pure is False
+    assert diag[3].pure is False
+    assert diag[2].pure is False
+    assert diag[1].pure is True
+    assert diag[1].value == pytest.approx(-0.2, abs=1e-9)
+    # 2-decimal rounding barely moves the equilibrium mix...
+    np.testing.assert_allclose(diag[2].row, diag[None].row, atol=5e-3)
+    np.testing.assert_allclose(diag[2].col, diag[None].col, atol=5e-3)
+    # ...while 1-decimal rounding collapses the support from two actions to one.
+    assert int((diag[None].row > 1e-6).sum()) == 2
+    assert int((diag[1].row > 1e-6).sum()) == 1
+
+
+def test_is_rounding_artifact_flags_case3s_one_decimal_collapse():
+    case3 = np.array([
+        [-0.139279, -0.17079, -0.81, -0.211001],
+        [0.173204, -0.185032, -0.499883, -0.18094],
+        [-0.099163, -0.156678, -0.14101, -0.211001],
+        [-0.109755, -0.17079, -0.81, -0.166529],
+    ])
+    diag = {d.decimals: d for d in rounding_diagnostic(case3, decimals=(None, 2, 1))}
+    # 2 decimals barely moves the split within the same two-action support...
+    assert is_rounding_artifact(diag[None], diag[2]) is False
+    # ...1 decimal collapses pure/mixed classification and the support itself.
+    assert is_rounding_artifact(diag[None], diag[1]) is True
+
+
+def test_is_rounding_artifact_ignores_percentage_drift_within_the_same_support():
+    # Same two actions carry weight before and after rounding, just a
+    # slightly different split -- not an artifact.
+    full = RoundingDiagnostic(None, False, 0.0, np.array([0.635, 0.365, 0.0, 0.0]),
+                               np.array([0.5, 0.5, 0.0, 0.0]))
+    rounded = RoundingDiagnostic(2, False, 0.0, np.array([0.667, 0.333, 0.0, 0.0]),
+                                  np.array([0.5, 0.5, 0.0, 0.0]))
+    assert is_rounding_artifact(full, rounded) is False
+
+
+def test_is_rounding_artifact_flags_a_pure_saddles_action_flip():
+    # Case 1: classification stays "pure" at 1 decimal, but the saddle
+    # action itself moves from U to L -- still a genuine artifact.
+    full = RoundingDiagnostic(None, True, 0.5, np.array([1.0, 0.0, 0.0, 0.0]),
+                               np.array([1.0, 0.0, 0.0, 0.0]))
+    rounded = RoundingDiagnostic(1, True, 0.5, np.array([0.0, 0.0, 1.0, 0.0]),
+                                  np.array([1.0, 0.0, 0.0, 0.0]))
+    assert is_rounding_artifact(full, rounded) is True
 
 
 # -------------------------------------------------------------- subgame shape

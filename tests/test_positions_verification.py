@@ -106,16 +106,23 @@ def test_case13_and_case14_indifference_matches_positions_pdf_exactly(solved):
 
 
 def test_case3_joint_support_reduction_reproduces_the_full_equilibrium(solved):
-    """docs/positions.md's Case 3 "reading the matrix" table reduces the
-    4x4 game to carrier{L, R} x defender{D, L} -- each player's own
-    equilibrium support, not an arbitrary pair of actions. That reduction
-    is only valid if the 2x2 game, solved entirely on its own, reproduces
-    the same equilibrium as the full game -- checked directly here, not
-    just asserted in prose. (An earlier version of that table used
-    carrier{L, R} x defender{L, R} -- mixing one of the defender's real
-    actions, L, with one it never plays, R, while omitting D. Solving that
-    version does not reproduce the real equilibrium; solved below to show
-    exactly why the corrected reduction was necessary.)"""
+    """A standalone mathematical check, not tied to any currently-displayed
+    table: restricting Case 3's 4x4 game to carrier{L, R} x defender{D, L}
+    (each player's own equilibrium support, not an arbitrary pair of
+    actions) and solving that 2x2 game entirely on its own reproduces the
+    same equilibrium as the full game. An earlier version of
+    docs/positions.md displayed exactly this reduction as the primary
+    explanation of Case 3; per the project's Sept 2026 research meeting
+    feedback ("write down the whole game" -- a reduced game invites a
+    circular-looking argument, solve the full 4x4 first and explain the
+    equilibrium from there), that display was removed from the main text.
+    The reduction itself was never wrong, only its use as the headline
+    explanation -- kept here as a regression check on the underlying fact,
+    since it is still true and still useful to know. (Also shows that an
+    earlier, genuinely invalid version of the same idea -- carrier{L, R} x
+    defender{L, R}, mixing one of the defender's real actions, L, with one
+    it never plays, R, while omitting D -- does NOT reproduce the real
+    equilibrium, which is exactly why that particular reduction was wrong.)"""
     solver, result = solved
     state = (1, 1, 1, 0, 1)
     M = solver._matrix(state, result.values)  # rows=player0(defender), cols=player1(carrier)
@@ -173,10 +180,10 @@ _ALL_CASE_MATRICES = {
     3: {
         "state": (1, 1, 1, 0, 1),
         "M": [
-            [0.139279, -0.173204, 0.099163, 0.109755],
-            [0.17079, 0.185032, 0.156678, 0.17079],
-            [0.81, 0.499883, 0.14101, 0.81],
-            [0.211001, 0.18094, 0.211001, 0.166529],
+            [-0.139279, -0.17079, -0.81, -0.211001],
+            [0.173204, -0.185032, -0.499883, -0.18094],
+            [-0.099163, -0.156678, -0.14101, -0.211001],
+            [-0.109755, -0.17079, -0.81, -0.166529],
         ],
     },
     4: {
@@ -200,28 +207,28 @@ _ALL_CASE_MATRICES = {
     6: {
         "state": (1, 1, 2, 0, 1),
         "M": [
-            [0.316945, 0.316945, 0.247069, -0.178022],
-            [0.211001, 0.211001, 0.211001, 0.166529],
-            [0.17079, 0.044962, 0.156678, 0.17079],
-            [0.182213, 0.182213, 0.182213, 0.135158],
+            [-0.316945, -0.211001, -0.17079, -0.182213],
+            [-0.316945, -0.211001, -0.044962, -0.182213],
+            [-0.247069, -0.211001, -0.156678, -0.182213],
+            [0.178022, -0.166529, -0.17079, -0.135158],
         ],
     },
     7: {
         "state": (5, 1, 6, 1, 1),
         "M": [
-            [0.085599, 0.478297, 0.099198, 0.28567],
-            [0.10926, 0.07633, 0.085599, 0.085331],
-            [0.08248, 0.187381, -0.070696, -0.108448],
-            [0.103381, 0.103381, 0.083738, 0.084811],
+            [-0.085599, -0.10926, -0.08248, -0.103381],
+            [-0.478297, -0.07633, -0.187381, -0.103381],
+            [-0.099198, -0.085599, 0.070696, -0.083738],
+            [-0.28567, -0.085331, 0.108448, -0.084811],
         ],
     },
     8: {
         "state": (2, 3, 3, 3, 1),
         "M": [
-            [-0.011944, 0.005242, 0.015879, -0.041869],
-            [0.07235, -0.022044, 0.008641, 0.000279],
-            [-0.018582, -0.080389, 0.018582, -0.041869],
-            [-0.007062, -0.025575, -0.006356, -0.039427],
+            [0.011944, -0.07235, 0.018582, 0.007062],
+            [-0.005242, 0.022044, 0.080389, 0.025575],
+            [-0.015879, -0.008641, -0.018582, 0.006356],
+            [0.041869, -0.000279, 0.041869, 0.039427],
         ],
     },
     9: {
@@ -236,10 +243,10 @@ _ALL_CASE_MATRICES = {
     10: {
         "state": (0, 2, 2, 2, 1),
         "M": [
-            [0.247069, 0.330151, 0.271536, 0.316945],
-            [0.330151, 0.247069, 0.271536, 0.316945],
-            [0.366481, 0.366481, 0.330151, 0.109966],
-            [0.228062, 0.228062, 0.219944, 0.205131],
+            [-0.247069, -0.330151, -0.366481, -0.228062],
+            [-0.330151, -0.247069, -0.366481, -0.228062],
+            [-0.271536, -0.271536, -0.330151, -0.219944],
+            [-0.316945, -0.316945, -0.109966, -0.205131],
         ],
     },
     11: {
@@ -254,19 +261,19 @@ _ALL_CASE_MATRICES = {
     12: {
         "state": (1, 3, 1, 4, 1),
         "M": [
-            [-0.273301, 0.00596, 0.001041, 0.069053],
-            [-0.03143, 0.068847, 0.056711, 0.449923],
-            [0.396398, 0.083433, 0.039473, 0.449665],
-            [0.039469, 0.020201, 0.0153, 0.091802],
+            [0.273301, 0.03143, -0.396398, -0.039469],
+            [-0.00596, -0.068847, -0.083433, -0.020201],
+            [-0.001041, -0.056711, -0.039473, -0.0153],
+            [-0.069053, -0.449923, -0.449665, -0.091802],
         ],
     },
     13: {
         "state": (1, 1, 3, 1, 1),
         "M": [
-            [0.205131, 0.283411, 0.228062, 0.262831],
-            [0.182213, 0.182213, 0.182213, 0.135158],
-            [0.316945, 0.316945, 0.247069, 0.049186],
-            [0.182213, 0.182213, 0.182213, 0.162618],
+            [-0.205131, -0.182213, -0.316945, -0.182213],
+            [-0.283411, -0.182213, -0.316945, -0.182213],
+            [-0.228062, -0.182213, -0.247069, -0.182213],
+            [-0.262831, -0.135158, -0.049186, -0.162618],
         ],
     },
     14: {
@@ -281,17 +288,14 @@ _ALL_CASE_MATRICES = {
 }
 
 
-def _oriented_matrix(solver, state, values):
-    """rows = carrier, cols = defender -- same convention as
-    scripts/positions.py's own `_oriented_matrix`, duplicated here rather
-    than imported so this test does not depend on the doc-generation script."""
-    M = solver._matrix(state, values)
-    return M if state[4] == 0 else -M.T
-
-
 def _check_case(solver, result, case):
+    """rows = player 0, cols = player 1, player 0's payoff -- fixed for
+    every state, never reoriented by who has the ball, matching
+    `docs/positions.md`'s own printed convention (and `scripts/positions.py`'s
+    `_raw_matrix`, not duplicated here since no transform is needed: this
+    IS what `solver._matrix` already returns)."""
     state, expected_M = case["state"], np.array(case["M"])
-    actual_M = _oriented_matrix(solver, state, result.values)
+    actual_M = solver._matrix(state, result.values)
     np.testing.assert_allclose(actual_M, expected_M, atol=5e-6)
 
 

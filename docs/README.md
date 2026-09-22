@@ -32,10 +32,14 @@ technical answer, start with **[report.pdf](report.pdf)**
   fourteen player-position cases, one per canonical equilibrium-support shape
   and per mixing mechanism studied in the project (move order, tackle,
   reward, slip), including the exact board position drawn at the meeting,
-  next to the full `4x4` Q matrix redrawn as a node-and-arrow best-response
-  graph (`make positions`, `make positions-pdf`) -- plus the
-  minimax/always-left/random/best-response policy matrix
-  (`make positions-matrix`).
+  next to the full `4x4` Q matrix -- rows and columns fixed as player 0 and
+  player 1 for every state, never reoriented by who has the ball -- redrawn
+  as a node-and-arrow best-response graph (`make positions`,
+  `make positions-pdf`); Case 3 also carries a rounding diagnostic (the
+  same matrix solved again at 3/2/1-decimal precision -- 2 decimals
+  preserves the exact mix, 1 decimal manufactures a pure saddle that isn't
+  really there) -- plus the minimax/always-left/random/best-response policy
+  matrix (`make positions-matrix`).
 - [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
   (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
   structure, and the value of mixing (`make mixing`).
@@ -56,11 +60,15 @@ technical answer, start with **[report.pdf](report.pdf)**
 - [assumptions.md](assumptions.md) — the A10 geometry instance and which of its
   collision rules are quoted vs. interpreted.
 - [explorer.html](explorer.html) — interactive board: place both players
-  anywhere on any of the four boards from positions.md and get the live
+  anywhere on any of the five boards from positions.md and get the live
   equilibrium policy and exact Q matrix (table or best-response graph) for
-  all 6,720 states. A React app (source in [../site/](../site/), data from
-  `make explorer-data` / `scripts/explorer_data.py`, built with `make site`
-  into this page and [index.html](index.html) — see `site/README.md`).
+  all 9,100 states, plus that state's own rounding diagnostic (same
+  3/2/1-decimal re-solve as positions.md and numerics.md, shown whenever
+  rounding actually changes the classification or support — most states
+  report that it doesn't). A React app (source in [../site/](../site/), data
+  from `make explorer-data` / `scripts/explorer_data.py`, built with
+  `make site` into this page and [index.html](index.html) — see
+  `site/README.md`).
 - [gallery.html](gallery.html) — every policy and value surface, drawn
   (`make gallery`, from `soccer_nash/viz.py`).
 - [figures/](figures/) — SVGs from `make figures` (`soccer_nash/render.py`).
@@ -90,8 +98,11 @@ technical answer, start with **[report.pdf](report.pdf)**
 - `experiments/phase_diagram.csv` + `figures/png/phase_diagram.png` — the
   goal-width × board-size phase diagram (`make phase`).
 - [numerics.md](numerics.md) — why the LP returns pure strategies, the value
-  bracket, why 0.1-rounding is never safe, and value-iteration vs.
-  freeze-then-iterate — all with figures (`scripts/numerics.py --figures`).
+  bracket, why 0.1-rounding is never safe (10 of the 13 genuinely mixed
+  cases on [positions.md](positions.md) flip to a spurious pure saddle at
+  1-decimal precision, checked case by case with `rounding_diagnostic`),
+  and value-iteration vs. freeze-then-iterate — all with figures
+  (`scripts/numerics.py --figures`).
 - [degeneracy.md](degeneracy.md) — not every fractional LP output is a forced
   mixture: 64 of the 94 no-pure-saddle states are a unique forced mix, 30 have
   a zero-weight action tied with the reported support (`make degeneracy`).

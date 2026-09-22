@@ -7,13 +7,23 @@ zero-probability action -- next to the full 4x4 stage-game Q matrix (the
 *complete* action grid (every case is the full `{U,D,L,R} x {U,D,L,R}`
 matrix, never reduced), an arrow toward whichever cell either player would
 rather deviate to. A pure saddle is the one node with no outgoing arrow; a
-matching-pennies game has every node pointing somewhere, so the arrows chase
-each other around a closed best-response cycle -- no pure action pair is
-stable.
+matching-pennies game has no such node -- no joint action is simultaneously
+stable for both players, which is the substance of the mixed equilibrium
+(every support action ties in expected payoff against the opponent's actual
+mix), not merely that the arrows visually cycle.
 
 A player's *support* is the set of actions it assigns positive probability
-in equilibrium. Twelve cases. Across the whole project there are exactly
-four *canonical* support shapes `(carrier actions, defender actions)` once
+in equilibrium. Fourteen cases; the matrix printed for each one keeps rows
+fixed as player 0's actions and columns fixed as player 1's, for every
+state, regardless of who has the ball at that state -- which player is
+the carrier is reported alongside the matrix, not used to rearrange it
+(an earlier version of this script did reorient rows to the carrier for a
+cleaner-looking argument; per the project's own research meetings, that
+made a matrix silently transpose between examples, which is exactly what
+was confusing a reader tracking player 0 and player 1 physically). Across
+the whole project there are still exactly four *canonical* support shapes
+`(carrier actions, defender actions)` in the *aggregate* classification
+used elsewhere (`soccer_nash/templates.py`, `docs/templates.md`) once
 every stage game is reoriented so rows are always the carrier's actions --
 `(2,2)`: 68 states, `(3,3)`: 4, `(2,1)`: 14, `(3,2)`: 8, 94 total -- and the
 defender's support is **never larger** than the carrier's, in any of them.
@@ -67,11 +77,13 @@ noise, and movement slip on an otherwise-always-pure single-cell goal):
 
     python scripts/positions.py
 
-Writes `docs/figures/gallery/positions.svg` (all twelve, composite) plus one
-`docs/figures/gallery/positions_caseNN.svg` per case (board and Q matrix,
-sized to read on its own), and prints each state's exact Q matrix, policy,
-action support, and the successor-state coordinates behind every payoff
-(`game.transitions()`, reoriented the same way as the Q matrix).
+Writes `docs/figures/gallery/positions.svg` (all fourteen, composite) plus
+one `docs/figures/gallery/positions_caseNN.svg` per case (board and Q
+matrix, sized to read on its own), and prints each state's exact Q matrix,
+policy, action support, the successor-state coordinates behind every
+payoff (`game.transitions()`, same fixed player-0/player-1 orientation as
+the Q matrix), and a rounding diagnostic (the same matrix solved again at
+several rounding precisions, per the project's own research meetings).
 """
 
 from __future__ import annotations
@@ -87,6 +99,7 @@ from soccer_nash.certificate import certify_game
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame
 from soccer_nash.geometry import features
 from soccer_nash.nash_q import NashQIteration
+from soccer_nash.numerics import rounding_diagnostic
 from soccer_nash.symmetry import mirror_state
 from soccer_nash.viz import bestresponse_graph_svg, panel_svg, policy_svg
 
@@ -97,13 +110,19 @@ _ACT = ["U", "D", "L", "R"]
 CANON = {"width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "random"}
 
 
-def _oriented_matrix(solver, state, values):
-    """Reorient so rows are always the *carrier's* (maximising) actions and
-    columns the defender's, regardless of which player id carries -- matches
-    `soccer_nash.numerics._first_2x2_mixed`'s convention, so a reader never
-    has to mentally swap row/col meaning between states."""
-    M = solver._matrix(state, values)
-    return M if state[4] == 0 else -M.T
+def _raw_matrix(solver, state, values):
+    """Player 0's payoff, rows always player 0's actions, columns always
+    player 1's -- fixed for every state, never reoriented by who currently
+    has the ball. An earlier version of this function reoriented rows to
+    always be the *carrier's* actions (regardless of player id) for a
+    cleaner-looking indifference argument; per the project's Sept research
+    meetings, that reorientation is exactly what was making the matrices
+    hard to follow against a whiteboard tracking player 0 and player 1
+    physically -- "Right" should not silently become a column action
+    between one example and the next just because the ball changed hands.
+    Which player is the carrier at a given state is still reported
+    separately, alongside the fixed matrix, not used to rearrange it."""
+    return solver._matrix(state, values)
 
 
 def _solve(**kw):
@@ -118,16 +137,13 @@ def _solve(**kw):
 
 
 def _successor_grid(g: SoccerGame, state) -> list[list[list[tuple[float, tuple, tuple]]]]:
-    """The 4x4 grid of `game.transitions()` outcome lists, reoriented so rows
-    are the carrier's action and columns the defender's -- same convention as
-    `_oriented_matrix`, minus the payoff negation (coordinates aren't signed).
-    Each cell is a list of `(probability, next_state, reward)`; length > 1
-    means the outcome depends on move order (random/tackle/slip)."""
-    raw = [[g.transitions(state, MOVE_ACTIONS[i], MOVE_ACTIONS[j]) for j in range(4)]
-           for i in range(4)]
-    if state[4] == 0:
-        return raw
-    return [[raw[j][i] for j in range(4)] for i in range(4)]
+    """The 4x4 grid of `game.transitions()` outcome lists, rows always
+    player 0's action and columns always player 1's -- same fixed
+    convention as `_raw_matrix`. Each cell is a list of `(probability,
+    next_state, reward)`; length > 1 means the outcome depends on move
+    order (random/tackle/slip)."""
+    return [[g.transitions(state, MOVE_ACTIONS[i], MOVE_ACTIONS[j]) for j in range(4)]
+            for i in range(4)]
 
 
 def _support(policy_vec, tol: float = 1e-6) -> tuple[str, ...]:
@@ -139,18 +155,23 @@ def _support(policy_vec, tol: float = 1e-6) -> tuple[str, ...]:
     return tuple(_ACT[i] for i, p in enumerate(policy_vec) if p > tol)
 
 
-def _indifference(M, carrier_pol, defender_pol):
+def _indifference(M, p0_pol, p1_pol, carrier_is_p0: bool):
     """Every action's expected payoff against the *opponent's actual mix* --
-    the arithmetic behind "indifferent", not just "the arrows cycle". For the
-    carrier this is `M @ defender_pol` (its expected payoff per row); for the
-    defender it's `carrier_pol @ M` (the carrier's expected payoff per
-    column, which the defender is trying to minimise). A support action's
-    value should match every other support action's to solver precision; a
-    non-support action should be strictly worse (lower for the carrier,
-    higher for the defender)."""
-    e_carrier = M @ defender_pol
-    e_defender = carrier_pol @ M
-    return e_carrier, e_defender
+    the arithmetic behind "indifferent", not just "the arrows cycle". `M` is
+    always player 0's payoff (rows = player 0, cols = player 1, the fixed
+    convention). `e_p0 = M @ p1_pol` is player 0's expected payoff per row,
+    against player 1's actual mix; `e_p1 = -(p0_pol @ M)` is player 1's own
+    expected payoff per column (`M @` gives *player 0's* payoff per column,
+    negate for player 1's). Returned as `(e_carrier, e_defender)` -- carrier's
+    payoff per its own action, and carrier's payoff per the defender's
+    action (what the defender is trying to minimise) -- by picking out
+    whichever of `(e_p0, e_p1)` belongs to the carrier, sign-corrected if
+    the carrier is player 1 (whose payoff is `-M`, not `M`)."""
+    e_p0 = M @ p1_pol
+    e_p1 = -(p0_pol @ M)
+    if carrier_is_p0:
+        return e_p0, p0_pol @ M
+    return e_p1, -(M @ p1_pol)
 
 
 CASE_DIR = pathlib.Path("docs/figures/gallery")
@@ -164,36 +185,49 @@ def _report(label, g, solver, r, state, panels, case_no=None):
     the Q matrix (why), sized to be readable on its own instead of only as
     one tile in the full 12-case composite. The whole 4x4 grid is always
     shown -- no dominance reduction -- so every case is directly comparable."""
-    M = _oriented_matrix(solver, state, r.values)
+    M = _raw_matrix(solver, state, r.values)
     cert = certify_game(M)
+    carrier_is_p0 = state[4] == 0
+    carrier_id, defender_id = (0, 1) if carrier_is_p0 else (1, 0)
     print(f"state {state} -- {label}")
+    print(f"  player 0 at ({state[0]}, {state[1]}) -- player 1 at ({state[2]}, {state[3]}) "
+          f"-- player {carrier_id} has the ball (carrier); player {defender_id} defends")
     if cert.kind == "pure":
         print(f"  pure equilibrium, saddle at {_ACT[cert.saddle[0]]}/{_ACT[cert.saddle[1]]}")
     else:
         print(f"  mixed equilibrium, no pure saddle, gap {cert.gap:.4f}")
     print("  Q matrix -- the stage-game payoff table at this one state, built "
           "from the exact solve, not the iterative approximation to it "
-          "(carrier's payoff; rows = carrier, cols = defender):")
+          "(player 0's payoff; rows = player 0, cols = player 1, fixed for "
+          "every state regardless of who has the ball):")
     print("        " + "".join(f"{a:>11}" for a in _ACT))
     for i, a in enumerate(_ACT):
         print(f"    {a:>3} " + "".join(f"{M[i, j]:>11.6f}" for j in range(4)))
-    carrier_pol = r.row_policy[state] if state[4] == 0 else r.col_policy[state]
-    defender_pol = r.col_policy[state] if state[4] == 0 else r.row_policy[state]
-    print(f"  row_policy (p0) = {np.round(r.row_policy[state], 6).tolist()}")
-    print(f"  col_policy (p1) = {np.round(r.col_policy[state], 6).tolist()}")
-    print(f"  carrier support = {_support(carrier_pol)}   "
-          f"defender support = {_support(defender_pol)}")
-    e_carrier, e_defender = _indifference(M, carrier_pol, defender_pol)
+    p0_pol, p1_pol = r.row_policy[state], r.col_policy[state]
+    carrier_pol = p0_pol if carrier_is_p0 else p1_pol
+    defender_pol = p1_pol if carrier_is_p0 else p0_pol
+    print(f"  row_policy (p0) = {np.round(p0_pol, 6).tolist()}")
+    print(f"  col_policy (p1) = {np.round(p1_pol, 6).tolist()}")
+    print(f"  carrier (player {carrier_id}) support = {_support(carrier_pol)}   "
+          f"defender (player {defender_id}) support = {_support(defender_pol)}")
+    e_carrier, e_defender = _indifference(M, p0_pol, p1_pol, carrier_is_p0)
     print("  E[action] against the opponent's actual mix "
           "(support actions should tie; others should lose):")
     print("    carrier  " + "  ".join(f"{a}={v:+.6f}" for a, v in zip(_ACT, e_carrier)))
     print("    defender " + "  ".join(f"{a}={v:+.6f}" for a, v in zip(_ACT, e_defender)))
     print("  Successor states -- (x0, y0, x1, y1, b) reached by each joint action, "
-          "same carrier/defender orientation (2 outcomes = order-dependent):")
+          "rows = player 0, cols = player 1, fixed (2 outcomes = order-dependent):")
     succ = _successor_grid(g, state)
     for i, a in enumerate(_ACT):
         cells = [" | ".join(f"{p:.2f}:{ns}" for p, ns, _r in succ[i][j]) for j in range(4)]
         print(f"    {a:>3} " + "   ".join(cells))
+    print("  Rounding diagnostic -- solve the SAME matrix again after rounding it "
+          "to each precision (not just checking whether classification flips):")
+    for d in rounding_diagnostic(M):
+        tag = "full precision" if d.decimals is None else f"{d.decimals} decimal(s)"
+        kind = "pure" if d.pure else "mixed"
+        print(f"    {tag:>15}: {kind:>5}  value={d.value:+.4f}  "
+              f"p0={np.round(d.row, 4).tolist()}  p1={np.round(d.col, 4).tolist()}")
     print()
 
     board = policy_svg(g, state, r.row_policy, r.col_policy,
@@ -212,7 +246,7 @@ def _web_pair(board_panels, matrix_panels, g, solver, r, state, title):
     single wide row each, unlike the tall board+graph pairs in FIG)."""
     board_panels.append(policy_svg(g, state, r.row_policy, r.col_policy,
                                     value=r.values[state], title=title))
-    M = _oriented_matrix(solver, state, r.values)
+    M = _raw_matrix(solver, state, r.values)
     matrix_panels.append(bestresponse_graph_svg(M, _ACT, _ACT,
                                                   title=f"Q matrix {state}"))
 
