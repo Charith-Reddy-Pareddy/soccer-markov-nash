@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from soccer_nash.game import SoccerGame
+from soccer_nash.matrix_games import solve_zero_sum
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.numerics import epsilon_equilibrium
 
@@ -102,3 +103,42 @@ def test_case13_and_case14_indifference_matches_positions_pdf_exactly(solved):
     p, q = result.row_policy[case14], result.col_policy[case14]
     np.testing.assert_allclose(p, [0.675, 0.325, 0.0, 0.0], atol=5e-4)
     np.testing.assert_allclose(q, [0.0, 0.0, 1.0, 0.0], atol=5e-4)
+
+
+def test_case3_joint_support_reduction_reproduces_the_full_equilibrium(solved):
+    """docs/positions.md's Case 3 "reading the matrix" table reduces the
+    4x4 game to carrier{L, R} x defender{D, L} -- each player's own
+    equilibrium support, not an arbitrary pair of actions. That reduction
+    is only valid if the 2x2 game, solved entirely on its own, reproduces
+    the same equilibrium as the full game -- checked directly here, not
+    just asserted in prose. (An earlier version of that table used
+    carrier{L, R} x defender{L, R} -- mixing one of the defender's real
+    actions, L, with one it never plays, R, while omitting D. Solving that
+    version does not reproduce the real equilibrium; solved below to show
+    exactly why the corrected reduction was necessary.)"""
+    solver, result = solved
+    state = (1, 1, 1, 0, 1)
+    M = solver._matrix(state, result.values)  # rows=player0(defender), cols=player1(carrier)
+    acts = ["U", "D", "L", "R"]
+
+    def idx(a: str) -> int:
+        return acts.index(a)
+
+    # carrier{L, R} x defender{D, L}: rows=carrier, cols=defender, so
+    # transpose-and-negate M (player0's payoff) into carrier's payoff.
+    correct = np.array([
+        [-M[idx("D"), idx("L")], -M[idx("L"), idx("L")]],
+        [-M[idx("D"), idx("R")], -M[idx("L"), idx("R")]],
+    ])
+    _value, carrier_p, defender_p = solve_zero_sum(correct)
+    np.testing.assert_allclose(carrier_p, [0.077, 0.923], atol=5e-3)
+    np.testing.assert_allclose(defender_p, [0.18, 0.82], atol=5e-3)
+
+    # The earlier, invalid carrier{L, R} x defender{L, R} version does NOT
+    # reproduce the real equilibrium -- confirms the correction was real.
+    invalid = np.array([
+        [-M[idx("L"), idx("L")], -M[idx("R"), idx("L")]],
+        [-M[idx("L"), idx("R")], -M[idx("R"), idx("R")]],
+    ])
+    _value, bad_carrier_p, bad_defender_p = solve_zero_sum(invalid)
+    assert not np.allclose(bad_carrier_p, [0.077, 0.923], atol=5e-3)

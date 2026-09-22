@@ -218,27 +218,32 @@ indifference class.
 
 **Why indifferent:** Carrier `E[L]`=`E[R]`=+0.206, strictly above `E[D]`=+0.162 and `E[U]`=+0.050. Defender `E[D]`=`E[L]`=+0.206, strictly below `E[R]`=+0.216 and `E[U]`=+0.257.
 
-Isolate the part of the matrix the "why not just chase Right" question turns
-on, before looking at the full grid -- the carrier's `{L, R}` against the
-defender's `{L, R}` (holding `U` aside for both, since it is dominated
-regardless):
+Isolate the part of the matrix this equilibrium actually lives on, before
+looking at the full grid: **each player's own equilibrium support**, not
+an arbitrary pair of actions picked for being easy to compare -- the
+carrier's `{L, R}` against the defender's `{D, L}`:
 
-| carrier \ defender | defends L | defends R |
+| carrier \ defender | defends D | defends L |
 |---|---|---|
-| **goes L** | 0.141010 | 0.810000 |
-| **goes R** | 0.211001 | 0.166529 |
+| **goes L** | 0.499883 | 0.141010 |
+| **goes R** | 0.180940 | 0.211001 |
 
-Read a column at a time, not the whole grid at once. Column "defends R": if
-the defender is known to be committing to `R`, the carrier's best reply is
-not `R` (0.166529) but `L` (0.810000) -- a nearly fivefold jump. That is the
-whole mechanism in one number: reacting to the carrier's *current* tendency
-with `R` looks locally correct (0.166529 beats the 0.211001 that `R` would
-concede against `L`), but it is not a stable choice, because it hands the
-carrier a far better reply the instant the carrier notices. The defender's actual
-equilibrium mix (18% `D`, 82% `L`, `R` never played) is what neutralizes
-that jump -- confirmed below against the full `4x4` matrix, since the `D`
-action (left out of this 2x2 view) is part of what makes `L` and `R`
-genuinely tie for the carrier.
+This is a standard, checkable game-theory reduction, not an approximation:
+restrict a zero-sum matrix game to the rows and columns actually used in
+one of its equilibria, and the resulting smaller game has *that same
+equilibrium* as its own. Solved entirely on its own -- no reference to `U`
+or to the defender's `R`, which is not part of the equilibrium at all --
+this `2x2` game's mixed equilibrium comes out to carrier `{L: 7.7%,
+R: 92.3%}`, defender `{D: 18%, L: 82%}`, exactly the numbers reported
+above, to the last decimal.
+
+(An earlier version of this table used `{L, R}` on *both* sides instead of
+matching each player's actual support. That mixed one of the defender's
+real equilibrium actions, `L`, with one it never plays, `R`, while leaving
+out `D`, the action it actually mixes in -- every number in it was a
+correct Q-value, but the *reduction itself* was not a valid one, since
+solving that game on its own does not reproduce the real equilibrium. This
+is the corrected version.)
 
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
@@ -300,6 +305,19 @@ reply shifts away from `L` toward `R` (92.3% of the mix) -- not because
 `R` is a good attacking move on its own, but because `L` only pays off if
 `(0, 1)` is left open, and the defender's 82% weight on `L` makes sure it
 usually is not.
+
+**This entire case depends on the goal convention.** Everything above
+relies on row `y=0` (where the carrier starts) not being a goal row under
+this project's `goal_rows = (1, 2, 3)`. Under a full-boundary goal
+(`goal_rows = (0, 1, 2, 3, 4)`, every row goal-eligible) this exact state
+is **pure, not mixed**: the carrier's `L` wins in two moves regardless of
+the defender's reply, all four of the defender's actions tie at the same
+value, and there is no guessing game left to play at all -- see
+[generalize.md](generalize.md#a-board-scale-and-goal-shape) for the
+numbers. `goal_rows = (1, 2, 3)` is Littman's own convention and this
+repo's default, confirmed as the better choice for this project, but Case
+3 specifically -- not just the aggregate mixed-state count -- would need
+to be re-derived under a different one.
 
 ## Case 5 — `(0, 0, 2, 0, 0)`: a genuine 3-action mix
 
@@ -632,27 +650,32 @@ indifference class.
 
 **Why indifferent:** Carrier `E[L]`=`E[R]`=+0.206, strictly above `E[D]`=+0.162 and `E[U]`=+0.050. Defender `E[D]`=`E[L]`=+0.206, strictly below `E[R]`=+0.216 and `E[U]`=+0.257.
 
-Isolate the part of the matrix the "why not just chase Right" question turns
-on, before looking at the full grid -- the carrier's `{L, R}` against the
-defender's `{L, R}` (holding `U` aside for both, since it is dominated
-regardless):
+Isolate the part of the matrix this equilibrium actually lives on, before
+looking at the full grid: **each player's own equilibrium support**, not
+an arbitrary pair of actions picked for being easy to compare -- the
+carrier's `{L, R}` against the defender's `{D, L}`:
 
-| carrier \ defender | defends L | defends R |
+| carrier \ defender | defends D | defends L |
 |---|---|---|
-| **goes L** | 0.141010 | 0.810000 |
-| **goes R** | 0.211001 | 0.166529 |
+| **goes L** | 0.499883 | 0.141010 |
+| **goes R** | 0.180940 | 0.211001 |
 
-Read a column at a time, not the whole grid at once. Column "defends R": if
-the defender is known to be committing to `R`, the carrier's best reply is
-not `R` (0.166529) but `L` (0.810000) -- a nearly fivefold jump. That is the
-whole mechanism in one number: reacting to the carrier's *current* tendency
-with `R` looks locally correct (0.166529 beats the 0.211001 that `R` would
-concede against `L`), but it is not a stable choice, because it hands the
-carrier a far better reply the instant the carrier notices. The defender's actual
-equilibrium mix (18% `D`, 82% `L`, `R` never played) is what neutralizes
-that jump -- confirmed below against the full `4x4` matrix, since the `D`
-action (left out of this 2x2 view) is part of what makes `L` and `R`
-genuinely tie for the carrier.
+This is a standard, checkable game-theory reduction, not an approximation:
+restrict a zero-sum matrix game to the rows and columns actually used in
+one of its equilibria, and the resulting smaller game has *that same
+equilibrium* as its own. Solved entirely on its own -- no reference to `U`
+or to the defender's `R`, which is not part of the equilibrium at all --
+this `2x2` game's mixed equilibrium comes out to carrier `{L: 7.7%,
+R: 92.3%}`, defender `{D: 18%, L: 82%}`, exactly the numbers reported
+above, to the last decimal.
+
+(An earlier version of this table used `{L, R}` on *both* sides instead of
+matching each player's actual support. That mixed one of the defender's
+real equilibrium actions, `L`, with one it never plays, `R`, while leaving
+out `D`, the action it actually mixes in -- every number in it was a
+correct Q-value, but the *reduction itself* was not a valid one, since
+solving that game on its own does not reproduce the real equilibrium. This
+is the corrected version.)
 
 ![Case 3 board position and Q matrix graph.](figures/png/positions_case03.png)
 
@@ -714,6 +737,19 @@ reply shifts away from `L` toward `R` (92.3% of the mix) -- not because
 `R` is a good attacking move on its own, but because `L` only pays off if
 `(0, 1)` is left open, and the defender's 82% weight on `L` makes sure it
 usually is not.
+
+**This entire case depends on the goal convention.** Everything above
+relies on row `y=0` (where the carrier starts) not being a goal row under
+this project's `goal_rows = (1, 2, 3)`. Under a full-boundary goal
+(`goal_rows = (0, 1, 2, 3, 4)`, every row goal-eligible) this exact state
+is **pure, not mixed**: the carrier's `L` wins in two moves regardless of
+the defender's reply, all four of the defender's actions tie at the same
+value, and there is no guessing game left to play at all -- see
+[generalize.md](generalize.md#a-board-scale-and-goal-shape) for the
+numbers. `goal_rows = (1, 2, 3)` is Littman's own convention and this
+repo's default, confirmed as the better choice for this project, but Case
+3 specifically -- not just the aggregate mixed-state count -- would need
+to be re-derived under a different one.
 
 ## Case 4 — `(0, 0, 1, 1, 0)`: the corner duel
 

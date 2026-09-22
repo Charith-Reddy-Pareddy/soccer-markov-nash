@@ -19,9 +19,30 @@ goals that sit against a wall or skip a row:
   `(0, 2, 4)` with two gaps, still produce mixed stage games. What counts is
   that the carrier has two or more scoring cells the defender cannot cover at
   once, not that the cells touch.
+- **A goal spanning the entire boundary -- no non-goal rows at all --
+  still fits the switch, but changes *which* states are mixed, not just
+  how many.** On the canonical `7x5` board, `goal_rows = (0, 1, 2, 3, 4)`
+  gives 100 mixed stage games out of 2380 (4.20%), close to the 94
+  (3.95%) that this project's own `goal_rows = (1, 2, 3)` gives -- but the
+  *set* is not simply a superset or subset of the other. `(1, 1, 1, 0,
+  1)` -- Case 3 on [positions.md](positions.md), that page's flagship
+  L/R-indifference example -- is **mixed under `(1, 2, 3)` and pure under
+  `(0, 1, 2, 3, 4)`.** With every row goal-eligible, the carrier no longer
+  has to climb into a goal row before a run means anything -- from this
+  exact state, `L` wins in two moves regardless of what the defender does:
+  all four of the defender's actions tie at the same value (`-0.9`)
+  against it, a saddle so flat that which one the solver reports as "the"
+  pure choice (`U`, in this solve) is arbitrary among all four. Which
+  convention to use is a genuine modeling choice, not a detail --
+  `goal_rows = (1, 2, 3)` is Littman's own and this repo's default, but a
+  reader applying this page's specific case studies under a different
+  goal convention should expect individual states, not just aggregate
+  statistics, to change classification.
 
-So within the random-move-order family the switch is robust to board size,
-board aspect ratio, and goal placement.
+So within the random-move-order family the switch itself -- one goal cell
+never mixes, two or more sometimes does -- is robust to board size, board
+aspect ratio, and goal placement. Which *specific* states end up mixed is
+not similarly robust to the goal convention.
 
 ## B. A different kind of stochasticity breaks the switch
 

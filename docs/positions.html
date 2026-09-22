@@ -349,35 +349,37 @@ a vertical one.</span></p>
 <p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
-<p>Isolate the part of the matrix the &ldquo;why not just chase Right&rdquo;
-question turns on, before looking at the full grid &mdash; the carrier's
-<span class="mono">{L, R}</span> against the defender's
-<span class="mono">{L, R}</span> (holding <span class="mono">U</span> aside
-for both, since it is dominated regardless):</p>
+<p>Isolate the part of the matrix this equilibrium actually lives on,
+before looking at the full grid: <b>each player's own equilibrium
+support</b>, not an arbitrary pair of actions picked for being easy to
+compare &mdash; the carrier's <span class="mono">{L, R}</span> against the
+defender's <span class="mono">{D, L}</span>:</p>
 <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>defends L</th><th>defends R</th></tr></thead>
+  <thead><tr><th>carrier \ defender</th><th>defends D</th><th>defends L</th></tr></thead>
   <tbody>
-    <tr><td><b>goes L</b></td><td>0.141010</td><td>0.810000</td></tr>
-    <tr><td><b>goes R</b></td><td>0.211001</td><td>0.166529</td></tr>
+    <tr><td><b>goes L</b></td><td>0.499883</td><td>0.141010</td></tr>
+    <tr><td><b>goes R</b></td><td>0.180940</td><td>0.211001</td></tr>
   </tbody>
 </table>
-<p>Read a column at a time, not the whole grid at once. Column &ldquo;defends
-R&rdquo;: if the defender is known to be committing to
-<span class="mono">R</span>, the carrier's best reply is not
-<span class="mono">R</span> (0.166529) but <span class="mono">L</span>
-(0.810000) &mdash; a nearly fivefold jump. That is the whole mechanism in one
-number: reacting to the carrier's <em>current</em> tendency with
-<span class="mono">R</span> looks locally correct (0.166529 beats the
-0.211001 that <span class="mono">R</span> would concede against
-<span class="mono">L</span>), but it is not a stable choice, because it
-hands the carrier a far better reply the instant the carrier notices. The
-defender's actual equilibrium mix (18% <span class="mono">D</span>, 82%
-<span class="mono">L</span>, <span class="mono">R</span> never played) is
-what neutralizes that jump &mdash; confirmed below against the full
-<span class="mono">4&times;4</span> matrix, since the
-<span class="mono">D</span> action (left out of this 2x2 view) is part of
-what makes <span class="mono">L</span> and <span class="mono">R</span>
-genuinely tie for the carrier.</p>
+<p>This is a standard, checkable game-theory reduction, not an
+approximation: restrict a zero-sum matrix game to the rows and columns
+actually used in one of its equilibria, and the resulting smaller game has
+<em>that same equilibrium</em> as its own. Solved entirely on its own
+&mdash; no reference to <span class="mono">U</span> or to the defender's
+<span class="mono">R</span>, which is not part of the equilibrium at all
+&mdash; this <span class="mono">2x2</span> game's mixed equilibrium comes
+out to carrier <span class="mono">{L: 7.7%, R: 92.3%}</span>, defender
+<span class="mono">{D: 18%, L: 82%}</span>, exactly the numbers reported
+above, to the last decimal.</p>
+<p>(An earlier version of this table used <span class="mono">{L, R}</span>
+on <em>both</em> sides instead of matching each player's actual support.
+That mixed one of the defender's real equilibrium actions,
+<span class="mono">L</span>, with one it never plays,
+<span class="mono">R</span>, while leaving out <span class="mono">D</span>,
+the action it actually mixes in &mdash; every number in it was a correct
+Q-value, but the <em>reduction itself</em> was not a valid one, since
+solving that game on its own does not reproduce the real equilibrium. This
+is the corrected version.)</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -405,6 +407,60 @@ genuinely tie for the carrier.</p>
     <tr><td><b>R</b></td><td>(1,2,2,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
   </tbody>
 </table>
+<p><b>Why not defend by moving right instead?</b> The natural reading of
+this state &mdash; player 1 has the ball right next to player 0 &mdash; is
+"close the distance," which on this board means <span class="mono">R</span>,
+not <span class="mono">L</span>. That reading misses one board detail:
+<span class="mono">goal_rows = (1, 2, 3)</span> on a 5-tall board, so
+<b>row <span class="mono">y=0</span>, where the carrier currently stands,
+is not a scoring row at all</b> &mdash; reaching <span class="mono">x=-1</span>
+from <span class="mono">y=0</span> does not score. The carrier is not a
+live threat yet; it first has to climb into a goal row before a leftward
+run means anything, and the cell it needs is <span class="mono">(0, 1)</span>,
+one step from the defender's own current cell <span class="mono">(1, 1)</span>
+by playing <span class="mono">L</span>. The defender's job here is to deny
+that <em>future</em> cell, not to react to the carrier's <em>current</em>
+one.</p>
+<p>The cost of getting this backwards is not subtle. Taking the worst case
+over the carrier's reply to each pure defender action, straight from the
+<span class="mono">Q</span> matrix above:</p>
+<table class="coordmatrix">
+  <thead><tr><th>defender plays</th><th>worst case for defender</th><th>carrier's best reply</th><th>successor state</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td><b>-0.810</b></td><td>L</td><td>(1,2,0,0,1) -- defender at (1,2), corner wide open</td></tr>
+    <tr><td><b>R</b></td><td><b>-0.810</b></td><td>L</td><td>(2,1,0,0,1) -- defender moves away, same open corner</td></tr>
+    <tr><td><b>L</b></td><td>-0.211</td><td>R</td><td>(0,1,0,0,1) -- defender now sits on the corner itself</td></tr>
+  </tbody>
+</table>
+<p><span class="mono">U</span> and <span class="mono">R</span> are not
+merely worse than <span class="mono">L</span>, they are close to the worst
+possible outcome on this board &mdash; a goal is worth
+<span class="mono">&plusmn;1</span>, and <span class="mono">-0.81</span>
+under <span class="mono">gamma=0.9</span> is what "the opponent is about
+to score" looks like in this game's own value scale. Playing
+<span class="mono">L</span> is not a retreat: the defender ends up standing
+on <span class="mono">(0, 1)</span>, exactly the cell the carrier would
+otherwise have walked into uncontested. Once that cell is covered, the
+carrier's own best reply shifts away from <span class="mono">L</span>
+toward <span class="mono">R</span> (92.3% of the mix) &mdash; not because
+<span class="mono">R</span> is a good attacking move on its own, but
+because <span class="mono">L</span> only pays off if
+<span class="mono">(0, 1)</span> is left open, and the defender's 82%
+weight on <span class="mono">L</span> makes sure it usually is not.</p>
+<p><b>This entire case depends on the goal convention.</b> Everything above
+relies on row <span class="mono">y=0</span> (where the carrier starts) not
+being a goal row under this project's
+<span class="mono">goal_rows = (1, 2, 3)</span>. Under a full-boundary goal
+(<span class="mono">goal_rows = (0, 1, 2, 3, 4)</span>, every row
+goal-eligible) this exact state is <b>pure, not mixed</b>: the carrier's
+<span class="mono">L</span> wins in two moves regardless of the defender's
+reply, all four of the defender's actions tie at the same value, and there
+is no guessing game left to play at all &mdash; see
+<a href="generalize.md">generalize.md</a> for the numbers.
+<span class="mono">goal_rows = (1, 2, 3)</span> is Littman's own convention
+and this repo's default, confirmed as the better choice for this project,
+but Case 3 specifically &mdash; not just the aggregate mixed-state count
+&mdash; would need to be re-derived under a different one.</p>
 </div>
 
 <div class="case">
@@ -716,35 +772,37 @@ a vertical one.</span></p>
 <p class="support-line type-line"><b>Type:</b> forced mixed equilibrium &mdash; both sides' splits are the whole indifference class.</p>
 <p class="support-line"><b>Support:</b> carrier {L, R} (7.7% / 92.3%) &middot; defender {D, L} (18% / 82%)</p>
 <p class="support-line why-line"><b>Why indifferent:</b> Carrier <span class="mono">E[L]</span>=<span class="mono">E[R]</span>=+0.206, strictly above <span class="mono">E[D]</span>=+0.162 and <span class="mono">E[U]</span>=+0.050. Defender <span class="mono">E[D]</span>=<span class="mono">E[L]</span>=+0.206, strictly below <span class="mono">E[R]</span>=+0.216 and <span class="mono">E[U]</span>=+0.257.</p>
-<p>Isolate the part of the matrix the &ldquo;why not just chase Right&rdquo;
-question turns on, before looking at the full grid &mdash; the carrier's
-<span class="mono">{L, R}</span> against the defender's
-<span class="mono">{L, R}</span> (holding <span class="mono">U</span> aside
-for both, since it is dominated regardless):</p>
+<p>Isolate the part of the matrix this equilibrium actually lives on,
+before looking at the full grid: <b>each player's own equilibrium
+support</b>, not an arbitrary pair of actions picked for being easy to
+compare &mdash; the carrier's <span class="mono">{L, R}</span> against the
+defender's <span class="mono">{D, L}</span>:</p>
 <table class="coordmatrix">
-  <thead><tr><th>carrier \ defender</th><th>defends L</th><th>defends R</th></tr></thead>
+  <thead><tr><th>carrier \ defender</th><th>defends D</th><th>defends L</th></tr></thead>
   <tbody>
-    <tr><td><b>goes L</b></td><td>0.141010</td><td>0.810000</td></tr>
-    <tr><td><b>goes R</b></td><td>0.211001</td><td>0.166529</td></tr>
+    <tr><td><b>goes L</b></td><td>0.499883</td><td>0.141010</td></tr>
+    <tr><td><b>goes R</b></td><td>0.180940</td><td>0.211001</td></tr>
   </tbody>
 </table>
-<p>Read a column at a time, not the whole grid at once. Column &ldquo;defends
-R&rdquo;: if the defender is known to be committing to
-<span class="mono">R</span>, the carrier's best reply is not
-<span class="mono">R</span> (0.166529) but <span class="mono">L</span>
-(0.810000) &mdash; a nearly fivefold jump. That is the whole mechanism in one
-number: reacting to the carrier's <em>current</em> tendency with
-<span class="mono">R</span> looks locally correct (0.166529 beats the
-0.211001 that <span class="mono">R</span> would concede against
-<span class="mono">L</span>), but it is not a stable choice, because it
-hands the carrier a far better reply the instant the carrier notices. The
-defender's actual equilibrium mix (18% <span class="mono">D</span>, 82%
-<span class="mono">L</span>, <span class="mono">R</span> never played) is
-what neutralizes that jump &mdash; confirmed below against the full
-<span class="mono">4&times;4</span> matrix, since the
-<span class="mono">D</span> action (left out of this 2x2 view) is part of
-what makes <span class="mono">L</span> and <span class="mono">R</span>
-genuinely tie for the carrier.</p>
+<p>This is a standard, checkable game-theory reduction, not an
+approximation: restrict a zero-sum matrix game to the rows and columns
+actually used in one of its equilibria, and the resulting smaller game has
+<em>that same equilibrium</em> as its own. Solved entirely on its own
+&mdash; no reference to <span class="mono">U</span> or to the defender's
+<span class="mono">R</span>, which is not part of the equilibrium at all
+&mdash; this <span class="mono">2x2</span> game's mixed equilibrium comes
+out to carrier <span class="mono">{L: 7.7%, R: 92.3%}</span>, defender
+<span class="mono">{D: 18%, L: 82%}</span>, exactly the numbers reported
+above, to the last decimal.</p>
+<p>(An earlier version of this table used <span class="mono">{L, R}</span>
+on <em>both</em> sides instead of matching each player's actual support.
+That mixed one of the defender's real equilibrium actions,
+<span class="mono">L</span>, with one it never plays,
+<span class="mono">R</span>, while leaving out <span class="mono">D</span>,
+the action it actually mixes in &mdash; every number in it was a correct
+Q-value, but the <em>reduction itself</em> was not a valid one, since
+solving that game on its own does not reproduce the real equilibrium. This
+is the corrected version.)</p>
 <figure class="case-fig">
   <img src="figures/png/positions_case03.png" alt="Case 3 board position and Q matrix graph.">
   <figcaption>Left: where the players are, with each live action drawn as a probability arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
@@ -772,6 +830,60 @@ genuinely tie for the carrier.</p>
     <tr><td><b>R</b></td><td>(1,2,2,0,1)</td><td>50%: (1,1,2,0,1)<br>50%: (1,0,2,0,1)</td><td>(0,1,2,0,1)</td><td>(2,1,2,0,1)</td></tr>
   </tbody>
 </table>
+<p><b>Why not defend by moving right instead?</b> The natural reading of
+this state &mdash; player 1 has the ball right next to player 0 &mdash; is
+"close the distance," which on this board means <span class="mono">R</span>,
+not <span class="mono">L</span>. That reading misses one board detail:
+<span class="mono">goal_rows = (1, 2, 3)</span> on a 5-tall board, so
+<b>row <span class="mono">y=0</span>, where the carrier currently stands,
+is not a scoring row at all</b> &mdash; reaching <span class="mono">x=-1</span>
+from <span class="mono">y=0</span> does not score. The carrier is not a
+live threat yet; it first has to climb into a goal row before a leftward
+run means anything, and the cell it needs is <span class="mono">(0, 1)</span>,
+one step from the defender's own current cell <span class="mono">(1, 1)</span>
+by playing <span class="mono">L</span>. The defender's job here is to deny
+that <em>future</em> cell, not to react to the carrier's <em>current</em>
+one.</p>
+<p>The cost of getting this backwards is not subtle. Taking the worst case
+over the carrier's reply to each pure defender action, straight from the
+<span class="mono">Q</span> matrix above:</p>
+<table class="coordmatrix">
+  <thead><tr><th>defender plays</th><th>worst case for defender</th><th>carrier's best reply</th><th>successor state</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td><b>-0.810</b></td><td>L</td><td>(1,2,0,0,1) -- defender at (1,2), corner wide open</td></tr>
+    <tr><td><b>R</b></td><td><b>-0.810</b></td><td>L</td><td>(2,1,0,0,1) -- defender moves away, same open corner</td></tr>
+    <tr><td><b>L</b></td><td>-0.211</td><td>R</td><td>(0,1,0,0,1) -- defender now sits on the corner itself</td></tr>
+  </tbody>
+</table>
+<p><span class="mono">U</span> and <span class="mono">R</span> are not
+merely worse than <span class="mono">L</span>, they are close to the worst
+possible outcome on this board &mdash; a goal is worth
+<span class="mono">&plusmn;1</span>, and <span class="mono">-0.81</span>
+under <span class="mono">gamma=0.9</span> is what "the opponent is about
+to score" looks like in this game's own value scale. Playing
+<span class="mono">L</span> is not a retreat: the defender ends up standing
+on <span class="mono">(0, 1)</span>, exactly the cell the carrier would
+otherwise have walked into uncontested. Once that cell is covered, the
+carrier's own best reply shifts away from <span class="mono">L</span>
+toward <span class="mono">R</span> (92.3% of the mix) &mdash; not because
+<span class="mono">R</span> is a good attacking move on its own, but
+because <span class="mono">L</span> only pays off if
+<span class="mono">(0, 1)</span> is left open, and the defender's 82%
+weight on <span class="mono">L</span> makes sure it usually is not.</p>
+<p><b>This entire case depends on the goal convention.</b> Everything above
+relies on row <span class="mono">y=0</span> (where the carrier starts) not
+being a goal row under this project's
+<span class="mono">goal_rows = (1, 2, 3)</span>. Under a full-boundary goal
+(<span class="mono">goal_rows = (0, 1, 2, 3, 4)</span>, every row
+goal-eligible) this exact state is <b>pure, not mixed</b>: the carrier's
+<span class="mono">L</span> wins in two moves regardless of the defender's
+reply, all four of the defender's actions tie at the same value, and there
+is no guessing game left to play at all &mdash; see
+<a href="generalize.md">generalize.md</a> for the numbers.
+<span class="mono">goal_rows = (1, 2, 3)</span> is Littman's own convention
+and this repo's default, confirmed as the better choice for this project,
+but Case 3 specifically &mdash; not just the aggregate mixed-state count
+&mdash; would need to be re-derived under a different one.</p>
 </div>
 
 <div class="case">
