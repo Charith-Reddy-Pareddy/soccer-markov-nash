@@ -127,7 +127,13 @@ technical answer, start with **[report.pdf](report.pdf)**
   state-independent policy, not by converging closer to equilibrium; and
   sharing weights between the two players' networks (fully, via the game's
   own mirror symmetry, or via a shared trunk) makes the result *more*
-  exploitable on average than two fully independent nets, not less
-  (`make policy-gradient`, `make policy-gradient-warmstart`,
-  `make policy-gradient-batch`, `make policy-gradient-architectures`).
+  exploitable on average than two fully independent nets, not less; giving
+  batching a fair update budget instead (8x the data, not 8x fewer updates)
+  stops the collapse and lands roughly even with the correlated baseline;
+  and a learned baseline and an entropy bonus, tested separately, are not
+  the same lever -- entropy sharply cuts exploitability's seed-to-seed
+  variance without fixing convergence, the baseline does much less than
+  either on its own (`make policy-gradient`, `make policy-gradient-warmstart`,
+  `make policy-gradient-batch`, `make policy-gradient-batch-updates`,
+  `make policy-gradient-architectures`, `make policy-gradient-ablation`).
 

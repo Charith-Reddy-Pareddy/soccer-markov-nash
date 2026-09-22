@@ -2,14 +2,26 @@
 self-play REINFORCE's variance, versus one long correlated trajectory cut
 into windows (`scripts/policy_gradient.py`'s existing default)?
 
-Same total environment-step budget for both arms -- this isolates
-decorrelation from "more data": the baseline uses 1 rollout x 2000
-iterations x 100 steps = 200,000 steps; the batched arm uses 8 independent
-rollouts x 250 iterations x 100 steps = 200,000 steps too, so any difference
-in the two report is not just "it saw more data".
+Two ways to match the two arms' budgets, since they trade off against each
+other and either one alone is a defensible comparison:
+
+* ``--match steps`` (default) -- same total environment-step budget: the
+  baseline uses 1 rollout x 2000 iterations x 100 steps = 200,000 steps; the
+  batched arm uses 8 independent rollouts x 250 iterations x 100 steps =
+  200,000 steps too, so batching gets 8x fewer gradient *updates* for the
+  same data. This is the original comparison
+  (`experiments/policy_gradient_batch.csv`) -- it found batching collapses
+  to a state-independent policy, and the natural question is whether that
+  was actually about update *count*, not total data.
+* ``--match updates`` -- same iteration (update) count instead: the batched
+  arm still runs 2000 iterations, each now with 8x the rollouts, so it sees
+  8x the single arm's total environment steps
+  (`experiments/policy_gradient_batch_updates.csv`). This isolates whether
+  batching needed more *updates*, or just more *data per update*, to avoid
+  collapsing.
 
     python scripts/policy_gradient_batch.py --seeds 5
-    # writes experiments/policy_gradient_batch.csv
+    python scripts/policy_gradient_batch.py --seeds 5 --match updates
 """
 
 from __future__ import annotations
@@ -27,7 +39,7 @@ from soccer_nash.game import A10SoccerGame
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.policy_gradient import evaluate_policy_gradient, train_reinforce_selfplay
 
-OUT = pathlib.Path(__file__).resolve().parent.parent / "experiments" / "policy_gradient_batch.csv"
+OUT_DIR = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 FIELDS = [
     "seed",
     "single_train_time_s", "single_row_agree", "single_duality_gap",
@@ -50,10 +62,17 @@ def main() -> None:
     parser.add_argument("--n-rollouts", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--seeds", type=int, default=5)
+    parser.add_argument("--match", choices=["steps", "updates"], default="steps")
     args = parser.parse_args()
 
-    # Same total environment-step budget for both arms.
-    batch_iterations = args.single_iterations // args.n_rollouts
+    if args.match == "steps":
+        # Same total environment-step budget for both arms.
+        batch_iterations = args.single_iterations // args.n_rollouts
+        out = OUT_DIR / "policy_gradient_batch.csv"
+    else:
+        # Same update (iteration) count -- batching sees n_rollouts x the data.
+        batch_iterations = args.single_iterations
+        out = OUT_DIR / "policy_gradient_batch_updates.csv"
 
     game = A10SoccerGame()
 
@@ -100,23 +119,26 @@ def main() -> None:
               f"batch({args.n_rollouts}x) agree {rows[-1]['batch_row_agree']:.3f} "
               f"exploit {rows[-1]['batch_duality_gap']:.3f}")
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    with OUT.open("w", newline="") as f:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()
         w.writerows(rows)
 
+    single_steps = args.single_iterations * args.rollout_len
+    batch_steps = batch_iterations * args.n_rollouts * args.rollout_len
     print(f"\nexact hybrid Nash-Q : {exact.iterations} sweeps, {t_exact:.2f} s")
-    print(f"\nsame {args.single_iterations * args.rollout_len} env steps total, "
-          f"{args.seeds} seeds:")
-    print(f"  single trajectory (1 x {args.single_iterations} x {args.rollout_len}):")
+    print(f"\nmatch={args.match}, {args.seeds} seeds:")
+    print(f"  single trajectory (1 x {args.single_iterations} x {args.rollout_len} "
+          f"= {single_steps} env steps):")
     print(f"    row agreement : {_fmt([r['single_row_agree'] for r in rows])}")
     print(f"    exploitability: {_fmt([r['single_duality_gap'] for r in rows])}")
     print(f"  batched independent rollouts "
-          f"({args.n_rollouts} x {batch_iterations} x {args.rollout_len}):")
+          f"({args.n_rollouts} x {batch_iterations} x {args.rollout_len} "
+          f"= {batch_steps} env steps):")
     print(f"    row agreement : {_fmt([r['batch_row_agree'] for r in rows])}")
     print(f"    exploitability: {_fmt([r['batch_duality_gap'] for r in rows])}")
-    print(f"wrote {OUT.relative_to(OUT.parent.parent)}")
+    print(f"wrote {out.relative_to(out.parent.parent)}")
 
 
 if __name__ == "__main__":

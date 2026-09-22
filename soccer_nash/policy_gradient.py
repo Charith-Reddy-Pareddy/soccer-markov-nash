@@ -80,6 +80,25 @@ class PolicyNet(nn.Module):
             return torch.softmax(logits, dim=-1).numpy()
 
 
+class ValueNet(nn.Module):
+    """5 -> hidden -> hidden -> 1: a state-value baseline for REINFORCE's
+    variance, trained by regression onto the observed return ``G``. Not a
+    critic in the TD sense -- there is no bootstrapping, just ``E[(V(s) -
+    G)^2]``, the plain "reduce variance without changing the expected
+    gradient" baseline."""
+
+    def __init__(self, hidden: int = 64):
+        super().__init__()
+        self.body = nn.Sequential(
+            nn.Linear(5, hidden), nn.ReLU(),
+            nn.Linear(hidden, hidden), nn.ReLU(),
+            nn.Linear(hidden, 1),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.body(x * _SCALE).squeeze(-1)
+
+
 @dataclass
 class ReinforceResult:
     net0: _PolicySource
@@ -180,6 +199,8 @@ def train_reinforce_selfplay(
     seed: int = 0,
     init_net0: PolicyNet | None = None,
     init_net1: PolicyNet | None = None,
+    use_baseline: bool = False,
+    entropy_coef: float = 0.0,
 ) -> ReinforceResult:
     """Self-play REINFORCE: both players act simultaneously every step, from
     their own policy network, on the real (stochastic) transition -- sampled
@@ -202,7 +223,27 @@ def train_reinforce_selfplay(
     the same batch is the further variance-reduction step that on its own
     -- each rollout's discounted returns are computed separately so a
     boundary between two rollouts is never treated as a continuation of one
-    trajectory."""
+    trajectory.
+
+    ``use_baseline`` and ``entropy_coef`` are two independent, separately
+    toggleable levers, deliberately not bundled into one "improved REINFORCE"
+    flag -- they target different failure modes and this repo's own findings
+    (self-play collapsing to a state-independent policy under aggressive
+    batching) call for telling them apart, not a single combined ablation:
+
+    * ``use_baseline=True`` subtracts a learned state-value baseline
+      (:class:`ValueNet`, one per player, trained by regression onto the
+      observed return) from ``G`` before the policy loss -- ``advantage =
+      G - V(s).detach()``. This is pure variance reduction: it does not
+      change what the expected gradient points toward, only how noisy each
+      sample estimate of it is.
+    * ``entropy_coef > 0`` adds ``-entropy_coef * H(pi(.|s))`` to the policy
+      loss, directly rewarding a less-peaked distribution -- a mechanism
+      for preventing premature collapse to a near-deterministic policy, not
+      a variance-reduction technique at all.
+
+    Both default to off, so the original from-scratch/batched results are
+    unchanged unless a caller opts in."""
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     net0 = PolicyNet(hidden)
@@ -213,6 +254,12 @@ def train_reinforce_selfplay(
         net1.load_state_dict(init_net1.state_dict())
     opt0 = torch.optim.Adam(net0.parameters(), lr=lr)
     opt1 = torch.optim.Adam(net1.parameters(), lr=lr)
+
+    if use_baseline:
+        value_net0 = ValueNet(hidden)
+        value_net1 = ValueNet(hidden)
+        vopt0 = torch.optim.Adam(value_net0.parameters(), lr=lr)
+        vopt1 = torch.optim.Adam(value_net1.parameters(), lr=lr)
 
     trace: list[float] = []
     state = game.initial_state()
@@ -242,14 +289,33 @@ def train_reinforce_selfplay(
         G0 = torch.tensor(g0s, dtype=torch.float32)
         G1 = torch.tensor(g1s, dtype=torch.float32)
 
-        logp0 = torch.log_softmax(net0(X), dim=-1).gather(1, A0[:, None]).squeeze(1)
-        loss0 = -(logp0 * G0).mean()
+        adv0, adv1 = G0, G1
+        if use_baseline:
+            v0 = value_net0(X)
+            v1 = value_net1(X)
+            adv0 = G0 - v0.detach()
+            adv1 = G1 - v1.detach()
+            vloss0 = torch.nn.functional.mse_loss(v0, G0)
+            vopt0.zero_grad()
+            vloss0.backward()
+            vopt0.step()
+            vloss1 = torch.nn.functional.mse_loss(v1, G1)
+            vopt1.zero_grad()
+            vloss1.backward()
+            vopt1.step()
+
+        logits0 = net0(X)
+        dist0 = torch.distributions.Categorical(logits=logits0)
+        logp0 = torch.log_softmax(logits0, dim=-1).gather(1, A0[:, None]).squeeze(1)
+        loss0 = -(logp0 * adv0).mean() - entropy_coef * dist0.entropy().mean()
         opt0.zero_grad()
         loss0.backward()
         opt0.step()
 
-        logp1 = torch.log_softmax(net1(X), dim=-1).gather(1, A1[:, None]).squeeze(1)
-        loss1 = -(logp1 * G1).mean()
+        logits1 = net1(X)
+        dist1 = torch.distributions.Categorical(logits=logits1)
+        logp1 = torch.log_softmax(logits1, dim=-1).gather(1, A1[:, None]).squeeze(1)
+        loss1 = -(logp1 * adv1).mean() - entropy_coef * dist1.entropy().mean()
         opt1.zero_grad()
         loss1.backward()
         opt1.step()

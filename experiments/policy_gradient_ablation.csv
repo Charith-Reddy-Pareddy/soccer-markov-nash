@@ -1,0 +1,4 @@
+seed,neither_row_agree,neither_col_agree,neither_duality_gap,baseline_row_agree,baseline_col_agree,baseline_duality_gap,entropy_row_agree,entropy_col_agree,entropy_duality_gap,both_row_agree,both_col_agree,both_duality_gap
+0,0.3126,0.4189,0.8051,0.1782,0.4357,0.8389,0.3811,0.3929,0.8361,0.3613,0.3702,0.8169
+1,0.4176,0.5908,0.9321,0.3374,0.545,0.8031,0.2504,0.3538,0.8252,0.2218,0.4252,0.8112
+2,0.1924,0.4731,0.7869,0.2042,0.5029,0.8919,0.4097,0.4252,0.837,0.2971,0.4084,0.8284

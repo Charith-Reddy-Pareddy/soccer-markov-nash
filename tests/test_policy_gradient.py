@@ -7,6 +7,7 @@ from soccer_nash.nash_q import NashQIteration
 from soccer_nash.policy_gradient import (
     PolicyNet,
     SharedTrunkPolicyNet,
+    ValueNet,
     _discounted_returns,
     evaluate_policy_gradient,
     pretrain_policy_nets,
@@ -245,3 +246,72 @@ def test_shared_trunk_policy_net_heads_are_independent_parameters():
     out0 = net(x, player=0)
     out1 = net(x, player=1)
     assert not torch.allclose(out0, out1)
+
+
+def test_value_net_outputs_a_scalar():
+    net = ValueNet(hidden=8)
+    out = net(torch.tensor([0.0, 0.0, 2.0, 2.0, 0.0]))
+    assert out.shape == ()
+
+
+def test_value_net_regresses_toward_a_fixed_target():
+    torch.manual_seed(0)
+    net = ValueNet(hidden=8)
+    opt = torch.optim.Adam(net.parameters(), lr=1e-2)
+    x = torch.tensor([[0.0, 0.0, 2.0, 2.0, 0.0], [1.0, 1.0, 1.0, 0.0, 1.0]])
+    target = torch.tensor([0.5, -0.3])
+    loss_before = torch.nn.functional.mse_loss(net(x), target).item()
+    for _ in range(200):
+        loss = torch.nn.functional.mse_loss(net(x), target)
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    loss_after = torch.nn.functional.mse_loss(net(x), target).item()
+    assert loss_after < loss_before * 0.1
+
+
+def test_entropy_bonus_increases_distribution_entropy_after_one_step():
+    # Direct test of the mechanism (a gradient-descent step on
+    # -entropy_coef * entropy raises entropy), independent of the noisier
+    # multi-iteration training dynamics train_reinforce_selfplay wraps it in.
+    logits = torch.nn.Parameter(torch.tensor([5.0, 0.0, 0.0, 0.0]))
+    opt = torch.optim.SGD([logits], lr=0.1)
+    entropy_before = torch.distributions.Categorical(logits=logits).entropy().item()
+    loss = -0.5 * torch.distributions.Categorical(logits=logits).entropy()
+    opt.zero_grad()
+    loss.backward()
+    opt.step()
+    entropy_after = torch.distributions.Categorical(logits=logits.detach()).entropy().item()
+    assert entropy_after > entropy_before
+
+
+def test_default_baseline_and_entropy_off_matches_unspecified_defaults():
+    game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
+    a = train_reinforce_selfplay(game, gamma=0.9, hidden=8, iterations=3, rollout_len=10, seed=3)
+    b = train_reinforce_selfplay(
+        game, gamma=0.9, hidden=8, iterations=3, rollout_len=10, seed=3,
+        use_baseline=False, entropy_coef=0.0,
+    )
+    assert a.mean_reward_trace == pytest.approx(b.mean_reward_trace)
+    s0 = game.initial_state()
+    np.testing.assert_allclose(a.net0.policy(s0), b.net0.policy(s0))
+
+
+@pytest.mark.parametrize("use_baseline", [False, True])
+@pytest.mark.parametrize("entropy_coef", [0.0, 0.1])
+def test_train_reinforce_selfplay_with_baseline_and_entropy_runs_and_is_reproducible(
+    use_baseline, entropy_coef
+):
+    game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
+    kwargs = {
+        "gamma": 0.9, "hidden": 8, "iterations": 3, "rollout_len": 10, "seed": 4,
+        "use_baseline": use_baseline, "entropy_coef": entropy_coef,
+    }
+    a = train_reinforce_selfplay(game, **kwargs)
+    b = train_reinforce_selfplay(game, **kwargs)
+    assert len(a.mean_reward_trace) == 3
+    p = a.net0.policy(game.initial_state())
+    assert np.isclose(p.sum(), 1.0)
+    np.testing.assert_allclose(
+        a.net0.policy(game.initial_state()), b.net0.policy(game.initial_state())
+    )

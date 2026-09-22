@@ -181,13 +181,91 @@ costs more than the parameter sharing saves. `partial`, which keeps the two
 heads independent, lands between the two extremes on every metric,
 consistent with that story.
 
+## A learned baseline and an entropy bonus, tested separately
+
+Two more levers, deliberately not bundled together: a **learned value
+baseline** (`advantage = G - V(s)`, `V` a small regression net trained
+toward the observed return) is pure variance reduction -- it does not
+change what the expected gradient points toward, only how noisy each
+sample estimate is. An **entropy bonus** (`-entropy_coef * H(pi(.|s))`
+added to the loss) is a different mechanism entirely: it directly rewards
+a less-peaked policy, targeting premature collapse to near-determinism,
+not variance as such. Four arms per seed -- neither, baseline only,
+entropy only, both -- so an effect can be attributed to one mechanism, the
+other, or their combination
+(`train_reinforce_selfplay(..., use_baseline=, entropy_coef=)`,
+`scripts/policy_gradient_ablation.py`).
+
+Same setup as the from-scratch baseline (2000 iterations x 100 steps),
+**3 seeds**, `entropy_coef=0.1`, `experiments/policy_gradient_ablation.csv`:
+
+| (3 seeds) | row agreement | col agreement | exploitability |
+|---|---|---|---|
+| neither | 0.308 ± 0.113 | 0.494 ± 0.088 | 0.841 ± 0.079 |
+| baseline only | 0.240 ± 0.085 | 0.495 ± 0.055 | 0.845 ± 0.045 |
+| entropy only | 0.347 ± 0.085 | 0.391 ± 0.036 | 0.833 ± 0.007 |
+| both | 0.293 ± 0.070 | 0.401 ± 0.028 | 0.819 ± 0.009 |
+
+Neither lever fixes convergence -- all four arms land in the same
+0.24-0.35 row-agreement range, nowhere close to what pre-training reaches.
+But they are not doing the same thing. **The baseline alone barely moves
+anything**: mean exploitability does not improve (0.841 -> 0.845), and its
+variance reduction is modest (±0.079 -> ±0.045) -- not the dramatic effect
+"pure variance reduction" might suggest, though 3 seeds is too few to rule
+out noise here. **The entropy bonus alone is where the real effect
+shows up, and it is a consistency effect, not a convergence effect**:
+exploitability's standard deviation drops more than tenfold (±0.079 ->
+±0.007) and its mean improves slightly (0.841 -> 0.833), while row
+agreement does not clearly improve (0.308 -> 0.347, within noise) and col
+agreement drops (0.494 -> 0.391). Entropy's job here is making the
+*outcome* far more reproducible seed-to-seed, not making self-play find
+the equilibrium more often. Combining both gives the best mean
+exploitability (0.819) and keeps entropy's low variance (±0.009), but the
+gain over "neither" is incremental, not transformative -- consistent with
+this page's running theme: every lever tried so far changes *how
+consistently* self-play lands somewhere, far more than it changes *where*.
+
+## Does batching help with a fair update budget?
+
+The batching section above flagged the natural follow-up: the original
+comparison matched *total environment steps* (200,000 either way), which
+gave the batched arm 8x fewer gradient *updates* (250 vs. 2000) -- exactly
+the condition the "too few updates to differentiate a state-independent
+direction into a state-conditional policy" mechanism needs. Matching
+*update count* instead (`scripts/policy_gradient_batch.py --match
+updates`) keeps both arms at 2000 iterations, so the batched arm now sees
+8x the single arm's total data (1,600,000 vs. 200,000 steps) -- an
+unequal-data comparison, on purpose, to isolate update count as the one
+variable in question.
+
+**5 seeds**, `experiments/policy_gradient_batch_updates.csv`:
+
+| (5 seeds) | row action agreement | exploitability |
+|---|---|---|
+| 1 rollout x 2000 iterations (200,000 steps) | 0.333 ± 0.157 | 0.863 ± 0.064 |
+| 8 rollouts x 2000 iterations (1,600,000 steps) | 0.300 ± 0.126 | 0.831 ± 0.041 |
+
+Update-count-matched batching does **not** collapse to a state-independent
+policy -- row agreement varies genuinely across seeds (0.165 to 0.458, not
+a repeated constant), confirming the mechanism diagnosed earlier: the
+collapse was about too few gradient updates, not something inherent to
+decorrelated batching. With a fair update budget, batching lands at
+roughly the same mean row agreement as the correlated single trajectory
+(0.300 vs. 0.333, within the overlap of their error bars) but with
+somewhat lower exploitability (0.831 vs. 0.863) and somewhat lower
+variance on both metrics. A real but modest improvement, not the dramatic
+win the "more independent data should obviously help" intuition might
+predict -- and it costs 8x the environment interactions to get it.
+
 ## Reproducing
 
 ```
 python scripts/policy_gradient.py --seeds 5              # from-scratch only
 python scripts/policy_gradient_warmstart.py --seeds 3     # the three-way comparison
-python scripts/policy_gradient_batch.py --seeds 5         # single trajectory vs. batched rollouts
+python scripts/policy_gradient_batch.py --seeds 5         # single trajectory vs. batched rollouts (steps-matched)
+python scripts/policy_gradient_batch.py --seeds 5 --match updates  # same, update-count-matched
 python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared vs. partial-share nets
+python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
 ```
 
 `soccer_nash/policy_gradient.py`'s `pretrain_policy_nets` and
