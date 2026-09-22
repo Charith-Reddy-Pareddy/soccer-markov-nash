@@ -10,7 +10,7 @@ a smaller stand-in board.
 import numpy as np
 import pytest
 
-from soccer_nash.game import SoccerGame
+from soccer_nash.game import Action, SoccerGame
 from soccer_nash.matrix_games import solve_zero_sum
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.numerics import epsilon_equilibrium
@@ -87,6 +87,34 @@ def test_case2_and_case3_indifference_matches_positions_pdf_exactly(solved):
     p, q = result.row_policy[case3], result.col_policy[case3]
     np.testing.assert_allclose(p, [0.0, 0.18, 0.82, 0.0], atol=5e-4)
     np.testing.assert_allclose(q, [0.0, 0.0, 0.077, 0.923], atol=5e-4)
+
+
+def test_case3_two_q_entries_expand_exactly_to_their_bellman_sum(solved):
+    """The two worked-out entries docs/positions.md shows expanded as
+    sum(P * (r + gamma * V(next))) -- Q(U,U), off either player's support,
+    and Q(D,U), in the defender's actual 18% support and notable because one
+    of its two successors is the state itself -- reproduce the matrix cell
+    to the same precision the matrix is printed at, using the real
+    game.transitions() outcomes and the solver's own V, not a hand re-derivation
+    that could silently drift from what run_exact() actually computed."""
+    solver, result = solved
+    game = solver.game
+    state = (1, 1, 1, 0, 1)
+    gamma = solver.gamma
+    M = solver._matrix(state, result.values)
+
+    def bellman_sum(a0, a1):
+        total = 0.0
+        for prob, ns, reward in game.transitions(state, a0, a1):
+            v = 0.0 if game.is_terminal(ns) else result.values[ns]
+            total += prob * (reward[0] + gamma * v)
+        return total
+
+    assert bellman_sum(Action.U, Action.U) == pytest.approx(M[0, 0], abs=1e-6)
+    assert bellman_sum(Action.D, Action.U) == pytest.approx(M[1, 0], abs=1e-6)
+    # Q(D,U)'s defining feature: one of its two successors is the state itself.
+    outcomes = game.transitions(state, Action.D, Action.U)
+    assert any(ns == state for _prob, ns, _reward in outcomes)
 
 
 def test_case13_and_case14_indifference_matches_positions_pdf_exactly(solved):

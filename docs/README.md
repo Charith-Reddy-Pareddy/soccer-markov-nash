@@ -35,11 +35,15 @@ technical answer, start with **[report.pdf](report.pdf)**
   next to the full `4x4` Q matrix -- rows and columns fixed as player 0 and
   player 1 for every state, never reoriented by who has the ball -- redrawn
   as a node-and-arrow best-response graph (`make positions`,
-  `make positions-pdf`); Case 3 also carries a rounding diagnostic (the
-  same matrix solved again at 3/2/1-decimal precision -- 2 decimals
-  preserves the exact mix, 1 decimal manufactures a pure saddle that isn't
-  really there) -- plus the minimax/always-left/random/best-response policy
-  matrix (`make positions-matrix`).
+  `make positions-pdf`); every case also carries a rounding diagnostic (the
+  same matrix solved again at 3/2/1-decimal precision -- 2 decimals usually
+  preserves the exact mix, 1 decimal often manufactures a pure saddle that
+  isn't really there); Case 3 additionally shows two of its cells expanded
+  by hand as `sum(P * (r + gamma * V(next)))` against the real
+  `game.transitions()` outcomes and the solver's own `V`, including one
+  where a successor is the state itself -- plus the
+  minimax/always-left/random/best-response policy matrix
+  (`make positions-matrix`).
 - [mixing.md](mixing.md) — how shallow / how mixed the mixed stage games are
   (entropy: median 0.55 bits, 26/94 strongly mixed), their matching-pennies
   structure, and the value of mixing (`make mixing`).

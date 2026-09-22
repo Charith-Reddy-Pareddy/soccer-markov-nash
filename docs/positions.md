@@ -252,6 +252,38 @@ indifference class.
     R   -0.109755  -0.170790  -0.810000  -0.166529
 ```
 
+**Where two of these cells actually come from** -- every entry is
+`Q(s, a0, a1) = sum_outcomes P(outcome) * (r0 + gamma * V(next))`, real
+`game.transitions()` outcomes and the solver's own `V`, not the matrix
+solve itself. Two worked examples, `gamma = 0.9`:
+
+`Q(U, U) = -0.139279` -- off both players' actual support, a bad joint
+action for player 0:
+
+| outcome | `P` | `next` | `r0` | `V(next)` | `P·(r0 + γ·V(next))` |
+|---|---|---|---|---|---|
+| move first | 0.5 | `(1, 2, 1, 1, 1)` | 0 | −0.900000 | −0.405000 |
+| move second | 0.5 | `(1, 2, 1, 0, 0)` | 0 | +0.590490 | +0.265721 |
+| **sum** | | | | | **−0.139279** |
+
+`Q(D, U) = +0.173204` -- inside the defender's real 18% support, and
+notable because one of its two successors is the state itself:
+
+| outcome | `P` | `next` | `r0` | `V(next)` | `P·(r0 + γ·V(next))` |
+|---|---|---|---|---|---|
+| move first | 0.5 | `(1, 1, 1, 0, 0)` | 0 | +0.590490 | +0.265721 |
+| move second | 0.5 | `(1, 1, 1, 0, 1)` (= `s` itself) | 0 | −0.205592 | −0.092516 |
+| **sum** | | | | | **+0.173204** |
+
+Neither cell has a per-step reward (`r0 = 0`): the "win" objective only pays
+`±1` on the step a goal is actually scored, so every non-terminal cell's
+value comes entirely from `gamma * V(next)`, discounted by whichever
+successor's own certified value it lands on -- including, for `Q(D, U)`,
+this very state's own `V = -0.205592`, since `D`/`U` can return play to
+`(1, 1, 1, 0, 1)` unchanged. (Cross-checked against
+`game.transitions()` and `result.values` directly in
+`tests/test_positions_verification.py`, not hand-derived.)
+
 **Rounding diagnostic** -- the same matrix, solved again after rounding it
 to each precision (not just checking whether classification flips):
 
@@ -719,6 +751,38 @@ indifference class.
     L   -0.099163  -0.156678  -0.141010  -0.211001
     R   -0.109755  -0.170790  -0.810000  -0.166529
 ```
+
+**Where two of these cells actually come from** -- every entry is
+`Q(s, a0, a1) = sum_outcomes P(outcome) * (r0 + gamma * V(next))`, real
+`game.transitions()` outcomes and the solver's own `V`, not the matrix
+solve itself. Two worked examples, `gamma = 0.9`:
+
+`Q(U, U) = -0.139279` -- off both players' actual support, a bad joint
+action for player 0:
+
+| outcome | `P` | `next` | `r0` | `V(next)` | `P·(r0 + γ·V(next))` |
+|---|---|---|---|---|---|
+| move first | 0.5 | `(1, 2, 1, 1, 1)` | 0 | −0.900000 | −0.405000 |
+| move second | 0.5 | `(1, 2, 1, 0, 0)` | 0 | +0.590490 | +0.265721 |
+| **sum** | | | | | **−0.139279** |
+
+`Q(D, U) = +0.173204` -- inside the defender's real 18% support, and
+notable because one of its two successors is the state itself:
+
+| outcome | `P` | `next` | `r0` | `V(next)` | `P·(r0 + γ·V(next))` |
+|---|---|---|---|---|---|
+| move first | 0.5 | `(1, 1, 1, 0, 0)` | 0 | +0.590490 | +0.265721 |
+| move second | 0.5 | `(1, 1, 1, 0, 1)` (= `s` itself) | 0 | −0.205592 | −0.092516 |
+| **sum** | | | | | **+0.173204** |
+
+Neither cell has a per-step reward (`r0 = 0`): the "win" objective only pays
+`±1` on the step a goal is actually scored, so every non-terminal cell's
+value comes entirely from `gamma * V(next)`, discounted by whichever
+successor's own certified value it lands on -- including, for `Q(D, U)`,
+this very state's own `V = -0.205592`, since `D`/`U` can return play to
+`(1, 1, 1, 0, 1)` unchanged. (Cross-checked against
+`game.transitions()` and `result.values` directly in
+`tests/test_positions_verification.py`, not hand-derived.)
 
 **Rounding diagnostic** -- the same matrix, solved again after rounding it
 to each precision (not just checking whether classification flips):

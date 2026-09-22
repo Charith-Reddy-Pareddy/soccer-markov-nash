@@ -382,6 +382,26 @@ a vertical one.</span></p>
       D    0.173204  -0.185032  -0.499883  -0.180940
       L   -0.099163  -0.156678  -0.141010  -0.211001
       R   -0.109755  -0.170790  -0.810000  -0.166529</pre>
+<p><b>Where two of these cells actually come from</b> &mdash; every entry is <span class="mono">Q(s, a0, a1) = sum_outcomes P(outcome) * (r0 + gamma * V(next))</span>, real <span class="mono">game.transitions()</span> outcomes and the solver's own <span class="mono">V</span>, not the matrix solve itself. Two worked examples, <span class="mono">gamma = 0.9</span>:</p>
+<p><span class="mono">Q(U, U) = -0.139279</span> &mdash; off both players' actual support, a bad joint action for player 0:</p>
+<table class="coordmatrix">
+  <thead><tr><th>outcome</th><th>P</th><th>next</th><th>r0</th><th>V(next)</th><th>P&middot;(r0 + &gamma;&middot;V(next))</th></tr></thead>
+  <tbody>
+    <tr><td>move first</td><td>0.5</td><td>(1, 2, 1, 1, 1)</td><td>0</td><td>&minus;0.900000</td><td>&minus;0.405000</td></tr>
+    <tr><td>move second</td><td>0.5</td><td>(1, 2, 1, 0, 0)</td><td>0</td><td>+0.590490</td><td>+0.265721</td></tr>
+    <tr><td><b>sum</b></td><td></td><td></td><td></td><td></td><td><b>&minus;0.139279</b></td></tr>
+  </tbody>
+</table>
+<p><span class="mono">Q(D, U) = +0.173204</span> &mdash; inside the defender's real 18% support, and notable because one of its two successors is the state itself:</p>
+<table class="coordmatrix">
+  <thead><tr><th>outcome</th><th>P</th><th>next</th><th>r0</th><th>V(next)</th><th>P&middot;(r0 + &gamma;&middot;V(next))</th></tr></thead>
+  <tbody>
+    <tr><td>move first</td><td>0.5</td><td>(1, 1, 1, 0, 0)</td><td>0</td><td>+0.590490</td><td>+0.265721</td></tr>
+    <tr><td>move second</td><td>0.5</td><td>(1, 1, 1, 0, 1) (= s itself)</td><td>0</td><td>&minus;0.205592</td><td>&minus;0.092516</td></tr>
+    <tr><td><b>sum</b></td><td></td><td></td><td></td><td></td><td><b>+0.173204</b></td></tr>
+  </tbody>
+</table>
+<p>Neither cell has a per-step reward (<span class="mono">r0 = 0</span>): the "win" objective only pays <span class="mono">&plusmn;1</span> on the step a goal is actually scored, so every non-terminal cell's value comes entirely from <span class="mono">gamma * V(next)</span>, discounted by whichever successor's own certified value it lands on &mdash; including, for <span class="mono">Q(D, U)</span>, this very state's own <span class="mono">V = -0.205592</span>, since <span class="mono">D</span>/<span class="mono">U</span> can return play to <span class="mono">(1, 1, 1, 0, 1)</span> unchanged. (Cross-checked against <span class="mono">game.transitions()</span> and <span class="mono">result.values</span> directly in <span class="mono">tests/test_positions_verification.py</span>, not hand-derived.)</p>
 <p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
 <table class="coordmatrix">
   <thead><tr><th>precision</th><th>classification</th><th>player 0 (defender)</th><th>player 1 (carrier)</th></tr></thead>
@@ -835,6 +855,26 @@ a vertical one.</span></p>
       D    0.173204  -0.185032  -0.499883  -0.180940
       L   -0.099163  -0.156678  -0.141010  -0.211001
       R   -0.109755  -0.170790  -0.810000  -0.166529</pre>
+<p><b>Where two of these cells actually come from</b> &mdash; every entry is <span class="mono">Q(s, a0, a1) = sum_outcomes P(outcome) * (r0 + gamma * V(next))</span>, real <span class="mono">game.transitions()</span> outcomes and the solver's own <span class="mono">V</span>, not the matrix solve itself. Two worked examples, <span class="mono">gamma = 0.9</span>:</p>
+<p><span class="mono">Q(U, U) = -0.139279</span> &mdash; off both players' actual support, a bad joint action for player 0:</p>
+<table class="coordmatrix">
+  <thead><tr><th>outcome</th><th>P</th><th>next</th><th>r0</th><th>V(next)</th><th>P&middot;(r0 + &gamma;&middot;V(next))</th></tr></thead>
+  <tbody>
+    <tr><td>move first</td><td>0.5</td><td>(1, 2, 1, 1, 1)</td><td>0</td><td>&minus;0.900000</td><td>&minus;0.405000</td></tr>
+    <tr><td>move second</td><td>0.5</td><td>(1, 2, 1, 0, 0)</td><td>0</td><td>+0.590490</td><td>+0.265721</td></tr>
+    <tr><td><b>sum</b></td><td></td><td></td><td></td><td></td><td><b>&minus;0.139279</b></td></tr>
+  </tbody>
+</table>
+<p><span class="mono">Q(D, U) = +0.173204</span> &mdash; inside the defender's real 18% support, and notable because one of its two successors is the state itself:</p>
+<table class="coordmatrix">
+  <thead><tr><th>outcome</th><th>P</th><th>next</th><th>r0</th><th>V(next)</th><th>P&middot;(r0 + &gamma;&middot;V(next))</th></tr></thead>
+  <tbody>
+    <tr><td>move first</td><td>0.5</td><td>(1, 1, 1, 0, 0)</td><td>0</td><td>+0.590490</td><td>+0.265721</td></tr>
+    <tr><td>move second</td><td>0.5</td><td>(1, 1, 1, 0, 1) (= s itself)</td><td>0</td><td>&minus;0.205592</td><td>&minus;0.092516</td></tr>
+    <tr><td><b>sum</b></td><td></td><td></td><td></td><td></td><td><b>+0.173204</b></td></tr>
+  </tbody>
+</table>
+<p>Neither cell has a per-step reward (<span class="mono">r0 = 0</span>): the "win" objective only pays <span class="mono">&plusmn;1</span> on the step a goal is actually scored, so every non-terminal cell's value comes entirely from <span class="mono">gamma * V(next)</span>, discounted by whichever successor's own certified value it lands on &mdash; including, for <span class="mono">Q(D, U)</span>, this very state's own <span class="mono">V = -0.205592</span>, since <span class="mono">D</span>/<span class="mono">U</span> can return play to <span class="mono">(1, 1, 1, 0, 1)</span> unchanged. (Cross-checked against <span class="mono">game.transitions()</span> and <span class="mono">result.values</span> directly in <span class="mono">tests/test_positions_verification.py</span>, not hand-derived.)</p>
 <p><b>Rounding diagnostic</b> &mdash; the same matrix, solved again after rounding it to each precision (not just checking whether classification flips):</p>
 <table class="coordmatrix">
   <thead><tr><th>precision</th><th>classification</th><th>player 0 (defender)</th><th>player 1 (carrier)</th></tr></thead>
