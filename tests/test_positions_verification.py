@@ -142,3 +142,184 @@ def test_case3_joint_support_reduction_reproduces_the_full_equilibrium(solved):
     ])
     _value, bad_carrier_p, bad_defender_p = solve_zero_sum(invalid)
     assert not np.allclose(bad_carrier_p, [0.077, 0.923], atol=5e-3)
+
+
+# Every 4x4 Q matrix printed in docs/positions.md/.html/.pdf, for all 14
+# documented cases -- checked against a fresh solve of the exact board each
+# one is drawn from, at the full 6-decimal precision the page prints them
+# to. This is the "rounding trick" / "these 4x4 matrices are still
+# incorrect" concern raised in the Sept 2026 meeting, checked directly
+# rather than assumed fixed: every case matched on inspection (no rounding
+# or staleness bug was found), and this test exists so that stays true.
+_ALL_CASE_MATRICES = {
+    1: {
+        "state": (4, 0, 5, 0, 0),
+        "M": [
+            [0.234446, 0.316945, 0.522973, 0.271536],
+            [0.150878, 0.211001, 0.211001, 0.222362],
+            [0.161034, 0.182213, 0.171623, 0.189901],
+            [0.012406, -0.095109, 0.057946, 0.097586],
+        ],
+    },
+    2: {
+        "state": (0, 1, 1, 1, 0),
+        "M": [
+            [0.085599, 0.478297, 0.28567, 0.099198],
+            [0.10926, 0.07633, 0.085331, 0.085599],
+            [0.103381, 0.103381, 0.084811, 0.083738],
+            [0.08248, 0.187381, -0.108448, -0.070696],
+        ],
+    },
+    3: {
+        "state": (1, 1, 1, 0, 1),
+        "M": [
+            [0.139279, -0.173204, 0.099163, 0.109755],
+            [0.17079, 0.185032, 0.156678, 0.17079],
+            [0.81, 0.499883, 0.14101, 0.81],
+            [0.211001, 0.18094, 0.211001, 0.166529],
+        ],
+    },
+    4: {
+        "state": (0, 0, 1, 1, 0),
+        "M": [
+            [0.103381, 0.103381, -0.407594, 0.083738],
+            [0.10926, 0.07633, 0.10085, 0.085599],
+            [0.10926, 0.07633, 0.10085, 0.085599],
+            [0.112055, -0.075068, 0.112055, 0.088459],
+        ],
+    },
+    5: {
+        "state": (0, 0, 2, 0, 0),
+        "M": [
+            [0.083738, 0.095109, 0.103381, 0.11022],
+            [0.085599, 0.076363, 0.07633, 0.085599],
+            [0.085599, 0.076363, 0.07633, 0.085599],
+            [0.088459, 0.095109, -0.088213, 0.11022],
+        ],
+    },
+    6: {
+        "state": (1, 1, 2, 0, 1),
+        "M": [
+            [0.316945, 0.316945, 0.247069, -0.178022],
+            [0.211001, 0.211001, 0.211001, 0.166529],
+            [0.17079, 0.044962, 0.156678, 0.17079],
+            [0.182213, 0.182213, 0.182213, 0.135158],
+        ],
+    },
+    7: {
+        "state": (5, 1, 6, 1, 1),
+        "M": [
+            [0.085599, 0.478297, 0.099198, 0.28567],
+            [0.10926, 0.07633, 0.085599, 0.085331],
+            [0.08248, 0.187381, -0.070696, -0.108448],
+            [0.103381, 0.103381, 0.083738, 0.084811],
+        ],
+    },
+    8: {
+        "state": (2, 3, 3, 3, 1),
+        "M": [
+            [-0.011944, 0.005242, 0.015879, -0.041869],
+            [0.07235, -0.022044, 0.008641, 0.000279],
+            [-0.018582, -0.080389, 0.018582, -0.041869],
+            [-0.007062, -0.025575, -0.006356, -0.039427],
+        ],
+    },
+    9: {
+        "state": (0, 2, 1, 2, 0),
+        "M": [
+            [0.084811, 0.478297, 0.290839, 0.095109],
+            [0.478297, 0.084811, 0.290839, 0.095109],
+            [0.093043, 0.093043, 0.085599, 0.093043],
+            [0.082303, 0.082303, -0.122276, -0.071591],
+        ],
+    },
+    10: {
+        "state": (0, 2, 2, 2, 1),
+        "M": [
+            [0.247069, 0.330151, 0.271536, 0.316945],
+            [0.330151, 0.247069, 0.271536, 0.316945],
+            [0.366481, 0.366481, 0.330151, 0.109966],
+            [0.228062, 0.228062, 0.219944, 0.205131],
+        ],
+    },
+    11: {
+        "state": (4, 4, 5, 4, 0),
+        "M": [
+            [0.116139, 0.104525, 0.169846, 0.135972],
+            [0.094073, 0.415483, 0.8145, 0.45],
+            [0.094073, 0.104525, 0.0, 0.104525],
+            [0.169846, 0.5, -0.670721, 0.5],
+        ],
+    },
+    12: {
+        "state": (1, 3, 1, 4, 1),
+        "M": [
+            [-0.273301, 0.00596, 0.001041, 0.069053],
+            [-0.03143, 0.068847, 0.056711, 0.449923],
+            [0.396398, 0.083433, 0.039473, 0.449665],
+            [0.039469, 0.020201, 0.0153, 0.091802],
+        ],
+    },
+    13: {
+        "state": (1, 1, 3, 1, 1),
+        "M": [
+            [0.205131, 0.283411, 0.228062, 0.262831],
+            [0.182213, 0.182213, 0.182213, 0.135158],
+            [0.316945, 0.316945, 0.247069, 0.049186],
+            [0.182213, 0.182213, 0.182213, 0.162618],
+        ],
+    },
+    14: {
+        "state": (0, 2, 2, 2, 0),
+        "M": [
+            [0.083738, 0.144198, 0.103381, 0.112892],
+            [0.144198, 0.083738, 0.103381, 0.112892],
+            [0.099198, 0.099198, 0.085599, 0.099198],
+            [0.155749, 0.155749, -0.109966, 0.132828],
+        ],
+    },
+}
+
+
+def _oriented_matrix(solver, state, values):
+    """rows = carrier, cols = defender -- same convention as
+    scripts/positions.py's own `_oriented_matrix`, duplicated here rather
+    than imported so this test does not depend on the doc-generation script."""
+    M = solver._matrix(state, values)
+    return M if state[4] == 0 else -M.T
+
+
+def _check_case(solver, result, case):
+    state, expected_M = case["state"], np.array(case["M"])
+    actual_M = _oriented_matrix(solver, state, result.values)
+    np.testing.assert_allclose(actual_M, expected_M, atol=5e-6)
+
+
+def test_canonical_board_case_matrices_match_positions_md_exactly(solved):
+    """Cases 1-7, 9, 10, 13, 14 -- every canonical-board case's printed 4x4
+    Q matrix, checked at once against a fresh solve."""
+    solver, result = solved
+    for n in (1, 2, 3, 4, 5, 6, 7, 9, 10, 13, 14):
+        _check_case(solver, result, _ALL_CASE_MATRICES[n])
+
+
+def test_tackle_board_case8_matrix_matches_positions_md_exactly():
+    g = SoccerGame(width=5, height=4, goal_rows=(1, 2), move_order="tackle", tackle_prob=0.5)
+    solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
+    result = solver.run_exact()
+    _check_case(solver, result, _ALL_CASE_MATRICES[8])
+
+
+def test_territory_board_case11_matrix_matches_positions_md_exactly():
+    g = SoccerGame(width=7, height=5, goal_rows=(1, 2, 3), move_order="deterministic",
+                   scoring="territory", territory_reward=0.05)
+    solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
+    result = solver.run_exact()
+    _check_case(solver, result, _ALL_CASE_MATRICES[11])
+
+
+def test_slip_board_case12_matrix_matches_positions_md_exactly():
+    g = SoccerGame(width=5, height=5, goal_rows=(2,), move_order="deterministic", slip=0.15)
+    solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
+    result = solver.run_exact()
+    _check_case(solver, result, _ALL_CASE_MATRICES[12])
