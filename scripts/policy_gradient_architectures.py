@@ -3,15 +3,21 @@ self-play REINFORCE -- the "network architecture choices" question from the
 Sept 17 meeting?
 
 Three architectures, same total training budget (iterations x rollout_len),
-same seeds:
+same seeds, all three reading the *raw joint state* directly and
+identically for both players -- no symmetry transform of any kind, on
+purpose: a symmetric game is not guaranteed to have only symmetric
+equilibria, so using the game's own mirror symmetry to construct one
+player's policy from the other's would presuppose the answer to the
+question this experiment is meant to test. (An earlier version of this
+script did exactly that for "shared"; corrected here.)
 
 * **separate** -- two fully independent ``PolicyNet``s
   (`soccer_nash/policy_gradient.py`'s original `train_reinforce_selfplay`).
-* **shared** -- one network; player 1's policy is that same network's
-  mirror-image induced policy (`soccer_nash/symmetry.py`'s proven
-  left-right anti-symmetry, used as a parameterization). One optimizer.
+* **shared** -- one ``JointPolicyNet``: a single shared body all the way to
+  an 8-logit output (4 per player), both policies read off the same
+  forward pass on the same input. One optimizer.
 * **partial** -- a shared trunk with a separate linear head per player
-  (``SharedTrunkPolicyNet``).
+  (``SharedTrunkPolicyNet``), both fed the same raw state.
 
     python scripts/policy_gradient_architectures.py --seeds 5
     # writes experiments/policy_gradient_architectures.csv

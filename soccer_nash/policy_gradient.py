@@ -44,7 +44,6 @@ import torch
 from torch import nn
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
-from soccer_nash.symmetry import flip_action, flip_distribution, mirror_state
 
 
 class _PolicySource(Protocol):
@@ -392,11 +391,40 @@ def evaluate_policy_gradient(
     }
 
 
+class JointPolicyNet(nn.Module):
+    """A single network reading the *raw* joint state directly and
+    outputting both players' action logits (4 for player 0, 4 for player 1)
+    from one shared body all the way to the output layer -- the "fully
+    shared" architecture. No symmetry transform, no mirroring: both
+    policies are read off the same forward pass on the same input, and
+    whatever relationship training finds between them, symmetric or not,
+    is learned rather than imposed (see :func:`train_reinforce_selfplay_shared`
+    for why that distinction matters)."""
+
+    def __init__(self, hidden: int = 64):
+        super().__init__()
+        self.body = nn.Sequential(
+            nn.Linear(5, hidden), nn.ReLU(),
+            nn.Linear(hidden, hidden), nn.ReLU(),
+            nn.Linear(hidden, 8),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.body(x * _SCALE)
+
+    def logits0(self, x: torch.Tensor) -> torch.Tensor:
+        return self.forward(x)[..., :4]
+
+    def logits1(self, x: torch.Tensor) -> torch.Tensor:
+        return self.forward(x)[..., 4:]
+
+
 class SharedTrunkPolicyNet(nn.Module):
     """A shared body (geometry feature extraction, identical weights for
     both players) with a separate linear head per player -- the "partial
     sharing" architecture: the two players' final decision layer can
-    diverge, but the layers that turn raw coordinates into features cannot."""
+    diverge, but the layers that turn raw coordinates into features cannot.
+    Both players read the same raw state; no symmetry transform."""
 
     def __init__(self, hidden: int = 64):
         super().__init__()
@@ -412,26 +440,21 @@ class SharedTrunkPolicyNet(nn.Module):
         return self.head0(z) if player == 0 else self.head1(z)
 
 
-class _MirrorPolicyView:
+class _HeadPolicyView:
     """Adapter so :func:`evaluate_policy_gradient`'s ``result.net0.policy(s)``
     / ``result.net1.policy(s)`` interface works for the shared/partial
-    architectures too. Player 0 reads ``logits_fn`` directly; player 1's
-    policy at ``state`` is defined by querying the *same* (possibly shared)
-    ``logits_fn`` at the board's left-right mirror image and flipping L/R
-    back -- ``soccer_nash/symmetry.py``'s proven equilibrium equivariance,
-    used here as a network parameterization, not assumed to hold mid-training."""
+    architectures too -- reads the given (possibly shared) network directly
+    on the raw state. Deliberately this simple: not imposing any structure
+    on the relationship between the two players' policies is the entire
+    point of this architecture (see :func:`train_reinforce_selfplay_shared`)."""
 
-    def __init__(self, logits_fn, player: int, width: int):
+    def __init__(self, logits_fn):
         self._logits_fn = logits_fn
-        self.player = player
-        self.width = width
 
     def policy(self, state: State) -> np.ndarray:
-        x_state = state if self.player == 0 else mirror_state(state, self.width)
         with torch.no_grad():
-            x = torch.tensor(x_state, dtype=torch.float32)
-            p = torch.softmax(self._logits_fn(x), dim=-1).numpy()
-        return p if self.player == 0 else flip_distribution(p)
+            x = torch.tensor(state, dtype=torch.float32)
+            return torch.softmax(self._logits_fn(x), dim=-1).numpy()
 
 
 def _rollout_shared(
@@ -441,36 +464,31 @@ def _rollout_shared(
     start_state: State,
     rollout_len: int,
     rng: np.random.Generator,
-    width: int,
 ) -> tuple[list[State], list[int], list[int], list[float], State]:
-    """Like :func:`_rollout`, but player 1's action is sampled from
-    ``logits1`` evaluated at the *mirrored* state -- the raw ("mirror-space")
-    sampled index is returned alongside the real board action actually
-    passed to ``game.step``, since that mirror-space index (not the
-    board-frame one) is what the loss must compute log-probabilities for."""
+    """Like :func:`_rollout`, but ``logits0``/``logits1`` may come from a
+    (partially) shared network instead of two independent ``PolicyNet``s --
+    both are evaluated on the same raw state, no transform of any kind."""
     state = start_state
     states: list[State] = []
     a0s: list[int] = []
-    a1_mirrors: list[int] = []
+    a1s: list[int] = []
     r0s: list[float] = []
     for _t in range(rollout_len):
-        x0 = torch.tensor(state, dtype=torch.float32)
-        x1m = torch.tensor(mirror_state(state, width), dtype=torch.float32)
+        x = torch.tensor(state, dtype=torch.float32)
         with torch.no_grad():
-            d0 = torch.distributions.Categorical(logits=logits0(x0))
-            d1 = torch.distributions.Categorical(logits=logits1(x1m))
+            d0 = torch.distributions.Categorical(logits=logits0(x))
+            d1 = torch.distributions.Categorical(logits=logits1(x))
         a0 = int(d0.sample())
-        a1_mirror = int(d1.sample())
-        a1 = flip_action(a1_mirror)
+        a1 = int(d1.sample())
         ns, (r0, _r1), done = game.step(
             state, MOVE_ACTIONS[a0], MOVE_ACTIONS[a1], rng=rng
         )
         states.append(state)
         a0s.append(a0)
-        a1_mirrors.append(a1_mirror)
+        a1s.append(a1)
         r0s.append(r0)
         state = game.initial_state() if done else ns
-    return states, a0s, a1_mirrors, r0s, state
+    return states, a0s, a1s, r0s, state
 
 
 def train_reinforce_selfplay_shared(
@@ -490,37 +508,37 @@ def train_reinforce_selfplay_shared(
     sharing weights between the two players' policies change self-play
     training?
 
-    ``architecture="shared"``: **one** ``PolicyNet`` computes player 0's
-    policy directly; player 1's policy at state ``s`` is the mirror-image
-    policy induced by that *same* network -- query it at
-    ``mirror_state(s)`` and flip L/R in the result
-    (``soccer_nash/symmetry.py``, the game's proven left-right
-    anti-symmetry, used here as a parameterization choice rather than an
-    assumption about a partially trained net). One optimizer, one set of
-    weights, updated by both players' gradients every step.
+    Deliberately does **not** use the game's left-right mirror symmetry to
+    construct player 1's policy from player 0's, the way an earlier version
+    of this function did. A symmetric game is not guaranteed to have only
+    symmetric equilibria -- baking the symmetry into the network's
+    parameterization presupposes the answer to a question self-play is
+    supposed to be free to discover on its own, and would systematically
+    rule out any genuinely asymmetric equilibrium the unconstrained game
+    might actually have. Both architectures below feed the *same raw joint
+    state* to both players, identically -- whatever relationship the two
+    learned policies end up with is something training found, not something
+    the architecture assumed going in.
 
-    ``architecture="partial"``: a :class:`SharedTrunkPolicyNet` -- the same
-    mirrored-input scheme, but the trunk is shared while each player keeps
-    its own final linear head, so the two policies can still diverge.
+    ``architecture="shared"``: one :class:`JointPolicyNet` -- a single
+    shared body all the way to an 8-logit output (4 per player), both
+    policies read off the same forward pass on the same input.
+
+    ``architecture="partial"``: a :class:`SharedTrunkPolicyNet` -- shared
+    body, separate linear head per player, both fed the same raw state.
 
     Not a drop-in replacement for :func:`train_reinforce_selfplay` (which
-    stays exactly as it was, fully independent nets, no mirroring) --
-    a separate function so that existing "separate" results and tests are
-    untouched by this addition."""
+    stays exactly as it was, fully independent nets) -- a separate function
+    so that existing "separate" results and tests are untouched by this."""
     if architecture not in ("shared", "partial"):
         raise ValueError(f"architecture must be 'shared' or 'partial', got {architecture!r}")
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
-    width = game.width
 
     if architecture == "shared":
-        net: nn.Module = PolicyNet(hidden)
-
-        def logits0(x: torch.Tensor) -> torch.Tensor:
-            return net(x)
-
-        def logits1(x: torch.Tensor) -> torch.Tensor:
-            return net(x)
+        net: nn.Module = JointPolicyNet(hidden)
+        logits0 = net.logits0
+        logits1 = net.logits1
     else:
         net = SharedTrunkPolicyNet(hidden)
 
@@ -537,36 +555,33 @@ def train_reinforce_selfplay_shared(
     for _ in range(iterations):
         states: list[State] = []
         a0s: list[int] = []
-        a1_mirrors: list[int] = []
+        a1s: list[int] = []
         g0s: list[float] = []
         raw_r0: list[float] = []
 
         for k in range(n_rollouts):
             start = state if k == 0 else game.initial_state()
-            s_k, a0_k, a1m_k, r0_k, end_state = _rollout_shared(
-                game, logits0, logits1, start, rollout_len, rng, width,
+            s_k, a0_k, a1_k, r0_k, end_state = _rollout_shared(
+                game, logits0, logits1, start, rollout_len, rng,
             )
             if k == 0:
                 state = end_state
             states += s_k
             a0s += a0_k
-            a1_mirrors += a1m_k
+            a1s += a1_k
             g0s += _discounted_returns(r0_k, gamma)
             raw_r0 += r0_k
 
         g1s = [-g for g in g0s]
 
-        X0 = torch.tensor(np.array(states), dtype=torch.float32)
-        X1m = torch.tensor(
-            np.array([mirror_state(s, width) for s in states]), dtype=torch.float32
-        )
+        X = torch.tensor(np.array(states), dtype=torch.float32)
         A0 = torch.tensor(a0s, dtype=torch.long)
-        A1m = torch.tensor(a1_mirrors, dtype=torch.long)
+        A1 = torch.tensor(a1s, dtype=torch.long)
         G0 = torch.tensor(g0s, dtype=torch.float32)
         G1 = torch.tensor(g1s, dtype=torch.float32)
 
-        logp0 = torch.log_softmax(logits0(X0), dim=-1).gather(1, A0[:, None]).squeeze(1)
-        logp1 = torch.log_softmax(logits1(X1m), dim=-1).gather(1, A1m[:, None]).squeeze(1)
+        logp0 = torch.log_softmax(logits0(X), dim=-1).gather(1, A0[:, None]).squeeze(1)
+        logp1 = torch.log_softmax(logits1(X), dim=-1).gather(1, A1[:, None]).squeeze(1)
         # One combined loss, one backward pass: both players' gradients flow
         # into the same shared parameters (all of them for "shared", the
         # trunk for "partial") in a single step.
@@ -577,6 +592,6 @@ def train_reinforce_selfplay_shared(
 
         trace.append(float(np.mean(raw_r0)))
 
-    net0_view = _MirrorPolicyView(logits0, player=0, width=width)
-    net1_view = _MirrorPolicyView(logits1, player=1, width=width)
+    net0_view = _HeadPolicyView(logits0)
+    net1_view = _HeadPolicyView(logits1)
     return ReinforceResult(net0=net0_view, net1=net1_view, mean_reward_trace=trace)

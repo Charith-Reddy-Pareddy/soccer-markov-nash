@@ -5,6 +5,7 @@ import torch
 from soccer_nash.game import A10SoccerGame, SoccerGame
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.policy_gradient import (
+    JointPolicyNet,
     PolicyNet,
     SharedTrunkPolicyNet,
     ValueNet,
@@ -14,7 +15,6 @@ from soccer_nash.policy_gradient import (
     train_reinforce_selfplay,
     train_reinforce_selfplay_shared,
 )
-from soccer_nash.symmetry import flip_distribution, mirror_state
 
 
 def test_discounted_returns_is_a_backward_suffix_sum():
@@ -222,18 +222,33 @@ def test_train_reinforce_selfplay_shared_is_seed_reproducible(architecture):
     np.testing.assert_allclose(a.net1.policy(s0), b.net1.policy(s0))
 
 
-def test_shared_architecture_satisfies_mirror_equivariance_by_construction():
-    # Not just "close to" -- the "shared" architecture *defines* player 1's
-    # policy as flip(net(mirror(s))), so col(s) == flip(row(mirror(s)))
-    # must hold exactly, by construction, at every state, from iteration 0.
+def test_shared_architecture_does_not_impose_mirror_equivariance():
+    # An earlier version of "shared" forced player 1's policy to be
+    # flip(net(mirror(s))) -- assuming the equilibrium is symmetric, which a
+    # symmetric game does not guarantee (a symmetric game can have
+    # asymmetric Nash equilibria). The corrected version reads the raw
+    # state directly for both players and imposes no such relationship --
+    # confirmed here by checking the two policies are NOT forced equal at
+    # the same (unmirrored) state.
     game = A10SoccerGame(width=5, height=3, goal_rows=(1,))
     result = train_reinforce_selfplay_shared(
         game, architecture="shared", hidden=8, iterations=5, rollout_len=10, seed=0
     )
-    for s in list(game.states())[::7]:
-        lhs = result.net1.policy(s)
-        rhs = flip_distribution(result.net0.policy(mirror_state(s, game.width)))
-        np.testing.assert_allclose(lhs, rhs, atol=1e-7)
+    s0 = game.initial_state()
+    p0 = result.net0.policy(s0)
+    p1 = result.net1.policy(s0)
+    assert not np.allclose(p0, p1)
+
+
+def test_joint_policy_net_splits_output_into_two_independent_heads():
+    net = JointPolicyNet(hidden=8)
+    torch.manual_seed(0)
+    x = torch.tensor([0.0, 0.0, 2.0, 2.0, 0.0])
+    full = net(x)
+    assert full.shape == (8,)
+    np.testing.assert_allclose(net.logits0(x).detach(), full[:4].detach())
+    np.testing.assert_allclose(net.logits1(x).detach(), full[4:].detach())
+    assert not torch.allclose(net.logits0(x), net.logits1(x))
 
 
 def test_shared_trunk_policy_net_heads_are_independent_parameters():

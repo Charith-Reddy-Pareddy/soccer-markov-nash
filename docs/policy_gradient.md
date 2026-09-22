@@ -137,49 +137,60 @@ same 5 seeds, `train_reinforce_selfplay_shared`,
 `scripts/policy_gradient_architectures.py`:
 
 * **separate** -- the baseline above: two independent nets.
-* **shared** -- *one* `PolicyNet`. Player 1's policy at state `s` is not a
-  second output of that network; it is *defined* as the network's own
-  mirror-image policy -- query it at the board's left-right mirror image
-  and swap L/R in the result (`soccer_nash/symmetry.py`'s proven
-  equilibrium anti-symmetry, used here as a parameterization, not assumed
-  to hold mid-training). One optimizer; both players' gradients land on the
-  same weights every step.
-* **partial** -- `SharedTrunkPolicyNet`: the same mirrored-input scheme,
-  but only the trunk (geometry feature extraction) is shared; each player
-  keeps its own final linear head.
+* **shared** -- one `JointPolicyNet`: a single shared body all the way to
+  an 8-logit output (4 per player), both policies read off the same
+  forward pass on the *same raw joint state*. One optimizer; both players'
+  gradients land on the same weights every step.
+* **partial** -- `SharedTrunkPolicyNet`: only the trunk (geometry feature
+  extraction) is shared; each player keeps its own final linear head, both
+  fed the same raw state.
+
+Neither architecture uses the game's own left-right mirror symmetry to
+construct one player's policy from the other's. An earlier version of
+this experiment did exactly that for `shared` (query the net at the
+mirrored state, flip L/R) -- flagged as invalid on exactly the right
+grounds: **a symmetric game is not guaranteed to have only symmetric
+equilibria**, so building that symmetry into the architecture presupposes
+the answer to the question this experiment exists to test, and would rule
+out any genuinely asymmetric equilibrium the unconstrained game might
+actually settle on. Corrected here: both architectures now read the
+identical raw state for both players, with no transform of any kind, and
+let training find whatever relationship between the two policies it
+finds.
 
 | (5 seeds) | row agreement | col agreement | exploitability |
 |---|---|---|---|
 | separate | 0.333 ± 0.157 | 0.510 ± 0.070 | 0.863 ± 0.064 |
-| shared | 0.373 ± 0.243 | 0.373 ± 0.242 | 0.949 ± 0.023 |
-| partial | 0.364 ± 0.136 | 0.467 ± 0.104 | 0.907 ± 0.011 |
+| shared | 0.291 ± 0.127 | 0.483 ± 0.048 | 0.904 ± 0.060 |
+| partial | 0.390 ± 0.277 | 0.482 ± 0.013 | 0.897 ± 0.060 |
 
-Sharing does not help here, on either axis it was meant to help. Weight
-sharing was expected to be a variance reducer (more effective data per
-parameter, one net sees both players' rollouts) -- instead **`shared` has
-the *highest* row-agreement variance of the three** (± 0.243, worse than
-two fully independent nets), and both `shared` and `partial` are *more*
-exploitable on average than `separate` (0.949 and 0.907 vs. 0.863). The one
-thing sharing reliably buys is internal consistency, not quality: `shared`'s
-row and column agreement are within noise of each other in every seed
-(0.1878/0.1887, 0.6538/0.6538, ...) because they are, by construction, the
-same function evaluated at mirrored inputs -- confirmed directly
-(`test_shared_architecture_satisfies_mirror_equivariance_by_construction`),
-not just approximately similar.
+The qualitative finding survives the correction: **both sharing
+architectures are still more exploitable on average than two fully
+independent nets** (0.904 and 0.897 vs. 0.863), so this was not an
+artifact of the earlier flawed symmetry trick. What *did* change is
+everything about the variance and the row/column split. With no
+symmetry constraint, `shared`'s row and column agreement are no longer
+forced close to each other (0.291 vs. 0.483 -- genuinely different
+policies, confirmed directly by
+`test_shared_architecture_does_not_impose_mirror_equivariance`, which
+checks the two are *not* equal rather than that they are). `partial`'s
+row agreement now has the widest spread of any architecture in this
+comparison (± 0.277) -- one seed reached 0.704 while three others sat at
+0.188-0.189, a genuinely bimodal outcome that the old, symmetry-biased
+version never showed.
 
-The likely mechanism: self-play is supposed to model two *independent*
-optimizers, each implicitly best-responding to the other's current policy.
-Tying the two players' parameters together means every gradient step moves
-*both* players' effective policies at once, through the same weights, in a
-single combined update -- there is no "player 1's policy held fixed while
+The likely mechanism for the headline result is unchanged: self-play is
+supposed to model two *independent* optimizers, each implicitly
+best-responding to the other's current policy. Tying the two players'
+parameters together means every gradient step moves *both* players'
+effective policies at once, through the same weights, in a single
+combined update -- there is no "player 1's policy held fixed while
 player 0 improves" moment, which is closer to what two separate networks
-(each updated only by its own loss, but from the *other* player's current,
-just-sampled behaviour) approximate. Forcing a shared representation onto
-two adversaries doesn't just save parameters -- it removes some of the
-independence self-play's convergence intuition relies on, and here that
-costs more than the parameter sharing saves. `partial`, which keeps the two
-heads independent, lands between the two extremes on every metric,
-consistent with that story.
+approximate. Forcing a shared representation onto two adversaries doesn't
+just save parameters -- it removes some of the independence self-play's
+convergence intuition relies on, and here that still costs more than the
+parameter sharing saves, whether or not the architecture also happens to
+assume the equilibrium is symmetric.
 
 ## A learned baseline and an entropy bonus, tested separately
 
@@ -272,10 +283,11 @@ python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs
 `train_reinforce_selfplay(..., init_net0=, init_net1=)` are the two building
 blocks, plus `train_reinforce_selfplay(..., n_rollouts=)` for the batched
 comparison and `train_reinforce_selfplay_shared(..., architecture=)` (with
-`SharedTrunkPolicyNet`) for the weight-sharing comparison;
+`JointPolicyNet`/`SharedTrunkPolicyNet`) for the weight-sharing comparison;
 `tests/test_policy_gradient.py` checks the `init_net` seeding property
 directly (mirroring `nash_dqn.py`'s own `init_net` test), that a
 best-responder can never do better than a random opponent for any policy,
 that a rollout boundary is never treated as a continuation of another
 rollout's trajectory when computing returns, and that the `shared`
-architecture's mirror-equivariance holds exactly, not approximately.
+architecture does *not* impose mirror-equivariance between the two
+players' policies.

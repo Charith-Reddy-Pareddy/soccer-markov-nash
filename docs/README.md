@@ -78,9 +78,11 @@ technical answer, start with **[report.pdf](report.pdf)**
   per-stage-game certificate, the robustness envelope, and the prior-work
   positioning (`make verify`).
 - [generalize.md](generalize.md) — how far the switch holds: it survives board
-  scale, aspect ratio, and goal placement, but action-independent movement noise
-  (`slip`) breaks it, so the switch is specific to Littman's move-order rule
-  (`make generalize`).
+  scale, aspect ratio, and goal placement -- including a goal spanning the
+  entire boundary, which changes which states are mixed (Case 3 turns pure)
+  without breaking the switch itself -- but action-independent movement
+  noise (`slip`) does break it, so the switch is specific to Littman's
+  move-order rule (`make generalize`).
 - [mechanism.md](mechanism.md) — why a one-cell goal makes every stage game pure.
 - [proof.md](proof.md) — the single-cell pure-saddle theorem: the defender's
   closed-form optimal strategy, the dominance-solvability certificate
@@ -125,8 +127,10 @@ technical answer, start with **[report.pdf](report.pdf)**
   rollouts per gradient step (instead of one correlated trajectory) cuts
   seed-to-seed variance to zero but by collapsing every seed onto the same
   state-independent policy, not by converging closer to equilibrium; and
-  sharing weights between the two players' networks (fully, via the game's
-  own mirror symmetry, or via a shared trunk) makes the result *more*
+  sharing weights between the two players' networks (fully, via one shared
+  net reading the raw joint state, or via a shared trunk -- deliberately
+  not via the game's own mirror symmetry, since a symmetric game is not
+  guaranteed to have only symmetric equilibria) makes the result *more*
   exploitable on average than two fully independent nets, not less; giving
   batching a fair update budget instead (8x the data, not 8x fewer updates)
   stops the collapse and lands roughly even with the correlated baseline;
