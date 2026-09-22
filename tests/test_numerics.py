@@ -3,6 +3,7 @@ import pytest
 
 from soccer_nash.matrix_games import solve_zero_sum
 from soccer_nash.numerics import (
+    RoundingDiagnostic,
     certified_value,
     classify_stage_game,
     epsilon_equilibrium,
@@ -12,7 +13,6 @@ from soccer_nash.numerics import (
     mixing_entropy,
     rounding_changes_saddle,
     rounding_diagnostic,
-    RoundingDiagnostic,
     support_shape,
     value_bracket,
 )
