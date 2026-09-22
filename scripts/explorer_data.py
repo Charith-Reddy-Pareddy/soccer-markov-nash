@@ -5,14 +5,20 @@ compact JSON file for the interactive board explorer (the React app in
 For every non-terminal state of each board, writes ``V`` (player 0's exact
 value), ``row_policy`` / ``col_policy`` (player 0 / player 1's 4-action
 equilibrium mix), the raw (unoriented) ``Q`` matrix (player 0 = row,
-player 1 = col), and ``trans`` -- the real ``game.transitions()`` outcome for
+player 1 = col), ``trans`` -- the real ``game.transitions()`` outcome for
 every one of the 16 joint actions, so the explorer's "simulate N games"
 feature samples real transitions instead of a second, hand-rolled transition
-engine in JavaScript that could quietly drift from this one. All of it comes
-from the same ``NashQIteration.run_exact()`` solve docs/positions.pdf is
-built from, so the site and the PDF never disagree. Reorientation (carrier =
-row), wall-clamp ("hold") detection, and the best-response node-and-arrow
-graph are cheap enough to do client-side, so they are not precomputed here.
+engine in JavaScript that could quietly drift from this one -- and
+``rounding``: the matrix solved again at 3/2/1-decimal precision
+(:func:`soccer_nash.numerics.rounding_diagnostic`), included only when
+rounding actually changes the equilibrium's classification or support
+(:func:`soccer_nash.numerics.is_rounding_artifact`), same as
+docs/positions.md's own diagnostic tables, so a JS reimplementation of the
+zero-sum LP solver is never needed client-side. All of it comes from the
+same ``NashQIteration.run_exact()`` solve docs/positions.pdf is built from,
+so the site and the PDF never disagree. Reorientation (carrier = row),
+wall-clamp ("hold") detection, and the best-response node-and-arrow graph
+are cheap enough to do client-side, so they are not precomputed here.
 
     python scripts/explorer_data.py
 
@@ -28,6 +34,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.game import JOINT_ACTIONS, SoccerGame
 from soccer_nash.nash_q import NashQIteration
+from soccer_nash.numerics import is_rounding_artifact, rounding_diagnostic
 
 OUT = pathlib.Path("docs/data/explorer.json")
 
@@ -72,6 +79,25 @@ def r6(x: float) -> float:
 _TERM = {0: -1, 1: -2}  # sentinel indices for a terminal (goal) outcome
 
 
+def _rounding_entry(M) -> list | None:
+    """Rounding diagnostic at 3/2/1 decimals, or ``None`` if none of them is
+    a genuine artifact (classification or support change) relative to the
+    full-precision equilibrium -- see :func:`is_rounding_artifact`. Only the
+    ~3% of states where rounding actually does something get an entry, so
+    the payload stays small even though every state was checked.
+    """
+    diag = rounding_diagnostic(M, decimals=(None, 3, 2, 1))
+    full = diag[0]
+    rest = diag[1:]
+    if not any(is_rounding_artifact(full, d) for d in rest):
+        return None
+    return [
+        [d.decimals, bool(d.pure), r6(d.value), [r6(p) for p in d.row], [r6(p) for p in d.col],
+         is_rounding_artifact(full, d)]
+        for d in rest
+    ]
+
+
 def _outcome_repr(g: SoccerGame, state, a0, a1, index: dict) -> int | list[list]:
     """One joint action's outcome, as compactly as it can be:
 
@@ -106,17 +132,24 @@ def solve_board(bid: str, kw: dict) -> dict:
     index = {s: i for i, s in enumerate(state_list)}
 
     states = {}
+    rounding_flagged = 0
     for i, s in enumerate(state_list):
         x0, y0, x1, y1, b = s
         M = solver._matrix(s, result.values)
         key = f"{x0},{y0},{x1},{y1},{b}"
+        rounding = _rounding_entry(M)
+        if rounding is not None:
+            rounding_flagged += 1
         states[key] = [
             r6(result.values[s]),
             [r6(p) for p in result.row_policy[s]],
             [r6(p) for p in result.col_policy[s]],
             [[r6(M[i2, j]) for j in range(4)] for i2 in range(4)],
             [_outcome_repr(g, s, a0, a1, index) for a0, a1 in JOINT_ACTIONS],
+            rounding,
         ]
+    print(f"    {bid}: {rounding_flagged}/{len(states)} states have a "
+          f"rounding-induced artifact at 3/2/1 decimals")
 
     return {
         "state_list": [f"{x0},{y0},{x1},{y1},{b}" for x0, y0, x1, y1, b in state_list],

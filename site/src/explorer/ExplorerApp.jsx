@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, fmtPct, kickoffState, orient, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, support } from "./helpers.js";
+import { ACT, certify, fmtPct, kickoffState, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, support } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
@@ -153,10 +153,16 @@ export default function ExplorerApp() {
   }
 
   const rec = board.states[stateKey(st)];
-  const [V, rowPol, colPol, Q] = rec;
+  const [V, rowPol, colPol, Q, , rounding] = rec;
   const carrierPol = st.b === 0 ? rowPol : colPol;
   const defenderPol = st.b === 0 ? colPol : rowPol;
-  const M = orient(Q, st.b);
+  // Fixed for every state: rows = player 0's actions, columns = player 1's,
+  // never reoriented by who has the ball. An earlier version reoriented so
+  // rows were always the carrier's actions -- per the project's own research
+  // meetings, that made the matrix silently transpose between states, which
+  // is exactly what was confusing a reader tracking player 0/player 1
+  // physically. Which player is carrying is shown separately below.
+  const M = Q;
   const cert = certify(M);
   const cs = support(carrierPol), ds = support(defenderPol);
 
@@ -236,7 +242,7 @@ export default function ExplorerApp() {
             <div className="panel">
               <div className={"readout-kind " + cert.kind}>
                 {cert.kind === "pure"
-                  ? `Pure equilibrium — saddle at ${ACT[cert.i]} / ${ACT[cert.j]}`
+                  ? `Pure equilibrium — saddle at player 0: ${ACT[cert.i]}, player 1: ${ACT[cert.j]}`
                   : `Mixed equilibrium — gap ${cert.gap.toFixed(4)}`}
               </div>
               <div className="state-key mono">
@@ -257,8 +263,8 @@ export default function ExplorerApp() {
                 </div>
               </div>
               <p className="hint mono" style={{ margin: "0 0 .5rem" }}>
-                rows = player {st.b === 0 ? 0 : 1} (carrier) &middot; columns = player{" "}
-                {st.b === 0 ? 1 : 0} (defender) &middot; cells = carrier's payoff
+                rows = player 0 &middot; columns = player 1 &middot; cells = player 0's
+                payoff &mdash; fixed for every state, not reoriented by who has the ball
               </p>
               {qview === "table" ? <QMatrixTable M={M} /> : <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>}
 
@@ -273,10 +279,12 @@ export default function ExplorerApp() {
                 </div>
               </div>
               <div className="legend-row">
-                <span className="k"><span className="swatch" style={{ background: "var(--pitch)" }}></span>high for the carrier</span>
-                <span className="k"><span className="swatch" style={{ background: "var(--ember)" }}></span>low for the carrier</span>
+                <span className="k"><span className="swatch" style={{ background: "var(--pitch)" }}></span>high for player 0</span>
+                <span className="k"><span className="swatch" style={{ background: "var(--ember)" }}></span>low for player 0</span>
                 <span className="k">dashed ring &mdash; a wall clamp, not a move (see <a href="positions.md">positions.md</a>)</span>
               </div>
+
+              <RoundingDiagnostic V={V} rowPol={rowPol} colPol={colPol} cert={cert} rounding={rounding} />
             </div>
           </div>
 
@@ -361,6 +369,84 @@ export default function ExplorerApp() {
       </section>
       <Footer />
     </>
+  );
+}
+
+// Precompiled by scripts/explorer_data.py from soccer_nash.numerics
+// .rounding_diagnostic: the *same* stage-game matrix, solved fresh after
+// rounding it to 3/2/1 decimal places, not just a re-labelled version of the
+// exact solve -- the "we definitely need some kind of approximation
+// rounding" question from the project's own research meetings, made
+// checkable at any position rather than only the fourteen documented cases
+// (docs/positions.md, docs/numerics.md). `rounding` is `null` when none of
+// the three precisions actually changes the equilibrium's classification or
+// support relative to full precision (soccer_nash.numerics
+// .is_rounding_artifact); that is true for the overwhelming majority of
+// states, so most positions just report that rounding is safe here.
+function policyCell(pol) {
+  return support(pol).map((i) => `${ACT[i]} ${fmtPct(pol[i])}`).join(" / ");
+}
+
+function RoundingDiagnostic({ V, rowPol, colPol, cert, rounding }) {
+  const fullRow = {
+    label: "Full",
+    pure: cert.kind === "pure",
+    value: V,
+    row: rowPol,
+    col: colPol,
+    artifact: false,
+  };
+  const rows = rounding
+    ? [
+      fullRow,
+      ...rounding.map(([decimals, pure, value, row, col, artifact]) => ({
+        label: `${decimals} decimal${decimals === 1 ? "" : "s"}`,
+        pure,
+        value,
+        row,
+        col,
+        artifact,
+      })),
+    ]
+    : null;
+
+  return (
+    <div style={{ marginTop: "1.4rem" }}>
+      <div className="eyebrow" style={{ margin: "0 0 .5rem" }}>Rounding diagnostic</div>
+      {rows ? (
+        <>
+          <p className="hint" style={{ margin: "0 0 .6rem" }}>
+            This matrix, solved again after rounding it to each precision (not just
+            checking whether the classification flips). <b>Bold</b> rows are genuine
+            artifacts &mdash; the pure/mixed classification or which actions carry
+            weight actually changes; a shifted percentage split within the same
+            support does not count.
+          </p>
+          <table className="rounding">
+            <thead>
+              <tr><th>Precision</th><th>Classification</th><th>Value</th><th>Player 0</th><th>Player 1</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.label} className={r.artifact ? "artifact" : ""}>
+                  <td>{r.label}</td>
+                  <td>{r.pure ? "pure" : "mixed"}</td>
+                  <td>{r.value >= 0 ? "+" : ""}{r.value.toFixed(4)}</td>
+                  <td>{policyCell(r.row)}</td>
+                  <td>{policyCell(r.col)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      ) : (
+        <p className="hint" style={{ margin: 0 }}>
+          Rounding this matrix to 3, 2, or 1 decimal place changes neither the
+          pure/mixed classification nor which actions carry weight for either
+          player &mdash; the equilibrium shown above is not a rounding artifact.
+        </p>
+      )}
+    </div>
   );
 }
 
