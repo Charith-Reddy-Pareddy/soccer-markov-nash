@@ -48,11 +48,14 @@ FIELDS = [
     "seed", "train_time_s", "final_mse", "epochs_to_plateau", "still_improving",
     "max_value_error", "mean_value_error",
     "action_agreement", "classification_agreement", "duality_gap",
+    "max_entrywise_error", "max_equilibrium_regret",
     "fit_max_value_error", "fit_action_agreement",
     "fit_classification_agreement", "fit_duality_gap",
+    "fit_max_entrywise_error", "fit_max_equilibrium_regret",
     "warm_train_time_s", "warm_final_mse",
     "warm_max_value_error", "warm_mean_value_error",
     "warm_action_agreement", "warm_classification_agreement", "warm_duality_gap",
+    "warm_max_entrywise_error", "warm_max_equilibrium_regret",
     "policy_action_agreement", "policy_max_regret", "policy_duality_gap",
 ]
 
