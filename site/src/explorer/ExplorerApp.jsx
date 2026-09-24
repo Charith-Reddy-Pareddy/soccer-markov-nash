@@ -443,6 +443,30 @@ export default function ExplorerApp() {
                   <span><b>Defender</b> &mdash; {ds.map((i) => `${ACT[i]} ${fmtPct(defenderPol[i])}`).join(" / ")}</span>
                 </div>
               </div>
+
+              <div className="mix-tags">
+                {support(rowPol).length > 1 && <span className="mix-tag p0">Player 0 must mix here</span>}
+                {support(colPol).length > 1 && <span className="mix-tag p1">Player 1 must mix here</span>}
+              </div>
+              <div className="move-bars">
+                <div className="move-bars-title"><span className="dot" style={{ background: "var(--p0)" }}></span>Player 0 next move</div>
+                {ACT.map((a, i) => (
+                  <div className="move-bar-row" key={"p0-" + a}>
+                    <span className="move-bar-label">{a}</span>
+                    <span className="move-bar-track"><span className="move-bar-fill p0" style={{ width: `${(rowPol[i] * 100).toFixed(2)}%` }}></span></span>
+                    <span className="move-bar-pct">{(rowPol[i] * 100).toFixed(4)}%</span>
+                  </div>
+                ))}
+                <div className="move-bars-title" style={{ marginTop: ".8rem" }}><span className="dot" style={{ background: "var(--p1)" }}></span>Player 1 next move</div>
+                {ACT.map((a, i) => (
+                  <div className="move-bar-row" key={"p1-" + a}>
+                    <span className="move-bar-label">{a}</span>
+                    <span className="move-bar-track"><span className="move-bar-fill p1" style={{ width: `${(colPol[i] * 100).toFixed(2)}%` }}></span></span>
+                    <span className="move-bar-pct">{(colPol[i] * 100).toFixed(4)}%</span>
+                  </div>
+                ))}
+              </div>
+
               <div className="legend-row">
                 <span className="k"><span className="swatch" style={{ background: "var(--pitch)" }}></span>high for player 0</span>
                 <span className="k"><span className="swatch" style={{ background: "var(--ember)" }}></span>low for player 0</span>
