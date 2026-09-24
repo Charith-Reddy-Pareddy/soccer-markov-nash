@@ -38,7 +38,7 @@ export default function ExplorerApp() {
   const [activePlayer, setActivePlayer] = useState(0);
   const [qview, setQview] = useState("table");
   const [st, setSt] = useState(null);
-  const [viewMode, setViewMode] = useState("pieces");
+  const [showV, setShowV] = useState(false);
   const [trials, setTrials] = useState(2000);
   const [simResult, setSimResult] = useState(null);
   const [simming, setSimming] = useState(false);
@@ -71,7 +71,7 @@ export default function ExplorerApp() {
   // uses. V is always stored as player 0's value, so player 1's own view of
   // it is the zero-sum negation.
   const heatmap = useMemo(() => {
-    if (!board || !st || viewMode !== "heatmap") return null;
+    if (!board || !st || !showV) return null;
     const m = new Map();
     for (let x = 0; x < board.width; x++) {
       for (let y = 0; y < board.height; y++) {
@@ -85,7 +85,7 @@ export default function ExplorerApp() {
       }
     }
     return m;
-  }, [board, st, activePlayer, viewMode]);
+  }, [board, st, activePlayer, showV]);
 
   if (error) {
     return (
@@ -212,31 +212,28 @@ export default function ExplorerApp() {
                 </div>
               </div>
               <div className="controls">
-                <div className="seg" role="group" aria-label="board view">
-                  <button className={viewMode === "pieces" ? "active view" : ""} onClick={() => setViewMode("pieces")}>Pieces &amp; arrows</button>
-                  <button className={viewMode === "heatmap" ? "active view" : ""} onClick={() => setViewMode("heatmap")}>Value heatmap</button>
-                </div>
+                <label className="v-toggle">
+                  <input type="checkbox" checked={showV} onChange={(e) => setShowV(e.target.checked)} />
+                  Show V(s)
+                </label>
               </div>
               <div className="controls">
                 <button className="iconbtn" onClick={() => moveTo(kickoffState(board))}>Kickoff</button>
                 <button className="iconbtn" onClick={() => moveTo(randomState())}>Random position</button>
                 <button className="iconbtn" onClick={() => moveTo(randomMixedState())}>Random must-guess position</button>
               </div>
-              {viewMode === "heatmap" ? (
-                <p className="hint">Every cell is <b>V</b> for player {activePlayer} if it stood
-                  there instead &mdash; {activePlayer === 0 ? "player 1" : "player 0"} and the
-                  ball held fixed where they are now. Click a cell to actually move player{" "}
-                  {activePlayer} there and re-sweep from the new position.{" "}
-                  <span style={{ color: "var(--pitch)" }}>Green</span> means that cell is good for
-                  the player being swept; <span style={{ color: "var(--ember)" }}>orange</span>{" "}
-                  means it is bad &mdash; the same lookup as the single-state <b>V</b> above, run
-                  over every legal cell instead of just one.</p>
-              ) : (
-                <p className="hint">Click a cell to move the selected player there.{" "}
-                  <span style={{ color: "var(--p0)" }}>Blue</span> is player 0, attacking the
-                  right goal; <span style={{ color: "var(--p1)" }}>green</span> is player 1,
-                  attacking the left. The small dot marks the ball.</p>
-              )}
+              <p className="hint">Click a cell to move the selected player there.{" "}
+                <span style={{ color: "var(--p0)" }}>Blue</span> is player 0, attacking the
+                right goal; <span style={{ color: "var(--p1)" }}>green</span> is player 1,
+                attacking the left. The small dot marks the ball.{" "}
+                {showV && <>Every cell is also shaded and labelled with <b>V</b> for player{" "}
+                  {activePlayer} if it stood there instead &mdash;{" "}
+                  {activePlayer === 0 ? "player 1" : "player 0"} and the ball held fixed where
+                  they are now (switch which player moves to sweep the other one).{" "}
+                  <span style={{ color: "var(--pitch)" }}>Green</span> is good for the player
+                  being swept; <span style={{ color: "var(--ember)" }}>orange</span> is bad
+                  &mdash; the same lookup as the single-state <b>V</b> above, run over every
+                  legal cell instead of just one.</>}</p>
             </div>
 
             <div className="panel">

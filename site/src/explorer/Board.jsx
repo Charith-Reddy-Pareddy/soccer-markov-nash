@@ -141,10 +141,8 @@ export default function Board({ board, state, activePlayer, onCellClick, heatmap
         );
       })}
       {cells}
-      {!heatmap && <>
-        <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} />
-        <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} />
-      </>}
+      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} />
+      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} />
       <Player cx={c0[0]} cy={c0[1]} label="0" colour="var(--p0)" carrier={state.b === 0} active={activePlayer === 0} />
       <Player cx={c1[0]} cy={c1[1]} label="1" colour="var(--p1)" carrier={state.b === 1} active={activePlayer === 1} />
       <circle cx={bc[0] + 15} cy={bc[1] - 15} r={5.5} fill="var(--ball)" stroke="var(--raise)" strokeWidth={1.3} />

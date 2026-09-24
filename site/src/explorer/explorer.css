@@ -14,6 +14,9 @@
 .seg button.active.p0 { background: var(--p0); color: #fff; }
 .seg button.active.p1 { background: var(--p1); color: #fff; }
 .seg button.active.view { background: var(--pitch); color: #fff; }
+
+.v-toggle { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--rule-strong); border-radius: 8px; padding: .5rem .95rem; font-weight: 600; font-size: .86rem; color: var(--ink-soft); cursor: pointer; font-family: "Barlow Semi Condensed", sans-serif; }
+.v-toggle input { accent-color: var(--pitch); width: 15px; height: 15px; cursor: pointer; }
 .iconbtn { border: 1px solid var(--rule-strong); background: var(--raise); color: var(--ink); border-radius: 8px; padding: .5rem .95rem; font-weight: 600; font-size: .86rem; cursor: pointer; font-family: "Barlow Semi Condensed", sans-serif; }
 .iconbtn:hover { border-color: var(--ink-faint); }
 .iconbtn:disabled { opacity: .55; cursor: default; }
