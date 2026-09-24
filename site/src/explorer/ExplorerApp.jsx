@@ -343,16 +343,35 @@ export default function ExplorerApp() {
                 </button>
                 <button className="iconbtn" onClick={restartPlay}>Restart game</button>
               </div>
-              <p className="hint mono">
-                Step {playHistory.length - 1} &middot; discounted return so far{" "}
-                {(playDone ? (winner === 0 ? 1 : -1) * data.gamma ** (playHistory.length - 1) : 0).toFixed(6)}
-                {" "}&middot; last move{" "}
-                {lastMove ? `P0 ${ACT[lastMove.a0]} / P1 ${ACT[lastMove.a1]}` : "none yet"}
-                {playDone && <>
-                  {" "}&mdash;{" "}
-                  <b style={{ color: winner === 0 ? "var(--p0)" : "var(--p1)" }}>player {winner} scored</b>
-                </>}
-              </p>
+              <div className="sim-stats">
+                <div>
+                  <div className="s-k">V(s)</div>
+                  <div className="s-v">{V >= 0 ? "+" : ""}{V.toFixed(6)}</div>
+                </div>
+                <div>
+                  <div className="s-k">Step</div>
+                  <div className="s-v">{playHistory.length - 1}</div>
+                </div>
+                <div>
+                  <div className="s-k">Discounted return so far</div>
+                  <div className="s-v">
+                    {(playDone ? (winner === 0 ? 1 : -1) * data.gamma ** (playHistory.length - 1) : 0).toFixed(6)}
+                  </div>
+                </div>
+                <div>
+                  <div className="s-k">Last move</div>
+                  <div className="s-v">
+                    {lastMove ? `P0 ${ACT[lastMove.a0]}, P1 ${ACT[lastMove.a1]}` : "none yet"}
+                  </div>
+                </div>
+              </div>
+              {playDone && (
+                <p className="hint" style={{ margin: ".6rem 0 0" }}>
+                  <b style={{ color: winner === 0 ? "var(--p0)" : "var(--p1)" }}>
+                    Player {winner} scored.
+                  </b> Restart game to play again.
+                </p>
+              )}
               <p className="hint">
                 Both players act by the policies selected above (same menu <b>Simulate</b>{" "}
                 below scores in bulk) &mdash; <b>Step</b> resolves and samples one joint action
