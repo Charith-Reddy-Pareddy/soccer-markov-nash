@@ -110,6 +110,20 @@ function resolvePolicies(type0, type1, rowPol, colPol, M) {
   return [p0, p1];
 }
 
+// One joint action, policy-resolved and sampled exactly like simulateGames'
+// own inner loop (this is that same loop, factored out) -- for the
+// interactive Step/Play controls, which need to watch one game unfold on the
+// board itself rather than only tally win/draw stats over many of them.
+// Returns the action pair and either the next state's index into
+// `board.state_list` or a terminal sentinel (-1 player 0 scored, -2 player 1).
+export function stepPolicy(board, key, type0, type1) {
+  const [, rowPol, colPol, M, trans] = board.states[key];
+  const [p0, p1] = resolvePolicies(type0, type1, rowPol, colPol, M);
+  const a0 = sampleAction(p0), a1 = sampleAction(p1);
+  const next = resolveOutcome(trans[a0 * 4 + a1]);
+  return { a0, a1, next };
+}
+
 // Self-play the chosen policies against each other from `startKey`, sampling
 // real `game.transitions()` outcomes (precomputed by scripts/explorer_data.py,
 // not a second transition engine reimplemented here) -- the same "simulate N

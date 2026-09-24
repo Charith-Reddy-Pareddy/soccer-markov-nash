@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, fmtPct, kickoffState, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, support } from "./helpers.js";
+import { ACT, certify, fmtPct, kickoffState, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
@@ -44,6 +44,15 @@ export default function ExplorerApp() {
   const [simming, setSimming] = useState(false);
   const [p0Type, setP0Type] = useState("minimax");
   const [p1Type, setP1Type] = useState("minimax");
+  // Step/Play trajectory: playHistory is every real (non-terminal) state
+  // visited since the last reset, so "Back" and "Restart game" both have
+  // somewhere to go; a goal doesn't extend it (there's no legal `st` for a
+  // terminal state), it just sets playDone/winner instead.
+  const [playHistory, setPlayHistory] = useState(null);
+  const [playDone, setPlayDone] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [lastMove, setLastMove] = useState(null);
+  const [autoPlaying, setAutoPlaying] = useState(false);
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/explorer.json`)
@@ -53,7 +62,9 @@ export default function ExplorerApp() {
       })
       .then((json) => {
         setData(json);
-        setSt(kickoffState(json.boards.canonical));
+        const kickoff = kickoffState(json.boards.canonical);
+        setSt(kickoff);
+        setPlayHistory([kickoff]);
       })
       .catch((e) => setError(e.message));
   }, []);
@@ -87,6 +98,20 @@ export default function ExplorerApp() {
     return m;
   }, [board, st, activePlayer, showV]);
 
+  // "Play": step automatically on a visible interval, so the trajectory can
+  // actually be watched move by move rather than jumping straight to the
+  // end. Stops itself on a goal, at the max_steps=100 safety cap (matching
+  // the game's own draw rule), or when the user pauses. No dependency array
+  // on purpose: it re-arms after every render (i.e. after every step, since
+  // stepOnce's setSt/setPlayHistory each trigger one), always closing over
+  // the render's current st/p0Type/p1Type -- a narrower dependency list
+  // would read a stale state or policy mid-sequence.
+  useEffect(() => {
+    if (!autoPlaying || playDone || !playHistory || playHistory.length - 1 >= 100) return;
+    const t = setTimeout(() => stepOnce(), 450);
+    return () => clearTimeout(t);
+  });
+
   if (error) {
     return (
       <>
@@ -96,7 +121,7 @@ export default function ExplorerApp() {
       </>
     );
   }
-  if (!data || !st) {
+  if (!data || !st || !playHistory) {
     return (
       <>
         <Nav current="explorer" />
@@ -106,18 +131,30 @@ export default function ExplorerApp() {
     );
   }
 
+  // Any time the position itself changes (not just a step along it), the
+  // Step/Play trajectory restarts from there too -- a stale "discounted
+  // return so far" or "player 0 scored" banner from the old position would
+  // be actively misleading, not just out of date.
+  function resetPosition(newSt) {
+    setSt(newSt);
+    setSimResult(null);
+    setPlayHistory([newSt]);
+    setPlayDone(false);
+    setWinner(null);
+    setLastMove(null);
+    setAutoPlaying(false);
+  }
+
   function switchBoard(id) {
     setCurrentBoard(id);
     setActivePlayer(0);
-    setSt(kickoffState(data.boards[id]));
-    setSimResult(null); // a stale result from the old board would be misleading
+    resetPosition(kickoffState(data.boards[id]));
   }
 
   function onCellClick(x, y) {
     const other = activePlayer === 0 ? [st.x1, st.y1] : [st.x0, st.y0];
     if (x === other[0] && y === other[1]) return; // occupied, no swap
-    setSt(activePlayer === 0 ? { ...st, x0: x, y0: y } : { ...st, x1: x, y1: y });
-    setSimResult(null); // a stale result from the old position would be misleading
+    resetPosition(activePlayer === 0 ? { ...st, x0: x, y0: y } : { ...st, x1: x, y1: y });
   }
 
   function randomState() {
@@ -143,13 +180,58 @@ export default function ExplorerApp() {
     const p = PRESETS[n];
     setCurrentBoard(p.board);
     setActivePlayer(0);
-    setSt(toState(p.state));
-    setSimResult(null);
+    resetPosition(toState(p.state));
   }
 
   function moveTo(newSt) {
-    setSt(newSt);
-    setSimResult(null); // a stale result from the old position would be misleading
+    resetPosition(newSt);
+  }
+
+  // One Step/Play tick: resolve both players' chosen policy at the current
+  // state, sample an action pair, and either move to the real next state
+  // (pushed onto playHistory) or, if it's a goal, stop without one (there is
+  // no legal `st` for a terminal state) -- the same stepPolicy() resolution
+  // simulateGames' own inner loop uses, just watched one step at a time.
+  function stepOnce() {
+    if (playDone) return;
+    const { a0, a1, next } = stepPolicy(board, stateKey(st), p0Type, p1Type);
+    setLastMove({ a0, a1 });
+    if (next === -1 || next === -2) {
+      setPlayDone(true);
+      setWinner(next === -1 ? 0 : 1);
+      setAutoPlaying(false);
+      return;
+    }
+    const nextSt = toState(board.state_list[next].split(",").map(Number));
+    setSt(nextSt);
+    setPlayHistory((h) => [...h, nextSt]);
+  }
+
+  function backOnce() {
+    setAutoPlaying(false);
+    setLastMove(null);
+    if (playDone) {
+      setPlayDone(false);
+      setWinner(null);
+      return;
+    }
+    setPlayHistory((h) => {
+      if (h.length <= 1) return h;
+      const nh = h.slice(0, -1);
+      setSt(nh[nh.length - 1]);
+      return nh;
+    });
+  }
+
+  function restartPlay() {
+    setAutoPlaying(false);
+    setPlayDone(false);
+    setWinner(null);
+    setLastMove(null);
+    setPlayHistory((h) => {
+      setSt(h[0]);
+      return [h[0]];
+    });
   }
 
   const rec = board.states[stateKey(st)];
@@ -234,6 +316,50 @@ export default function ExplorerApp() {
                   being swept; <span style={{ color: "var(--ember)" }}>orange</span> is bad
                   &mdash; the same lookup as the single-state <b>V</b> above, run over every
                   legal cell instead of just one.</>}</p>
+
+              <div className="controls" style={{ marginTop: "1.4rem" }}>
+                <div className="seg" role="group" aria-label="player 0's policy">
+                  {POLICY_TYPES.map((t) => (
+                    <button key={t} className={p0Type === t ? "active p0" : ""} onClick={() => setP0Type(t)}>
+                      P0: {POLICY_LABELS[t]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="controls">
+                <div className="seg" role="group" aria-label="player 1's policy">
+                  {POLICY_TYPES.map((t) => (
+                    <button key={t} className={p1Type === t ? "active p1" : ""} onClick={() => setP1Type(t)}>
+                      P1: {POLICY_LABELS[t]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="controls">
+                <button className="iconbtn" onClick={backOnce} disabled={playHistory.length <= 1 && !playDone}>Back</button>
+                <button className="iconbtn" onClick={stepOnce} disabled={playDone}>Step</button>
+                <button className="iconbtn" onClick={() => setAutoPlaying((p) => !p)} disabled={playDone}>
+                  {autoPlaying ? "Pause" : "Play"}
+                </button>
+                <button className="iconbtn" onClick={restartPlay}>Restart game</button>
+              </div>
+              <p className="hint mono">
+                Step {playHistory.length - 1} &middot; discounted return so far{" "}
+                {(playDone ? (winner === 0 ? 1 : -1) * data.gamma ** (playHistory.length - 1) : 0).toFixed(6)}
+                {" "}&middot; last move{" "}
+                {lastMove ? `P0 ${ACT[lastMove.a0]} / P1 ${ACT[lastMove.a1]}` : "none yet"}
+                {playDone && <>
+                  {" "}&mdash;{" "}
+                  <b style={{ color: winner === 0 ? "var(--p0)" : "var(--p1)" }}>player {winner} scored</b>
+                </>}
+              </p>
+              <p className="hint">
+                Both players act by the policies selected above (same menu <b>Simulate</b>{" "}
+                below scores in bulk) &mdash; <b>Step</b> resolves and samples one joint action
+                at the current state, <b>Play</b> repeats that automatically, <b>Back</b>{" "}
+                undoes the last one, and <b>Restart game</b> returns to the position this
+                trajectory started from.
+              </p>
             </div>
 
             <div className="panel">
@@ -333,26 +459,9 @@ export default function ExplorerApp() {
               4&times;4 Q matrix &mdash; the same menu <a href="tournament.md">docs/tournament.md</a>{" "}
               scores Littman's Table 3 against. Compare <b>canonical</b> (random move
               order) against <b>canonical (deterministic)</b> the way a member's own
-              site did.
+              site did. Uses the same <b>P0</b> / <b>P1</b> policies selected above the
+              board (currently <b>{POLICY_LABELS[p0Type]}</b> / <b>{POLICY_LABELS[p1Type]}</b>).
             </p>
-            <div className="controls" style={{ margin: "0 0 .7rem" }}>
-              <div className="seg" role="group" aria-label="player 0's policy">
-                {POLICY_TYPES.map((t) => (
-                  <button key={t} className={p0Type === t ? "active p0" : ""} onClick={() => setP0Type(t)}>
-                    P0: {POLICY_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="controls" style={{ margin: "0 0 .7rem" }}>
-              <div className="seg" role="group" aria-label="player 1's policy">
-                {POLICY_TYPES.map((t) => (
-                  <button key={t} className={p1Type === t ? "active p1" : ""} onClick={() => setP1Type(t)}>
-                    P1: {POLICY_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="controls">
               <div className="seg" role="group" aria-label="number of simulated games">
                 {[500, 2000, 10000].map((n) => (
