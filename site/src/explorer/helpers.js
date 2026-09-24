@@ -13,6 +13,60 @@ export function wallMask(x, y, w, h) {
   return { U: y === h - 1, D: y === 0, L: x === 0, R: x === w - 1 };
 }
 
+// The best simple fraction approximating p, denominator <= maxDenominator --
+// continued-fraction convergents, the standard algorithm for "closest nice
+// ratio," not just rounding to the nearest 1/2, 1/3, 1/4, ... in a fixed
+// list. Purely a *display* aid: every computation stays in exact floating
+// percentages, this only formats the result afterward, so it never affects
+// which action the site says is optimal.
+export function nearestNiceFraction(p, maxDenominator = 20) {
+  if (!(p > 0)) return "0";
+  if (p >= 1) return "1";
+  let h0 = 0, h1 = 1, k0 = 1, k1 = 0;
+  let b = p;
+  let num = 0, den = 1;
+  for (let i = 0; i < 30; i++) {
+    const a = Math.floor(b);
+    const h2 = a * h1 + h0, k2 = a * k1 + k0;
+    if (k2 > maxDenominator) break;
+    num = h2; den = k2;
+    h0 = h1; h1 = h2; k0 = k1; k1 = k2;
+    const frac = b - a;
+    if (frac < 1e-9) break;
+    b = 1 / frac;
+  }
+  return `${num}/${den}`;
+}
+
+// Each action's expected value against the *opponent's actual mix* -- the
+// literal indifference condition a mixed equilibrium satisfies: every
+// action in a player's support must tie for the best available expected
+// value, and every action outside it must do strictly worse. Mirrors
+// scripts/positions.py's `_indifference` (e_row = M @ colPol, e_col =
+// -(rowPol @ M)), not a separate reimplementation of the game-theory.
+export function expectedValues(M, rowPol, colPol) {
+  const eRow = M.map((row) => row.reduce((s, v, j) => s + v * colPol[j], 0));
+  const eCol = ACT.map((_, j) => -M.reduce((s, row, i) => s + rowPol[i] * row[j], 0));
+  return { eRow, eCol };
+}
+
+// Where a specific joint action (a0, a1) actually leads, in plain terms --
+// resolved from the same precomputed `trans` outcomes simulateGames and
+// stepPolicy sample from, not a second transition engine. A pure saddle's
+// destination is exactly this, at the saddle's own (i, j).
+export function describeOutcome(board, key, a0Idx, a1Idx) {
+  const [, , , , trans] = board.states[key];
+  const entry = trans[a0Idx * 4 + a1Idx];
+  const describe = (idx) => {
+    if (idx === -1) return "player 0 scores";
+    if (idx === -2) return "player 1 scores";
+    const [x0, y0, x1, y1, b] = board.state_list[idx].split(",").map(Number);
+    return `(${x0}, ${y0}, ${x1}, ${y1}, ${b})`;
+  };
+  if (typeof entry === "number") return describe(entry);
+  return entry.map(([idx, p]) => `${fmtPct(p)}: ${describe(idx)}`).join(" or ");
+}
+
 // Mirrors soccer_nash/matrix_games.py's pure_bounds: the row player
 // maximises its worst case, the column player minimises its best case.
 export function certify(Q, tol = 1e-6) {

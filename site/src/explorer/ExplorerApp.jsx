@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, fmtPct, kickoffState, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support } from "./helpers.js";
+import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
@@ -448,13 +448,25 @@ export default function ExplorerApp() {
                 {support(rowPol).length > 1 && <span className="mix-tag p0">Player 0 must mix here</span>}
                 {support(colPol).length > 1 && <span className="mix-tag p1">Player 1 must mix here</span>}
               </div>
+
+              {cert.kind === "pure" && (
+                <p className="hint" style={{ margin: ".6rem 0 0" }}>
+                  The optimal joint action (<span className="mono">{ACT[cert.i]}</span> /{" "}
+                  <span className="mono">{ACT[cert.j]}</span>) leads to{" "}
+                  <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>.
+                </p>
+              )}
+
               <div className="move-bars">
                 <div className="move-bars-title"><span className="dot" style={{ background: "var(--p0)" }}></span>Player 0 next move</div>
                 {ACT.map((a, i) => (
                   <div className="move-bar-row" key={"p0-" + a}>
                     <span className="move-bar-label">{a}</span>
                     <span className="move-bar-track"><span className="move-bar-fill p0" style={{ width: `${(rowPol[i] * 100).toFixed(2)}%` }}></span></span>
-                    <span className="move-bar-pct">{(rowPol[i] * 100).toFixed(4)}%</span>
+                    <span className="move-bar-pct">
+                      {(rowPol[i] * 100).toFixed(4)}%
+                      {rowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(rowPol[i])})</span>}
+                    </span>
                   </div>
                 ))}
                 <div className="move-bars-title" style={{ marginTop: ".8rem" }}><span className="dot" style={{ background: "var(--p1)" }}></span>Player 1 next move</div>
@@ -462,10 +474,47 @@ export default function ExplorerApp() {
                   <div className="move-bar-row" key={"p1-" + a}>
                     <span className="move-bar-label">{a}</span>
                     <span className="move-bar-track"><span className="move-bar-fill p1" style={{ width: `${(colPol[i] * 100).toFixed(2)}%` }}></span></span>
-                    <span className="move-bar-pct">{(colPol[i] * 100).toFixed(4)}%</span>
+                    <span className="move-bar-pct">
+                      {(colPol[i] * 100).toFixed(4)}%
+                      {colPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(colPol[i])})</span>}
+                    </span>
                   </div>
                 ))}
               </div>
+
+              {cert.kind === "mixed" && (() => {
+                const { eRow, eCol } = expectedValues(M, rowPol, colPol);
+                const rowSup = support(rowPol), colSup = support(colPol);
+                return (
+                  <div className="indiff-block">
+                    <p className="hint" style={{ margin: ".9rem 0 .4rem" }}>
+                      <b>Why indifferent</b> &mdash; each action's expected value against the
+                      opponent's actual mix, computed exactly (<span className="mono">M &middot; q</span>{" "}
+                      for player 0, <span className="mono">&minus;(p &middot; M)</span> for player 1).
+                      A support action (bold) must tie the best available value; everything else
+                      must do strictly worse, or it wouldn't be an equilibrium.
+                    </p>
+                    <div className="indiff-row">
+                      <span className="dot" style={{ background: "var(--p0)" }}></span>
+                      Player 0:{" "}
+                      {ACT.map((a, i) => (
+                        <span key={a} className={"mono" + (rowSup.includes(i) ? " tied" : "")}>
+                          {a}={eRow[i] >= 0 ? "+" : ""}{eRow[i].toFixed(6)}{" "}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="indiff-row">
+                      <span className="dot" style={{ background: "var(--p1)" }}></span>
+                      Player 1:{" "}
+                      {ACT.map((a, i) => (
+                        <span key={a} className={"mono" + (colSup.includes(i) ? " tied" : "")}>
+                          {a}={eCol[i] >= 0 ? "+" : ""}{eCol[i].toFixed(6)}{" "}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="legend-row">
                 <span className="k"><span className="swatch" style={{ background: "var(--pitch)" }}></span>high for player 0</span>
