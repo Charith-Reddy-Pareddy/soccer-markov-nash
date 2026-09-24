@@ -266,7 +266,30 @@ export default function ExplorerApp() {
                 rows = player 0 &middot; columns = player 1 &middot; cells = player 0's
                 payoff &mdash; fixed for every state, not reoriented by who has the ball
               </p>
-              {qview === "table" ? <QMatrixTable M={M} /> : <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>}
+              <p className="hint" style={{ margin: "0 0 .6rem" }}>
+                Best single action for player 0 guarantees{" "}
+                <span className="mono">{cert.maximin.toFixed(4)}</span> &middot; best single
+                action for player 1 holds player 0 to{" "}
+                <span className="mono">{cert.minimax.toFixed(4)}</span> &middot; gap{" "}
+                <span className="mono">{cert.gap.toFixed(4)}</span>, so{" "}
+                {cert.kind === "pure"
+                  ? "a pure saddle point exists and no mixing is needed."
+                  : "neither side can guarantee more with a single fixed action, so a mixed strategy is required."}
+              </p>
+              {qview === "table" ? (
+                <QMatrixTable M={M} rowPol={rowPol} colPol={colPol} />
+              ) : (
+                <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>
+              )}
+              {qview === "table" && (
+                <p className="hint" style={{ margin: ".5rem 0 0" }}>
+                  Each cell is what the game is worth to player 0 if this action pair is played
+                  now and both play optimally afterwards:{" "}
+                  <span className="mono">r + &gamma;&middot;V(next state)</span>. Row and column
+                  headers show each player's own mix; <span className="support-swatch"></span>
+                  highlighted cells are the pair both players actually use.
+                </p>
+              )}
 
               <div className="support-block">
                 <div className="row">

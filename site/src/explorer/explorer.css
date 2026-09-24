@@ -51,6 +51,9 @@ table.qmatrix { border-collapse: collapse; width: 100%; font-size: .86rem; margi
 table.qmatrix th, table.qmatrix td { padding: .5rem .3rem; text-align: center; border: 1px solid var(--rule); }
 table.qmatrix th { background: var(--tint); font-weight: 600; color: var(--ink-soft); font-size: .78rem; }
 table.qmatrix td.cell { font-weight: 600; }
+table.qmatrix .qmatrix-pct { font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: .68rem; color: var(--ink-faint); margin-top: .15rem; }
+table.qmatrix td.cell.support { box-shadow: inset 0 0 0 2px var(--pitch); }
+.support-swatch { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--pitch); border-radius: 2px; vertical-align: -1px; }
 
 .support-block { display: grid; gap: .55rem; font-size: .85rem; color: var(--ink-soft); }
 .support-block .row { display: flex; gap: .5rem; align-items: baseline; }

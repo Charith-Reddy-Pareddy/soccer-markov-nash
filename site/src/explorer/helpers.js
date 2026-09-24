@@ -22,9 +22,9 @@ export function certify(Q, tol = 1e-6) {
   const minimax = Math.min(...colMax);
   const gap = minimax - maximin;
   if (gap <= tol) {
-    return { kind: "pure", i: rowMin.indexOf(maximin), j: colMax.indexOf(minimax), gap };
+    return { kind: "pure", i: rowMin.indexOf(maximin), j: colMax.indexOf(minimax), gap, maximin, minimax };
   }
-  return { kind: "mixed", gap };
+  return { kind: "mixed", gap, maximin, minimax };
 }
 
 export function support(pol, tol = 0.005) {
