@@ -291,9 +291,50 @@ export default function Landing() {
         </div>
       </section>
 
+      <section id="neural">
+        <div className="wrap">
+          <div className="eyebrow"><span className="badge p1">07</span>Does deep learning find the same answer?</div>
+          <h2>Action accuracy is not equilibrium accuracy</h2>
+          <p className="lede">The exact solve above is the ground truth this project checks
+            neural approximation against, not the other way around. A Q-network is trained
+            three ways &mdash; from a random init by pure TD bootstrap, by supervised
+            regression straight onto the exact matrix (no bootstrap at all), and a warm
+            start combining both &mdash; and separately, a policy network learns each
+            player's strategy directly. Both are then graded the same way: not by whether
+            their output <em>looks like</em> the exact answer, but by whether it actually
+            behaves like one &mdash; exploitability and equilibrium regret against the real
+            game, not just a percentage match, since more than one policy can be a valid
+            Nash equilibrium.</p>
+          <div className="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>Method</th><th>Learns</th><th>Checked against</th><th>Action agreement</th><th>Exploitability</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>DQN, from zero</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>43%</td><td>0.44</td></tr>
+                <tr><td>DQN, fit to exact</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>45%</td><td>0.47</td></tr>
+                <tr><td>DQN, warm start</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>45%</td><td className="hi">0.38</td></tr>
+                <tr><td>Policy network</td><td>&pi;<sub>0</sub>, &pi;<sub>1</sub></td><td>Nash conditions</td><td><b>99.9%</b></td><td className="lo">0.84</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The policy network names the exact-optimal action at <b>99.9%</b> of states
+            &mdash; yet it is <b>more exploitable</b> than every Q-network tried, including
+            the one that only gets 45% of actions right. Naming the right action almost
+            everywhere is not the same as being an equilibrium: the rare states it gets
+            wrong are exactly the ones a best-responder finds and attacks, and near-100%
+            per-state accuracy gives no guarantee about the one number that actually
+            measures robustness. Fitting a Q-network directly onto the exact matrix, with
+            no training noise at all, still only reaches 45% action agreement &mdash; the
+            bottleneck is what this size of network can represent, not how it is trained.
+            Full detail, every seed, and the deterministic-vs-genuinely-mixed comparison:
+            <a href="neural.md"> docs/neural.md</a> and <a href="policy_gradient.md">docs/policy_gradient.md</a>.</p>
+        </div>
+      </section>
+
       <section className="band-dark" id="why">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge em">07</span>Why it matters</div>
+          <div className="eyebrow"><span className="badge em">08</span>Why it matters</div>
           <h2>A small game, a question that shows up everywhere agents share a world</h2>
           <p className="lede">Strip away the ball and the grid, and the question
           underneath this project is one that appears anywhere two or more
