@@ -25,6 +25,11 @@ const PRESETS = {
   12: { board: "slip", state: [1, 3, 1, 4, 1], label: "Case 12 — movement slip" },
   13: { board: "canonical", state: [1, 1, 3, 1, 1], label: "Case 13 — template 3" },
   14: { board: "canonical", state: [0, 2, 2, 2, 0], label: "Case 14 — rarest template" },
+  // A10-deterministic edge cases: every deterministic stage game is pure
+  // (this project's own headline result), but "pure" still hides real
+  // structure in the matrix -- these two show it.
+  15: { board: "canonical_det", state: [4, 3, 5, 3, 0], label: "Edge case — the swap trap" },
+  16: { board: "canonical_det", state: [0, 0, 0, 2, 0], label: "Edge case — pinned in the corner" },
 };
 
 function toState(arr) {
@@ -527,7 +532,7 @@ export default function ExplorerApp() {
           </div>
 
           <div className="presets">
-            <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
+            <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>), plus two A10-deterministic edge cases not in the PDF &mdash; each switches to that case's board:</span>
             {Object.keys(PRESETS).map((n) => (
               <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
             ))}
