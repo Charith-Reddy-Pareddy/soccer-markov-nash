@@ -143,7 +143,7 @@ export function stepPolicy(board, key, type0, type1) {
 // above the Q matrix, not just a separate win/draw readout.
 export function simulateGames(board, startKey, trials, type0, type1, gamma, maxSteps = 100) {
   const { state_list, states } = board;
-  let p0Wins = 0, p1Wins = 0, draw = 0, totalSteps = 0, totalReturn = 0;
+  let p0Wins = 0, p1Wins = 0, draw = 0, totalSteps = 0, totalReturn = 0, decisiveSteps = 0;
   for (let t = 0; t < trials; t++) {
     let key = startKey;
     let winner = null;
@@ -157,15 +157,22 @@ export function simulateGames(board, startKey, trials, type0, type1, gamma, maxS
       if (next === -2) { winner = 1; break; }
       key = state_list[next];
     }
-    if (winner === 0) { p0Wins++; totalReturn += gamma ** step; }
-    else if (winner === 1) { p1Wins++; totalReturn -= gamma ** step; }
+    if (winner === 0) { p0Wins++; totalReturn += gamma ** step; decisiveSteps += step + 1; }
+    else if (winner === 1) { p1Wins++; totalReturn -= gamma ** step; decisiveSteps += step + 1; }
     else draw++;
     totalSteps += winner === null ? maxSteps : step + 1;
   }
+  const decisive = p0Wins + p1Wins;
   return {
     p0: p0Wins, p1: p1Wins, draw, trials,
     avgSteps: totalSteps / trials,
     meanReturn: totalReturn / trials,
+    // A draw always runs the full maxSteps, which can swamp "average game
+    // length" if draws are common -- this is the same average restricted to
+    // games that actually ended in a goal, so it reads as "how long does a
+    // decisive game typically take" rather than a number dragged toward 100.
+    decisiveRate: decisive / trials,
+    decisiveAvgSteps: decisive > 0 ? decisiveSteps / decisive : null,
   };
 }
 

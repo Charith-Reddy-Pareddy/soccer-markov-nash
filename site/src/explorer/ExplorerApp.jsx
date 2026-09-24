@@ -514,6 +514,16 @@ export default function ExplorerApp() {
                     <div className="s-v">{simResult.avgSteps.toFixed(1)} steps</div>
                   </div>
                   <div>
+                    <div className="s-k">Decisive rate</div>
+                    <div className="s-v">{fmtPct(simResult.decisiveRate)}</div>
+                  </div>
+                  <div>
+                    <div className="s-k">Average length (decisive games)</div>
+                    <div className="s-v">
+                      {simResult.decisiveAvgSteps === null ? "n/a" : `${simResult.decisiveAvgSteps.toFixed(1)} steps`}
+                    </div>
+                  </div>
+                  <div>
                     <div className="s-k">Simulated mean return (player 0)</div>
                     <div className="s-v">{simResult.meanReturn >= 0 ? "+" : ""}{simResult.meanReturn.toFixed(3)}</div>
                   </div>
@@ -526,6 +536,13 @@ export default function ExplorerApp() {
                     <div className="s-v">{(simResult.meanReturn - V) >= 0 ? "+" : ""}{(simResult.meanReturn - V).toFixed(3)}</div>
                   </div>
                 </div>
+                <p className="hint" style={{ margin: ".6rem 0 0" }}>
+                  <b>Decisive rate</b> is the share of games that ended in a goal rather than
+                  hitting the 100-step draw cap; <b>average length (decisive games)</b> excludes
+                  draws from the length average above, since every draw runs the full 100 steps
+                  and can otherwise drag the plain average toward 100 even when most games end
+                  quickly.
+                </p>
                 <p className="hint" style={{ margin: ".6rem 0 0" }}>
                   The gap is exactly zero in expectation only when <b>both</b> sides play
                   Minimax (exact) &mdash; that's the same discounted return{" "}

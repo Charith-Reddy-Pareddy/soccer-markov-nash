@@ -10,7 +10,15 @@ function cellCenter(x, y, h) {
 // Mirrors soccer_nash/viz.py's _action_fan: a wall-clamped action is drawn as
 // a dashed hold ring, never as a directional arrow -- an arrow into a wall
 // would show movement that never happens.
-function ActionFan({ cx, cy, pol, colour, wall }) {
+//
+// showLabels=false keeps the arrows/rings (direction and thickness still
+// carry the mix) but drops the percentage text: a label sits near an arrow's
+// *tip*, up to ~90% of a cell width from its own centre, so with the V(s)
+// heatmap also on (every cell's centre now has its own number) the two
+// texts land close enough to overlap illegibly. The exact percentages are
+// still shown in the Carrier/Defender lines and the Q matrix's own headers,
+// so nothing is lost, just not doubled up on the board itself.
+function ActionFan({ cx, cy, pol, colour, wall, showLabels = true }) {
   const hold = ACT.reduce((sum, a, i) => (wall[a] ? sum + pol[i] : sum), 0);
   const top = Math.max(...pol, hold, 1e-9);
   const els = [];
@@ -21,7 +29,7 @@ function ActionFan({ cx, cy, pol, colour, wall }) {
         strokeWidth={(1.6 + 2.2 * (hold / top)).toFixed(1)} strokeDasharray="2 2"
         opacity={(0.4 + 0.55 * hold).toFixed(2)} />
     );
-    if (hold < 0.985) {
+    if (showLabels && hold < 0.985) {
       els.push(
         <text key="hold-label" x={cx} y={cy + 30} textAnchor="middle"
           fontFamily="ui-monospace,monospace" fontSize="10" fill={colour}>
@@ -46,7 +54,7 @@ function ActionFan({ cx, cy, pol, colour, wall }) {
         strokeWidth={wgt.toFixed(1)} strokeLinecap="round"
         opacity={(0.4 + 0.55 * p).toFixed(2)} markerEnd={`url(#ah-${markerId})`} />
     );
-    if (p < 0.985) {
+    if (showLabels && p < 0.985) {
       const lx = cx + dx * (length + 13), ly = cy - dy * (length + 13);
       els.push(
         <text key={"l-" + a} x={lx} y={ly + 4} textAnchor="middle"
@@ -141,8 +149,8 @@ export default function Board({ board, state, activePlayer, onCellClick, heatmap
         );
       })}
       {cells}
-      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} />
-      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} />
+      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} showLabels={!heatmap} />
+      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} showLabels={!heatmap} />
       <Player cx={c0[0]} cy={c0[1]} label="0" colour="var(--p0)" carrier={state.b === 0} active={activePlayer === 0} />
       <Player cx={c1[0]} cy={c1[1]} label="1" colour="var(--p1)" carrier={state.b === 1} active={activePlayer === 1} />
       <circle cx={bc[0] + 15} cy={bc[1] - 15} r={5.5} fill="var(--ball)" stroke="var(--raise)" strokeWidth={1.3} />
