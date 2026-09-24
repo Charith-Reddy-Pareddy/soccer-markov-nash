@@ -100,7 +100,8 @@ def main() -> None:
         )
         t_dqn = time.perf_counter() - t
         m = compare_to_exact(
-            game, dqn.net, exact.values, exact.row_policy, args.gamma, no_saddle
+            game, dqn.net, exact.values, exact.row_policy, args.gamma, no_saddle,
+            exact_matrix_of=matrix_of, exact_col_policy=exact.col_policy,
         )
 
         # fit to exact: plain supervised regression onto Q_exact, no bootstrap
@@ -108,7 +109,8 @@ def main() -> None:
             game, matrix_of, hidden=args.hidden, epochs=args.epochs, seed=seed
         )
         fm = compare_to_exact(
-            game, qfit, exact.values, exact.row_policy, args.gamma, no_saddle
+            game, qfit, exact.values, exact.row_policy, args.gamma, no_saddle,
+            exact_matrix_of=matrix_of, exact_col_policy=exact.col_policy,
         )
 
         # warm start: continue the *same* TD-bootstrap loop as "from zero",
@@ -120,7 +122,8 @@ def main() -> None:
         )
         t_warm = time.perf_counter() - t
         wm = compare_to_exact(
-            game, warm.net, exact.values, exact.row_policy, args.gamma, no_saddle
+            game, warm.net, exact.values, exact.row_policy, args.gamma, no_saddle,
+            exact_matrix_of=matrix_of, exact_col_policy=exact.col_policy,
         )
 
         pnet = train_policy_baseline(
@@ -142,10 +145,14 @@ def main() -> None:
             "action_agreement": round(m["action_agreement"], 4),
             "classification_agreement": round(m["classification_agreement"], 4),
             "duality_gap": round(m["duality_gap"], 4),
+            "max_entrywise_error": round(m["max_entrywise_error"], 4),
+            "max_equilibrium_regret": round(m["max_equilibrium_regret"], 4),
             "fit_max_value_error": round(fm["max_value_error"], 4),
             "fit_action_agreement": round(fm["action_agreement"], 4),
             "fit_classification_agreement": round(fm["classification_agreement"], 4),
             "fit_duality_gap": round(fm["duality_gap"], 4),
+            "fit_max_entrywise_error": round(fm["max_entrywise_error"], 4),
+            "fit_max_equilibrium_regret": round(fm["max_equilibrium_regret"], 4),
             "warm_train_time_s": round(t_warm, 1),
             "warm_final_mse": round(warm.loss_trace[-1], 5),
             "warm_max_value_error": round(wm["max_value_error"], 4),
@@ -153,6 +160,8 @@ def main() -> None:
             "warm_action_agreement": round(wm["action_agreement"], 4),
             "warm_classification_agreement": round(wm["classification_agreement"], 4),
             "warm_duality_gap": round(wm["duality_gap"], 4),
+            "warm_max_entrywise_error": round(wm["max_entrywise_error"], 4),
+            "warm_max_equilibrium_regret": round(wm["max_equilibrium_regret"], 4),
             "policy_action_agreement": round(pm["action_agreement"], 4),
             "policy_max_regret": round(pm["max_equilibrium_regret"], 4),
             "policy_duality_gap": round(pm["duality_gap"], 4),
