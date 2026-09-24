@@ -173,7 +173,7 @@ export default function Landing() {
       <section className="band-tint" id="seeing">
         <div className="wrap">
           <div className="eyebrow"><span className="badge p1">04</span>Seeing it happen</div>
-          <h2>Six situations, drawn out by hand</h2>
+          <h2>Six situations, worked through in detail</h2>
           <p>Numbers and heatmaps only go so far, so here are six actual situations,
           solved exactly and drawn directly. Reading the diagrams: the <strong
           style={{ color: "var(--p0)" }}>blue</strong> disc is player one, the <strong
@@ -249,7 +249,7 @@ export default function Landing() {
       <section className="band-tint" id="tournament">
         <div className="wrap">
           <div className="eyebrow"><span className="badge p1">06</span>Put to the test</div>
-          <h2>Knowing when to bluff isn't academic &mdash; it's the difference between winning and losing</h2>
+          <h2>The mixed policy is the only one that can't be exploited</h2>
           <p>Solving for the correct mix is worthless if it doesn't matter in
           practice, so four policies were pitted against four opponents, including
           one built specifically, for each policy, to find and punish its weakness.
