@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support } from "./helpers.js";
+import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, wallMask } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
@@ -253,6 +253,12 @@ export default function ExplorerApp() {
   const M = Q;
   const cert = certify(M);
   const cs = support(carrierPol), ds = support(defenderPol);
+  // Which of each player's own four actions are wall-clamped from where
+  // they're actually standing right now -- a "move" into a wall is legal to
+  // pick but has no effect (you stay exactly where you are), which the raw
+  // percentages alone don't say.
+  const wall0 = wallMask(st.x0, st.y0, board.width, board.height);
+  const wall1 = wallMask(st.x1, st.y1, board.width, board.height);
 
   return (
     <>
@@ -487,7 +493,7 @@ export default function ExplorerApp() {
                   const tiedZero = cert.kind === "pure" && cert.rowTies.includes(i) && i !== cert.i;
                   return (
                     <div className="move-bar-row" key={"p0-" + a}>
-                      <span className="move-bar-label">{a}</span>
+                      <span className="move-bar-label">{a}{wall0[a] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}</span>
                       <span className="move-bar-track">
                         {tiedZero
                           ? <span className="move-bar-fill p0 tied-fill"></span>
@@ -497,6 +503,7 @@ export default function ExplorerApp() {
                         {(rowPol[i] * 100).toFixed(4)}%
                         {rowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(rowPol[i])})</span>}
                         {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.i]}, not worse</span>}
+                        {rowPol[i] > 0 && wall0[a] && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x0}, {st.y0})</span>}
                       </span>
                     </div>
                   );
@@ -506,7 +513,7 @@ export default function ExplorerApp() {
                   const tiedZero = cert.kind === "pure" && cert.colTies.includes(i) && i !== cert.j;
                   return (
                     <div className="move-bar-row" key={"p1-" + a}>
-                      <span className="move-bar-label">{a}</span>
+                      <span className="move-bar-label">{a}{wall1[a] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}</span>
                       <span className="move-bar-track">
                         {tiedZero
                           ? <span className="move-bar-fill p1 tied-fill"></span>
@@ -516,6 +523,7 @@ export default function ExplorerApp() {
                         {(colPol[i] * 100).toFixed(4)}%
                         {colPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(colPol[i])})</span>}
                         {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.j]}, not worse</span>}
+                        {colPol[i] > 0 && wall1[a] && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x1}, {st.y1})</span>}
                       </span>
                     </div>
                   );
