@@ -396,7 +396,11 @@ export default function ExplorerApp() {
             <div className="panel">
               <div className={"readout-kind " + cert.kind}>
                 {cert.kind === "pure"
-                  ? `Pure equilibrium — saddle at player 0: ${ACT[cert.i]}, player 1: ${ACT[cert.j]}`
+                  ? <>Pure equilibrium — saddle at player 0: {ACT[cert.i]}
+                      {wall0[ACT[cert.i]] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}
+                      , player 1: {ACT[cert.j]}
+                      {wall1[ACT[cert.j]] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}
+                    </>
                   : `Mixed equilibrium — gap ${cert.gap.toFixed(4)}`}
               </div>
               <div className="state-key mono">
