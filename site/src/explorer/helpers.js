@@ -76,7 +76,19 @@ export function certify(Q, tol = 1e-6) {
   const minimax = Math.min(...colMax);
   const gap = minimax - maximin;
   if (gap <= tol) {
-    return { kind: "pure", i: rowMin.indexOf(maximin), j: colMax.indexOf(minimax), gap, maximin, minimax };
+    // A pure saddle's (i, j) is just the *first* row/column achieving the
+    // guaranteed value -- when more than one does, every one of them is
+    // equally optimal (the LP/argmax picks one arbitrarily, the same
+    // "multiple Nash, which one do you report" question this project's own
+    // docs/degeneracy.md documents for mixed equilibria). rowTies/colTies
+    // list every tied index, not just the displayed one, so the site never
+    // implies a unique answer where there isn't one.
+    const rowTies = rowMin.reduce((acc, v, idx) => (Math.abs(v - maximin) <= tol ? [...acc, idx] : acc), []);
+    const colTies = colMax.reduce((acc, v, idx) => (Math.abs(v - minimax) <= tol ? [...acc, idx] : acc), []);
+    return {
+      kind: "pure", i: rowMin.indexOf(maximin), j: colMax.indexOf(minimax),
+      gap, maximin, minimax, rowTies, colTies,
+    };
   }
   return { kind: "mixed", gap, maximin, minimax };
 }

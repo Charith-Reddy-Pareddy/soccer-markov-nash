@@ -30,6 +30,7 @@ const PRESETS = {
   // structure in the matrix -- these two show it.
   15: { board: "canonical_det", state: [4, 3, 5, 3, 0], label: "Edge case — the swap trap" },
   16: { board: "canonical_det", state: [0, 0, 0, 2, 0], label: "Edge case — pinned in the corner" },
+  17: { board: "canonical_det", state: [3, 4, 4, 4, 0], label: "Edge case — the standoff" },
 };
 
 function toState(arr) {
@@ -459,6 +460,24 @@ export default function ExplorerApp() {
                   The optimal joint action (<span className="mono">{ACT[cert.i]}</span> /{" "}
                   <span className="mono">{ACT[cert.j]}</span>) leads to{" "}
                   <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>.
+                  {(cert.rowTies.length > 1 || cert.colTies.length > 1) && (
+                    <>
+                      {" "}This isn't a unique answer, though &mdash;{" "}
+                      {cert.rowTies.length > 1 && (
+                        <>player 0 guarantees the exact same worst case with{" "}
+                          <b>{cert.rowTies.map((i) => ACT[i]).join(", ")}</b>{" "}
+                        </>
+                      )}
+                      {cert.rowTies.length > 1 && cert.colTies.length > 1 && "and "}
+                      {cert.colTies.length > 1 && (
+                        <>player 1 with{" "}
+                          <b>{cert.colTies.map((j) => ACT[j]).join(", ")}</b>{" "}
+                        </>
+                      )}
+                      &mdash; the displayed action is whichever the solver's tie-break picked
+                      first, not the unique optimum.
+                    </>
+                  )}
                 </p>
               )}
 
