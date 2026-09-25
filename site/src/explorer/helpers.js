@@ -9,8 +9,25 @@ export function kickoffState(board) {
   return { x0: 0, y0: Math.floor(board.height / 2), x1: board.width - 1, y1: Math.floor(board.height / 2), b: 0 };
 }
 
-export function wallMask(x, y, w, h) {
-  return { U: y === h - 1, D: y === 0, L: x === 0, R: x === w - 1 };
+// Per action, whether it's clamped at the board edge -- and if so, whether
+// that's a genuine no-op ("hold": there's no cell there, the player just
+// stays put) or a goal ("score": this exact player, in a goal row, with the
+// ball, pushing further past the boundary -- soccer_nash.game.SoccerGame
+// ._target's own scoring condition). Only the forward action (R for player
+// 0, L for player 1) can ever score; U/D never move a player past the x
+// boundary so they can never trigger it. goalRows/isCarrier/playerIdx are
+// optional -- omitting them (or not being the carrier) just means every
+// edge clamp reports as a plain "hold", the old geometry-only behaviour.
+export function wallMask(x, y, w, h, goalRows, isCarrier, playerIdx) {
+  const atGoalRow = !!goalRows && goalRows.includes(y) && isCarrier;
+  const scoresR = playerIdx === 0 && atGoalRow && x === w - 1;
+  const scoresL = playerIdx === 1 && atGoalRow && x === 0;
+  return {
+    U: y === h - 1 ? "hold" : null,
+    D: y === 0 ? "hold" : null,
+    L: x === 0 ? (scoresL ? "score" : "hold") : null,
+    R: x === w - 1 ? (scoresR ? "score" : "hold") : null,
+  };
 }
 
 // The best simple fraction approximating p, denominator <= maxDenominator --

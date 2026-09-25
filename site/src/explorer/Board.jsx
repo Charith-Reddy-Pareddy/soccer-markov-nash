@@ -9,7 +9,11 @@ function cellCenter(x, y, h) {
 
 // Mirrors soccer_nash/viz.py's _action_fan: a wall-clamped action is drawn as
 // a dashed hold ring, never as a directional arrow -- an arrow into a wall
-// would show movement that never happens.
+// would show movement that never happens. A "score" action (the carrier, in
+// a goal row, pushing past the boundary -- wallMask's own distinction) is
+// *not* treated as a wall clamp here: it's drawn as a normal arrow, pointing
+// straight at the goal strip already drawn at that edge, since it really is
+// the action that ends the game there.
 //
 // showLabels=false keeps the arrows/rings (direction and thickness still
 // carry the mix) but drops the percentage text: a label sits near an arrow's
@@ -19,7 +23,7 @@ function cellCenter(x, y, h) {
 // still shown in the Carrier/Defender lines and the Q matrix's own headers,
 // so nothing is lost, just not doubled up on the board itself.
 function ActionFan({ cx, cy, pol, colour, wall, showLabels = true }) {
-  const hold = ACT.reduce((sum, a, i) => (wall[a] ? sum + pol[i] : sum), 0);
+  const hold = ACT.reduce((sum, a, i) => (wall[a] === "hold" ? sum + pol[i] : sum), 0);
   const top = Math.max(...pol, hold, 1e-9);
   const els = [];
 
@@ -40,7 +44,7 @@ function ActionFan({ cx, cy, pol, colour, wall, showLabels = true }) {
   }
 
   ACT.forEach((a, idx) => {
-    if (wall[a]) return;
+    if (wall[a] === "hold") return;
     const p = pol[idx];
     if (p < 0.02) return;
     const [dx, dy] = ARROW[a];
@@ -149,8 +153,8 @@ export default function Board({ board, state, activePlayer, onCellClick, heatmap
         );
       })}
       {cells}
-      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H)} showLabels={!heatmap} />
-      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H)} showLabels={!heatmap} />
+      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H, GOALS, state.b === 0, 0)} showLabels={!heatmap} />
+      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H, GOALS, state.b === 1, 1)} showLabels={!heatmap} />
       <Player cx={c0[0]} cy={c0[1]} label="0" colour="var(--p0)" carrier={state.b === 0} active={activePlayer === 0} />
       <Player cx={c1[0]} cy={c1[1]} label="1" colour="var(--p1)" carrier={state.b === 1} active={activePlayer === 1} />
       <circle cx={bc[0] + 15} cy={bc[1] - 15} r={5.5} fill="var(--ball)" stroke="var(--raise)" strokeWidth={1.3} />

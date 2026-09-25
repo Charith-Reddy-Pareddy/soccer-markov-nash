@@ -27,10 +27,25 @@ const PRESETS = {
   14: { board: "canonical", state: [0, 2, 2, 2, 0], label: "Case 14 — rarest template" },
   // A10-deterministic edge cases: every deterministic stage game is pure
   // (this project's own headline result), but "pure" still hides real
-  // structure in the matrix -- these two show it.
+  // structure in the matrix -- these show it.
   15: { board: "canonical_det", state: [4, 3, 5, 3, 0], label: "Edge case — the swap trap" },
   16: { board: "canonical_det", state: [0, 0, 0, 2, 0], label: "Edge case — pinned in the corner" },
   17: { board: "canonical_det", state: [3, 4, 4, 4, 0], label: "Edge case — the standoff" },
+  // Player 0 sits at the right wall in a goal row: R isn't wall-clamped here
+  // -- a goal column is the one place the boundary action ends the game
+  // instead of holding in place, verified against game.transitions() (every
+  // reply from player 1 gives the same certain win).
+  18: { board: "canonical_det", state: [6, 1, 4, 1, 0], label: "Edge case — the open goal" },
+  // The mirror of 18 from player 1's side: L at the left wall in a goal row,
+  // ball with player 1, scores outright regardless of player 0's reply.
+  19: { board: "canonical_det", state: [0, 0, 0, 1, 1], label: "Edge case — the open net" },
+  // R is the *unique* safe action here (every column gives the same 0.531441
+  // -- player 1 can't stop a clean break into open space); U looks equally
+  // natural but is a trap -- if player 1 answers with D the two target the
+  // same empty cell, player 0 "wins" the race there and immediately hands
+  // over the ball anyway, per the A10 contest rule (loser keeps the ball
+  // either way). Verified against game.transitions().
+  20: { board: "canonical_det", state: [0, 1, 0, 3, 0], label: "Edge case — the getaway" },
 };
 
 function toState(arr) {
@@ -256,9 +271,12 @@ export default function ExplorerApp() {
   // Which of each player's own four actions are wall-clamped from where
   // they're actually standing right now -- a "move" into a wall is legal to
   // pick but has no effect (you stay exactly where you are), which the raw
-  // percentages alone don't say.
-  const wall0 = wallMask(st.x0, st.y0, board.width, board.height);
-  const wall1 = wallMask(st.x1, st.y1, board.width, board.height);
+  // percentages alone don't say. The one exception is the carrier, in a goal
+  // row, pushing past *their own* attacking edge -- that's not a hold, it
+  // scores (soccer_nash.game.SoccerGame._target's own condition), which
+  // wallMask flags separately so it isn't shown as a no-op.
+  const wall0 = wallMask(st.x0, st.y0, board.width, board.height, board.goal_rows, st.b === 0, 0);
+  const wall1 = wallMask(st.x1, st.y1, board.width, board.height, board.goal_rows, st.b === 1, 1);
 
   return (
     <>
@@ -397,9 +415,9 @@ export default function ExplorerApp() {
               <div className={"readout-kind " + cert.kind}>
                 {cert.kind === "pure"
                   ? <>Pure equilibrium — saddle at player 0: {ACT[cert.i]}
-                      {wall0[ACT[cert.i]] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}
+                      <WallMark status={wall0[ACT[cert.i]]} />
                       , player 1: {ACT[cert.j]}
-                      {wall1[ACT[cert.j]] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}
+                      <WallMark status={wall1[ACT[cert.j]]} />
                     </>
                   : `Mixed equilibrium — gap ${cert.gap.toFixed(4)}`}
               </div>
@@ -497,7 +515,7 @@ export default function ExplorerApp() {
                   const tiedZero = cert.kind === "pure" && cert.rowTies.includes(i) && i !== cert.i;
                   return (
                     <div className="move-bar-row" key={"p0-" + a}>
-                      <span className="move-bar-label">{a}{wall0[a] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}</span>
+                      <span className="move-bar-label">{a}<WallMark status={wall0[a]} /></span>
                       <span className="move-bar-track">
                         {tiedZero
                           ? <span className="move-bar-fill p0 tied-fill"></span>
@@ -507,7 +525,8 @@ export default function ExplorerApp() {
                         {(rowPol[i] * 100).toFixed(4)}%
                         {rowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(rowPol[i])})</span>}
                         {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.i]}, not worse</span>}
-                        {rowPol[i] > 0 && wall0[a] && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x0}, {st.y0})</span>}
+                        {rowPol[i] > 0 && wall0[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x0}, {st.y0})</span>}
+                        {rowPol[i] > 0 && wall0[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
                       </span>
                     </div>
                   );
@@ -517,7 +536,7 @@ export default function ExplorerApp() {
                   const tiedZero = cert.kind === "pure" && cert.colTies.includes(i) && i !== cert.j;
                   return (
                     <div className="move-bar-row" key={"p1-" + a}>
-                      <span className="move-bar-label">{a}{wall1[a] && <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>}</span>
+                      <span className="move-bar-label">{a}<WallMark status={wall1[a]} /></span>
                       <span className="move-bar-track">
                         {tiedZero
                           ? <span className="move-bar-fill p1 tied-fill"></span>
@@ -527,7 +546,8 @@ export default function ExplorerApp() {
                         {(colPol[i] * 100).toFixed(4)}%
                         {colPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(colPol[i])})</span>}
                         {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.j]}, not worse</span>}
-                        {colPol[i] > 0 && wall1[a] && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x1}, {st.y1})</span>}
+                        {colPol[i] > 0 && wall1[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x1}, {st.y1})</span>}
+                        {colPol[i] > 0 && wall1[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
                       </span>
                     </div>
                   );
@@ -579,7 +599,7 @@ export default function ExplorerApp() {
           </div>
 
           <div className="presets">
-            <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>), plus two A10-deterministic edge cases not in the PDF &mdash; each switches to that case's board:</span>
+            <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>), plus six A10-deterministic edge cases not in the PDF &mdash; each switches to that case's board:</span>
             {Object.keys(PRESETS).map((n) => (
               <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
             ))}
@@ -686,6 +706,21 @@ export default function ExplorerApp() {
       <Footer />
     </>
   );
+}
+
+// The superscript next to an edge-clamped action: "hold" (no cell there, the
+// player just stays put) and "score" (the carrier, in a goal row, pushing
+// past *their own* attacking edge -- wallMask's own distinction, mirroring
+// soccer_nash.game.SoccerGame._target's scoring condition) read as opposite
+// things and must not share one icon or tooltip.
+function WallMark({ status }) {
+  if (status === "hold") {
+    return <sup className="wall-mark" title="wall-clamped: no cell there, this holds in place">&#8862;</sup>;
+  }
+  if (status === "score") {
+    return <sup className="wall-mark score" title="scores here: this ends the game, it does not hold in place">&#9873;</sup>;
+  }
+  return null;
 }
 
 // Precompiled by scripts/explorer_data.py from soccer_nash.numerics
