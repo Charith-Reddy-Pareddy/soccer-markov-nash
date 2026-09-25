@@ -75,6 +75,13 @@ table.qmatrix td.cell.support { box-shadow: inset 0 0 0 2px var(--pitch); }
 .move-bar-fill { display: block; height: 100%; border-radius: 5px; }
 .move-bar-fill.p0 { background: var(--p0); }
 .move-bar-fill.p1 { background: var(--p1); }
+/* A tied-but-not-displayed action: a striped marker at a fixed width, not
+   proportional to any real weight (there isn't one to show -- any mix
+   across the tied actions is equally optimal) -- visually distinct from
+   both a real percentage bar and an empty (genuinely worse) one. */
+.move-bar-fill.tied-fill { width: 12% !important; background: repeating-linear-gradient(135deg, currentColor 0 3px, transparent 3px 7px); opacity: .55; }
+.move-bar-fill.tied-fill.p0 { color: var(--p0); background-color: transparent; }
+.move-bar-fill.tied-fill.p1 { color: var(--p1); background-color: transparent; }
 .move-bar-pct { font-family: "IBM Plex Mono", monospace; text-align: right; color: var(--ink-soft); }
 .move-bar-frac { color: var(--ink-faint); font-weight: 400; }
 

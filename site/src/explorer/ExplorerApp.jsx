@@ -483,27 +483,43 @@ export default function ExplorerApp() {
 
               <div className="move-bars">
                 <div className="move-bars-title"><span className="dot" style={{ background: "var(--p0)" }}></span>Player 0 next move</div>
-                {ACT.map((a, i) => (
-                  <div className="move-bar-row" key={"p0-" + a}>
-                    <span className="move-bar-label">{a}</span>
-                    <span className="move-bar-track"><span className="move-bar-fill p0" style={{ width: `${(rowPol[i] * 100).toFixed(2)}%` }}></span></span>
-                    <span className="move-bar-pct">
-                      {(rowPol[i] * 100).toFixed(4)}%
-                      {rowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(rowPol[i])})</span>}
-                    </span>
-                  </div>
-                ))}
+                {ACT.map((a, i) => {
+                  const tiedZero = cert.kind === "pure" && cert.rowTies.includes(i) && i !== cert.i;
+                  return (
+                    <div className="move-bar-row" key={"p0-" + a}>
+                      <span className="move-bar-label">{a}</span>
+                      <span className="move-bar-track">
+                        {tiedZero
+                          ? <span className="move-bar-fill p0 tied-fill"></span>
+                          : <span className="move-bar-fill p0" style={{ width: `${(rowPol[i] * 100).toFixed(2)}%` }}></span>}
+                      </span>
+                      <span className="move-bar-pct">
+                        {(rowPol[i] * 100).toFixed(4)}%
+                        {rowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(rowPol[i])})</span>}
+                        {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.i]}, not worse</span>}
+                      </span>
+                    </div>
+                  );
+                })}
                 <div className="move-bars-title" style={{ marginTop: ".8rem" }}><span className="dot" style={{ background: "var(--p1)" }}></span>Player 1 next move</div>
-                {ACT.map((a, i) => (
-                  <div className="move-bar-row" key={"p1-" + a}>
-                    <span className="move-bar-label">{a}</span>
-                    <span className="move-bar-track"><span className="move-bar-fill p1" style={{ width: `${(colPol[i] * 100).toFixed(2)}%` }}></span></span>
-                    <span className="move-bar-pct">
-                      {(colPol[i] * 100).toFixed(4)}%
-                      {colPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(colPol[i])})</span>}
-                    </span>
-                  </div>
-                ))}
+                {ACT.map((a, i) => {
+                  const tiedZero = cert.kind === "pure" && cert.colTies.includes(i) && i !== cert.j;
+                  return (
+                    <div className="move-bar-row" key={"p1-" + a}>
+                      <span className="move-bar-label">{a}</span>
+                      <span className="move-bar-track">
+                        {tiedZero
+                          ? <span className="move-bar-fill p1 tied-fill"></span>
+                          : <span className="move-bar-fill p1" style={{ width: `${(colPol[i] * 100).toFixed(2)}%` }}></span>}
+                      </span>
+                      <span className="move-bar-pct">
+                        {(colPol[i] * 100).toFixed(4)}%
+                        {colPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(colPol[i])})</span>}
+                        {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.j]}, not worse</span>}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               {cert.kind === "mixed" && (() => {
