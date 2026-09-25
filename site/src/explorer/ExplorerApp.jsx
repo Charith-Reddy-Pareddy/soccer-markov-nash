@@ -431,7 +431,7 @@ export default function ExplorerApp() {
                   : "neither side can guarantee more with a single fixed action, so a mixed strategy is required."}
               </p>
               {qview === "table" ? (
-                <QMatrixTable M={M} rowPol={rowPol} colPol={colPol} />
+                <QMatrixTable M={M} rowPol={rowPol} colPol={colPol} wall0={wall0} wall1={wall1} />
               ) : (
                 <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>
               )}
