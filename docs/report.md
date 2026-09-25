@@ -716,11 +716,11 @@ everything below: [neural.md](neural.md).
 
 **Three starting points for the Q net** (deterministic 7x5 game, 5 seeds):
 fitting a Q-net directly to the exact stage matrices, with no bootstrap at
-all, still only reaches **45% action agreement** -- barely above the 43% a
+all, still only reaches **45% action agreement** -- barely above the 42% a
 random init gets from 600 epochs of TD bootstrap. A policy net trained to
 match the equilibrium strategies directly reaches **99.9%** action
 agreement and is still the *most* exploitable of the four baselines tested
-(duality gap 0.84 vs 0.38-0.47) -- the states it gets wrong are exactly the
+(duality gap 0.84 vs 0.36-0.47) -- the states it gets wrong are exactly the
 ones a best-responder attacks.
 
 > **Action accuracy is not equilibrium accuracy.** A network that names the

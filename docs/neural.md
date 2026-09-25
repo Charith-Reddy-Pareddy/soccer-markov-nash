@@ -21,32 +21,40 @@ bootstrap as "from zero").
 
 | (5 seeds) | exact | from zero | fit to exact | warm start | policy net |
 |---|---|---|---|---|---|
-| max `\|V − V_exact\|` | 0 | 0.55 ± 0.02 | 0.38 ± 0.05 | 0.49 ± 0.06 | — |
-| action agreement | 100% | 43% ± 2% | 45% ± 2% | 45% ± 2% | **99.9% ± 0.0%** |
-| pure/mixed classification | 100% | 67% ± 2% | 47% ± 2% | 65% ± 2% | — |
-| max equilibrium regret `ε_NE` | 0 | — | — | — | 0.46 ± 0.02 |
-| exploitability (duality gap) | `<1e-9` | 0.44 ± 0.05 | 0.47 ± 0.04 | **0.38 ± 0.06** | 0.84 ± 0.00 |
+| max `\|V − V_exact\|` | 0 | 0.48 ± 0.03 | 0.38 ± 0.05 | 0.43 ± 0.05 | — |
+| action agreement | 100% | 42% ± 4% | 45% ± 2% | 48% ± 4% | **99.9% ± 0.0%** |
+| pure/mixed classification | 100% | 68% ± 2% | 47% ± 2% | 65% ± 2% | — |
+| max entrywise error `\|Q_θ − Q*\|` | 0 | 0.88 ± 0.07 | 1.21 ± 0.05 | 0.93 ± 0.05 | — |
+| max equilibrium regret `ε_NE` | 0 | 0.83 ± 0.07 | 0.77 ± 0.17 | 0.55 ± 0.11 | 0.46 ± 0.02 |
+| exploitability (duality gap) | `<1e-9` | 0.44 ± 0.07 | 0.47 ± 0.04 | **0.36 ± 0.07** | 0.84 ± 0.00 |
 
 **Fitting the Q net directly to `Q_exact` -- no bootstrap, no target network,
 nothing but supervised regression against the ground truth -- still only
-reaches 45% action agreement, barely above the 43% a random init gets from
+reaches 45% action agreement, barely above the 42% a random init gets from
 600 epochs of TD bootstrap.** That is the headline result of the warm-start
 ablation: the bottleneck is not bootstrap noise. A network of this size,
 extracting a policy via minimax of its own predicted matrix, cannot represent
 `Q_exact` closely enough for the *argmax* to survive, even when it is simply
-told the answer. Continuing training from that fit-to-exact starting point
-(warm start) leaves action agreement essentially unchanged (45% either way)
-but does buy back some of what pure supervised fitting lost: pure/mixed
-classification recovers from 47% back to 65% (against from-zero's 67%), and
-exploitability drops to 0.38 -- the best of the three, beating both from-zero
-(0.44) and fit-to-exact alone (0.47), in 4 of 5 seeds. So the warm start does
-not fix the underlying representational problem, but it is not wasted either:
-the extra bootstrapped training pulls the network back toward respecting the
-game's saddle structure without giving up the head start on value error.
+told the answer -- confirmed directly, not just inferred from the value error,
+by the raw entrywise gap: fitting straight onto `Q_exact` with nothing but
+supervised regression still leaves a worst-case cell off by `1.21`, *more*
+than either bootstrap-trained variant, because minimizing squared error
+across all 16 cells at once is a different objective than getting the
+`argmax` right at any single one. Continuing training from that fit-to-exact
+starting point (warm start) buys back real ground on every other axis:
+action agreement rises to 48% (from 45%), pure/mixed classification recovers
+from 47% back to 65% (against from-zero's 68%), equilibrium regret drops
+from 0.77 to 0.55, and exploitability drops to 0.36 -- the best of the
+three, beating both from-zero (0.44) and fit-to-exact alone (0.47) in 4 of 5
+seeds. So the warm start does not fix the underlying representational
+problem (its own entrywise error, 0.93, sits between the other two, not
+below both), but it is not wasted either: the extra bootstrapped training
+pulls the network back toward respecting the game's saddle structure without
+giving up all of the head start on value error.
 
 **The policy net names the exact-optimal action at 99.9% of states and is
 still *more* exploitable than any of the three Q nets** (duality gap 0.84 vs
-0.38-0.47). Two reasons: the ~0.1% wrong states are exactly the ones a
+0.36-0.47). Two reasons: the ~0.1% wrong states are exactly the ones a
 best-responder attacks (the rock-paper-scissors trap again), and a softmax
 head necessarily smears what should be pure strategies into exploitable
 near-indifference. So the failure is not primarily value approximation --

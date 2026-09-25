@@ -311,9 +311,9 @@ export default function Landing() {
                 <tr><th>Method</th><th>Learns</th><th>Checked against</th><th>Action agreement</th><th>Exploitability</th></tr>
               </thead>
               <tbody>
-                <tr><td>DQN, from zero</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>43%</td><td>0.44</td></tr>
+                <tr><td>DQN, from zero</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>42%</td><td>0.44</td></tr>
                 <tr><td>DQN, fit to exact</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>45%</td><td>0.47</td></tr>
-                <tr><td>DQN, warm start</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>45%</td><td className="hi">0.38</td></tr>
+                <tr><td>DQN, warm start</td><td>Q(s, a0, a1)</td><td>Q* (exact matrix)</td><td>48%</td><td className="hi">0.36</td></tr>
                 <tr><td>Policy network</td><td>&pi;<sub>0</sub>, &pi;<sub>1</sub></td><td>Nash conditions</td><td><b>99.9%</b></td><td className="lo">0.84</td></tr>
               </tbody>
             </table>
