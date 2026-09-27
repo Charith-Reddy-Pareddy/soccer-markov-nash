@@ -1,4 +1,4 @@
-"""Six edge cases on the A10-deterministic board, not the Littman cases.
+"""Eight edge cases on the A10-deterministic board, not the Littman cases.
 
 ``scripts/positions.py`` / ``docs/positions.pdf`` are Littman's fourteen
 cases on the *random*-move-order canonical board, where the point is mixed
@@ -16,7 +16,7 @@ structure the site's board explorer surfaces:
 * **hold vs. score** -- a move past the board edge is a genuine no-op
   everywhere except one place: the ball carrier, in a goal row, pushing past
   *their own* attacking edge, which ends the game instead of holding. Two of
-  the six cases below exist specifically to put that distinction on a board
+  the eight cases below exist specifically to put that distinction on a board
   diagram (`_wall_mask` in soccer_nash/viz.py draws it correctly now).
 * **the collision rule itself** -- winning the race to a contested cell does
   not mean keeping the ball; the loser of a contest or a swap gets it
@@ -174,6 +174,23 @@ def main() -> None:
          "(0,2,0,3,1)) and immediately loses the ball anyway, crashing to -0.9. "
          "Player 1's columns all tie at 0.531441 -- there is no reply that slows "
          "the escape down."),
+        ((1, 0, 0, 1, 0), "The tightest tie",
+         "no state on this entire board ever has a fully unique best action for "
+         "*both* players simultaneously -- checked exhaustively, (1,1) never "
+         "occurs among all 2380 states. This is the smallest tie shape that does "
+         "occur (only 16 of 2380 states): player 0's D and R tie exactly; player "
+         "1's R is uniquely optimal. U and L each look just as safe as D/R, but "
+         "each hides its own contest: (U, R) both target the same cell (1,1), "
+         "and (L, D) both target (0,0) -- verified below, the carrier wins the "
+         "square but the ball still goes to the defender either way -- while D "
+         "and R never target the same cell as player 1 at all."),
+        ((0, 0, 2, 0, 0), "The dead zone",
+         "the single most common shape on the whole board (514 of 2380 states): "
+         "both players are fully indifferent among all four actions. It is not "
+         "merely that the guaranteed values tie -- every one of the 16 cells in "
+         "the Q matrix is exactly 0.0, including a genuine ball-swapping contest "
+         "((R, L) -> a state that is itself also worth exactly 0, verified below). "
+         "Nothing that happens this turn, for either player, changes anything."),
     ]
     for case_no, (state, label, why) in enumerate(cases, start=1):
         _report(label, why, g, solver, r, state, panels, case_no)

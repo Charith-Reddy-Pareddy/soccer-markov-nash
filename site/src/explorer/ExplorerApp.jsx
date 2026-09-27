@@ -27,25 +27,44 @@ const PRESETS = {
   14: { board: "canonical", state: [0, 2, 2, 2, 0], label: "Case 14 — rarest template" },
   // A10-deterministic edge cases: every deterministic stage game is pure
   // (this project's own headline result), but "pure" still hides real
-  // structure in the matrix -- these show it.
-  15: { board: "canonical_det", state: [4, 3, 5, 3, 0], label: "Edge case — the swap trap" },
-  16: { board: "canonical_det", state: [0, 0, 0, 2, 0], label: "Edge case — pinned in the corner" },
-  17: { board: "canonical_det", state: [3, 4, 4, 4, 0], label: "Edge case — the standoff" },
+  // structure in the matrix -- these show it. Numbered 1-8 within their own
+  // set (not 15+) since the presets list below only ever shows one set or
+  // the other, keyed off which board is selected.
+  15: { board: "canonical_det", state: [4, 3, 5, 3, 0], label: "Edge case 1 — the swap trap" },
+  16: { board: "canonical_det", state: [0, 0, 0, 2, 0], label: "Edge case 2 — pinned in the corner" },
+  17: { board: "canonical_det", state: [3, 4, 4, 4, 0], label: "Edge case 3 — the standoff" },
   // Player 0 sits at the right wall in a goal row: R isn't wall-clamped here
   // -- a goal column is the one place the boundary action ends the game
   // instead of holding in place, verified against game.transitions() (every
   // reply from player 1 gives the same certain win).
-  18: { board: "canonical_det", state: [6, 1, 4, 1, 0], label: "Edge case — the open goal" },
+  18: { board: "canonical_det", state: [6, 1, 4, 1, 0], label: "Edge case 4 — the open goal" },
   // The mirror of 18 from player 1's side: L at the left wall in a goal row,
   // ball with player 1, scores outright regardless of player 0's reply.
-  19: { board: "canonical_det", state: [0, 0, 0, 1, 1], label: "Edge case — the open net" },
+  19: { board: "canonical_det", state: [0, 0, 0, 1, 1], label: "Edge case 5 — the open net" },
   // R is the *unique* safe action here (every column gives the same 0.531441
   // -- player 1 can't stop a clean break into open space); U looks equally
   // natural but is a trap -- if player 1 answers with D the two target the
   // same empty cell, player 0 "wins" the race there and immediately hands
   // over the ball anyway, per the A10 contest rule (loser keeps the ball
   // either way). Verified against game.transitions().
-  20: { board: "canonical_det", state: [0, 1, 0, 3, 0], label: "Edge case — the getaway" },
+  20: { board: "canonical_det", state: [0, 1, 0, 3, 0], label: "Edge case 6 — the getaway" },
+  // Every state on this board ties on at least one side -- (1,1), a fully
+  // unique best action for both players simultaneously, never once occurs
+  // among all 2380 states (checked exhaustively). This is the smallest tie
+  // shape that does occur: only 16 of 2380 states have exactly a 2-way tie
+  // opposite a unique action. U and L both look safe but each hides its own
+  // contest -- (U, R) and (L, D) both send player 0 and player 1 to the same
+  // cell, verified against game.transitions() -- leaving D/R as the only
+  // two moves that never reach player 1 at all.
+  21: { board: "canonical_det", state: [1, 0, 0, 1, 0], label: "Edge case 7 — the tightest tie" },
+  // The single most common shape on the whole board (514 of 2380 states,
+  // rowties=colties=4): both players are fully indifferent among all four
+  // actions. It's not merely that the *guaranteed* values tie -- every one
+  // of the 16 joint actions in the Q matrix is exactly 0.0, including a
+  // genuine ball-swapping contest (verified: (R, L) -> a state that is
+  // itself also worth exactly 0). Nothing that happens this turn, for
+  // either player, changes anything.
+  22: { board: "canonical_det", state: [0, 0, 2, 0, 0], label: "Edge case 8 — the dead zone" },
 };
 
 function toState(arr) {

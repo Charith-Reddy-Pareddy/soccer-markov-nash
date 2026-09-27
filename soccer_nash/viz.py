@@ -761,11 +761,19 @@ def bestresponse_graph_svg(
 
     row_best = {j: int(np.argmax(M[:, j])) for j in range(nc)}   # player 0
     col_best = {i: int(np.argmin(M[i, :])) for i in range(nr)}   # player 1
-    saddle = next(
-        ((i, j) for j in range(nc) for i in range(nr)
-         if row_best[j] == i and col_best[i] == j),
-        None,
-    )
+    # A saddle exists iff maximin == minimax -- checked directly, not by
+    # asking whether argmax's and argmin's own independent first-occurrence
+    # tie-breaks happen to point back at each other. They don't have to: with
+    # a tie on *both* axes, np.argmax/argmin can each report a different
+    # (still optimal) index than the other axis expects, which used to make
+    # this function claim "arrows cycle, must mix" for states that are
+    # genuinely pure -- any row achieving maximin paired with any column
+    # achieving minimax is itself a saddle (soccer_nash.matrix_games.pure_bounds
+    # is the same maximin/minimax check; only the saddle-vs-cycle test moved
+    # here, since this function draws the graph, not just verdicts).
+    row_min, col_max = M.min(axis=1), M.max(axis=0)
+    maximin, minimax = float(row_min.max()), float(col_max.min())
+    saddle = (int(np.argmax(row_min)), int(np.argmin(col_max))) if minimax - maximin <= 1e-6 else None
 
     body = [f'<defs>{_marker(P0)}{_marker(P1)}</defs>']
     for j, lab in enumerate(col_labels):

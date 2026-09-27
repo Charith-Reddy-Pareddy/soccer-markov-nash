@@ -1,6 +1,6 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Six edge cases on the A10-deterministic board</title>
+<title>Eight edge cases on the A10-deterministic board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -97,7 +97,7 @@
   @media print { body { max-width: none; } }
 </style>
 
-<h1>Six edge cases on the A10-deterministic board</h1>
+<h1>Eight edge cases on the A10-deterministic board</h1>
 <p class="lede">
 Not Littman's cases. <a href="positions.pdf">positions.pdf</a> is the fourteen
 cases on the <em>random</em>-move-order canonical board, where the point is
@@ -341,17 +341,92 @@ escape down.</p>
   </tbody>
 </table>
 
-<h2>What these six add up to</h2>
+<h2>Case 7 <span class="state-tag">(1, 0, 0, 1, 0)</span> &mdash; The tightest tie</h2>
+<p>No state on this entire board ever has a fully unique best action for
+<em>both</em> players simultaneously &mdash; checked exhaustively across all
+2,380 states, the shape <span class="mono">(1, 1)</span> never occurs. This
+is the smallest tie shape that does occur (only 16 of 2,380 states):
+player&nbsp;0's <span class="mono">D</span> and <span class="mono">R</span>
+tie exactly; player&nbsp;1's <span class="mono">R</span> is uniquely
+optimal. <span class="mono">U</span> and <span class="mono">L</span> each
+look just as safe as <span class="mono">D</span>/<span class="mono">R</span>,
+but each hides its own contest: <span class="mono">(U, R)</span> both target
+the same cell <span class="mono">(1,1)</span>, and
+<span class="mono">(L, D)</span> both target <span class="mono">(0,0)</span>
+&mdash; the carrier wins the square but the ball still goes to the defender
+either way (verified below) &mdash; while <span class="mono">D</span> and
+<span class="mono">R</span> never target the same cell as player 1 at all.</p>
+<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; player 0's maximin ties at <span class="mono">D/R</span> (not unique); player 1's minimax is uniquely <span class="mono">R</span>.</p>
+<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = D 100% &middot; p1 = R 100%</p>
+<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = D&#8862; 50% / R 50% &middot; p1 = R 100%</p>
+<figure class="case-fig">
+  <img src="figures/png/a10_case07.png" alt="Case 7 board position and Q matrix graph, the tightest tie.">
+  <figcaption>Left: player 0's hold and one real arrow, 50/50. Right: the full 4&times;4 Q matrix as a node-and-arrow graph, correctly labelled a pure saddle at D/R despite the tie on both axes.</figcaption>
+</figure>
+<pre class="matrix">                  U          D          L          R
+      U    0.531441   0.531441   0.531441  -0.900000
+      D    0.478297   0.478297   0.000000   0.000000
+      L    0.000000  -0.900000   0.000000   0.000000
+      R    0.531441   0.531441   0.531441   0.000000</pre>
+<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
+<table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(1,1,0,2,0)</td><td>(1,1,0,0,0)</td><td>(1,1,0,1,0)</td><td><b>(1,1,0,1,1)</b> &mdash; open contest, ball to loser</td></tr>
+    <tr><td><b>D</b></td><td>(1,0,0,2,0)</td><td>(1,0,0,0,0)</td><td>(1,0,0,1,0)</td><td>(1,0,1,1,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,0,0,2,0)</td><td><b>(0,0,0,1,1)</b> &mdash; open contest, ball to loser</td><td>(0,0,0,1,0)</td><td>(0,0,1,1,0)</td></tr>
+    <tr><td><b>R</b></td><td>(2,0,0,2,0)</td><td>(2,0,0,0,0)</td><td>(2,0,0,1,0)</td><td>(2,0,1,1,0)</td></tr>
+  </tbody>
+</table>
+
+<h2>Case 8 <span class="state-tag">(0, 0, 2, 0, 0)</span> &mdash; The dead zone</h2>
+<p>The single most common shape on the whole board (514 of 2,380 states):
+both players are fully indifferent among all four actions. It is not merely
+that the <em>guaranteed</em> values tie &mdash; every one of the 16 cells in
+the Q matrix is exactly <span class="mono">0.0</span>, including a genuine
+ball-swapping contest (<span class="mono">(R, L)&nbsp;&rarr;&nbsp;(1,0,2,0,1)</span>,
+verified below, itself also worth exactly <span class="mono">0</span>).
+Nothing that happens this turn, for either player, changes anything.</p>
+<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; both players' guarantees tie at all four actions (fully indifferent, and the entire matrix is flat zero).</p>
+<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = U 100% &middot; p1 = U 100%</p>
+<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = U 25% / D&#8862; 25% / L&#8862; 25% / R 25% &middot; p1 = U 25% / D&#8862; 25% / L 25% / R 25%</p>
+<figure class="case-fig">
+  <img src="figures/png/a10_case08.png" alt="Case 8 board position and Q matrix graph, the dead zone.">
+  <figcaption>Left: both players' four equal-weight actions, two of player 0's wall-clamped into one hold ring. Right: a completely flat 4&times;4 Q matrix -- every cell is worth exactly 0.0.</figcaption>
+</figure>
+<pre class="matrix">                  U          D          L          R
+      U    0.000000   0.000000   0.000000   0.000000
+      D    0.000000   0.000000   0.000000   0.000000
+      L    0.000000   0.000000   0.000000   0.000000
+      R    0.000000   0.000000   0.000000   0.000000</pre>
+<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
+<table class="coordmatrix">
+  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
+  <tbody>
+    <tr><td><b>U</b></td><td>(0,1,2,1,0)</td><td>(0,1,2,0,0)</td><td>(0,1,1,0,0)</td><td>(0,1,3,0,0)</td></tr>
+    <tr><td><b>D</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0) &mdash; both hold</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
+    <tr><td><b>L</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
+    <tr><td><b>R</b></td><td>(1,0,2,1,0)</td><td>(1,0,2,0,0)</td><td><b>(1,0,2,0,1)</b> &mdash; open contest, ball to loser (worth the same)</td><td>(1,0,3,0,0)</td></tr>
+  </tbody>
+</table>
+
+<h2>What these eight add up to</h2>
 <p>Every one of the 2,380 legal states on this board resolves to a pure
-saddle &mdash; the project's own headline deterministic-game result. These
-six cases are not exceptions to that; they are places where "pure" alone
+saddle &mdash; the project's own headline deterministic-game result. Not one
+of them, however, has a fully unique best action for <em>both</em> players
+at once (Case 7's own point): some tie is always present somewhere. These
+eight cases are not exceptions to "pure"; they are places where "pure" alone
 would have quietly understated the answer: a three-way tie displayed as a
 single arbitrary action, a wall-clamp displayed identically whether it holds
-or scores, and a collision rule (the loser keeps the ball, win or lose the
+or scores, a collision rule (the loser keeps the ball, win or lose the
 square) that is easy to get backwards without reading
-<span class="mono">game.transitions()</span> directly. Every number, tie
-set, and transition above is reproducible and independently checkable
-exactly as printed &mdash; see the footer.</p>
+<span class="mono">game.transitions()</span> directly, and a stage game that
+can be a completely flat, inert 4&times;4 grid of zeros and still get
+reported as "arrows cycle, must mix" by a saddle-detector that breaks under
+a tie on both axes (Case 7 and 8 both caught this; fixed in
+<span class="mono">soccer_nash/viz.py</span>). Every number, tie set, and
+transition above is reproducible and independently checkable exactly as
+printed &mdash; see the footer.</p>
 
 <footer>
 Reproduce with <span class="mono">python scripts/a10_cases.py</span>
@@ -365,10 +440,14 @@ read straight from <span class="mono">game.transitions()</span>. The hold
 vs. score distinction and the uniform-over-ties board arrows are
 <span class="mono">soccer_nash/viz.py</span>'s <span class="mono">_wall_mask</span>
 / <span class="mono">_action_fan</span> / <span class="mono">policy_svg</span>,
-the same functions <span class="mono">scripts/positions.py</span> uses for
-the unrelated Littman cases &mdash; the hold/score fix applies there too, but
-changes nothing in that document (none of its fourteen states are a carrier
-in a goal row at the boundary). Not to be confused with
+and the Q-matrix graph's saddle detection (broken by a tie on both axes,
+caught building Cases 7 and 8) is
+<span class="mono">bestresponse_graph_svg</span> &mdash; the same functions
+<span class="mono">scripts/positions.py</span> uses for the unrelated
+Littman cases. Both fixes apply there too, but change nothing in that
+document (verified: its figures regenerate byte-identical), since none of
+its fourteen states are a carrier in a goal row at the boundary or have a
+saddle detector this may confuse. Not to be confused with
 <a href="positions.pdf">positions.pdf</a>, which is Littman's cases on the
 random-move-order board.
 Full project:
