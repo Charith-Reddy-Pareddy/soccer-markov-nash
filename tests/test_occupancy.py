@@ -57,3 +57,9 @@ def test_occupancy_map_is_valid_svg(solved):
                             ball=0, title="t")
     ET.fromstring(svg)
     assert "amber = a mixed state" in svg
+
+
+def test_concentration_counts_only_visited_subset_members():
+    a, b, unreachable = (0, 0, 1, 0, 0), (0, 1, 1, 0, 0), (0, 0, 1, 1, 0)
+    assert concentration({a: .8, b: .2}, {a, unreachable}) == (.8, .5)
+    assert concentration({}, {unreachable}) == (0, 0)

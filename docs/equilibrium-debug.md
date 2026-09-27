@@ -100,3 +100,13 @@ Baseline: 342 tests passed; 44 slow tests were excluded by the old default.
 New policy regressions initially failed in three cases. All 16 hand-calculated
 transitions passed. The two policy-iteration numerical regressions now pass.
 See the task's final verification results for the complete suite outcome.
+
+## Full-suite failure: occupancy concentration
+
+The first full run completed with 409 passes and one failure in
+`test_mixed_states_are_over_represented_on_the_path`. The denominator counted
+visited states while the numerator counted all mixed states, including
+unreachable ones. The corrected uniform baseline uses the intersection of
+visited states and the mixed-state subset. A direct regression covers an
+unreachable subset member; all seven occupancy tests pass. The canonical
+report and figure were regenerated for the selected policy.

@@ -63,7 +63,7 @@ def main() -> None:
 
     CSV.parent.mkdir(exist_ok=True)
     with CSV.open("w", newline="") as fh:
-        w = csv.writer(fh)
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["x0", "y0", "x1", "y1", "b", "occupancy", "mixed"])
         for s, m in sorted(dist.items(), key=lambda kv: -kv[1]):
             w.writerow([*s, f"{m:.6f}", int(s in mixed)])

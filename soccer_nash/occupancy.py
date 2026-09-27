@@ -93,7 +93,8 @@ def concentration(
     dist: dict[State, float], subset: set[State]
 ) -> tuple[float, float]:
     """``(occupancy mass on subset, uniform share of subset)`` -- their ratio
-    says how over- or under-represented the subset is on the equilibrium path."""
+    compares the occupancy mass with a uniform distribution over visited states.
+    Subset members that are not visited contribute to neither quantity."""
     mass = sum(dist.get(s, 0.0) for s in subset)
-    uniform = len(subset) / len(dist) if dist else 0.0
+    uniform = len(subset.intersection(dist)) / len(dist) if dist else 0.0
     return mass, uniform
