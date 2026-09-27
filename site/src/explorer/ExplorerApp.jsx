@@ -601,10 +601,16 @@ export default function ExplorerApp() {
           </div>
 
           <div className="presets">
-            <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>), plus six A10-deterministic edge cases not in the PDF &mdash; each switches to that case's board:</span>
-            {Object.keys(PRESETS).map((n) => (
-              <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
-            ))}
+            {currentBoard === "canonical_det" ? (
+              <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to an A10-deterministic edge case (<a href="a10_cases.pdf">a10_cases.pdf</a>):</span>
+            ) : (
+              <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
+            )}
+            {Object.keys(PRESETS)
+              .filter((n) => (PRESETS[n].board === "canonical_det") === (currentBoard === "canonical_det"))
+              .map((n) => (
+                <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
+              ))}
           </div>
 
           <div className="stat-strip">
