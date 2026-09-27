@@ -39,3 +39,26 @@ test('two-axis ties still have a saddle', () => {
   assert.equal(cert.kind, 'pure');
   assert.equal(cert.gap, 0);
 });
+
+test('territory rewards count even when the game draws', () => {
+  const b = board();
+  b.states.s[4].fill(0);
+  b.states.s[6] = Array(16).fill(.05);
+  assert.equal(stepPolicy(b, 's', 'minimax', 'minimax').reward, .05);
+  const result = simulateGames(b, 's', 1, 'minimax', 'minimax', .9, 2);
+  assert.equal(result.draw, 1);
+  assert.ok(Math.abs(result.meanReturn - .095) < 1e-12);
+});
+
+test('sampled stochastic outcomes keep their corresponding rewards', () => {
+  const b = board();
+  b.states.s[4] = Array.from({length:16}, () => [[-1,.5],[-2,.5]]);
+  b.states.s[6] = Array.from({length:16}, () => [.4,-.7]);
+  const random = Math.random;
+  try {
+    Math.random = () => .75;
+    const step = stepPolicy(b, 's', 'minimax', 'minimax');
+    assert.equal(step.next, -2);
+    assert.equal(step.reward, -.7);
+  } finally { Math.random = random; }
+});

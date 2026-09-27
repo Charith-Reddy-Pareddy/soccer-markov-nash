@@ -92,6 +92,7 @@ export default function ExplorerApp() {
   const [playDone, setPlayDone] = useState(false);
   const [winner, setWinner] = useState(null);
   const [lastMove, setLastMove] = useState(null);
+  const [playRewards, setPlayRewards] = useState([]);
   const [autoPlaying, setAutoPlaying] = useState(false);
 
   useEffect(() => {
@@ -179,6 +180,7 @@ export default function ExplorerApp() {
     setSt(newSt);
     setSimResult(null);
     setPlayHistory([newSt]);
+    setPlayRewards([]);
     setPlayDone(false);
     setWinner(null);
     setLastMove(null);
@@ -233,9 +235,10 @@ export default function ExplorerApp() {
   // no legal `st` for a terminal state) -- the same stepPolicy() resolution
   // simulateGames' own inner loop uses, just watched one step at a time.
   function stepOnce() {
-    if (playDone) return;
-    const { a0, a1, next } = stepPolicy(board, stateKey(st), p0Type, p1Type);
+    if (playDone || playRewards.length >= 100) return;
+    const { a0, a1, next, reward } = stepPolicy(board, stateKey(st), p0Type, p1Type);
     setLastMove({ a0, a1 });
+    setPlayRewards(r => [...r, reward]);
     if (next === -1 || next === -2) {
       setPlayDone(true);
       setWinner(next === -1 ? 0 : 1);
@@ -248,6 +251,7 @@ export default function ExplorerApp() {
   }
 
   function backOnce() {
+    setPlayRewards(r => r.slice(0, -1));
     setAutoPlaying(false);
     setLastMove(null);
     if (playDone) {
@@ -264,6 +268,7 @@ export default function ExplorerApp() {
   }
 
   function restartPlay() {
+    setPlayRewards([]);
     setAutoPlaying(false);
     setPlayDone(false);
     setWinner(null);
@@ -391,8 +396,8 @@ export default function ExplorerApp() {
               </div>
               <div className="controls">
                 <button className="iconbtn" onClick={backOnce} disabled={playHistory.length <= 1 && !playDone}>Back</button>
-                <button className="iconbtn" onClick={stepOnce} disabled={playDone}>Step</button>
-                <button className="iconbtn" onClick={() => setAutoPlaying((p) => !p)} disabled={playDone}>
+                <button className="iconbtn" onClick={stepOnce} disabled={playDone || playRewards.length >= 100}>Step</button>
+                <button className="iconbtn" onClick={() => setAutoPlaying((p) => !p)} disabled={playDone || playRewards.length >= 100}>
                   {autoPlaying ? "Pause" : "Play"}
                 </button>
                 <button className="iconbtn" onClick={restartPlay}>Restart game</button>
@@ -404,12 +409,12 @@ export default function ExplorerApp() {
                 </div>
                 <div>
                   <div className="s-k">Step</div>
-                  <div className="s-v">{playHistory.length - 1}</div>
+                  <div className="s-v">{playRewards.length}</div>
                 </div>
                 <div>
                   <div className="s-k">Discounted return so far</div>
                   <div className="s-v">
-                    {(playDone ? (winner === 0 ? 1 : -1) * data.gamma ** (playHistory.length - 1) : 0).toFixed(6)}
+                    {playRewards.reduce((total, r, i) => total + data.gamma ** i * r, 0).toFixed(6)}
                   </div>
                 </div>
                 <div>
