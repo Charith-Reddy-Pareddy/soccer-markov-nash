@@ -7,12 +7,10 @@ equilibria and fractional LP output. This script is the deterministic
 *pure* (this project's own headline result), but "pure" still hides real
 structure the site's board explorer surfaces:
 
-* **ties** -- more than one action can guarantee the exact same worst-case
-  value; certify()'s argmax reports only the first one it finds, which is
-  not the unique answer. The site no longer tie-breaks this (board arrows,
-  move-bars, Step/Play/Simulate all now sample the whole tied set uniformly,
-  not one arbitrary pick) -- this document shows *why* that mattered, with
-  the full tied set and the uniform display policy printed for every case.
+* **ties** -- equal security values do not imply equal probabilities. The
+  solver preserves maximin/minimax first, then selects the better mean payoff
+  among exact ties. This removes weakly dominated choices such as U/L in
+  case 1 without hard-coding a direction or changing transition rules.
 * **hold vs. score** -- a move past the board edge is a genuine no-op
   everywhere except one place: the ball carrier, in a goal row, pushing past
   *their own* attacking edge, which ends the game instead of holding. Two of
@@ -30,6 +28,7 @@ Writes `docs/figures/gallery/a10_cases.svg` (composite) plus one
 """
 from __future__ import annotations
 
+import html
 import pathlib
 import sys
 
@@ -60,18 +59,6 @@ def _ties(M: np.ndarray, tol: float = 1e-6):
     return maximin, minimax, row_ties, col_ties
 
 
-def _tie_aware(pol: np.ndarray, ties: list[int]) -> np.ndarray:
-    """Mirrors site/src/explorer/helpers.js's tieAwarePolicy: a uniform mix
-    over every tied action, not certify()'s single tie-broken pick -- itself
-    still an optimal strategy (any convex combination of best responses at a
-    saddle guarantees the same value)."""
-    if len(ties) <= 1:
-        return pol
-    out = np.zeros(4)
-    out[ties] = 1.0 / len(ties)
-    return out
-
-
 def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[str], case_no: int):
     M = solver._matrix(state, r.values)
     maximin, minimax, row_ties, col_ties = _ties(M)
@@ -79,7 +66,7 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
     x0, y0, x1, y1, b = state
     carrier, defender = (0, 1) if b == 0 else (1, 0)
     row_pol, col_pol = r.row_policy[state], r.col_policy[state]
-    disp_row, disp_col = _tie_aware(row_pol, row_ties), _tie_aware(col_pol, col_ties)
+    disp_row, disp_col = row_pol, col_pol
 
     print(f"state {state} -- {label}")
     print(f"  player 0 at ({x0}, {y0}) -- player 1 at ({x1}, {y1}) -- "
@@ -95,7 +82,7 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
           + ("  <- TIE, not unique" if len(col_ties) > 1 else "  (unique)"))
     print(f"  solver's own policy (one-hot, tie-broken): p0={np.round(row_pol, 4).tolist()}  "
           f"p1={np.round(col_pol, 4).tolist()}")
-    print(f"  uniform-over-ties display policy (what the site now shows): "
+    print(f"  selected policy (also displayed and played by the site): "
           f"p0={np.round(disp_row, 4).tolist()}  p1={np.round(disp_col, 4).tolist()}")
     print(f"  why: {why}")
     print("  every joint action's actual transition (game.transitions(), rows = "
@@ -119,6 +106,33 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
     (CASE_DIR / f"a10_case{case_no:02d}.svg").write_text(panel_svg([board, matrix], cols=2))
 
 
+def _html_case(number, label, why, g, solver, result, state):
+    M = solver._matrix(state, result.values)
+    p, q = result.row_policy[state], result.col_policy[state]
+    _, _, rows, cols = _ties(M)
+    i, j = int(np.argmax(p)), int(np.argmax(q))
+    matrix = "".join(
+        "<tr><th>" + _ACT[a] + "</th>" + "".join(
+            f"<td>{v:.6f}</td>" for v in M[a]) + "</tr>" for a in range(4))
+    transitions = "".join(
+        "<tr><th>" + a0.name + "</th>" + "".join(
+            f"<td>{g.transitions(state, a0, a1)[0][1]}</td>"
+            for a1 in MOVE_ACTIONS) + "</tr>" for a0 in MOVE_ACTIONS)
+    headers = "<tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr>"
+    return f"""<section><h2>Case {number}: {html.escape(label)}</h2>
+<p>State {state}; player {state[4]} carries the ball. V = {result.values[state]:+.6f}.</p>
+<p><b>Selected policy: P0 {_ACT[i]} 100%; P1 {_ACT[j]} 100%.</b>
+Security-tied alternatives: P0 {'/'.join(_ACT[k] for k in rows)};
+P1 {'/'.join(_ACT[k] for k in cols)}. Alternatives are not probabilities.</p>
+<p>{html.escape(why)}</p>
+<img src="figures/gallery/a10_case{number:02d}.svg"
+ alt="Case {number} selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table>{headers}{matrix}</table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions">{headers}{transitions}</table></section>"""
+
+
 def main() -> None:
     g = SoccerGame(**BOARD)
     solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
@@ -130,7 +144,9 @@ def main() -> None:
     cases = [
         ((4, 3, 5, 3, 0), "The swap trap",
          "player 0's U/D/L never touch player 1 at all this turn, so all three "
-         "guarantee 0 regardless of player 1's reply -- only R reaches player 1's "
+         "guarantee at least 0. D weakly dominates U and L: it earns 0.729 against "
+         "U/L, while U and L earn zero against every reply. The refined policy "
+         "is D, not a uniform tie mix. Only R reaches player 1's "
          "square, and against L it triggers a genuine swap (verified below: "
          "(R, L) -> (5,3,4,3,1)) that hands player 1 the ball, dragging R's own "
          "worst case to -0.59. Player 1's unique safe column is R for an unrelated "
@@ -146,8 +162,7 @@ def main() -> None:
          "-0.9. D, L, and R never reach that cell, so they tie safely at 0."),
         ((3, 4, 4, 4, 0), "The standoff",
          "both players are already on the top row, one cell apart. U is wall-"
-         "clamped (a genuine no-op) for both -- not a real move upward, despite "
-         "being what the solver happens to print first. R is player 0's one risky "
+         "clamped (a genuine no-op) for both -- not a real move upward. R is player 0's one risky "
          "action (it reaches player 1's square: blocked against U, a real swap "
          "against L); L is player 1's mirror risk. D never touches the opponent "
          "for either player, so U/D/L (player 0) and U/D/R (player 1) all tie at "
@@ -190,11 +205,43 @@ def main() -> None:
          "merely that the guaranteed values tie -- every one of the 16 cells in "
          "the Q matrix is exactly 0.0, including a genuine ball-swapping contest "
          "((R, L) -> a state that is itself also worth exactly 0, verified below). "
-         "Nothing that happens this turn, for either player, changes anything."),
+         "All successors have the same optimal-continuation value, although their "
+         "physical positions differ."),
     ]
     for case_no, (state, label, why) in enumerate(cases, start=1):
         _report(label, why, g, solver, r, state, panels, case_no)
 
+    intro = """<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Eight A10 edge cases: verified policy selection</title>
+<style>
+body {font: 14px/1.45 system-ui,sans-serif; max-width: 1000px; margin: 32px auto;
+color: #203329; padding: 0 24px} h1,h2 {color: #286444} h3 {font-size: 13px}
+table {border-collapse:collapse; width:100%; font: 12px/1.4 monospace}
+td,th {border:1px solid #c7d4cb; padding:5px; text-align:center}
+img {display:block; width:100%; max-height:290px; object-fit:contain}
+section {margin-top:32px; border-top:1px solid #c7d4cb; padding-top:16px}
+@page {size:A4; margin:12mm}
+@media print {body{margin:0;padding:0;font-size:10px} h1{font-size:20px}
+h2{font-size:17px} section{break-before:page;margin:0;padding:0;border:0}
+img{max-height:245px} table{font-size:9px} td,th{padding:4px}}
+</style><h1>Eight edge cases on the A10 deterministic board</h1>
+<p>7 by 5 board; goal rows 1, 2, 3; simultaneous U/D/L/R; deterministic
+carrier-wins-contests resolution. Players never occupy the same square.
+The loser of a contested square or swap receives the ball.</p>
+<p><b>Selection rule:</b> preserve the best worst-case payoff, then maximize
+mean payoff over opponent actions among exact security ties. Identical-score
+ties use action order. The secondary criterion is a documented selection
+convention, not a claim that Nash equilibrium is unique. No uniform tie mix
+is substituted for the solver policy.</p>
+<p>Case 1 selects Down for player 0: it weakly dominates Up and Left.
+The four zeros against Right describe optimal continuation from four
+new states, not a defender committed to Right forever. These are discounted
+stationary values with gamma 0.9, not the undiscounted 100-turn assignment.</p>
+<p><a href="explorer.html">Interactive explorer</a> ·
+<a href="equilibrium-debug.md">Audit and reproduction details</a></p>"""
+    sections = [_html_case(n, label, why, g, solver, r, state)
+                for n, (state, label, why) in enumerate(cases, 1)]
+    pathlib.Path("docs/a10_cases.html").write_text(intro + "".join(sections) + "</html>")
     FIG.write_text(panel_svg(panels, cols=2))
     print(f"wrote {FIG}")
 

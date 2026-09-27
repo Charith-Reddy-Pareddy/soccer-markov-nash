@@ -89,11 +89,7 @@ function Player({ cx, cy, label, colour, carrier, active }) {
   );
 }
 
-// rowPol / colPol are the *display* policy -- for a genuinely mixed state
-// that's the real LP mix; for a pure state with tied optimal actions it's
-// tieAwarePolicy's uniform split over the whole tie, not just the one
-// argmax happened to pick, so the arrows below show every equally-good
-// option instead of tie-breaking to a single one.
+// Arrows show the exported policy, also used by Step, Play, and Simulate.
 export default function Board({ board, state, activePlayer, onCellClick, heatmap, rowPol, colPol }) {
   const W = board.width, H = board.height, GOALS = board.goal_rows;
   const boardW = W * CELL, boardH = H * CELL;

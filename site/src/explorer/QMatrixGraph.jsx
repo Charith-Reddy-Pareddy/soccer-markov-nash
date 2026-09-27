@@ -1,10 +1,10 @@
-import { ACT } from "./helpers.js";
+import { ACT, certify } from "./helpers.js";
 
 // Mirrors soccer_nash/viz.py's bestresponse_graph_svg exactly: one node per
 // cell, a blue arrow from a cell to the higher-payoff cell in its column
 // (the carrier's reason to switch rows), a green arrow to the lower-payoff
 // cell in its row (the defender's reason to switch columns).
-export default function QMatrixGraph({ M }) {
+export default function QMatrixGraph({ M, rowPol, colPol }) {
   const gapX = 92, gapY = 78, lm = 46, tm = 34, r = 15;
   const cx = (j) => lm + j * gapX;
   const cy = (i) => tm + i * gapY;
@@ -15,17 +15,17 @@ export default function QMatrixGraph({ M }) {
   });
   const colBest = [0, 1, 2, 3].map((i) => M[i].indexOf(Math.min(...M[i])));
 
-  let saddle = null;
-  for (let j = 0; j < 4; j++) {
-    const i = rowBest[j];
-    if (colBest[i] === j) { saddle = [i, j]; break; }
-  }
+  const cert = certify(M);
+  const saddle = cert.kind === "pure" ? [
+    rowPol ? rowPol.indexOf(Math.max(...rowPol)) : cert.i,
+    colPol ? colPol.indexOf(Math.max(...colPol)) : cert.j,
+  ] : null;
 
   const vArrows = [];
   for (let j = 0; j < 4; j++) {
     const bi = rowBest[j];
     for (let i = 0; i < 4; i++) {
-      if (i === bi) continue;
+      if (M[bi][j] - M[i][j] <= 1e-9) continue;
       const x = cx(j) - 7, y0 = cy(i), y1 = cy(bi);
       const sign = y1 > y0 ? 1 : -1;
       vArrows.push(
@@ -38,7 +38,7 @@ export default function QMatrixGraph({ M }) {
   for (let i = 0; i < 4; i++) {
     const bj = colBest[i];
     for (let j = 0; j < 4; j++) {
-      if (j === bj) continue;
+      if (M[i][j] - M[i][bj] <= 1e-9) continue;
       const y = cy(i) + 7, x0 = cx(j), x1 = cx(bj);
       const sign = x1 > x0 ? 1 : -1;
       hArrows.push(

@@ -127,8 +127,15 @@ def _outcome_repr(g: SoccerGame, state, a0, a1, index: dict) -> int | list[list]
     out = []
     for prob, ns, _reward in outcomes:
         idx = _TERM[ns[4]] if g.is_terminal(ns) else index[ns]
-        out.append([idx, r6(prob)])
+        out.append([idx, float(prob)])
     return out
+
+
+def _reward_repr(g: SoccerGame, state, a0, a1) -> float | list[float]:
+    """Player 0 rewards aligned with the outcomes exported by _outcome_repr."""
+    outcomes = g.transitions(state, a0, a1)
+    rewards = [float(reward[0]) for _, _, reward in outcomes]
+    return rewards[0] if len(rewards) == 1 else rewards
 
 
 def solve_board(bid: str, kw: dict) -> dict:
@@ -151,12 +158,13 @@ def solve_board(bid: str, kw: dict) -> dict:
         if rounding is not None:
             rounding_flagged += 1
         states[key] = [
-            r6(result.values[s]),
-            [r6(p) for p in result.row_policy[s]],
-            [r6(p) for p in result.col_policy[s]],
-            [[r6(M[i2, j]) for j in range(4)] for i2 in range(4)],
+            float(result.values[s]),
+            result.row_policy[s].tolist(),
+            result.col_policy[s].tolist(),
+            M.tolist(),
             [_outcome_repr(g, s, a0, a1, index) for a0, a1 in JOINT_ACTIONS],
             rounding,
+            [_reward_repr(g, s, a0, a1) for a0, a1 in JOINT_ACTIONS],
         ]
     print(f"    {bid}: {rounding_flagged}/{len(states)} states have a "
           f"rounding-induced artifact at 3/2/1 decimals")
@@ -167,6 +175,8 @@ def solve_board(bid: str, kw: dict) -> dict:
         "width": g.width,
         "height": g.height,
         "goal_rows": list(g.goal_rows),
+        "scoring": g.scoring,
+        "policy_selection": "security_then_mean",
         "exact_vs_iterative": result.exact_vs_iterative,
         "no_saddle_count": len(result.no_saddle_states),
         "state_count": len(states),

@@ -15,11 +15,11 @@ occupancy`) runs it on the 7×5 board, 3-cell goal, random order, `γ = 0.9`.
 
 | | value |
 |---|---|
-| states reachable under the Nash policy | **456 / 2380** |
+| states reachable under the Nash policy | **378 / 2380** |
 | no-pure-saddle states | 94 (3.95% of all) |
 | equilibrium time spent in mixed states | **41.4%** |
-| their share of the *visited* states | 20.6% |
-| concentration on the path | **2.0×** over-represented vs. visited, **10×** vs. all states |
+| their share of the *visited* states | 19.0% |
+| concentration on the path | **2.2×** over-represented vs. visited, **10×** vs. all states |
 
 Four of the eight most-visited states are no-pure-saddle. The carrier's optimal
 trajectory from the kickoff -- march down the centre rows toward the attacking
@@ -39,3 +39,8 @@ mixed structure is *load-bearing*: a player who refuses to mix leaks value at
 ~40% of the moments that actually occur under equilibrium play, which is the
 practical reason the pure-first hybrid keeps the LP fallback rather than settling
 for the maximin bound ([mixing.md](mixing.md)).
+
+The counts above use the security-then-mean policy selection convention.
+Reachability depends on the chosen equilibrium policy. The visited-state
+baseline counts only mixed states actually present in the visitation
+distribution; including unreachable mixed states would inflate that baseline.

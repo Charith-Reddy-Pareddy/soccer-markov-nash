@@ -9,23 +9,6 @@ export function kickoffState(board) {
   return { x0: 0, y0: Math.floor(board.height / 2), x1: board.width - 1, y1: Math.floor(board.height / 2), b: 0 };
 }
 
-// For a pure equilibrium with ties, every tied action guarantees the exact
-// same worst-case value -- not just the one certify()'s argmax happened to
-// check first. A uniform mix over a saddle point's whole tied set is itself
-// still an optimal strategy (any convex combination of best responses at a
-// saddle guarantees the same value), so this is a real equilibrium, not a
-// display approximation: it replaces the arbitrary single tie-broken pick
-// with "all of these, equally," which is what the game theory actually says.
-// `ties` is `undefined` for a genuinely mixed state (kind !== "pure") or
-// absent entirely -- either way this just returns `pol` unchanged, and a
-// pure state with no tie (ties.length === 1) is already the one-hot `pol`,
-// so this is a no-op there too.
-export function tieAwarePolicy(pol, ties) {
-  if (!ties || ties.length <= 1) return pol;
-  const p = 1 / ties.length;
-  return pol.map((_, i) => (ties.includes(i) ? p : 0));
-}
-
 // Per action, whether it's clamped at the board edge -- and if so, whether
 // that's a genuine no-op ("hold": there's no cell there, the player just
 // stays put) or a goal ("score": this exact player, in a goal row, with the
@@ -143,22 +126,25 @@ function sampleAction(pol) {
   let acc = 0;
   for (let i = 0; i < pol.length; i++) {
     acc += pol[i];
-    if (r <= acc) return i;
+    if (r < acc) return i;
   }
   return pol.length - 1; // float rounding fallback
 }
 
 // One joint action's `trans` entry is either a bare state index / terminal
 // sentinel (the single-outcome case) or a list of [index, prob] pairs.
-function resolveOutcome(entry) {
-  if (typeof entry === "number") return entry;
+function resolveOutcome(entry, rewards) {
+  const goalReward = (next) => next === -1 ? 1 : next === -2 ? -1 : 0;
+  if (typeof entry === "number") return { next: entry, reward: rewards ?? goalReward(entry) };
   const r = Math.random();
   let acc = 0;
-  for (const [idx, prob] of entry) {
+  for (let i = 0; i < entry.length; i++) {
+    const [next, prob] = entry[i];
     acc += prob;
-    if (r <= acc) return idx;
+    if (r < acc || i === entry.length - 1) {
+      return { next, reward: rewards?.[i] ?? goalReward(next) };
+    }
   }
-  return entry[entry.length - 1][0];
 }
 
 export const POLICY_TYPES = ["minimax", "left", "random", "br"];
@@ -201,16 +187,9 @@ function bestResponseCol(M, p) {
 // fall back to the exact equilibrium -- which is, not coincidentally, the
 // actual fixed point of "best-respond to a best-response".
 //
-// At a pure state with a tie, "minimax" samples tieAwarePolicy's uniform
-// split over the whole tied set, not just certify()'s single tie-broken
-// pick -- otherwise Step/Play/Simulate would always play the exact same one
-// of several equally-good actions, silently contradicting the board's own
-// display (which stopped tie-breaking). A "br" opponent then best-responds
-// to that real mix too, not to a one-hot policy that overstates certainty.
+// Use the exported policy verbatim; security ties are alternatives, not weights.
 function resolvePolicies(type0, type1, rowPol, colPol, M) {
-  const cert = certify(M);
-  const rp = cert.kind === "pure" ? tieAwarePolicy(rowPol, cert.rowTies) : rowPol;
-  const cp = cert.kind === "pure" ? tieAwarePolicy(colPol, cert.colTies) : colPol;
+  const rp = rowPol, cp = colPol;
   const fixed = (type, pol) => (type === "minimax" ? pol : type === "left" ? ALWAYS_LEFT : type === "random" ? UNIFORM : null);
   let p0 = fixed(type0, rp);
   let p1 = fixed(type1, cp);
@@ -227,11 +206,11 @@ function resolvePolicies(type0, type1, rowPol, colPol, M) {
 // Returns the action pair and either the next state's index into
 // `board.state_list` or a terminal sentinel (-1 player 0 scored, -2 player 1).
 export function stepPolicy(board, key, type0, type1) {
-  const [, rowPol, colPol, M, trans] = board.states[key];
+  const [, rowPol, colPol, M, trans, , rewards] = board.states[key];
   const [p0, p1] = resolvePolicies(type0, type1, rowPol, colPol, M);
   const a0 = sampleAction(p0), a1 = sampleAction(p1);
-  const next = resolveOutcome(trans[a0 * 4 + a1]);
-  return { a0, a1, next };
+  const outcome = resolveOutcome(trans[a0 * 4 + a1], rewards?.[a0 * 4 + a1]);
+  return { a0, a1, ...outcome };
 }
 
 // Self-play the chosen policies against each other from `startKey`, sampling
@@ -259,16 +238,17 @@ export function simulateGames(board, startKey, trials, type0, type1, gamma, maxS
     let winner = null;
     let step = 0;
     for (; step < maxSteps; step++) {
-      const [, rowPol, colPol, M, trans] = states[key];
+      const [, rowPol, colPol, M, trans, , rewards] = states[key];
       const [p0, p1] = resolvePolicies(type0, type1, rowPol, colPol, M);
       const a0 = sampleAction(p0), a1 = sampleAction(p1);
-      const next = resolveOutcome(trans[a0 * 4 + a1]);
+      const { next, reward } = resolveOutcome(trans[a0 * 4 + a1], rewards?.[a0 * 4 + a1]);
+      totalReturn += gamma ** step * reward;
       if (next === -1) { winner = 0; break; }
       if (next === -2) { winner = 1; break; }
       key = state_list[next];
     }
-    if (winner === 0) { p0Wins++; totalReturn += gamma ** step; decisiveSteps += step + 1; }
-    else if (winner === 1) { p1Wins++; totalReturn -= gamma ** step; decisiveSteps += step + 1; }
+    if (winner === 0) { p0Wins++; decisiveSteps += step + 1; }
+    else if (winner === 1) { p1Wins++; decisiveSteps += step + 1; }
     else draw++;
     totalSteps += winner === null ? maxSteps : step + 1;
   }

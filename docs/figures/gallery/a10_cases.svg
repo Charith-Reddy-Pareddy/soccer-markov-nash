@@ -21,12 +21,7 @@
 <circle cx="228.0" cy="96.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="272.0" cy="96.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="238.0" cy="86.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<line x1="228.0" y1="83.0" x2="228.0" y2="70.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f6bb0)"/>
-<text x="228.0" y="62.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">33%</text>
-<line x1="228.0" y1="109.0" x2="228.0" y2="122.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f6bb0)"/>
-<text x="228.0" y="136.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">33%</text>
-<line x1="215.0" y1="96.0" x2="202.0" y2="96.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f6bb0)"/>
-<text x="191.0" y="99.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">33%</text>
+<line x1="228.0" y1="109.0" x2="228.0" y2="134.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
 <line x1="285.0" y1="96.0" x2="310.0" y2="96.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The swap trap</text>
@@ -72,16 +67,16 @@
 <text x="138.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="230.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<circle cx="322.0" cy="34.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
-<text x="322.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
+<circle cx="322.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="322.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="46.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.73</text>
 <circle cx="138.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="138.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="230.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.73</text>
-<circle cx="322.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
-<text x="322.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
+<circle cx="322.0" cy="112.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
+<text x="322.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
 <circle cx="46.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="138.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -98,7 +93,7 @@
 <text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.59</text>
 <circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at U/R</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at D/R</text>
 </g></g>
 <g transform="translate(16.0 368.0)"><clipPath id="pnl2"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl2)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
@@ -122,14 +117,8 @@
 <circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="140.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<circle cx="52.0" cy="228.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.77"/>
-<text x="52.0" y="254.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 67%</text>
-<line x1="65.0" y1="228.0" x2="78.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="3.0" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f6bb0)"/>
-<text x="89.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">33%</text>
-<line x1="52.0" y1="153.0" x2="52.0" y2="169.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.68" marker-end="url(#ah-2f8a52)"/>
-<text x="52.0" y="183.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">50%</text>
-<line x1="65.0" y1="140.0" x2="81.0" y2="140.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.68" marker-end="url(#ah-2f8a52)"/>
-<text x="92.0" y="143.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">50%</text>
+<line x1="65.0" y1="228.0" x2="90.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<line x1="52.0" y1="153.0" x2="52.0" y2="178.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Pinned in the corner</text>
 </g></g>
@@ -178,8 +167,8 @@
 <text x="322.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="46.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.43</text>
-<circle cx="138.0" cy="112.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
-<text x="138.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
+<circle cx="138.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="138.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="230.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="322.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -194,13 +183,13 @@
 <text x="322.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="46.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.48</text>
-<circle cx="138.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
-<text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
+<circle cx="138.0" cy="268.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
+<text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
 <circle cx="230.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.48</text>
 <circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at D/D</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/D</text>
 </g></g>
 <g transform="translate(16.0 718.0)"><clipPath id="pnl4"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl4)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
@@ -224,18 +213,8 @@
 <circle cx="184.0" cy="52.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="228.0" cy="52.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="194.0" cy="42.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<circle cx="184.0" cy="52.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.58"/>
-<text x="184.0" y="78.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 33%</text>
-<line x1="184.0" y1="65.0" x2="184.0" y2="78.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f6bb0)"/>
-<text x="184.0" y="92.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">33%</text>
-<line x1="171.0" y1="52.0" x2="158.0" y2="52.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f6bb0)"/>
-<text x="147.0" y="55.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">33%</text>
-<circle cx="228.0" cy="52.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.58"/>
-<text x="228.0" y="78.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold 33%</text>
-<line x1="228.0" y1="65.0" x2="228.0" y2="78.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f8a52)"/>
-<text x="228.0" y="92.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">33%</text>
-<line x1="241.0" y1="52.0" x2="254.0" y2="52.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.58" marker-end="url(#ah-2f8a52)"/>
-<text x="265.0" y="55.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">33%</text>
+<line x1="184.0" y1="65.0" x2="184.0" y2="90.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<circle cx="228.0" cy="52.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.95"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The standoff</text>
 </g></g>
@@ -274,16 +253,16 @@
 <line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<circle cx="46.0" cy="34.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
-<text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
+<circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="138.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="230.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="322.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<circle cx="46.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
-<text x="46.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
+<circle cx="46.0" cy="112.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
+<text x="46.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
 <circle cx="138.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="138.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="230.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -306,7 +285,7 @@
 <text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.59</text>
 <circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at U/U</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at D/U</text>
 </g></g>
 <g transform="translate(16.0 1068.0)"><clipPath id="pnl6"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl6)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
@@ -331,14 +310,7 @@
 <circle cx="228.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="326.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="329.0" y1="184.0" x2="354.0" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
-<line x1="228.0" y1="171.0" x2="228.0" y2="159.5" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="228.0" y="151.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="228.0" y1="197.0" x2="228.0" y2="208.5" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="228.0" y="222.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="215.0" y1="184.0" x2="203.5" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="192.5" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="241.0" y1="184.0" x2="252.5" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="263.5" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
+<line x1="241.0" y1="184.0" x2="266.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The open goal</text>
 </g></g>
@@ -401,15 +373,15 @@
 <text x="230.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.81</text>
 <circle cx="322.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.59</text>
-<circle cx="46.0" cy="268.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
-<text x="46.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+1.00</text>
+<circle cx="46.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+1.00</text>
 <circle cx="138.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+1.00</text>
 <circle cx="230.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+1.00</text>
-<circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
-<text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+1.00</text>
-<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/U</text>
+<circle cx="322.0" cy="268.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
+<text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+1.00</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/R</text>
 </g></g>
 <g transform="translate(16.0 1418.0)"><clipPath id="pnl8"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl8)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
@@ -433,12 +405,7 @@
 <circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<circle cx="52.0" cy="228.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.68"/>
-<text x="52.0" y="254.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 50%</text>
-<line x1="52.0" y1="215.0" x2="52.0" y2="203.5" stroke="var(--p0, #2f6bb0)" stroke-width="3.0" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f6bb0)"/>
-<text x="52.0" y="195.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">25%</text>
-<line x1="65.0" y1="228.0" x2="76.5" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="3.0" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f6bb0)"/>
-<text x="87.5" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">25%</text>
+<line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
 <line x1="39.0" y1="184.0" x2="14.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = -1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The open net</text>
@@ -535,14 +502,7 @@
 <circle cx="52.0" cy="96.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="65.0" y1="184.0" x2="90.0" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
-<circle cx="52.0" cy="96.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.54"/>
-<text x="52.0" y="122.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold 25%</text>
-<line x1="52.0" y1="83.0" x2="52.0" y2="71.5" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="52.0" y="63.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="52.0" y1="109.0" x2="52.0" y2="120.5" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="52.0" y="134.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="65.0" y1="96.0" x2="76.5" y2="96.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="87.5" y="99.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
+<line x1="52.0" y1="109.0" x2="52.0" y2="134.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.531</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The getaway</text>
 </g></g>
@@ -605,15 +565,15 @@
 <text x="230.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.48</text>
 <circle cx="322.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.48</text>
-<circle cx="46.0" cy="268.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
-<text x="46.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.53</text>
-<circle cx="138.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
-<text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.53</text>
+<circle cx="46.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="46.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.53</text>
+<circle cx="138.0" cy="268.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
+<text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.53</text>
 <circle cx="230.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.53</text>
 <circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.53</text>
-<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/U</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/D</text>
 </g></g>
 <g transform="translate(16.0 2118.0)"><clipPath id="pnl12"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl12)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
@@ -637,10 +597,7 @@
 <circle cx="96.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="106.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<circle cx="96.0" cy="228.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.68"/>
-<text x="96.0" y="254.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 50%</text>
-<line x1="109.0" y1="228.0" x2="125.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.68" marker-end="url(#ah-2f6bb0)"/>
-<text x="136.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">50%</text>
+<line x1="109.0" y1="228.0" x2="134.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
 <line x1="65.0" y1="184.0" x2="90.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The tightest tie</text>
@@ -694,8 +651,8 @@
 <text x="138.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.48</text>
 <circle cx="230.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<circle cx="322.0" cy="112.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
-<text x="322.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
+<circle cx="322.0" cy="112.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
+<text x="322.0" y="116.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="46.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="194.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
 <circle cx="138.0" cy="190.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -710,9 +667,9 @@
 <text x="138.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.53</text>
 <circle cx="230.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="230.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.53</text>
-<circle cx="322.0" cy="268.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
-<text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.00</text>
-<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at D/R</text>
+<circle cx="322.0" cy="268.0" r="15" fill="#a94e18" stroke="#a94e18" stroke-width="1.6"/>
+<text x="322.0" y="272.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--paper, #ffffff)">+0.00</text>
+<text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/R</text>
 </g></g>
 <g transform="translate(16.0 2468.0)"><clipPath id="pnl14"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl14)">
 <defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
@@ -736,20 +693,8 @@
 <circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
 <circle cx="140.0" cy="228.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<circle cx="52.0" cy="228.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.68"/>
-<text x="52.0" y="254.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 50%</text>
-<line x1="52.0" y1="215.0" x2="52.0" y2="203.5" stroke="var(--p0, #2f6bb0)" stroke-width="3.0" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f6bb0)"/>
-<text x="52.0" y="195.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">25%</text>
-<line x1="65.0" y1="228.0" x2="76.5" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="3.0" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f6bb0)"/>
-<text x="87.5" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">25%</text>
-<circle cx="140.0" cy="228.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.54"/>
-<text x="140.0" y="254.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold 25%</text>
-<line x1="140.0" y1="215.0" x2="140.0" y2="203.5" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="140.0" y="195.5" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="127.0" y1="228.0" x2="115.5" y2="228.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="104.5" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
-<line x1="153.0" y1="228.0" x2="164.5" y2="228.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.54" marker-end="url(#ah-2f8a52)"/>
-<text x="175.5" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">25%</text>
+<line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<line x1="140.0" y1="215.0" x2="140.0" y2="190.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The dead zone</text>
 </g></g>

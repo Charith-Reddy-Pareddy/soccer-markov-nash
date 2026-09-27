@@ -93,7 +93,7 @@ def test_unknown_mode_rejected():
 
 
 def test_pure_strategies_pick_the_saddle_point():
-    # Saddle at (row 0, col 2): row mins are [2, 0, 1, 2] (maximin 2 at row 0),
+    # Saddles at (row 0 or 3, col 2): row mins are [2, 0, 1, 2],
     # col maxes are [5, 5, 2, 7] (minimax 2 at col 2).
     m = np.array(
         [
@@ -104,7 +104,7 @@ def test_pure_strategies_pick_the_saddle_point():
         ]
     )
     p, q = NashQIteration._pure_strategies(m)
-    assert np.argmax(p) == 0  # would be 3 if the row axis were flipped
+    assert np.argmax(p) == 3  # same security as row 0, weakly dominates it
     assert np.argmax(q) == 2
 
 
