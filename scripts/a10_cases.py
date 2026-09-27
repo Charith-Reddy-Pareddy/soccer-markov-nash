@@ -105,8 +105,8 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
         for j, a1 in enumerate(MOVE_ACTIONS):
             outs = g.transitions(state, a0, a1)
             prob, ns, _reward = outs[0]
-            cells.append(("GOAL:P0" if ns[4] == 0 and ns[0] == -1 else
-                           "GOAL:P1" if ns[4] == 1 and ns[0] == -1 else str(ns)))
+            cells.append("GOAL:P0" if ns[4] == 0 and ns[0] == -1 else
+                          "GOAL:P1" if ns[4] == 1 and ns[0] == -1 else str(ns))
         print(f"    {_ACT[i]:>3} " + "  ".join(f"{c:<16}" for c in cells))
     print()
 

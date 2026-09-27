@@ -773,7 +773,8 @@ def bestresponse_graph_svg(
     # here, since this function draws the graph, not just verdicts).
     row_min, col_max = M.min(axis=1), M.max(axis=0)
     maximin, minimax = float(row_min.max()), float(col_max.min())
-    saddle = (int(np.argmax(row_min)), int(np.argmin(col_max))) if minimax - maximin <= 1e-6 else None
+    is_pure = minimax - maximin <= 1e-6
+    saddle = (int(np.argmax(row_min)), int(np.argmin(col_max))) if is_pure else None
 
     body = [f'<defs>{_marker(P0)}{_marker(P1)}</defs>']
     for j, lab in enumerate(col_labels):

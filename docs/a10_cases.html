@@ -99,13 +99,19 @@
 
 <h1>Eight edge cases on the A10-deterministic board</h1>
 <p class="lede">
-Not Littman's cases. <a href="positions.pdf">positions.pdf</a> is the fourteen
-cases on the <em>random</em>-move-order canonical board, where the point is
-mixed equilibria and fractional LP output. This is the deterministic
-(A10-style) twin's own edge cases: this project's headline result is that
-every stage game on that board is <em>pure</em> &mdash; but "pure" still hides
-real structure that the live <a href="explorer.html">board explorer</a>
-surfaces and this page derives in full.
+This is the A10 assignment's own soccer Markov game: a 7&times;5 field, goal
+rows {1, 2, 3}, four actions per player (U/D/L/R), and fully deterministic
+move resolution &mdash; every joint action maps to exactly one outcome, never
+a coin flip. This project's headline result on that board is that every one
+of its 2,380 legal states resolves to a <em>pure</em> equilibrium. But "pure"
+is not the same as "obvious": a collision rule where winning a contested
+square still hands the ball to whoever lost it, a boundary rule where a move
+past the edge holds in place everywhere <em>except</em> a goal row (where it
+scores instead), and outright ties between several equally-good actions all
+hide real structure that a single printed action can't show. These eight
+cases, found by directly searching the exact solve for the interesting
+shapes, put that structure on a board &mdash; the same ones live in the
+<a href="explorer.html">board explorer</a>.
 </p>
 
 <div class="takeaway">
@@ -439,17 +445,11 @@ policy, and the successor-state table for every joint action shown here,
 read straight from <span class="mono">game.transitions()</span>. The hold
 vs. score distinction and the uniform-over-ties board arrows are
 <span class="mono">soccer_nash/viz.py</span>'s <span class="mono">_wall_mask</span>
-/ <span class="mono">_action_fan</span> / <span class="mono">policy_svg</span>,
-and the Q-matrix graph's saddle detection (broken by a tie on both axes,
-caught building Cases 7 and 8) is
-<span class="mono">bestresponse_graph_svg</span> &mdash; the same functions
-<span class="mono">scripts/positions.py</span> uses for the unrelated
-Littman cases. Both fixes apply there too, but change nothing in that
-document (verified: its figures regenerate byte-identical), since none of
-its fourteen states are a carrier in a goal row at the boundary or have a
-saddle detector this may confuse. Not to be confused with
-<a href="positions.pdf">positions.pdf</a>, which is Littman's cases on the
-random-move-order board.
+/ <span class="mono">_action_fan</span> / <span class="mono">policy_svg</span>;
+the Q-matrix graph's saddle detection (broken by a tie on both axes, caught
+building Cases 7 and 8) is <span class="mono">bestresponse_graph_svg</span>,
+fixed to check <span class="mono">maximin == minimax</span> directly instead
+of relying on two independent tie-breaks to agree.
 Full project:
 <span class="mono">github.com/Charith-Reddy-Pareddy/soccer-markov-nash</span>.
 </footer>
