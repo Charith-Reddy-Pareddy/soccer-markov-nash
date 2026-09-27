@@ -1,7 +1,7 @@
 """Intermediate-reward shaping for the soccer game.
 
 The A10 write-up suggests "small positive rewards for possessing the ball and
-moving closer to the goal" on top of the sparse win/lose signal. Two flavours:
+moving closer to the goal" on top of the sparse win/lose signal. Four flavours:
 
 * :class:`PotentialShaping` -- potential-based shaping
   ``F(s, s') = gamma * Phi(s') - Phi(s)`` (Ng, Harada & Russell 1999; Devlin &
@@ -10,8 +10,15 @@ moving closer to the goal" on top of the sparse win/lose signal. Two flavours:
 * :class:`StepPossessionBonus` -- a plain per-step bonus for holding the ball.
   Not potential-based, so it *can* change the optimal policy (the carrier may
   prefer to keep the ball over scoring).
+* :class:`StepProgressionBonus` -- a plain per-step bonus proportional to
+  player 0's raw ``x0``, unconditional on possession -- a labmate's own
+  reward term (his "progression" component), reproduced here to cross-check
+  against his site rather than this project's own design choice. Also not
+  potential-based.
+* :class:`CombinedShaping` -- sums several shaping terms' deltas, so e.g.
+  possession and progression can be applied together in one solve.
 
-Both are zero-sum: whatever is added to player 0's reward is taken from
+All are zero-sum: whatever is added to player 0's reward is taken from
 player 1's.
 """
 
@@ -54,3 +61,36 @@ class StepPossessionBonus:
     ) -> float:
         # Reward player 0 for having held the ball on this step.
         return self.bonus if s[4] == 0 else -self.bonus
+
+
+class StepProgressionBonus:
+    """A labmate's "progression" term: ``coeff * x0``, using player 0's raw
+    (unnormalised) x-coordinate -- *not* gated on who has the ball, unlike
+    this project's own ``territory_reward`` (which only pays the carrier).
+    Mirrors :class:`StepPossessionBonus` in reading the *pre*-transition state
+    ``s``, for the same reason: a reward for the position held *during* this
+    step, not the one arrived at.
+    """
+
+    def __init__(self, coeff: float = 0.005):
+        self.coeff = coeff
+
+    def reward_delta(
+        self, game: SoccerGame, s: State, s_next: State, gamma: float
+    ) -> float:
+        r = self.coeff * s[0]
+        return r
+
+
+class CombinedShaping:
+    """Sums several shaping terms' ``reward_delta`` into one, so
+    :class:`NashQIteration`'s single ``shaping=`` slot can carry more than one
+    term (e.g. possession *and* progression together)."""
+
+    def __init__(self, *terms):
+        self.terms = terms
+
+    def reward_delta(
+        self, game: SoccerGame, s: State, s_next: State, gamma: float
+    ) -> float:
+        return sum(t.reward_delta(game, s, s_next, gamma) for t in self.terms)

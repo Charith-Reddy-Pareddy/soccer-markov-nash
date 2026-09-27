@@ -4,7 +4,12 @@ from soccer_nash.best_response import BestResponse
 from soccer_nash.game import SoccerGame
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.opponents import part2_opponent
-from soccer_nash.shaping import PotentialShaping, StepPossessionBonus
+from soccer_nash.shaping import (
+    CombinedShaping,
+    PotentialShaping,
+    StepPossessionBonus,
+    StepProgressionBonus,
+)
 from soccer_nash.simulate import play_deterministic
 
 
@@ -109,3 +114,17 @@ def test_step_bonus_is_zero_sum(game):
     # Whatever it adds for player 0 holding the ball it subtracts for player 1.
     assert sh.reward_delta(game, (3, 2, 4, 2, 0), (4, 2, 3, 2, 0), 0.9) == pytest.approx(0.05)
     assert sh.reward_delta(game, (3, 2, 4, 2, 1), (4, 2, 3, 2, 1), 0.9) == pytest.approx(-0.05)
+
+
+def test_progression_bonus_uses_player0_raw_x0_pre_transition(game):
+    sh = StepProgressionBonus(0.005)
+    # Reads s[0], not s_next[0] -- and ignores who has the ball entirely.
+    assert sh.reward_delta(game, (3, 2, 4, 2, 0), (4, 2, 4, 2, 0), 0.9) == pytest.approx(0.005 * 3)
+    assert sh.reward_delta(game, (3, 2, 4, 2, 1), (3, 3, 4, 2, 1), 0.9) == pytest.approx(0.005 * 3)
+
+
+def test_combined_shaping_sums_its_terms(game):
+    combined = CombinedShaping(StepPossessionBonus(0.005), StepProgressionBonus(0.005))
+    s, s_next = (3, 2, 4, 2, 0), (4, 2, 4, 3, 0)
+    expected = 0.005 + 0.005 * 3
+    assert combined.reward_delta(game, s, s_next, 0.9) == pytest.approx(expected)
