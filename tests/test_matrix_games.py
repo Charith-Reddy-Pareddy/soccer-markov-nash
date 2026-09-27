@@ -72,3 +72,38 @@ def test_rps_style_value_zero():
     value, p, q = solve_zero_sum(rps)
     assert value == pytest.approx(0.0, abs=1e-7)
     assert p == pytest.approx([1 / 3, 1 / 3, 1 / 3], abs=1e-6)
+
+
+def test_lp_retries_unknown_status_without_changing_payoffs(monkeypatch):
+    from types import SimpleNamespace
+
+    import soccer_nash.matrix_games as games
+
+    original = games.linprog
+    calls = []
+
+    def fail_presolve_once(*args, **kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            return SimpleNamespace(success=False, message="Unknown status")
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(games, "linprog", fail_presolve_once)
+    value, p, q = games.solve_zero_sum(MATCHING_PENNIES)
+    assert value == pytest.approx(0)
+    assert p == pytest.approx([.5, .5])
+    assert q == pytest.approx([.5, .5])
+    assert calls[1]["options"] == {"presolve": False}
+    assert np.array_equal(calls[0]["A_ub"], calls[1]["A_ub"])
+
+
+def test_lp_still_reports_failure_when_retry_fails(monkeypatch):
+    from types import SimpleNamespace
+
+    import soccer_nash.matrix_games as games
+
+    monkeypatch.setattr(games, "linprog", lambda *a, **kw: SimpleNamespace(
+        success=False, message="still failed"
+    ))
+    with pytest.raises(RuntimeError, match="still failed"):
+        games.solve_zero_sum(MATCHING_PENNIES)

@@ -42,10 +42,17 @@ def pure_saddle_points(A: np.ndarray) -> list[tuple[int, int]]:
 
 
 def security_strategy_row(A: np.ndarray) -> tuple[int, float]:
-    """Best pure maximin row and its guaranteed value for the row player."""
+    """Best pure maximin row, breaking exact security ties by mean payoff.
+
+    The secondary criterion prefers opportunities against opponent mistakes
+    without sacrificing any worst-case value. A weakly dominated tied row
+    cannot win this comparison. Remaining identical-score ties use action
+    order; this selects one policy, not a unique equilibrium or a forced mix.
+    """
     A = np.asarray(A, dtype=float)
     row_worst = A.min(axis=1)
-    i = int(np.argmax(row_worst))
+    candidates = np.flatnonzero(row_worst == row_worst.max())
+    i = int(candidates[np.argmax(A[candidates].mean(axis=1))])
     return i, float(row_worst[i])
 
 
@@ -69,6 +76,14 @@ def _lp_row_value(A: np.ndarray) -> tuple[float, np.ndarray]:
     bounds = [(0.0, 1.0)] * n + [(None, None)]
 
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds)
+    if not res.success:
+        # Near-degenerate policy-iteration matrices can leave HiGHS presolve
+        # with an unknown status. Retry the original constraints without
+        # presolve; never accept an unsuccessful result or perturb payoffs.
+        res = linprog(
+            c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
+            method="highs-ds", options={"presolve": False},
+        )
     if not res.success:
         raise RuntimeError(f"LP failed: {res.message}")
 

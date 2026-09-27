@@ -172,14 +172,14 @@ class NashQIteration:
     def _pure_strategies(m: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """One-hot maximin row for player 0, minimax column for player 1.
 
-        Player 0's security value for a row is that row's minimum over the
-        columns (``axis=1``); player 1's for a column is that column's maximum
-        over the rows (``axis=0``).
+        Exact security ties prefer the better mean payoff against opponent
+        actions. Apply the same rule to both players' own payoff matrices;
+        this avoids weakly dominated choices without changing game values.
         """
         p = np.zeros(m.shape[0])
         q = np.zeros(m.shape[1])
-        p[int(np.argmax(m.min(axis=1)))] = 1.0
-        q[int(np.argmin(m.max(axis=0)))] = 1.0
+        p[security_strategy_row(m)[0]] = 1.0
+        q[security_strategy_row(-m.T)[0]] = 1.0
         return p, q
 
     def _stage_policy(self, m: np.ndarray) -> tuple[np.ndarray, np.ndarray, bool]:
