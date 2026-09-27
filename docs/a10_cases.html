@@ -1,455 +1,108 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>Eight edge cases on the A10-deterministic board</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Eight A10 edge cases: verified policy selection</title>
 <style>
-  :root {
-    --paper: #f7f8f5; --tint: #eef2ec; --raise: #ffffff; --ink: #19211c;
-    --ink-soft: #4b564e; --ink-faint: #77817a; --rule: #d9e2db;
-    --rule-strong: #c2cec5; --pitch: #2f6b48; --ember: #a94e18;
-    --p0: #2f6bb0; --p1: #2f8a52;
-  }
-  * { box-sizing: border-box; }
-  body {
-    background: var(--paper); color: var(--ink); margin: 0 auto; max-width: 760px;
-    padding: 56px 28px 96px; font-family: "Spectral", Georgia, serif;
-    font-size: 17px; line-height: 1.62;
-  }
-  h1, h2, .kicker, .label { font-family: "Barlow Semi Condensed", "Arial Narrow", sans-serif; }
-  h1 { font-size: 2.4rem; font-weight: 700; margin: 0 0 .3rem; line-height: 1.02; }
-  .kicker {
-    font-size: .8rem; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--ink-faint); margin: 0 0 .6rem;
-  }
-  p.lede { color: var(--ink-soft); font-size: 1.08rem; max-width: 62ch; }
-  h2 {
-    font-size: 1.35rem; font-weight: 600; margin: 2.6rem 0 .7rem;
-    border-top: 1px solid var(--rule); padding-top: 1.6rem;
-  }
-  h2:first-of-type { border-top: none; padding-top: 0; }
-  h3 {
-    font-family: "Barlow Semi Condensed", sans-serif; font-size: 1.02rem;
-    font-weight: 600; margin: 1.6rem 0 .5rem; color: var(--ink-soft);
-  }
-  p { margin: 0 0 1rem; max-width: 68ch; }
-  .mono, code { font-family: "IBM Plex Mono", monospace; }
-  .state-tag {
-    display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: .82rem;
-    background: var(--tint); color: var(--ink-soft); border: 1px solid var(--rule);
-    border-radius: 5px; padding: .12rem .5rem; margin-left: .5rem;
-  }
-  pre.matrix {
-    font-family: "IBM Plex Mono", monospace; font-size: .86rem; line-height: 1.5;
-    background: var(--raise); border: 1px solid var(--rule); border-radius: 8px;
-    padding: 1rem 1.2rem; overflow-x: auto; color: var(--ink);
-  }
-  .support-line {
-    font-family: "IBM Plex Mono", monospace; font-size: .84rem; color: var(--ink-soft);
-    background: var(--tint); border: 1px solid var(--rule); border-radius: 6px;
-    padding: .5rem .8rem; margin: 0 0 1rem; max-width: none;
-  }
-  .support-line b { color: var(--ink); font-family: "Barlow Semi Condensed", sans-serif; }
-  .support-line.why-line { background: var(--raise); font-family: "Spectral", Georgia, serif; font-size: .95rem; line-height: 1.5; }
-  .support-line.type-line {
-    background: var(--raise); border-color: var(--pitch); font-family: "Spectral", Georgia, serif;
-    font-size: .92rem; line-height: 1.5;
-  }
-  .support-line.type-line b { color: var(--pitch); }
-  table.coordmatrix {
-    border-collapse: collapse; width: 100%; margin: .8rem 0 1.2rem;
-    font-family: "IBM Plex Mono", monospace; font-size: .72rem; line-height: 1.5;
-    page-break-inside: avoid;
-  }
-  table.coordmatrix th, table.coordmatrix td {
-    border: 1px solid var(--rule); padding: .35rem .5rem; text-align: center;
-  }
-  table.coordmatrix thead th {
-    font-family: "Barlow Semi Condensed", sans-serif; font-weight: 600;
-    background: var(--tint); text-transform: uppercase; font-size: .64rem;
-    letter-spacing: .04em; color: var(--ink-soft);
-  }
-  table.coordmatrix td:first-child, table.coordmatrix th:first-child {
-    background: var(--tint); font-weight: 600;
-  }
-  table.coordmatrix td.goal { color: var(--ember); font-weight: 700; }
-  table.reading-key {
-    border-collapse: collapse; margin: .8rem 0 1rem;
-    font-family: "IBM Plex Mono", monospace; font-size: .82rem; line-height: 1.5;
-  }
-  table.reading-key td { border: 1px solid var(--rule); padding: .35rem .7rem; }
-  table.reading-key td:first-child { background: var(--tint); font-weight: 600; color: var(--ink); }
-  p.coord-note { font-size: .88rem; color: var(--ink-soft); margin: 1rem 0 0; }
-  .takeaway {
-    margin: 1.2rem 0 1.6rem; padding: 1rem 1.3rem; background: var(--tint);
-    border: 1px solid var(--rule-strong); border-radius: 8px; color: var(--ink);
-    page-break-inside: avoid;
-  }
-  .takeaway p { margin: 0; max-width: none; }
-  .takeaway p + p { margin-top: .7rem; }
-  .case { page-break-inside: avoid; }
-  figure.case-fig { margin: 0 0 1rem; }
-  figure.case-fig img { width: 100%; border-radius: 8px; border: 1px solid var(--rule); }
-  figure.case-fig figcaption { font-family: "IBM Plex Mono", monospace; font-size: .8rem; color: var(--ink-faint); margin-top: .6rem; }
-  .fact { font-weight: 700; }
-  footer { margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); color: var(--ink-faint); font-size: .85rem; }
-  @media print { body { max-width: none; } }
-</style>
-
-<h1>Eight edge cases on the A10-deterministic board</h1>
-<p class="lede">
-This is the A10 assignment's own soccer Markov game: a 7&times;5 field, goal
-rows {1, 2, 3}, four actions per player (U/D/L/R), and fully deterministic
-move resolution &mdash; every joint action maps to exactly one outcome, never
-a coin flip. This project's headline result on that board is that every one
-of its 2,380 legal states resolves to a <em>pure</em> equilibrium. But "pure"
-is not the same as "obvious": a collision rule where winning a contested
-square still hands the ball to whoever lost it, a boundary rule where a move
-past the edge holds in place everywhere <em>except</em> a goal row (where it
-scores instead), and outright ties between several equally-good actions all
-hide real structure that a single printed action can't show. These eight
-cases, found by directly searching the exact solve for the interesting
-shapes, put that structure on a board &mdash; the same ones live in the
-<a href="explorer.html">board explorer</a>.
-</p>
-
-<div class="takeaway">
-<p><b>Ties, not tie-breaking.</b> A pure saddle's <span class="mono">(i*, j*)</span>
-is just the <em>first</em> row/column achieving the guaranteed value &mdash;
-when more than one does, every one of them is equally optimal. The board
-explorer used to print only the first and imply it was the answer; it no
-longer does. Every case below prints the <b>full tied set</b>, the solver's
-own one-hot (tie-broken) policy, and the <b>uniform-over-ties display
-policy</b> the site now actually shows and actually plays in Step/Play/
-Simulate &mdash; a uniform mix over a saddle's whole tied set is itself still
-an optimal strategy, not a display approximation.</p>
-<p><b>Hold vs. score.</b> A move that runs into the board edge is a genuine
-no-op everywhere <em>except</em> one place: the ball carrier, in a goal row,
-pushing past their <em>own</em> attacking edge, which ends the game instead
-of holding in place. Two cases below (4 and 5) exist specifically to put
-that on a diagram.</p>
-<p><b>The collision rule itself.</b> Winning the race to a contested cell
-does not mean keeping the ball &mdash; the loser of a contest or a swap gets
-it regardless of who reached the square first. Every transition on this
-page is read straight from <span class="mono">game.transitions()</span>, not
-asserted.</p>
-</div>
-
-<table class="reading-key">
-  <tr><td>Board</td><td>7&times;5, goal rows {1, 2, 3}, <span class="mono">move_order="deterministic"</span> &mdash; the explorer's "canonical_det"</td></tr>
-  <tr><td>Rows / Columns</td><td>Player 0 / player 1, fixed for every state, never reoriented by who has the ball</td></tr>
-  <tr><td>Payoff</td><td>Player 0's Q-value</td></tr>
-  <tr><td>&#8862; mark</td><td>wall-clamped hold: legal to pick, but there's no cell there, so it does nothing</td></tr>
-  <tr><td>&#9873; mark</td><td>the carrier, in a goal row, pushing past their own edge: this scores, it is not a hold</td></tr>
-</table>
-
-<h2>Case 1 <span class="state-tag">(4, 3, 5, 3, 0)</span> &mdash; The swap trap</h2>
-<p>Player 0's <span class="mono">U</span>/<span class="mono">D</span>/<span class="mono">L</span>
-never touch player 1 at all this turn, so all three guarantee <span class="mono">0</span>
-regardless of player 1's reply &mdash; only <span class="mono">R</span> reaches
-player 1's square, and against <span class="mono">L</span> it triggers a
-genuine swap (<span class="mono">(R, L)&nbsp;&rarr;&nbsp;(5,3,4,3,1)</span>,
-verified below) that hands player 1 the ball, dragging <span class="mono">R</span>'s
-own worst case to <span class="mono">&minus;0.59</span>. Player 1's unique
-safe column is <span class="mono">R</span> for an unrelated reason:
-<span class="mono">U</span>/<span class="mono">D</span>/<span class="mono">L</span>
-each let a smart player 0 reach a good, independent square elsewhere in the
-matrix (<span class="mono">0.81</span> / <span class="mono">0.81</span> /
-<span class="mono">0.729</span>) that has nothing to do with the swap cell.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; player 0's maximin ties at <span class="mono">U/D/L</span> (not unique); player 1's minimax is uniquely <span class="mono">R</span>.</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = U 100% &middot; p1 = R 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = U 33.3% / D 33.3% / L 33.3% &middot; p1 = R 100%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case01.png" alt="Case 1 board position and Q matrix graph, the swap trap.">
-  <figcaption>Left: where the players are, every tied action drawn as an equal-weight arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.000000   0.000000   0.000000   0.000000
-      D    0.729000   0.000000   0.729000   0.000000
-      L    0.000000   0.000000   0.000000   0.000000
-      R    0.810000   0.810000  -0.590490   0.000000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(4,4,5,4,0)</td><td>(4,4,5,2,0)</td><td>(4,4,4,3,0)</td><td>(4,4,6,3,0)</td></tr>
-    <tr><td><b>D</b></td><td>(4,2,5,4,0)</td><td>(4,2,5,2,0)</td><td>(4,2,4,3,0)</td><td>(4,2,6,3,0)</td></tr>
-    <tr><td><b>L</b></td><td>(3,3,5,4,0)</td><td>(3,3,5,2,0)</td><td>(3,3,4,3,0)</td><td>(3,3,6,3,0)</td></tr>
-    <tr><td><b>R</b></td><td>(5,3,5,4,0)</td><td>(5,3,5,2,0)</td><td><b>(5,3,4,3,1)</b> &mdash; swap, ball to loser</td><td>(5,3,6,3,0)</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 2 <span class="state-tag">(0, 0, 0, 2, 0)</span> &mdash; Pinned in the corner</h2>
-<p>Player 0's <span class="mono">U</span> is the one risky action: it targets
-the empty cell <span class="mono">(0,1)</span>, which player 1's
-<span class="mono">D</span> also targets. Neither player is standing there,
-so it's an <em>open</em> (non-blocked) contest &mdash; player 0 physically
-wins the race (<span class="mono">(U, D)&nbsp;&rarr;&nbsp;(0,1,0,2,1)</span>,
-verified below) but the A10 rule still gives the ball to the loser
-regardless of who reached the cell first, crashing the value to
-<span class="mono">&minus;0.9</span>. <span class="mono">D</span>,
-<span class="mono">L</span>, and <span class="mono">R</span> never reach
-that cell, so they tie safely at <span class="mono">0</span>.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; player 0's maximin ties at <span class="mono">D/L/R</span> (not unique); player 1's minimax ties at <span class="mono">D/R</span> (not unique).</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = D 100% &middot; p1 = D 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = D 33.3% / L 33.3% / R 33.3% &middot; p1 = D 50% / R 50%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case02.png" alt="Case 2 board position and Q matrix graph, pinned in the corner.">
-  <figcaption>Left: where the players are, every tied action drawn as an equal-weight arrow. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.478297  -0.900000   0.478297   0.000000
-      D    0.430467   0.000000   0.000000   0.000000
-      L    0.430467   0.000000   0.000000   0.000000
-      R    0.478297   0.000000   0.478297   0.000000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(0,1,0,3,0)</td><td><b>(0,1,0,2,1)</b> &mdash; open contest, ball to loser</td><td>(0,1,0,2,0)</td><td>(0,1,1,2,0)</td></tr>
-    <tr><td><b>D</b></td><td>(0,0,0,3,0)</td><td>(0,0,0,1,0)</td><td>(0,0,0,2,0)</td><td>(0,0,1,2,0)</td></tr>
-    <tr><td><b>L</b></td><td>(0,0,0,3,0)</td><td>(0,0,0,1,0)</td><td>(0,0,0,2,0)</td><td>(0,0,1,2,0)</td></tr>
-    <tr><td><b>R</b></td><td>(1,0,0,3,0)</td><td>(1,0,0,1,0)</td><td>(1,0,0,2,0)</td><td>(1,0,1,2,0)</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 3 <span class="state-tag">(3, 4, 4, 4, 0)</span> &mdash; The standoff</h2>
-<p>Both players are already on the top row, one cell apart.
-<span class="mono">U</span> is wall-clamped (a genuine no-op) for both
-&mdash; not a real move upward, despite being what the solver happens to
-print first. <span class="mono">R</span> is player 0's one risky action (it
-reaches player 1's square: blocked against <span class="mono">U</span>, a
-real swap against <span class="mono">L</span>); <span class="mono">L</span>
-is player 1's mirror risk. <span class="mono">D</span> never touches the
-opponent for either player, so <span class="mono">U/D/L</span> (player 0)
-and <span class="mono">U/D/R</span> (player 1) all tie at the exact same
-safe value.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; player 0's maximin ties at <span class="mono">U/D/L</span> (not unique); player 1's minimax ties at <span class="mono">U/D/R</span> (not unique).</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = U 100% &middot; p1 = U 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = U&#8862; 33.3% / D 33.3% / L 33.3% &middot; p1 = U&#8862; 33.3% / D 33.3% / R 33.3%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case03.png" alt="Case 3 board position and Q matrix graph, the standoff.">
-  <figcaption>Left: both players' wall-clamped U shares a dashed hold ring with two real, equal-weight arrows. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.000000   0.000000   0.000000   0.000000
-      D    0.000000   0.000000   0.656100   0.000000
-      L    0.000000   0.000000   0.000000   0.000000
-      R    0.000000   0.000000  -0.590490   0.000000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(3,4,4,4,0) &mdash; both hold</td><td>(3,4,4,3,0)</td><td><b>(3,4,4,4,1)</b> &mdash; blocked, ball to loser</td><td>(3,4,5,4,0)</td></tr>
-    <tr><td><b>D</b></td><td>(3,3,4,4,0)</td><td>(3,3,4,3,0)</td><td>(3,3,3,4,0)</td><td>(3,3,5,4,0)</td></tr>
-    <tr><td><b>L</b></td><td>(2,4,4,4,0)</td><td>(2,4,4,3,0)</td><td>(2,4,3,4,0)</td><td>(2,4,5,4,0)</td></tr>
-    <tr><td><b>R</b></td><td><b>(3,4,4,4,1)</b> &mdash; blocked, ball to loser</td><td>(4,4,4,3,0)</td><td><b>(4,4,3,4,1)</b> &mdash; swap, ball to loser</td><td>(4,4,5,4,0)</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 4 <span class="state-tag">(6, 1, 4, 1, 0)</span> &mdash; The open goal</h2>
-<p>Player 0 already sits at the right wall in a goal row, with the ball. Off
-a goal row this exact same boundary push would just hold in place &mdash;
-here it scores instead: verified, <span class="mono">game.transitions()</span>
-returns a terminal player-0 win for <span class="mono">R</span> against
-every one of player 1's replies. <span class="mono">R</span> is the unique
-optimum (maximin <span class="mono">1.0</span>); player 1's columns all tie
-at minimax <span class="mono">1.0</span> too, because there is nothing any
-of them can do about it.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +1.000000</span> &mdash; player 0's maximin is uniquely <span class="mono">R</span>; player 1's minimax ties at all four (not unique, and moot).</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = R 100% &middot; p1 = U 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = R&#9873; 100% &middot; p1 = U 25% / D 25% / L 25% / R 25%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case04.png" alt="Case 4 board position and Q matrix graph, the open goal.">
-  <figcaption>Left: player 0's R draws as a real solid arrow into the goal strip, not a hold ring &mdash; this is the &#9873; mark, not the &#8862; mark. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.900000   0.900000   0.900000   0.900000
-      D    0.810000   0.810000   0.810000   0.000000
-      L    0.810000   0.810000   0.810000  -0.590490
-      R    1.000000   1.000000   1.000000   1.000000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span> or a goal.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(6,2,4,2,0)</td><td>(6,2,4,0,0)</td><td>(6,2,3,1,0)</td><td>(6,2,5,1,0)</td></tr>
-    <tr><td><b>D</b></td><td>(6,0,4,2,0)</td><td>(6,0,4,0,0)</td><td>(6,0,3,1,0)</td><td>(6,0,5,1,0)</td></tr>
-    <tr><td><b>L</b></td><td>(5,1,4,2,0)</td><td>(5,1,4,0,0)</td><td>(5,1,3,1,0)</td><td>(5,1,4,1,1)</td></tr>
-    <tr><td><b>R</b></td><td class="goal">player 0 scores</td><td class="goal">player 0 scores</td><td class="goal">player 0 scores</td><td class="goal">player 0 scores</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 5 <span class="state-tag">(0, 0, 0, 1, 1)</span> &mdash; The open net</h2>
-<p>The mirror of the open goal from player 1's side: player 1 is at the left
-wall in a goal row, ball in hand, and <span class="mono">L</span> scores
-unconditionally (verified against every reply). The bleaker half of this
-case is player 0's row: every one of
-<span class="mono">U</span>/<span class="mono">D</span>/<span class="mono">L</span>/<span class="mono">R</span>
-ties at the exact same <span class="mono">&minus;1.0</span> &mdash; there is
-nothing player 0 can do differently that changes the outcome, which is
-itself worth seeing on a board rather than only in a number.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = -1.000000</span> &mdash; player 0's maximin ties at all four (not unique, and moot); player 1's minimax is uniquely <span class="mono">L</span>.</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = U 100% &middot; p1 = L 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = U 25% / D 25% / L 25% / R 25% &middot; p1 = L&#9873; 100%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case05.png" alt="Case 5 board position and Q matrix graph, the open net.">
-  <figcaption>Left: player 1's L draws as a real solid arrow into the goal strip, not a hold ring; player 0's four equal arrows show a certain loss no matter what. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U   -0.900000   0.478297  -1.000000   0.000000
-      D   -0.900000   0.000000  -1.000000   0.000000
-      L   -0.900000   0.000000  -1.000000   0.000000
-      R   -0.900000  -0.810000  -1.000000  -0.810000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span> or a goal.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(0,1,0,2,1)</td><td>(0,1,0,0,0)</td><td class="goal">player 1 scores</td><td>(0,1,1,1,1)</td></tr>
-    <tr><td><b>D</b></td><td>(0,0,0,2,1)</td><td>(0,0,0,1,0)</td><td class="goal">player 1 scores</td><td>(0,0,1,1,1)</td></tr>
-    <tr><td><b>L</b></td><td>(0,0,0,2,1)</td><td>(0,0,0,1,0)</td><td class="goal">player 1 scores</td><td>(0,0,1,1,1)</td></tr>
-    <tr><td><b>R</b></td><td>(1,0,0,2,1)</td><td>(1,0,0,0,1)</td><td class="goal">player 1 scores</td><td>(1,0,1,1,1)</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 6 <span class="state-tag">(0, 1, 0, 3, 0)</span> &mdash; The getaway</h2>
-<p><span class="mono">R</span> is player 0's <em>unique</em> safe action
-(<span class="mono">0.531441</span>, no tie) &mdash; an entirely independent
-move to <span class="mono">(1,1)</span> that never depends on player 1's
-reply. <span class="mono">U</span> looks just as reasonable but is a trap:
-against <span class="mono">D</span>, both target the same empty cell
-<span class="mono">(0,2)</span>; player 0 wins the race there
-(<span class="mono">(U, D)&nbsp;&rarr;&nbsp;(0,2,0,3,1)</span>, verified
-below) and immediately loses the ball anyway, crashing to
-<span class="mono">&minus;0.9</span>. Player 1's columns all tie at
-<span class="mono">0.531441</span> &mdash; there is no reply that slows the
-escape down.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.531441</span> &mdash; player 0's maximin is uniquely <span class="mono">R</span>; player 1's minimax ties at all four (not unique, and moot).</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = R 100% &middot; p1 = U 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = R 100% &middot; p1 = U 25% / D 25% / L 25% / R 25%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case06.png" alt="Case 6 board position and Q matrix graph, the getaway.">
-  <figcaption>Left: player 0's single, unique escape arrow against player 1's four indifferent replies. Right: the full 4&times;4 Q matrix as a node-and-arrow graph.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.478297  -0.900000   0.478297   0.000000
-      D    0.430467   0.000000   0.430467   0.000000
-      L    0.478297   0.478297   0.478297   0.478297
-      R    0.531441   0.531441   0.531441   0.531441</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(0,2,0,4,0)</td><td><b>(0,2,0,3,1)</b> &mdash; open contest, ball to loser</td><td>(0,2,0,3,0)</td><td>(0,2,1,3,0)</td></tr>
-    <tr><td><b>D</b></td><td>(0,0,0,4,0)</td><td>(0,0,0,2,0)</td><td>(0,0,0,3,0)</td><td>(0,0,1,3,0)</td></tr>
-    <tr><td><b>L</b></td><td>(0,1,0,4,0)</td><td>(0,1,0,2,0)</td><td>(0,1,0,3,0) &mdash; both hold</td><td>(0,1,1,3,0)</td></tr>
-    <tr><td><b>R</b></td><td>(1,1,0,4,0)</td><td>(1,1,0,2,0)</td><td>(1,1,0,3,0)</td><td>(1,1,1,3,0)</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 7 <span class="state-tag">(1, 0, 0, 1, 0)</span> &mdash; The tightest tie</h2>
-<p>No state on this entire board ever has a fully unique best action for
-<em>both</em> players simultaneously &mdash; checked exhaustively across all
-2,380 states, the shape <span class="mono">(1, 1)</span> never occurs. This
-is the smallest tie shape that does occur (only 16 of 2,380 states):
-player&nbsp;0's <span class="mono">D</span> and <span class="mono">R</span>
-tie exactly; player&nbsp;1's <span class="mono">R</span> is uniquely
-optimal. <span class="mono">U</span> and <span class="mono">L</span> each
-look just as safe as <span class="mono">D</span>/<span class="mono">R</span>,
-but each hides its own contest: <span class="mono">(U, R)</span> both target
-the same cell <span class="mono">(1,1)</span>, and
-<span class="mono">(L, D)</span> both target <span class="mono">(0,0)</span>
-&mdash; the carrier wins the square but the ball still goes to the defender
-either way (verified below) &mdash; while <span class="mono">D</span> and
-<span class="mono">R</span> never target the same cell as player 1 at all.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; player 0's maximin ties at <span class="mono">D/R</span> (not unique); player 1's minimax is uniquely <span class="mono">R</span>.</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = D 100% &middot; p1 = R 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = D&#8862; 50% / R 50% &middot; p1 = R 100%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case07.png" alt="Case 7 board position and Q matrix graph, the tightest tie.">
-  <figcaption>Left: player 0's hold and one real arrow, 50/50. Right: the full 4&times;4 Q matrix as a node-and-arrow graph, correctly labelled a pure saddle at D/R despite the tie on both axes.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.531441   0.531441   0.531441  -0.900000
-      D    0.478297   0.478297   0.000000   0.000000
-      L    0.000000  -0.900000   0.000000   0.000000
-      R    0.531441   0.531441   0.531441   0.000000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(1,1,0,2,0)</td><td>(1,1,0,0,0)</td><td>(1,1,0,1,0)</td><td><b>(1,1,0,1,1)</b> &mdash; open contest, ball to loser</td></tr>
-    <tr><td><b>D</b></td><td>(1,0,0,2,0)</td><td>(1,0,0,0,0)</td><td>(1,0,0,1,0)</td><td>(1,0,1,1,0)</td></tr>
-    <tr><td><b>L</b></td><td>(0,0,0,2,0)</td><td><b>(0,0,0,1,1)</b> &mdash; open contest, ball to loser</td><td>(0,0,0,1,0)</td><td>(0,0,1,1,0)</td></tr>
-    <tr><td><b>R</b></td><td>(2,0,0,2,0)</td><td>(2,0,0,0,0)</td><td>(2,0,0,1,0)</td><td>(2,0,1,1,0)</td></tr>
-  </tbody>
-</table>
-
-<h2>Case 8 <span class="state-tag">(0, 0, 2, 0, 0)</span> &mdash; The dead zone</h2>
-<p>The single most common shape on the whole board (514 of 2,380 states):
-both players are fully indifferent among all four actions. It is not merely
-that the <em>guaranteed</em> values tie &mdash; every one of the 16 cells in
-the Q matrix is exactly <span class="mono">0.0</span>, including a genuine
-ball-swapping contest (<span class="mono">(R, L)&nbsp;&rarr;&nbsp;(1,0,2,0,1)</span>,
-verified below, itself also worth exactly <span class="mono">0</span>).
-Nothing that happens this turn, for either player, changes anything.</p>
-<p class="support-line type-line"><b>Type:</b> pure saddle, <span class="mono">V = +0.000000</span> &mdash; both players' guarantees tie at all four actions (fully indifferent, and the entire matrix is flat zero).</p>
-<p class="support-line"><b>Solver's own policy (tie-broken):</b> p0 = U 100% &middot; p1 = U 100%</p>
-<p class="support-line"><b>Display policy (uniform over ties, what the site shows and plays):</b> p0 = U 25% / D&#8862; 25% / L&#8862; 25% / R 25% &middot; p1 = U 25% / D&#8862; 25% / L 25% / R 25%</p>
-<figure class="case-fig">
-  <img src="figures/png/a10_case08.png" alt="Case 8 board position and Q matrix graph, the dead zone.">
-  <figcaption>Left: both players' four equal-weight actions, two of player 0's wall-clamped into one hold ring. Right: a completely flat 4&times;4 Q matrix -- every cell is worth exactly 0.0.</figcaption>
-</figure>
-<pre class="matrix">                  U          D          L          R
-      U    0.000000   0.000000   0.000000   0.000000
-      D    0.000000   0.000000   0.000000   0.000000
-      L    0.000000   0.000000   0.000000   0.000000
-      R    0.000000   0.000000   0.000000   0.000000</pre>
-<p class="coord-note"><b>Successor states, by joint action</b> &mdash; rows = player 0, columns = player 1, each cell the resulting <span class="mono">(x0, y0, x1, y1, b)</span>.</p>
-<table class="coordmatrix">
-  <thead><tr><th>P0 \ P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr></thead>
-  <tbody>
-    <tr><td><b>U</b></td><td>(0,1,2,1,0)</td><td>(0,1,2,0,0)</td><td>(0,1,1,0,0)</td><td>(0,1,3,0,0)</td></tr>
-    <tr><td><b>D</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0) &mdash; both hold</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
-    <tr><td><b>L</b></td><td>(0,0,2,1,0)</td><td>(0,0,2,0,0)</td><td>(0,0,1,0,0)</td><td>(0,0,3,0,0)</td></tr>
-    <tr><td><b>R</b></td><td>(1,0,2,1,0)</td><td>(1,0,2,0,0)</td><td><b>(1,0,2,0,1)</b> &mdash; open contest, ball to loser (worth the same)</td><td>(1,0,3,0,0)</td></tr>
-  </tbody>
-</table>
-
-<h2>What these eight add up to</h2>
-<p>Every one of the 2,380 legal states on this board resolves to a pure
-saddle &mdash; the project's own headline deterministic-game result. Not one
-of them, however, has a fully unique best action for <em>both</em> players
-at once (Case 7's own point): some tie is always present somewhere. These
-eight cases are not exceptions to "pure"; they are places where "pure" alone
-would have quietly understated the answer: a three-way tie displayed as a
-single arbitrary action, a wall-clamp displayed identically whether it holds
-or scores, a collision rule (the loser keeps the ball, win or lose the
-square) that is easy to get backwards without reading
-<span class="mono">game.transitions()</span> directly, and a stage game that
-can be a completely flat, inert 4&times;4 grid of zeros and still get
-reported as "arrows cycle, must mix" by a saddle-detector that breaks under
-a tie on both axes (Case 7 and 8 both caught this; fixed in
-<span class="mono">soccer_nash/viz.py</span>). Every number, tie set, and
-transition above is reproducible and independently checkable exactly as
-printed &mdash; see the footer.</p>
-
-<footer>
-Reproduce with <span class="mono">python scripts/a10_cases.py</span>
-(<span class="mono">make a10-cases</span>) &mdash; writes
-<span class="mono">figures/gallery/a10_cases.svg</span> and prints every
-exact matrix (via <span class="mono">NashQIteration.run_exact()</span>'s
-direct linear solve, not the iterative approximation to it), the full tied
-set, the solver's own tie-broken policy, the uniform-over-ties display
-policy, and the successor-state table for every joint action shown here,
-read straight from <span class="mono">game.transitions()</span>. The hold
-vs. score distinction and the uniform-over-ties board arrows are
-<span class="mono">soccer_nash/viz.py</span>'s <span class="mono">_wall_mask</span>
-/ <span class="mono">_action_fan</span> / <span class="mono">policy_svg</span>;
-the Q-matrix graph's saddle detection (broken by a tie on both axes, caught
-building Cases 7 and 8) is <span class="mono">bestresponse_graph_svg</span>,
-fixed to check <span class="mono">maximin == minimax</span> directly instead
-of relying on two independent tie-breaks to agree.
-Full project:
-<span class="mono">github.com/Charith-Reddy-Pareddy/soccer-markov-nash</span>.
-</footer>
+body {font: 14px/1.45 system-ui,sans-serif; max-width: 1000px; margin: 32px auto;
+color: #203329; padding: 0 24px} h1,h2 {color: #286444} h3 {font-size: 13px}
+table {border-collapse:collapse; width:100%; font: 12px/1.4 monospace}
+td,th {border:1px solid #c7d4cb; padding:5px; text-align:center}
+img {display:block; width:100%; max-height:290px; object-fit:contain}
+section {margin-top:32px; border-top:1px solid #c7d4cb; padding-top:16px}
+@page {size:A4; margin:12mm}
+@media print {body{margin:0;padding:0;font-size:10px} h1{font-size:20px}
+h2{font-size:17px} section{break-before:page;margin:0;padding:0;border:0}
+img{max-height:245px} table{font-size:9px} td,th{padding:4px}}
+</style><h1>Eight edge cases on the A10 deterministic board</h1>
+<p>7 by 5 board; goal rows 1, 2, 3; simultaneous U/D/L/R; deterministic
+carrier-wins-contests resolution. Players never occupy the same square.
+The loser of a contested square or swap receives the ball.</p>
+<p><b>Selection rule:</b> preserve the best worst-case payoff, then maximize
+mean payoff over opponent actions among exact security ties. Identical-score
+ties use action order. The secondary criterion is a documented selection
+convention, not a claim that Nash equilibrium is unique. No uniform tie mix
+is substituted for the solver policy.</p>
+<p>Case 1 selects Down for player 0: it weakly dominates Up and Left.
+The four zeros against Right describe optimal continuation from four
+new states, not a defender committed to Right forever. These are discounted
+stationary values with gamma 0.9, not the undiscounted 100-turn assignment.</p>
+<p><a href="explorer.html">Interactive explorer</a> ·
+<a href="equilibrium-debug.md">Audit and reproduction details</a></p><section><h2>Case 1: The swap trap</h2>
+<p>State (4, 3, 5, 3, 0); player 0 carries the ball. V = +0.000000.</p>
+<p><b>Selected policy: P0 D 100%; P1 R 100%.</b>
+Security-tied alternatives: P0 U/D/L;
+P1 R. Alternatives are not probabilities.</p>
+<p>player 0&#x27;s U/D/L never touch player 1 at all this turn, so all three guarantee at least 0. D weakly dominates U and L: it earns 0.729 against U/L, while U and L earn zero against every reply. The refined policy is D, not a uniform tie mix. Only R reaches player 1&#x27;s square, and against L it triggers a genuine swap (verified below: (R, L) -&gt; (5,3,4,3,1)) that hands player 1 the ball, dragging R&#x27;s own worst case to -0.59. Player 1&#x27;s unique safe column is R for an unrelated reason: U/D/L each let a smart player 0 reach a good, independent square elsewhere in the matrix (0.81/0.81/0.729) that has nothing to do with the swap cell.</p>
+<img src="figures/gallery/a10_case01.svg" alt="Case 1 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.729000</td><td>0.000000</td><td>0.729000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.810000</td><td>0.810000</td><td>-0.590490</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(4, 4, 5, 4, 0)</td><td>(4, 4, 5, 2, 0)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 6, 3, 0)</td></tr><tr><th>D</th><td>(4, 2, 5, 4, 0)</td><td>(4, 2, 5, 2, 0)</td><td>(4, 2, 4, 3, 0)</td><td>(4, 2, 6, 3, 0)</td></tr><tr><th>L</th><td>(3, 3, 5, 4, 0)</td><td>(3, 3, 5, 2, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 6, 3, 0)</td></tr><tr><th>R</th><td>(5, 3, 5, 4, 0)</td><td>(5, 3, 5, 2, 0)</td><td>(5, 3, 4, 3, 1)</td><td>(5, 3, 6, 3, 0)</td></tr></table></section><section><h2>Case 2: Pinned in the corner</h2>
+<p>State (0, 0, 0, 2, 0); player 0 carries the ball. V = +0.000000.</p>
+<p><b>Selected policy: P0 R 100%; P1 D 100%.</b>
+Security-tied alternatives: P0 D/L/R;
+P1 D/R. Alternatives are not probabilities.</p>
+<p>player 0&#x27;s U is the one risky action: it targets the empty cell (0,1), which player 1&#x27;s D also targets. Neither player is standing there, so it&#x27;s an open (non-blocked) contest -- player 0 physically wins the race ((U, D) -&gt; (0,1,0,2,1)) but the A10 rule still gives the ball to the loser regardless of who reached the cell first, crashing the value to -0.9. D, L, and R never reach that cell, so they tie safely at 0.</p>
+<img src="figures/gallery/a10_case02.svg" alt="Case 2 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.478297</td><td>-0.900000</td><td>0.478297</td><td>0.000000</td></tr><tr><th>D</th><td>0.430467</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.430467</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.478297</td><td>0.000000</td><td>0.478297</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 1, 2, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>R</th><td>(1, 0, 0, 3, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 1, 2, 0)</td></tr></table></section><section><h2>Case 3: The standoff</h2>
+<p>State (3, 4, 4, 4, 0); player 0 carries the ball. V = +0.000000.</p>
+<p><b>Selected policy: P0 D 100%; P1 U 100%.</b>
+Security-tied alternatives: P0 U/D/L;
+P1 U/D/R. Alternatives are not probabilities.</p>
+<p>both players are already on the top row, one cell apart. U is wall-clamped (a genuine no-op) for both -- not a real move upward. R is player 0&#x27;s one risky action (it reaches player 1&#x27;s square: blocked against U, a real swap against L); L is player 1&#x27;s mirror risk. D never touches the opponent for either player, so U/D/L (player 0) and U/D/R (player 1) all tie at the exact same safe value.</p>
+<img src="figures/gallery/a10_case03.svg" alt="Case 3 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.000000</td><td>0.000000</td><td>0.656100</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.000000</td><td>0.000000</td><td>-0.590490</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(3, 4, 4, 4, 0)</td><td>(3, 4, 4, 3, 0)</td><td>(3, 4, 4, 4, 1)</td><td>(3, 4, 5, 4, 0)</td></tr><tr><th>D</th><td>(3, 3, 4, 4, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 3, 4, 0)</td><td>(3, 3, 5, 4, 0)</td></tr><tr><th>L</th><td>(2, 4, 4, 4, 0)</td><td>(2, 4, 4, 3, 0)</td><td>(2, 4, 3, 4, 0)</td><td>(2, 4, 5, 4, 0)</td></tr><tr><th>R</th><td>(3, 4, 4, 4, 1)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 3, 4, 1)</td><td>(4, 4, 5, 4, 0)</td></tr></table></section><section><h2>Case 4: The open goal</h2>
+<p>State (6, 1, 4, 1, 0); player 0 carries the ball. V = +1.000000.</p>
+<p><b>Selected policy: P0 R 100%; P1 R 100%.</b>
+Security-tied alternatives: P0 R;
+P1 U/D/L/R. Alternatives are not probabilities.</p>
+<p>player 0 already sits at the right wall in a goal row, with the ball. Off a goal row this exact same boundary push would just hold in place -- here it scores instead: verified, game.transitions() returns a terminal player-0 win for R against every one of player 1&#x27;s replies. R is the unique optimum (maximin 1.0); player 1&#x27;s columns all tie at minimax 1.0 too, because there is nothing any of them can do about it.</p>
+<img src="figures/gallery/a10_case04.svg" alt="Case 4 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.900000</td><td>0.900000</td><td>0.900000</td><td>0.900000</td></tr><tr><th>D</th><td>0.810000</td><td>0.810000</td><td>0.810000</td><td>0.000000</td></tr><tr><th>L</th><td>0.810000</td><td>0.810000</td><td>0.810000</td><td>-0.590490</td></tr><tr><th>R</th><td>1.000000</td><td>1.000000</td><td>1.000000</td><td>1.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(6, 2, 4, 2, 0)</td><td>(6, 2, 4, 0, 0)</td><td>(6, 2, 3, 1, 0)</td><td>(6, 2, 5, 1, 0)</td></tr><tr><th>D</th><td>(6, 0, 4, 2, 0)</td><td>(6, 0, 4, 0, 0)</td><td>(6, 0, 3, 1, 0)</td><td>(6, 0, 5, 1, 0)</td></tr><tr><th>L</th><td>(5, 1, 4, 2, 0)</td><td>(5, 1, 4, 0, 0)</td><td>(5, 1, 3, 1, 0)</td><td>(5, 1, 4, 1, 1)</td></tr><tr><th>R</th><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td></tr></table></section><section><h2>Case 5: The open net</h2>
+<p>State (0, 0, 0, 1, 1); player 1 carries the ball. V = -1.000000.</p>
+<p><b>Selected policy: P0 U 100%; P1 L 100%.</b>
+Security-tied alternatives: P0 U/D/L/R;
+P1 L. Alternatives are not probabilities.</p>
+<p>the mirror of the open goal from player 1&#x27;s side: player 1 is at the left wall in a goal row, ball in hand, and L scores unconditionally (verified against every reply). The bleaker half of this case is player 0&#x27;s row: every one of U/D/L/R ties at the exact same -1.0 -- there is nothing player 0 can do differently that changes the outcome, which is itself worth seeing on a board rather than only in a number.</p>
+<img src="figures/gallery/a10_case05.svg" alt="Case 5 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.900000</td><td>0.478297</td><td>-1.000000</td><td>0.000000</td></tr><tr><th>D</th><td>-0.900000</td><td>0.000000</td><td>-1.000000</td><td>0.000000</td></tr><tr><th>L</th><td>-0.900000</td><td>0.000000</td><td>-1.000000</td><td>0.000000</td></tr><tr><th>R</th><td>-0.900000</td><td>-0.810000</td><td>-1.000000</td><td>-0.810000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 0, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 1, 1, 1, 1)</td></tr><tr><th>D</th><td>(0, 0, 0, 2, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 0, 1, 1, 1)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 0, 1, 1, 1)</td></tr><tr><th>R</th><td>(1, 0, 0, 2, 1)</td><td>(1, 0, 0, 0, 1)</td><td>(-1, -1, -1, -1, 1)</td><td>(1, 0, 1, 1, 1)</td></tr></table></section><section><h2>Case 6: The getaway</h2>
+<p>State (0, 1, 0, 3, 0); player 0 carries the ball. V = +0.531441.</p>
+<p><b>Selected policy: P0 R 100%; P1 D 100%.</b>
+Security-tied alternatives: P0 R;
+P1 U/D/L/R. Alternatives are not probabilities.</p>
+<p>R is player 0&#x27;s *unique* safe action (0.531441, no tie) -- an entirely independent move to (1,1) that never depends on player 1&#x27;s reply. U looks just as reasonable but is a trap: against D, both target the same empty cell (0,2); player 0 wins the race there (verified: (U, D) -&gt; (0,2,0,3,1)) and immediately loses the ball anyway, crashing to -0.9. Player 1&#x27;s columns all tie at 0.531441 -- there is no reply that slows the escape down.</p>
+<img src="figures/gallery/a10_case06.svg" alt="Case 6 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.478297</td><td>-0.900000</td><td>0.478297</td><td>0.000000</td></tr><tr><th>D</th><td>0.430467</td><td>0.000000</td><td>0.430467</td><td>0.000000</td></tr><tr><th>L</th><td>0.478297</td><td>0.478297</td><td>0.478297</td><td>0.478297</td></tr><tr><th>R</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>0.531441</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 0, 4, 0)</td><td>(0, 2, 0, 3, 1)</td><td>(0, 2, 0, 3, 0)</td><td>(0, 2, 1, 3, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 4, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 1, 3, 0)</td></tr><tr><th>L</th><td>(0, 1, 0, 4, 0)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 1, 3, 0)</td></tr><tr><th>R</th><td>(1, 1, 0, 4, 0)</td><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 3, 0)</td><td>(1, 1, 1, 3, 0)</td></tr></table></section><section><h2>Case 7: The tightest tie</h2>
+<p>State (1, 0, 0, 1, 0); player 0 carries the ball. V = +0.000000.</p>
+<p><b>Selected policy: P0 R 100%; P1 R 100%.</b>
+Security-tied alternatives: P0 D/R;
+P1 R. Alternatives are not probabilities.</p>
+<p>no state on this entire board ever has a fully unique best action for *both* players simultaneously -- checked exhaustively, (1,1) never occurs among all 2380 states. This is the smallest tie shape that does occur (only 16 of 2380 states): player 0&#x27;s D and R tie exactly; player 1&#x27;s R is uniquely optimal. U and L each look just as safe as D/R, but each hides its own contest: (U, R) both target the same cell (1,1), and (L, D) both target (0,0) -- verified below, the carrier wins the square but the ball still goes to the defender either way -- while D and R never target the same cell as player 1 at all.</p>
+<img src="figures/gallery/a10_case07.svg" alt="Case 7 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>-0.900000</td></tr><tr><th>D</th><td>0.478297</td><td>0.478297</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>-0.900000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 0, 0)</td><td>(1, 1, 0, 1, 0)</td><td>(1, 1, 0, 1, 1)</td></tr><tr><th>D</th><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 0, 0, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 1, 1, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 1, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 1, 1, 0)</td></tr><tr><th>R</th><td>(2, 0, 0, 2, 0)</td><td>(2, 0, 0, 0, 0)</td><td>(2, 0, 0, 1, 0)</td><td>(2, 0, 1, 1, 0)</td></tr></table></section><section><h2>Case 8: The dead zone</h2>
+<p>State (0, 0, 2, 0, 0); player 0 carries the ball. V = +0.000000.</p>
+<p><b>Selected policy: P0 U 100%; P1 U 100%.</b>
+Security-tied alternatives: P0 U/D/L/R;
+P1 U/D/L/R. Alternatives are not probabilities.</p>
+<p>the single most common shape on the whole board (514 of 2380 states): both players are fully indifferent among all four actions. It is not merely that the guaranteed values tie -- every one of the 16 cells in the Q matrix is exactly 0.0, including a genuine ball-swapping contest ((R, L) -&gt; a state that is itself also worth exactly 0, verified below). All successors have the same optimal-continuation value, although their physical positions differ.</p>
+<img src="figures/gallery/a10_case08.svg" alt="Case 8 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 2, 1, 0)</td><td>(0, 1, 2, 0, 0)</td><td>(0, 1, 1, 0, 0)</td><td>(0, 1, 3, 0, 0)</td></tr><tr><th>D</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>L</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>R</th><td>(1, 0, 2, 1, 0)</td><td>(1, 0, 2, 0, 0)</td><td>(1, 0, 2, 0, 1)</td><td>(1, 0, 3, 0, 0)</td></tr></table></section></html>
