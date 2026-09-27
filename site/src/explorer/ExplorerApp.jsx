@@ -7,7 +7,7 @@ import QMatrixGraph from "./QMatrixGraph.jsx";
 import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, tieAwarePolicy, wallMask } from "./helpers.js";
 import "./explorer.css";
 
-const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
+const BOARD_ORDER = ["canonical", "canonical_det", "canonical_coinflip", "tackle", "territory", "slip"];
 
 // case number -> {board, state}, coordinates as printed in docs/positions.md
 const PRESETS = {

@@ -47,6 +47,15 @@ BOARDS: dict[str, dict] = {
     "canonical_det": {
         "width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "deterministic",
     },
+    # A10's own collision/swap resolution structure, kept exactly, with the
+    # single change that a fair coin -- not the carrier -- decides who wins a
+    # contested square or a swap. Distinct from "canonical" above, which is a
+    # different rule entirely (Littman's own move_order="random": the two
+    # moves are applied in a random sequential order, not a coin-decided
+    # winner within the same A10 structure).
+    "canonical_coinflip": {
+        "width": 7, "height": 5, "goal_rows": (1, 2, 3), "move_order": "coinflip",
+    },
     "tackle": {
         "width": 5, "height": 4, "goal_rows": (1, 2),
         "move_order": "tackle", "tackle_prob": 0.5,
@@ -63,6 +72,7 @@ BOARDS: dict[str, dict] = {
 BOARD_LABELS = {
     "canonical": "Canonical board — random move order",
     "canonical_det": "Canonical board — deterministic (A10-style)",
+    "canonical_coinflip": "Canonical board — stochastic (A10-style, coin flip)",
     "tackle": "Tackle rule",
     "territory": "Territory reward, deterministic",
     "slip": "Movement slip, deterministic",
