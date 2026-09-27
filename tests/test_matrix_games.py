@@ -93,7 +93,8 @@ def test_lp_retries_unknown_status_without_changing_payoffs(monkeypatch):
     assert value == pytest.approx(0)
     assert p == pytest.approx([.5, .5])
     assert q == pytest.approx([.5, .5])
-    assert calls[1]["options"] == {"presolve": False}
+    assert calls[1]["options"]["presolve"] is False
+    assert calls[1]["method"] == "highs-ipm"
     assert np.array_equal(calls[0]["A_ub"], calls[1]["A_ub"])
 
 

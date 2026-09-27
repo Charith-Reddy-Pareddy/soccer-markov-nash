@@ -60,7 +60,7 @@ test:
 	$(PY) -m pytest -m "not slow" -q
 
 test-all:
-	$(PY) -m pytest -q
+	$(PY) -m pytest -q -m ""
 
 coverage:
 	$(PY) -m coverage run -m pytest -q -m "not slow"

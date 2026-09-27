@@ -82,7 +82,12 @@ def _lp_row_value(A: np.ndarray) -> tuple[float, np.ndarray]:
         # presolve; never accept an unsuccessful result or perturb payoffs.
         res = linprog(
             c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
-            method="highs-ds", options={"presolve": False},
+            method="highs-ipm", options={
+                "presolve": False,
+                "primal_feasibility_tolerance": 1e-9,
+                "dual_feasibility_tolerance": 1e-9,
+                "ipm_optimality_tolerance": 1e-10,
+            },
         )
     if not res.success:
         raise RuntimeError(f"LP failed: {res.message}")
