@@ -9,6 +9,23 @@ export function kickoffState(board) {
   return { x0: 0, y0: Math.floor(board.height / 2), x1: board.width - 1, y1: Math.floor(board.height / 2), b: 0 };
 }
 
+// For a pure equilibrium with ties, every tied action guarantees the exact
+// same worst-case value -- not just the one certify()'s argmax happened to
+// check first. A uniform mix over a saddle point's whole tied set is itself
+// still an optimal strategy (any convex combination of best responses at a
+// saddle guarantees the same value), so this is a real equilibrium, not a
+// display approximation: it replaces the arbitrary single tie-broken pick
+// with "all of these, equally," which is what the game theory actually says.
+// `ties` is `undefined` for a genuinely mixed state (kind !== "pure") or
+// absent entirely -- either way this just returns `pol` unchanged, and a
+// pure state with no tie (ties.length === 1) is already the one-hot `pol`,
+// so this is a no-op there too.
+export function tieAwarePolicy(pol, ties) {
+  if (!ties || ties.length <= 1) return pol;
+  const p = 1 / ties.length;
+  return pol.map((_, i) => (ties.includes(i) ? p : 0));
+}
+
 // Per action, whether it's clamped at the board edge -- and if so, whether
 // that's a genuine no-op ("hold": there's no cell there, the player just
 // stays put) or a goal ("score": this exact player, in a goal row, with the

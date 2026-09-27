@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, wallMask } from "./helpers.js";
+import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, tieAwarePolicy, wallMask } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "tackle", "territory", "slip"];
@@ -257,8 +257,6 @@ export default function ExplorerApp() {
 
   const rec = board.states[stateKey(st)];
   const [V, rowPol, colPol, Q, , rounding] = rec;
-  const carrierPol = st.b === 0 ? rowPol : colPol;
-  const defenderPol = st.b === 0 ? colPol : rowPol;
   // Fixed for every state: rows = player 0's actions, columns = player 1's,
   // never reoriented by who has the ball. An earlier version reoriented so
   // rows were always the carrier's actions -- per the project's own research
@@ -267,6 +265,18 @@ export default function ExplorerApp() {
   // physically. Which player is carrying is shown separately below.
   const M = Q;
   const cert = certify(M);
+  // The policy actually *displayed* everywhere below (board arrows, move
+  // bars, Q-matrix headers, Carrier/Defender lines): for a mixed state this
+  // is just the real LP mix; for a pure state with a tie, it's a uniform
+  // split over every tied action instead of certify()'s single tie-broken
+  // pick -- no more arbitrarily showing "U 100%" when D and L guarantee the
+  // exact same value. `rowPol`/`colPol` themselves are left untouched (still
+  // one-hot for a pure state) since the "must mix here" tags below rely on
+  // that to stay off for ties, where mixing isn't *required*, only permitted.
+  const displayRowPol = cert.kind === "pure" ? tieAwarePolicy(rowPol, cert.rowTies) : rowPol;
+  const displayColPol = cert.kind === "pure" ? tieAwarePolicy(colPol, cert.colTies) : colPol;
+  const carrierPol = st.b === 0 ? displayRowPol : displayColPol;
+  const defenderPol = st.b === 0 ? displayColPol : displayRowPol;
   const cs = support(carrierPol), ds = support(defenderPol);
   // Which of each player's own four actions are wall-clamped from where
   // they're actually standing right now -- a "move" into a wall is legal to
@@ -311,7 +321,7 @@ export default function ExplorerApp() {
                 </select>
               </div>
               <div className="board-svg-wrap">
-                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} heatmap={heatmap} />
+                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} heatmap={heatmap} rowPol={displayRowPol} colPol={displayColPol} />
               </div>
               <div className="controls">
                 <div className="seg" role="group" aria-label="which player clicking the board moves">
@@ -414,10 +424,8 @@ export default function ExplorerApp() {
             <div className="panel">
               <div className={"readout-kind " + cert.kind}>
                 {cert.kind === "pure"
-                  ? <>Pure equilibrium — saddle at player 0: {ACT[cert.i]}
-                      <WallMark status={wall0[ACT[cert.i]]} />
-                      , player 1: {ACT[cert.j]}
-                      <WallMark status={wall1[ACT[cert.j]]} />
+                  ? <>Pure equilibrium — saddle at player 0: <ActionList ties={cert.rowTies} wall={wall0} />
+                      , player 1: <ActionList ties={cert.colTies} wall={wall1} />
                     </>
                   : `Mixed equilibrium — gap ${cert.gap.toFixed(4)}`}
               </div>
@@ -453,7 +461,7 @@ export default function ExplorerApp() {
                   : "neither side can guarantee more with a single fixed action, so a mixed strategy is required."}
               </p>
               {qview === "table" ? (
-                <QMatrixTable M={M} rowPol={rowPol} colPol={colPol} wall0={wall0} wall1={wall1} />
+                <QMatrixTable M={M} rowPol={displayRowPol} colPol={displayColPol} wall0={wall0} wall1={wall1} />
               ) : (
                 <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>
               )}
@@ -485,25 +493,23 @@ export default function ExplorerApp() {
 
               {cert.kind === "pure" && (
                 <p className="hint" style={{ margin: ".6rem 0 0" }}>
-                  The optimal joint action (<span className="mono">{ACT[cert.i]}</span> /{" "}
-                  <span className="mono">{ACT[cert.j]}</span>) leads to{" "}
-                  <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>.
-                  {(cert.rowTies.length > 1 || cert.colTies.length > 1) && (
+                  {(cert.rowTies.length > 1 || cert.colTies.length > 1) ? (
                     <>
-                      {" "}This isn't a unique answer, though &mdash;{" "}
-                      {cert.rowTies.length > 1 && (
-                        <>player 0 guarantees the exact same worst case with{" "}
-                          <b>{cert.rowTies.map((i) => ACT[i]).join(", ")}</b>{" "}
-                        </>
-                      )}
-                      {cert.rowTies.length > 1 && cert.colTies.length > 1 && "and "}
-                      {cert.colTies.length > 1 && (
-                        <>player 1 with{" "}
-                          <b>{cert.colTies.map((j) => ACT[j]).join(", ")}</b>{" "}
-                        </>
-                      )}
-                      &mdash; the displayed action is whichever the solver's tie-break picked
-                      first, not the unique optimum.
+                      Every action listed above guarantees the exact same worst-case value
+                      for that player &mdash; there's no single "correct" one, so the board
+                      and the bars below split evenly across the whole tied set instead of
+                      arbitrarily picking one. For example,{" "}
+                      <span className="mono">{ACT[cert.i]}</span> /{" "}
+                      <span className="mono">{ACT[cert.j]}</span> leads to{" "}
+                      <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>{" "}
+                      &mdash; a different pairing among the ties can land somewhere else
+                      entirely while guaranteeing the same value.
+                    </>
+                  ) : (
+                    <>
+                      The optimal joint action (<span className="mono">{ACT[cert.i]}</span> /{" "}
+                      <span className="mono">{ACT[cert.j]}</span>) leads to{" "}
+                      <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>.
                     </>
                   )}
                 </p>
@@ -512,42 +518,38 @@ export default function ExplorerApp() {
               <div className="move-bars">
                 <div className="move-bars-title"><span className="dot" style={{ background: "var(--p0)" }}></span>Player 0 next move</div>
                 {ACT.map((a, i) => {
-                  const tiedZero = cert.kind === "pure" && cert.rowTies.includes(i) && i !== cert.i;
+                  const tied = cert.kind === "pure" && cert.rowTies.length > 1 && cert.rowTies.includes(i);
                   return (
                     <div className="move-bar-row" key={"p0-" + a}>
                       <span className="move-bar-label">{a}<WallMark status={wall0[a]} /></span>
                       <span className="move-bar-track">
-                        {tiedZero
-                          ? <span className="move-bar-fill p0 tied-fill"></span>
-                          : <span className="move-bar-fill p0" style={{ width: `${(rowPol[i] * 100).toFixed(2)}%` }}></span>}
+                        <span className="move-bar-fill p0" style={{ width: `${(displayRowPol[i] * 100).toFixed(2)}%` }}></span>
                       </span>
                       <span className="move-bar-pct">
-                        {(rowPol[i] * 100).toFixed(4)}%
-                        {rowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(rowPol[i])})</span>}
-                        {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.i]}, not worse</span>}
-                        {rowPol[i] > 0 && wall0[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x0}, {st.y0})</span>}
-                        {rowPol[i] > 0 && wall0[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
+                        {(displayRowPol[i] * 100).toFixed(4)}%
+                        {displayRowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(displayRowPol[i])})</span>}
+                        {tied && <span className="move-bar-frac"> &mdash; tied, equally optimal</span>}
+                        {displayRowPol[i] > 0 && wall0[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x0}, {st.y0})</span>}
+                        {displayRowPol[i] > 0 && wall0[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
                       </span>
                     </div>
                   );
                 })}
                 <div className="move-bars-title" style={{ marginTop: ".8rem" }}><span className="dot" style={{ background: "var(--p1)" }}></span>Player 1 next move</div>
                 {ACT.map((a, i) => {
-                  const tiedZero = cert.kind === "pure" && cert.colTies.includes(i) && i !== cert.j;
+                  const tied = cert.kind === "pure" && cert.colTies.length > 1 && cert.colTies.includes(i);
                   return (
                     <div className="move-bar-row" key={"p1-" + a}>
                       <span className="move-bar-label">{a}<WallMark status={wall1[a]} /></span>
                       <span className="move-bar-track">
-                        {tiedZero
-                          ? <span className="move-bar-fill p1 tied-fill"></span>
-                          : <span className="move-bar-fill p1" style={{ width: `${(colPol[i] * 100).toFixed(2)}%` }}></span>}
+                        <span className="move-bar-fill p1" style={{ width: `${(displayColPol[i] * 100).toFixed(2)}%` }}></span>
                       </span>
                       <span className="move-bar-pct">
-                        {(colPol[i] * 100).toFixed(4)}%
-                        {colPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(colPol[i])})</span>}
-                        {tiedZero && <span className="move-bar-frac"> &mdash; tied with {ACT[cert.j]}, not worse</span>}
-                        {colPol[i] > 0 && wall1[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x1}, {st.y1})</span>}
-                        {colPol[i] > 0 && wall1[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
+                        {(displayColPol[i] * 100).toFixed(4)}%
+                        {displayColPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(displayColPol[i])})</span>}
+                        {tied && <span className="move-bar-frac"> &mdash; tied, equally optimal</span>}
+                        {displayColPol[i] > 0 && wall1[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x1}, {st.y1})</span>}
+                        {displayColPol[i] > 0 && wall1[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
                       </span>
                     </div>
                   );
@@ -721,6 +723,18 @@ function WallMark({ status }) {
     return <sup className="wall-mark score" title="scores here: this ends the game, it does not hold in place">&#9873;</sup>;
   }
   return null;
+}
+
+// A pure saddle's full tied set, joined "U/D/L" -- not just the one
+// certify() happened to check first. Single-action ties (the common case)
+// render exactly as before; a genuine multi-way tie is the whole point of
+// not tie-breaking the headline the way the rest of the page no longer does.
+function ActionList({ ties, wall }) {
+  return ties.map((idx, k) => (
+    <span key={idx} className="mono">
+      {k > 0 && "/"}{ACT[idx]}<WallMark status={wall[ACT[idx]]} />
+    </span>
+  ));
 }
 
 // Precompiled by scripts/explorer_data.py from soccer_nash.numerics

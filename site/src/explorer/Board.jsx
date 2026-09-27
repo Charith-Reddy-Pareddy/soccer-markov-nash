@@ -1,4 +1,4 @@
-import { ACT, ARROW, heatColor, stateKey, wallMask } from "./helpers.js";
+import { ACT, ARROW, heatColor, wallMask } from "./helpers.js";
 
 const CELL = 62;
 const MARGIN = 34;
@@ -89,12 +89,15 @@ function Player({ cx, cy, label, colour, carrier, active }) {
   );
 }
 
-export default function Board({ board, state, activePlayer, onCellClick, heatmap }) {
+// rowPol / colPol are the *display* policy -- for a genuinely mixed state
+// that's the real LP mix; for a pure state with tied optimal actions it's
+// tieAwarePolicy's uniform split over the whole tie, not just the one
+// argmax happened to pick, so the arrows below show every equally-good
+// option instead of tie-breaking to a single one.
+export default function Board({ board, state, activePlayer, onCellClick, heatmap, rowPol, colPol }) {
   const W = board.width, H = board.height, GOALS = board.goal_rows;
   const boardW = W * CELL, boardH = H * CELL;
   const totalW = boardW + 2 * MARGIN, totalH = boardH + 2 * MARGIN;
-  const rec = board.states[stateKey(state)];
-  const [, rowPol, colPol] = rec;
   const c0 = cellCenter(state.x0, state.y0, H);
   const c1 = cellCenter(state.x1, state.y1, H);
   const bc = state.b === 0 ? c0 : c1;
