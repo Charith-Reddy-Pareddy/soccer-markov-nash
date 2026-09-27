@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix templates-n5 explorer-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf templates-n5 explorer-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -40,6 +40,8 @@ help:
 	@echo "make positions    - player positions + stage game as a best-response-graph"
 	@echo "make positions-matrix - minimax/always-left/random/best-response policy matrix"
 	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
+	@echo "make a10-cases    - six edge cases on the A10-deterministic board (not Littman's)"
+	@echo "make a10-cases-pdf - regenerate docs/a10_cases.pdf from docs/a10_cases.html"
 	@echo "make explorer-data - regenerate docs/data/explorer.json for the interactive board explorer"
 	@echo "make site         - build the React site (site/) into docs/ -- index.html + explorer.html"
 	@echo "make numerics     - numerical-robustness analysis + figures"
@@ -85,6 +87,13 @@ positions-pdf:
 	  --print-to-pdf=docs/positions.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/positions.html"
 	@echo "wrote docs/positions.pdf"
+
+a10-cases-pdf:
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/a10_cases.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/a10_cases.html"
+	@echo "wrote docs/a10_cases.pdf"
 
 # The headline figures/tables the report and positions.pdf actually cite --
 # not the full experiment sweep, the phase diagram, or the DQN trainings,
@@ -181,6 +190,10 @@ showcase:
 positions:
 	$(PY) scripts/positions.py
 	$(PY) scripts/figures_png.py positions
+
+a10-cases:
+	$(PY) scripts/a10_cases.py
+	$(PY) scripts/figures_png.py a10_case
 
 positions-matrix:
 	$(PY) scripts/positions_policy_matrix.py

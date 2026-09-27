@@ -43,10 +43,30 @@ _WARM = (194, 90, 42)       # value ramp: player 1 ahead
 _ARROW = {0: (0, 1), 1: (0, -1), 2: (-1, 0), 3: (1, 0)}   # U D L R, y up
 
 
-def _wall_mask(x: int, y: int, w: int, h: int) -> np.ndarray:
-    """True for each of U/D/L/R that a board edge clamps back onto ``(x, y)``
-    -- a legal action that does not move the player at all."""
-    return np.array([y == h - 1, y == 0, x == 0, x == w - 1])
+def _wall_mask(
+    x: int, y: int, w: int, h: int,
+    goal_rows: tuple[int, ...] | None = None,
+    is_carrier: bool = False,
+    player_idx: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """``(wall, score)``: ``wall`` is True for each of U/D/L/R that a board
+    edge clamps back onto ``(x, y)``; ``score`` marks the subset of those
+    that's a goal instead of a no-op -- the *carrier*, in a goal row,
+    pushing past *their own* attacking edge (soccer_nash.game.SoccerGame
+    ._target's own scoring condition), which ends the game rather than
+    holding in place. Only R (player 0) / L (player 1) can ever score; U/D
+    never move a player past the x boundary. ``goal_rows``/``is_carrier``/
+    ``player_idx`` are optional -- omitting them (or not being the carrier)
+    just means every edge clamp is a plain hold, the old geometry-only
+    behaviour."""
+    wall = np.array([y == h - 1, y == 0, x == 0, x == w - 1])
+    score = np.zeros(4, dtype=bool)
+    if goal_rows is not None and is_carrier and y in goal_rows:
+        if player_idx == 0 and x == w - 1:
+            score[3] = True  # R
+        elif player_idx == 1 and x == 0:
+            score[2] = True  # L
+    return wall, score
 
 
 def _marker(colour: str) -> str:
@@ -76,18 +96,23 @@ def _svg(w: float, h: float, body: list[str], label: str, pad: float = 0) -> str
 def _action_fan(
     cx: float, cy: float, dist: np.ndarray, colour: str,
     wall: np.ndarray | None = None,
+    score: np.ndarray | None = None,
 ) -> list[str]:
     """``wall`` marks which of U/D/L/R a board edge clamps back onto the
     player's own cell -- mechanically legal but physically identical to
     standing still. Their probability (plus any real STAND weight) draws as
     one dashed "hold" ring, the same treatment as STAND, instead of a
     directional arrow: an arrow into a wall would show movement that never
-    happens."""
+    happens. ``score`` (from ``_wall_mask``) carves the *scoring* subset of
+    ``wall`` back out -- the carrier, in a goal row, pushing past their own
+    attacking edge really does end the game, so it draws as a normal arrow
+    (toward the goal strip already drawn there), not a hold ring."""
     out = []
     dist = np.asarray(dist, dtype=float)
+    wall_only = wall if score is None else np.asarray(wall) & ~np.asarray(score)
     hold = float(dist[4]) if len(dist) > 4 else 0.0
-    if wall is not None:
-        hold += float(dist[:4][np.asarray(wall)].sum())
+    if wall_only is not None:
+        hold += float(dist[:4][np.asarray(wall_only)].sum())
     top = max(float(dist.max()), hold, 1e-9)
     if hold >= 0.02:
         out.append(
@@ -104,7 +129,7 @@ def _action_fan(
             )
     for a in range(4):
         p = float(dist[a])
-        if p < 0.02 or (wall is not None and wall[a]):
+        if p < 0.02 or (wall_only is not None and wall_only[a]):
             continue
         dx, dy = _ARROW[a]
         start = 13                                  # clear the player disc
@@ -134,8 +159,16 @@ def policy_svg(
     col_policy: dict[State, np.ndarray],
     value: float | None = None,
     title: str | None = None,
+    kind: str | None = None,
 ) -> str:
-    """Board with both players' action distributions as probability arrows."""
+    """Board with both players' action distributions as probability arrows.
+
+    ``kind`` ("pure" / "mixed") overrides the caption's own classification,
+    which otherwise infers it from how many actions have weight in the
+    policy passed in -- correct when that policy is the real thing, but
+    wrong if it's a *display* policy spread uniformly over a pure saddle's
+    tied actions (tieAwarePolicy's own Python mirror): several actions
+    having weight there does not make the equilibrium mixed."""
     w, h = game.width, game.height
     x0, y0, x1, y1, b = state
     tw = w * CELL + 2 * MARGIN
@@ -158,10 +191,12 @@ def policy_svg(
         f'<circle cx="{bx + 10:.1f}" cy="{by - 10:.1f}" r="4.5" '
         f'fill="{BALL}" stroke="{PAPER}" stroke-width="1.2"/>'
     )
-    body += _action_fan(cx0, cy0, p0, P0, wall=_wall_mask(x0, y0, w, h))
-    body += _action_fan(cx1, cy1, p1, P1, wall=_wall_mask(x1, y1, w, h))
+    wall0, score0 = _wall_mask(x0, y0, w, h, game.goal_rows, b == 0, 0)
+    wall1, score1 = _wall_mask(x1, y1, w, h, game.goal_rows, b == 1, 1)
+    body += _action_fan(cx0, cy0, p0, P0, wall=wall0, score=score0)
+    body += _action_fan(cx1, cy1, p1, P1, wall=wall1, score=score1)
 
-    tag = "mixed" if (mixed0 or mixed1) else "pure"
+    tag = kind if kind is not None else ("mixed" if (mixed0 or mixed1) else "pure")
     sub = f"{tag} equilibrium" + (f" · V = {value:+.3f}" if value is not None else "")
     body.append(
         f'<text x="{MARGIN}" y="{th - 4}" font-family="ui-monospace,monospace" '
