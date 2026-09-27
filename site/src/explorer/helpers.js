@@ -195,16 +195,26 @@ function bestResponseCol(M, p) {
 }
 
 // Resolve both players' actual mix at one state given their chosen policy
-// *type* -- "minimax" uses the exact equilibrium strategy already in the
-// data, "left"/"random" are fixed, and "br" best-responds to whatever the
-// other side turns out to play. If both sides are "br" there's no order to
-// resolve first, so both fall back to the exact equilibrium -- which is, not
-// coincidentally, the actual fixed point of "best-respond to a best-response".
+// *type* -- "minimax" uses the exact equilibrium strategy, "left"/"random"
+// are fixed, and "br" best-responds to whatever the other side turns out to
+// play. If both sides are "br" there's no order to resolve first, so both
+// fall back to the exact equilibrium -- which is, not coincidentally, the
+// actual fixed point of "best-respond to a best-response".
+//
+// At a pure state with a tie, "minimax" samples tieAwarePolicy's uniform
+// split over the whole tied set, not just certify()'s single tie-broken
+// pick -- otherwise Step/Play/Simulate would always play the exact same one
+// of several equally-good actions, silently contradicting the board's own
+// display (which stopped tie-breaking). A "br" opponent then best-responds
+// to that real mix too, not to a one-hot policy that overstates certainty.
 function resolvePolicies(type0, type1, rowPol, colPol, M) {
+  const cert = certify(M);
+  const rp = cert.kind === "pure" ? tieAwarePolicy(rowPol, cert.rowTies) : rowPol;
+  const cp = cert.kind === "pure" ? tieAwarePolicy(colPol, cert.colTies) : colPol;
   const fixed = (type, pol) => (type === "minimax" ? pol : type === "left" ? ALWAYS_LEFT : type === "random" ? UNIFORM : null);
-  let p0 = fixed(type0, rowPol);
-  let p1 = fixed(type1, colPol);
-  if (p0 === null && p1 === null) return [rowPol, colPol];
+  let p0 = fixed(type0, rp);
+  let p1 = fixed(type1, cp);
+  if (p0 === null && p1 === null) return [rp, cp];
   if (p1 === null) p1 = bestResponseCol(M, p0);
   if (p0 === null) p0 = bestResponseRow(M, p1);
   return [p0, p1];
