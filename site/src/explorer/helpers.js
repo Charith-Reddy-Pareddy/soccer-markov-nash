@@ -9,23 +9,6 @@ export function kickoffState(board) {
   return { x0: 0, y0: Math.floor(board.height / 2), x1: board.width - 1, y1: Math.floor(board.height / 2), b: 0 };
 }
 
-// For a pure equilibrium with ties, every tied action guarantees the exact
-// same worst-case value -- not just the one certify()'s argmax happened to
-// check first. A uniform mix over a saddle point's whole tied set is itself
-// still an optimal strategy (any convex combination of best responses at a
-// saddle guarantees the same value), so this is a real equilibrium, not a
-// display approximation: it replaces the arbitrary single tie-broken pick
-// with "all of these, equally," which is what the game theory actually says.
-// `ties` is `undefined` for a genuinely mixed state (kind !== "pure") or
-// absent entirely -- either way this just returns `pol` unchanged, and a
-// pure state with no tie (ties.length === 1) is already the one-hot `pol`,
-// so this is a no-op there too.
-export function tieAwarePolicy(pol, ties) {
-  if (!ties || ties.length <= 1) return pol;
-  const p = 1 / ties.length;
-  return pol.map((_, i) => (ties.includes(i) ? p : 0));
-}
-
 // Per action, whether it's clamped at the board edge -- and if so, whether
 // that's a genuine no-op ("hold": there's no cell there, the player just
 // stays put) or a goal ("score": this exact player, in a goal row, with the
@@ -143,7 +126,7 @@ function sampleAction(pol) {
   let acc = 0;
   for (let i = 0; i < pol.length; i++) {
     acc += pol[i];
-    if (r <= acc) return i;
+    if (r < acc) return i;
   }
   return pol.length - 1; // float rounding fallback
 }
@@ -156,7 +139,7 @@ function resolveOutcome(entry) {
   let acc = 0;
   for (const [idx, prob] of entry) {
     acc += prob;
-    if (r <= acc) return idx;
+    if (r < acc) return idx;
   }
   return entry[entry.length - 1][0];
 }
@@ -201,16 +184,9 @@ function bestResponseCol(M, p) {
 // fall back to the exact equilibrium -- which is, not coincidentally, the
 // actual fixed point of "best-respond to a best-response".
 //
-// At a pure state with a tie, "minimax" samples tieAwarePolicy's uniform
-// split over the whole tied set, not just certify()'s single tie-broken
-// pick -- otherwise Step/Play/Simulate would always play the exact same one
-// of several equally-good actions, silently contradicting the board's own
-// display (which stopped tie-breaking). A "br" opponent then best-responds
-// to that real mix too, not to a one-hot policy that overstates certainty.
+// Use the exported policy verbatim; security ties are alternatives, not weights.
 function resolvePolicies(type0, type1, rowPol, colPol, M) {
-  const cert = certify(M);
-  const rp = cert.kind === "pure" ? tieAwarePolicy(rowPol, cert.rowTies) : rowPol;
-  const cp = cert.kind === "pure" ? tieAwarePolicy(colPol, cert.colTies) : colPol;
+  const rp = rowPol, cp = colPol;
   const fixed = (type, pol) => (type === "minimax" ? pol : type === "left" ? ALWAYS_LEFT : type === "random" ? UNIFORM : null);
   let p0 = fixed(type0, rp);
   let p1 = fixed(type1, cp);

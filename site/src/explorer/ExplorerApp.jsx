@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, tieAwarePolicy, wallMask } from "./helpers.js";
+import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, wallMask } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "canonical_coinflip", "tackle", "territory", "slip"];
@@ -284,16 +284,11 @@ export default function ExplorerApp() {
   // physically. Which player is carrying is shown separately below.
   const M = Q;
   const cert = certify(M);
-  // The policy actually *displayed* everywhere below (board arrows, move
-  // bars, Q-matrix headers, Carrier/Defender lines): for a mixed state this
-  // is just the real LP mix; for a pure state with a tie, it's a uniform
-  // split over every tied action instead of certify()'s single tie-broken
-  // pick -- no more arbitrarily showing "U 100%" when D and L guarantee the
-  // exact same value. `rowPol`/`colPol` themselves are left untouched (still
-  // one-hot for a pure state) since the "must mix here" tags below rely on
-  // that to stay off for ties, where mixing isn't *required*, only permitted.
-  const displayRowPol = cert.kind === "pure" ? tieAwarePolicy(rowPol, cert.rowTies) : rowPol;
-  const displayColPol = cert.kind === "pure" ? tieAwarePolicy(colPol, cert.colTies) : colPol;
+  // One source of policy probabilities for display, stepping, and simulation.
+  const displayRowPol = rowPol;
+  const displayColPol = colPol;
+  const selectedRow = rowPol.indexOf(Math.max(...rowPol));
+  const selectedCol = colPol.indexOf(Math.max(...colPol));
   const carrierPol = st.b === 0 ? displayRowPol : displayColPol;
   const defenderPol = st.b === 0 ? displayColPol : displayRowPol;
   const cs = support(carrierPol), ds = support(defenderPol);
@@ -314,7 +309,7 @@ export default function ExplorerApp() {
         <div className="wrap">
           <div className="eyebrow"><span className="badge">Live</span>Board explorer</div>
           <h1>Place both players anywhere. Watch the equilibrium update live.</h1>
-          <p className="lede">All 9,100 legal positions across five boards were solved
+          <p className="lede">All {Object.values(data.boards).reduce((n, b) => n + b.state_count, 0).toLocaleString()} legal positions across {Object.keys(data.boards).length} boards were solved
             exactly, <a href="positions.md">not approximated by an iterative
             solver</a>, with <code>NashQIteration.run_exact()</code>: the canonical
             board and its deterministic, A10-style twin, side by side for comparison,
@@ -443,8 +438,8 @@ export default function ExplorerApp() {
             <div className="panel">
               <div className={"readout-kind " + cert.kind}>
                 {cert.kind === "pure"
-                  ? <>Pure equilibrium — saddle at player 0: <ActionList ties={cert.rowTies} wall={wall0} />
-                      , player 1: <ActionList ties={cert.colTies} wall={wall1} />
+                  ? <>Selected pure equilibrium — player 0: <ActionList ties={[selectedRow]} wall={wall0} />
+                      , player 1: <ActionList ties={[selectedCol]} wall={wall1} />
                     </>
                   : `Mixed equilibrium — gap ${cert.gap.toFixed(4)}`}
               </div>
@@ -482,7 +477,7 @@ export default function ExplorerApp() {
               {qview === "table" ? (
                 <QMatrixTable M={M} rowPol={displayRowPol} colPol={displayColPol} wall0={wall0} wall1={wall1} />
               ) : (
-                <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} /></div>
+                <div className="board-svg-wrap" style={{ margin: ".4rem 0 1.3rem" }}><QMatrixGraph M={M} rowPol={rowPol} colPol={colPol} /></div>
               )}
               {qview === "table" && (
                 <p className="hint" style={{ margin: ".5rem 0 0" }}>
@@ -506,29 +501,28 @@ export default function ExplorerApp() {
               </div>
 
               <div className="mix-tags">
-                {support(rowPol).length > 1 && <span className="mix-tag p0">Player 0 must mix here</span>}
-                {support(colPol).length > 1 && <span className="mix-tag p1">Player 1 must mix here</span>}
+                {support(rowPol).length > 1 && <span className="mix-tag p0">Player 0 uses a mixed policy</span>}
+                {support(colPol).length > 1 && <span className="mix-tag p1">Player 1 uses a mixed policy</span>}
               </div>
 
               {cert.kind === "pure" && (
                 <p className="hint" style={{ margin: ".6rem 0 0" }}>
                   {(cert.rowTies.length > 1 || cert.colTies.length > 1) ? (
                     <>
-                      Every action listed above guarantees the exact same worst-case value
-                      for that player &mdash; there's no single "correct" one, so the board
-                      and the bars below split evenly across the whole tied set instead of
-                      arbitrarily picking one. For example,{" "}
-                      <span className="mono">{ACT[cert.i]}</span> /{" "}
-                      <span className="mono">{ACT[cert.j]}</span> leads to{" "}
-                      <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>{" "}
-                      &mdash; a different pairing among the ties can land somewhere else
-                      entirely while guaranteeing the same value.
+                      Security-tied alternatives: player 0 {cert.rowTies.map(i => ACT[i]).join("/")},
+                      player 1 {cert.colTies.map(i => ACT[i]).join("/")}. These ties do not
+                      specify probabilities. The selected policy first preserves the best
+                      worst-case value, then prefers the higher average payoff against
+                      opponent actions. This avoids weakly dominated choices among exact
+                      ties; it does not claim a unique equilibrium. The selected pair{" "}
+                      <span className="mono">{ACT[selectedRow]}/{ACT[selectedCol]}</span> leads to{" "}
+                      <span className="mono">{describeOutcome(board, stateKey(st), selectedRow, selectedCol)}</span>.
                     </>
                   ) : (
                     <>
-                      The optimal joint action (<span className="mono">{ACT[cert.i]}</span> /{" "}
-                      <span className="mono">{ACT[cert.j]}</span>) leads to{" "}
-                      <span className="mono">{describeOutcome(board, stateKey(st), cert.i, cert.j)}</span>.
+                      The optimal joint action (<span className="mono">{ACT[selectedRow]}</span> /{" "}
+                      <span className="mono">{ACT[selectedCol]}</span>) leads to{" "}
+                      <span className="mono">{describeOutcome(board, stateKey(st), selectedRow, selectedCol)}</span>.
                     </>
                   )}
                 </p>
@@ -547,7 +541,7 @@ export default function ExplorerApp() {
                       <span className="move-bar-pct">
                         {(displayRowPol[i] * 100).toFixed(4)}%
                         {displayRowPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(displayRowPol[i])})</span>}
-                        {tied && <span className="move-bar-frac"> &mdash; tied, equally optimal</span>}
+                        {tied && <span className="move-bar-frac"> &mdash; same security value</span>}
                         {displayRowPol[i] > 0 && wall0[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x0}, {st.y0})</span>}
                         {displayRowPol[i] > 0 && wall0[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
                       </span>
@@ -566,7 +560,7 @@ export default function ExplorerApp() {
                       <span className="move-bar-pct">
                         {(displayColPol[i] * 100).toFixed(4)}%
                         {displayColPol[i] > 0 && <span className="move-bar-frac"> (&asymp; {nearestNiceFraction(displayColPol[i])})</span>}
-                        {tied && <span className="move-bar-frac"> &mdash; tied, equally optimal</span>}
+                        {tied && <span className="move-bar-frac"> &mdash; same security value</span>}
                         {displayColPol[i] > 0 && wall1[a] === "hold" && <span className="move-bar-frac"> &mdash; wall-clamped, holds at ({st.x1}, {st.y1})</span>}
                         {displayColPol[i] > 0 && wall1[a] === "score" && <span className="move-bar-frac"> &mdash; scores here, ends the game</span>}
                       </span>
