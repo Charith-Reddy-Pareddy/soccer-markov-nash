@@ -955,11 +955,35 @@ function NeuralCrossCheck({ neuralData, neuralError, board, stKey, M, rowPol, co
         rarely reach from kickoff never gets corrected there, so a mismatch below can mean
         that rather than anything wrong with the exact solve.
       </p>
-      <h3 style={{ margin: "0 0 .4rem" }}>DQN's predicted Q matrix</h3>
+      <h3 style={{ margin: "0 0 .4rem" }}>Exact vs. DQN, cell by cell</h3>
       <p className="support-line" style={{ marginBottom: ".6rem" }}>
         max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>| at this state ={" "}
         <b>{maxErr.toFixed(4)}</b>
       </p>
+      <table className="rounding">
+        <thead>
+          <tr><th>P0 / P1</th><th>Exact</th><th>DQN (from zero)</th><th>|diff|</th></tr>
+        </thead>
+        <tbody>
+          {M.flatMap((row, i) => row.map((exact, j) => {
+            const dqn = Qd[i][j];
+            return (
+              <tr key={`${i}-${j}`}>
+                <td>{ACT[i]}/{ACT[j]}</td>
+                <td>{exact.toFixed(4)}</td>
+                <td>{dqn.toFixed(4)}</td>
+                <td>{Math.abs(exact - dqn).toFixed(4)}</td>
+              </tr>
+            );
+          }))}
+        </tbody>
+      </table>
+      <p className="hint" style={{ margin: ".6rem 0 0" }}>
+        Policy gradient trains a policy net directly, not a Q matrix, so it has
+        no per-cell payoff prediction to compare here &mdash; see its action
+        probabilities in the policy comparison below instead.
+      </p>
+      <h3 style={{ margin: "1rem 0 .4rem" }}>DQN's predicted Q matrix</h3>
       <QMatrixTable M={Qd} rowPol={pDqn} colPol={qDqn} wall0={wall0} wall1={wall1} />
       <h3 style={{ margin: "1rem 0 .4rem" }}>Policy comparison</h3>
       <table className="rounding">

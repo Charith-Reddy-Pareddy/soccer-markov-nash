@@ -25,7 +25,6 @@ export default function Footer() {
               <li><a href="gallery.html">Diagram gallery</a></li>
               <li><a href="generalize.md">How far it generalizes</a></li>
               <li><a href="templates.md">The 8 geometric templates</a></li>
-              <li><a href="https://charith-reddy-pareddy.github.io/the-mixed-game/">The Mixed Game (sister project) &rarr;</a></li>
             </ul>
           </div>
           <div>
@@ -40,7 +39,6 @@ export default function Footer() {
       </div>
       <div className="foot-bottom">
         <span>Charith Reddy Pareddy &mdash; soccer-markov-nash</span>
-        <span>Solved exactly. Nothing on this page was learned by a neural network.</span>
       </div>
     </footer>
   );
