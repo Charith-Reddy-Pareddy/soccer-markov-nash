@@ -20,6 +20,7 @@ export default function Footer() {
               <li><a href="coinflip_cases.pdf">Coin-flip edge cases (PDF)</a></li>
               <li><a href="tackle_cases.pdf">Tackle-rule edge cases (PDF)</a></li>
               <li><a href="territory_cases.pdf">Territory edge cases (PDF)</a></li>
+              <li><a href="slip_cases.pdf">Movement-slip edge cases (PDF)</a></li>
             </ul>
           </div>
           <div>

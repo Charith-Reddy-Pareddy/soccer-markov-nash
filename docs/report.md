@@ -423,7 +423,15 @@ The same fact, drawn as a node-and-arrow graph instead of a highlighted grid
 next to where the players
 actually are on the board, across twelve representative cases with the full
 `4x4` matrix printed for each -- [positions.md](positions.md) /
-[positions.pdf](positions.pdf), `make positions`.
+[positions.pdf](positions.pdf), `make positions`. The deterministic A10 board
+gets its own edge-case document -- every stage game there is provably pure,
+but ties, weak dominance, and the collision rule still hide real structure --
+[a10_cases.pdf](a10_cases.pdf) (`make a10-cases-pdf`); the coin-flip,
+tackle, territory-reward, and movement-slip rule variants each get the same
+treatment in [coinflip_cases.pdf](coinflip_cases.pdf),
+[tackle_cases.pdf](tackle_cases.pdf), [territory_cases.pdf](territory_cases.pdf),
+and [slip_cases.pdf](slip_cases.pdf) (`make board-cases-pdfs`), each case
+linking straight into [the live explorer](explorer.html) at that position.
 
 Every policy and value surface in this report is drawn in `docs/gallery.html`
 (`make gallery`, from `soccer_nash/viz.py`): policy fans, the mixing map above,

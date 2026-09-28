@@ -107,6 +107,15 @@ const PRESETS = {
   41: { board: "territory", doc: "edge", state: [1, 0, 4, 2, 0], label: "Territory case 5 — the price of your own third" },
   42: { board: "territory", doc: "edge", state: [0, 0, 2, 0, 0], label: "Territory case 6 — the dead zone wakes up" },
   43: { board: "territory", doc: "edge", state: [6, 1, 4, 1, 0], label: "Territory case 7 — goals still trump territory" },
+  // slip_cases.pdf: independent per-player movement noise creates 52 of
+  // 1200 genuinely mixed states -- a small chance of stumbling undermines
+  // what looks like a safe pure action.
+  44: { board: "slip", doc: "edge", state: [0, 1, 0, 3, 0], label: "Slip case 1 — the stumble" },
+  45: { board: "slip", doc: "edge", state: [4, 2, 0, 2, 0], label: "Slip case 2 — the uncertain open goal" },
+  46: { board: "slip", doc: "edge", state: [0, 1, 1, 1, 0], label: "Slip case 3 — split between safe and risky" },
+  47: { board: "slip", doc: "edge", state: [0, 1, 2, 0, 0], label: "Slip case 4 — a tie ground into a gradient" },
+  48: { board: "slip", doc: "edge", state: [0, 1, 2, 0, 1], label: "Slip case 5 — two ways to wait" },
+  49: { board: "slip", doc: "edge", state: [0, 1, 2, 1, 1], label: "Slip case 6 — a threat that shapes the mix without firing" },
 };
 
 function toState(arr) {

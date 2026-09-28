@@ -68,7 +68,16 @@ technical answer, start with **[report.pdf](report.pdf)**
   result), but ties, weak dominance, and the collision rule still hide real
   structure a single 100% action doesn't show on its own (`make a10-cases`,
   `make a10-cases-pdf`); each case links straight to that position in
-  [explorer.html](explorer.html).
+  [explorer.html](explorer.html). The other four board rules get the same
+  case-study treatment, each documenting how many of its states genuinely
+  need a mixed equilibrium (vs. exactly 0 of 2380 on A10):
+  [coinflip_cases.pdf](coinflip_cases.pdf) (a fair coin decides contests
+  instead of the carrier — still 0 mixed, surprisingly),
+  [tackle_cases.pdf](tackle_cases.pdf) (a 50/50 duel, 56 of 760 mixed — the
+  richest source), [territory_cases.pdf](territory_cases.pdf) (a dense
+  position reward, 69 of 2380 mixed), and [slip_cases.pdf](slip_cases.pdf)
+  (movement noise, 52 of 1200 mixed) — `make board-cases-pdfs` regenerates
+  all five.
 - [explorer.html](explorer.html) — interactive board: place both players
   anywhere on any of the six boards (the two canonical boards side by side,
   plus the three used in positions.md and the coin-flip contest-resolution

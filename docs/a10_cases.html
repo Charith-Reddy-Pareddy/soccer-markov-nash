@@ -65,7 +65,16 @@ rule.</p>
 The four zeros against Right describe optimal continuation from four
 new states, not a defender committed to Right forever. These are discounted
 stationary values with gamma 0.9, not the undiscounted 100-turn assignment.</p>
-<p><a href="explorer.html">Interactive explorer</a> ·
+<p>This board's own rule keeps every stage game pure. The other four rule
+variants each trade that off for genuine mixed equilibria in some states --
+see <a href="coinflip_cases.pdf">coinflip_cases.pdf</a> (a fair coin
+decides contests instead of the carrier -- still 0 mixed, surprisingly),
+<a href="tackle_cases.pdf">tackle_cases.pdf</a> (a 50/50 duel, 56 of 760
+mixed -- the richest source), <a href="territory_cases.pdf">territory_cases.pdf</a>
+(a dense position reward, 69 of 2380 mixed), and
+<a href="slip_cases.pdf">slip_cases.pdf</a> (movement noise, 52 of 1200
+mixed).</p>
+<p><a href="explorer.html?board=canonical_det">Interactive explorer</a> ·
 <a href="equilibrium-debug.md">Audit and reproduction details</a></p><section><h2><span class="case-no">1</span>The swap trap</h2>
 <p class="lede">State (4, 3, 5, 3, 0) &middot; player 0 carries the ball &middot;
 V = +0.000000</p>
