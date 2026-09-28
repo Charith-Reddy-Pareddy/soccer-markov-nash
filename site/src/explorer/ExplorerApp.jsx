@@ -123,6 +123,33 @@ export default function ExplorerApp() {
       })
       .then((json) => {
         setData(json);
+        // Deep link from a case-study PDF or preset button:
+        // explorer.html?board=tackle&state=0,0,1,0,0 jumps straight to that
+        // position; explorer.html?board=tackle alone just preselects the
+        // board and starts at its own kickoff. Falls back to kickoff on the
+        // canonical board if the board/state is missing or illegal.
+        const params = new URLSearchParams(window.location.search);
+        const board = params.get("board");
+        const stateParam = params.get("state");
+        if (board && json.boards[board]) {
+          if (stateParam) {
+            const nums = stateParam.split(",").map(Number);
+            const key = nums.join(",");
+            if (nums.length === 5 && nums.every(Number.isInteger) && json.boards[board].states[key]) {
+              setCurrentBoard(board);
+              const st0 = toState(nums);
+              setSt(st0);
+              setPlayHistory([st0]);
+              return;
+            }
+          } else {
+            setCurrentBoard(board);
+            const st0 = kickoffState(json.boards[board]);
+            setSt(st0);
+            setPlayHistory([st0]);
+            return;
+          }
+        }
         const kickoff = kickoffState(json.boards.canonical);
         setSt(kickoff);
         setPlayHistory([kickoff]);
