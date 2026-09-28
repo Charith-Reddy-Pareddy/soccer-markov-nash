@@ -201,6 +201,9 @@ positions-matrix:
 explorer-data:
 	$(PY) scripts/explorer_data.py
 
+explorer-neural-data:
+	$(PY) scripts/explorer_neural_data.py
+
 site:
 	cd site && npm install && npm run build
 

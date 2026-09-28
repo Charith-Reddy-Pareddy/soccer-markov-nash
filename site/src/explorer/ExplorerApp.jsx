@@ -79,6 +79,26 @@ export default function ExplorerApp() {
   const [qview, setQview] = useState("table");
   const [st, setSt] = useState(null);
   const [showV, setShowV] = useState(false);
+  const [goToInput, setGoToInput] = useState("");
+  const [goToError, setGoToError] = useState(null);
+  const [showNeural, setShowNeural] = useState(false);
+  const [neuralData, setNeuralData] = useState(null);
+  const [neuralError, setNeuralError] = useState(null);
+
+  // Lazy-fetched only when the panel is actually opened: a representative
+  // DQN + policy-gradient run's predictions for every state on every board,
+  // several MB, not needed on first paint or by anyone who never looks at
+  // this panel.
+  useEffect(() => {
+    if (!showNeural || neuralData || neuralError) return;
+    fetch(`${import.meta.env.BASE_URL}data/explorer_neural.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json();
+      })
+      .then(setNeuralData)
+      .catch((e) => setNeuralError(e.message));
+  }, [showNeural, neuralData, neuralError]);
   const [trials, setTrials] = useState(2000);
   const [simResult, setSimResult] = useState(null);
   const [simming, setSimming] = useState(false);
@@ -229,6 +249,38 @@ export default function ExplorerApp() {
     resetPosition(newSt);
   }
 
+  // Jump straight to a typed state, e.g. "3,4,4,4,0" -- the ball index is
+  // optional and defaults to 0, since most of the states named in
+  // conversation (screenshots, docs, a professor's own notes) are already
+  // given as "(x0, y0, x1, y1)" or the full 5-tuple interchangeably. Rejects
+  // anything that isn't a legal state on the *current* board rather than
+  // silently clamping or guessing, since a board switch changes which
+  // coordinates are even in range.
+  function goToState() {
+    const parts = goToInput.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+    if (parts.length !== 4 && parts.length !== 5) {
+      setGoToError("Enter x0,y0,x1,y1 or x0,y0,x1,y1,ball");
+      return;
+    }
+    const nums = parts.map(Number);
+    if (nums.some((n) => !Number.isInteger(n))) {
+      setGoToError("All values must be whole numbers");
+      return;
+    }
+    const [x0, y0, x1, y1, b = 0] = nums;
+    if (b !== 0 && b !== 1) {
+      setGoToError("Ball must be 0 or 1");
+      return;
+    }
+    const key = stateKey({ x0, y0, x1, y1, b });
+    if (!board.states[key]) {
+      setGoToError(`(${x0}, ${y0}, ${x1}, ${y1}, ${b}) isn't a legal state on this board`);
+      return;
+    }
+    setGoToError(null);
+    moveTo({ x0, y0, x1, y1, b });
+  }
+
   // One Step/Play tick: resolve both players' chosen policy at the current
   // state, sample an action pair, and either move to the real next state
   // (pushed onto playHistory) or, if it's a goal, stop without one (there is
@@ -363,6 +415,18 @@ export default function ExplorerApp() {
                 <button className="iconbtn" onClick={() => moveTo(randomState())}>Random position</button>
                 <button className="iconbtn" onClick={() => moveTo(randomMixedState())}>Random must-guess position</button>
               </div>
+              <div className="controls">
+                <input
+                  type="text"
+                  className="go-to-input"
+                  placeholder="x0,y0,x1,y1,ball e.g. 3,4,4,4,0"
+                  value={goToInput}
+                  onChange={(e) => { setGoToInput(e.target.value); setGoToError(null); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") goToState(); }}
+                />
+                <button className="iconbtn" onClick={goToState}>Go to state</button>
+              </div>
+              {goToError && <p className="hint" style={{ color: "var(--ember)" }}>{goToError}</p>}
               <p className="hint">Click a cell to move the selected player there.{" "}
                 <span style={{ color: "var(--p0)" }}>Blue</span> is player 0, attacking the
                 right goal; <span style={{ color: "var(--p1)" }}>green</span> is player 1,
@@ -615,6 +679,20 @@ export default function ExplorerApp() {
               </div>
 
               <RoundingDiagnostic V={V} rowPol={rowPol} colPol={colPol} cert={cert} rounding={rounding} />
+
+              <div className="controls" style={{ marginTop: "1.2rem" }}>
+                <label className="v-toggle">
+                  <input type="checkbox" checked={showNeural} onChange={(e) => setShowNeural(e.target.checked)} />
+                  Show neural cross-check (DQN / policy gradient)
+                </label>
+              </div>
+              {showNeural && (
+                <NeuralCrossCheck
+                  neuralData={neuralData} neuralError={neuralError} board={currentBoard}
+                  stKey={stateKey(st)} M={M} rowPol={rowPol} colPol={colPol}
+                  wall0={wall0} wall1={wall1}
+                />
+              )}
             </div>
           </div>
 
@@ -835,6 +913,65 @@ function RoundingDiagnostic({ V, rowPol, colPol, cert, rounding }) {
           player &mdash; the equilibrium shown above is not a rounding artifact.
         </p>
       )}
+    </div>
+  );
+}
+
+// One representative DQN run (fitted-Q, "from zero" -- pure TD bootstrap
+// from a random init, the honest baseline docs/neural.md reports first, not
+// "fit to exact" which is trained by regressing directly onto the exact
+// answer and so isn't an independent check of anything) and one PG run
+// (self-play REINFORCE), both seed 0, against the exact solve at whatever
+// state is currently selected -- not just the handful of states already
+// written up as case studies. docs/neural.md's own multi-seed study (with
+// error bars) is the actual research claim; this is a live, single-run
+// sanity check anyone can point at any position on the board.
+function NeuralCrossCheck({ neuralData, neuralError, board, stKey, M, rowPol, colPol, wall0, wall1 }) {
+  if (neuralError) {
+    return <p className="hint" style={{ color: "var(--ember)" }}>Couldn't load the neural cross-check data ({neuralError}).</p>;
+  }
+  if (!neuralData) {
+    return <p className="hint">Loading DQN / policy-gradient predictions&hellip;</p>;
+  }
+  const rec = neuralData.boards[board]?.[stKey];
+  if (!rec) {
+    return <p className="hint">No neural data for this state (terminal or off this board).</p>;
+  }
+  const [Qd, pDqn, qDqn, pPg, qPg] = rec;
+  const maxErr = Math.max(...M.flatMap((row, i) => row.map((v, j) => Math.abs(v - Qd[i][j]))));
+  const { dqn_epochs, pg_iterations, seed } = neuralData.meta;
+
+  return (
+    <div style={{ marginTop: "1.4rem" }}>
+      <div className="eyebrow" style={{ margin: "0 0 .5rem" }}>Neural cross-check</div>
+      <p className="hint" style={{ margin: "0 0 .6rem" }}>
+        One representative training run (seed {seed}), not the multi-seed study in{" "}
+        <a href="neural.md">docs/neural.md</a> (see that page and{" "}
+        <span className="mono">experiments/nash_dqn_seeds.csv</span> /{" "}
+        <span className="mono">experiments/policy_gradient_seeds.csv</span> for error bars).
+        DQN is fitted-Q trained from a random init for {dqn_epochs} epochs (the honest
+        "from zero" baseline, not one fit to the exact answer). PG is self-play REINFORCE
+        for {pg_iterations} iterations, and is genuinely on-policy: a state its own rollouts
+        rarely reach from kickoff never gets corrected there, so a mismatch below can mean
+        that rather than anything wrong with the exact solve.
+      </p>
+      <h3 style={{ margin: "0 0 .4rem" }}>DQN's predicted Q matrix</h3>
+      <p className="support-line" style={{ marginBottom: ".6rem" }}>
+        max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>| at this state ={" "}
+        <b>{maxErr.toFixed(4)}</b>
+      </p>
+      <QMatrixTable M={Qd} rowPol={pDqn} colPol={qDqn} wall0={wall0} wall1={wall1} />
+      <h3 style={{ margin: "1rem 0 .4rem" }}>Policy comparison</h3>
+      <table className="rounding">
+        <thead>
+          <tr><th>Source</th><th>Player 0</th><th>Player 1</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Exact</td><td>{policyCell(rowPol)}</td><td>{policyCell(colPol)}</td></tr>
+          <tr><td>DQN</td><td>{policyCell(pDqn)}</td><td>{policyCell(qDqn)}</td></tr>
+          <tr><td>PG (self-play)</td><td>{policyCell(pPg)}</td><td>{policyCell(qPg)}</td></tr>
+        </tbody>
+      </table>
     </div>
   );
 }

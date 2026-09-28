@@ -37,6 +37,14 @@ select.board-select {
 }
 select.board-select:hover { border-color: var(--ink-faint); }
 
+input.go-to-input {
+  font-family: "IBM Plex Mono", monospace; font-size: .86rem;
+  color: var(--ink); background: var(--raise); border: 1px solid var(--rule-strong);
+  border-radius: 8px; padding: .48rem .8rem; width: 13rem;
+}
+input.go-to-input:hover { border-color: var(--ink-faint); }
+input.go-to-input:focus { outline: none; border-color: var(--pitch); }
+
 .hint { font-size: .86rem; color: var(--ink-faint); margin-top: .9rem; }
 
 .readout-kind { font-size: 1.15rem; font-weight: 700; margin: 0 0 .2rem; font-family: "Barlow Semi Condensed", sans-serif; }
