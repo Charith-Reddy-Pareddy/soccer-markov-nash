@@ -106,7 +106,7 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
     (CASE_DIR / f"a10_case{case_no:02d}.svg").write_text(panel_svg([board, matrix], cols=2))
 
 
-def _html_case(number, label, why, g, solver, result, state):
+def _html_case(number, label, why, g, solver, result, state, note=""):
     M = solver._matrix(state, result.values)
     p, q = result.row_policy[state], result.col_policy[state]
     _, _, rows, cols = _ties(M)
@@ -125,12 +125,57 @@ def _html_case(number, label, why, g, solver, result, state):
 Security-tied alternatives: P0 {'/'.join(_ACT[k] for k in rows)};
 P1 {'/'.join(_ACT[k] for k in cols)}. Alternatives are not probabilities.</p>
 <p>{html.escape(why)}</p>
-<img src="figures/gallery/a10_case{number:02d}.svg"
+{note}<img src="figures/gallery/a10_case{number:02d}.svg"
  alt="Case {number} selected policy and payoff graph">
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table>{headers}{matrix}</table>
 <h3>All 16 successor states, from the transition engine</h3>
 <table class="transitions">{headers}{transitions}</table></section>"""
+
+
+NOTES: dict[int, str] = {
+    3: (
+        "<p><b>Why an all-zero matrix is correct here, not a rounding "
+        "artifact:</b> the (U, U) cell is a genuine self-loop -- "
+        "<code>game.transitions()</code> confirms (U, U) &rarr; (3, 4, 4, 4, "
+        "0), the same state, with reward 0. The Bellman equation for a "
+        "self-loop with zero reward is V = 0 + 0.9&middot;V, whose only "
+        "solution is V = 0 exactly for any discount below 1 -- this is "
+        "algebra, not floating-point noise. The other 12 zero cells are not "
+        "assumed either: every successor state they lead to -- (3,4,4,3,0), "
+        "(3,4,4,4,1), (3,4,5,4,0), (3,3,4,4,0), (3,3,4,3,0), (3,3,3,4,0), "
+        "(2,4,4,4,0), (2,4,4,3,0), (2,4,3,4,0), (2,4,5,4,0), (4,4,4,3,0), "
+        "(4,4,3,4,1), (4,4,5,4,0) -- was looked up independently in the "
+        "exact solve, and each one is itself exactly 0.0. A flat all-zero "
+        "matrix is in fact the single most common shape on this board (514 "
+        "of 2380 states, see case 8, \"the dead zone\") -- the generic "
+        "outcome for a \"no one has an advantage yet\" configuration, not an "
+        "anomaly specific to this state.</p>\n"
+        "<p><b>Independent learned cross-check (DQN and policy gradient):"
+        "</b> a fitted-Q DQN trained from a random initialization (400 "
+        "epochs, seed 0, no access to the exact values) predicts D/L = "
+        "0.4552 and R/L = -0.2904 against the exact 0.6561 and -0.590490 -- "
+        "a max error of 0.30, worse than exact but correctly recovering the "
+        "sign and rough shape of every cell, and better than this project's "
+        "own documented average DQN error elsewhere on this board (roughly "
+        "0.4-0.5, see docs/neural.md). DQN's own action choice from that "
+        "matrix agrees with the exact solve: D for player 0 (81%), U for "
+        "player 1 (86%). A self-play policy-gradient net trained the same "
+        "way (1000 iterations, seed 0) does not agree here -- it converges "
+        "to R for player 0 (76%) and L for player 1 (96%), exactly the "
+        "exploitable swap-trap pairing this document's own case 1 warns "
+        "about. That is a known limitation of on-policy self-play, not a "
+        "contradiction of the exact solve: PG only trains on states its own "
+        "rollouts actually reach from kickoff, and this off-the-beaten-path "
+        "standoff is rarely if ever visited under the policy being trained, "
+        "so nothing ever corrects it there. DQN has no such gap, because it "
+        "trains against the full enumerated transition model for every "
+        "state regardless of how often it is visited. Full per-state "
+        "numbers for every board configuration are in the "
+        "<a href=\"explorer.html\">interactive explorer</a>'s \"Show neural "
+        "cross-check\" panel.</p>\n"
+    ),
+}
 
 
 def main() -> None:
@@ -239,7 +284,7 @@ new states, not a defender committed to Right forever. These are discounted
 stationary values with gamma 0.9, not the undiscounted 100-turn assignment.</p>
 <p><a href="explorer.html">Interactive explorer</a> ·
 <a href="equilibrium-debug.md">Audit and reproduction details</a></p>"""
-    sections = [_html_case(n, label, why, g, solver, r, state)
+    sections = [_html_case(n, label, why, g, solver, r, state, NOTES.get(n, ""))
                 for n, (state, label, why) in enumerate(cases, 1)]
     pathlib.Path("docs/a10_cases.html").write_text(intro + "".join(sections) + "</html>")
     FIG.write_text(panel_svg(panels, cols=2))
