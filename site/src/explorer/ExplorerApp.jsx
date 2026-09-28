@@ -902,7 +902,7 @@ export default function ExplorerApp() {
           <LittmanTable />
         </div>
       </section>
-      <Footer />
+      <Footer board={currentBoard} />
     </>
   );
 }
