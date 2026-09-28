@@ -11,14 +11,14 @@
 <text x="44.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.0</text>
 <text x="194.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.5</text>
 <text x="344.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.9</text>
-<path d="M44.0 188.0 L77.3 123.9 L127.3 123.9 L210.7 98.2 L294.0 104.6 L344.0 85.4" fill="none" stroke="var(--p0, #3B82F6)" stroke-width="2" stroke-linejoin="round"/>
-<circle cx="44.0" cy="188.0" r="2.4" fill="var(--p0, #3B82F6)"/>
-<circle cx="77.3" cy="123.9" r="2.4" fill="var(--p0, #3B82F6)"/>
-<circle cx="127.3" cy="123.9" r="2.4" fill="var(--p0, #3B82F6)"/>
-<circle cx="210.7" cy="98.2" r="2.4" fill="var(--p0, #3B82F6)"/>
-<circle cx="294.0" cy="104.6" r="2.4" fill="var(--p0, #3B82F6)"/>
-<circle cx="344.0" cy="85.4" r="2.4" fill="var(--p0, #3B82F6)"/>
-<text x="348.0" y="88.4" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #3B82F6)">2-cell goal</text>
+<path d="M44.0 188.0 L77.3 123.9 L127.3 123.9 L210.7 98.2 L294.0 104.6 L344.0 85.4" fill="none" stroke="var(--p0, #0EA5E9)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="188.0" r="2.4" fill="var(--p0, #0EA5E9)"/>
+<circle cx="77.3" cy="123.9" r="2.4" fill="var(--p0, #0EA5E9)"/>
+<circle cx="127.3" cy="123.9" r="2.4" fill="var(--p0, #0EA5E9)"/>
+<circle cx="210.7" cy="98.2" r="2.4" fill="var(--p0, #0EA5E9)"/>
+<circle cx="294.0" cy="104.6" r="2.4" fill="var(--p0, #0EA5E9)"/>
+<circle cx="344.0" cy="85.4" r="2.4" fill="var(--p0, #0EA5E9)"/>
+<text x="348.0" y="88.4" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #0EA5E9)">2-cell goal</text>
 <path d="M44.0 188.0 L77.3 98.2 L127.3 95.0 L210.7 56.5 L294.0 34.1 L344.0 18.0" fill="none" stroke="var(--ember, #a94e18)" stroke-width="2" stroke-linejoin="round"/>
 <circle cx="44.0" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
 <circle cx="77.3" cy="98.2" r="2.4" fill="var(--ember, #a94e18)"/>

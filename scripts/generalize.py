@@ -146,9 +146,9 @@ def _figure(b_rows: list[dict]) -> None:
                 if row["move_order"] == mo and row["goal_rows"] == tag]
 
     series = [
-        ("random, 2-cell goal", "var(--p0, #3B82F6)", pts("random", "2-cell")),
+        ("random, 2-cell goal", "var(--p0, #0EA5E9)", pts("random", "2-cell")),
         ("random, 1-cell goal", "var(--ember, #a94e18)", pts("random", "1-cell")),
-        ("deterministic, 2-cell", "var(--p1, #4CBB17)", pts("deterministic", "2-cell")),
+        ("deterministic, 2-cell", "var(--p1, #34D399)", pts("deterministic", "2-cell")),
         ("deterministic, 1-cell", "var(--ink-faint, #77817a)", pts("deterministic", "1-cell")),
     ]
     svg = line_chart_svg(

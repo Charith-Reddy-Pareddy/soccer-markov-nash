@@ -190,13 +190,13 @@ _PAGE = """<!doctype html>
 <style>
   :root {{
     --paper:#f7f8f5; --tint:#eef2ec; --ink:#19211c; --ink-faint:#77817a;
-    --rule:#d9e2db; --rule-strong:#c2cec5; --p0:#3B82F6; --p1:#4CBB17;
+    --rule:#d9e2db; --rule-strong:#c2cec5; --p0:#0EA5E9; --p1:#34D399;
     --ball:#cf7a20;
   }}
   @media (prefers-color-scheme: dark) {{
     :root:not([data-theme="light"]) {{
       --paper:#11150f; --tint:#191e15; --ink:#e7ece2; --ink-faint:#7c867a;
-      --rule:#2b342a; --rule-strong:#3b463a; --p0:#60A5FA; --p1:#82CF5D;
+      --rule:#2b342a; --rule-strong:#3b463a; --p0:#38BDF8; --p1:#6EE7B7;
     }}
   }}
   body {{ background:var(--paper); color:var(--ink); margin:0 auto; max-width:1040px;

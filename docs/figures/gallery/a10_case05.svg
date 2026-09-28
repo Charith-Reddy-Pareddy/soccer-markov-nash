@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 816 334" role="img" aria-label="panel">
 <g transform="translate(16.0 18.0)"><clipPath id="pnl0"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl0)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #3B82F6)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #0EA5E9)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #34D399)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -12,57 +12,57 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="338" y="162" width="6" height="44" fill="var(--p0, #3B82F6)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="338" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="338" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
-<circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #3B82F6)"/>
-<circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #4CBB17)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #34D399)"/>
+<rect x="338" y="162" width="6" height="44" fill="var(--p0, #0EA5E9)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #34D399)"/>
+<rect x="338" y="118" width="6" height="44" fill="var(--p0, #0EA5E9)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #34D399)"/>
+<rect x="338" y="74" width="6" height="44" fill="var(--p0, #0EA5E9)"/>
+<circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #0EA5E9)"/>
+<circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #34D399)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
-<line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #3B82F6)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
-<text x="52.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #3B82F6)">100%</text>
-<line x1="39.0" y1="184.0" x2="14.0" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
-<text x="3.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">100%</text>
+<line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #0EA5E9)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="52.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #0EA5E9)">100%</text>
+<line x1="39.0" y1="184.0" x2="14.0" y2="184.0" stroke="var(--p1, #34D399)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="3.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #34D399)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = -1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The open net</text>
 </g></g>
 <g transform="translate(432.0 16.0)"><clipPath id="pnl1"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl1)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 0, 0, 1, 1)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #3B82F6)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
-<text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #3B82F6)">U</text>
-<text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #3B82F6)">D</text>
-<text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #3B82F6)">L</text>
-<text x="12" y="272" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #3B82F6)">R</text>
-<line x1="39.0" y1="97.0" x2="39.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="39.0" y1="175.0" x2="39.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="39.0" y1="253.0" x2="39.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="131.0" y1="97.0" x2="131.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="131.0" y1="175.0" x2="131.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="131.0" y1="253.0" x2="131.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="223.0" y1="97.0" x2="223.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="223.0" y1="175.0" x2="223.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="223.0" y1="253.0" x2="223.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="315.0" y1="97.0" x2="315.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="315.0" y1="175.0" x2="315.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="315.0" y1="253.0" x2="315.0" y2="49.0" stroke="var(--p0, #3B82F6)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="61.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="245.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="245.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="197.0" x2="245.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #0EA5E9)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #34D399)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #34D399)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #34D399)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #34D399)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #34D399)">R</text>
+<text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #0EA5E9)">U</text>
+<text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #0EA5E9)">D</text>
+<text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #0EA5E9)">L</text>
+<text x="12" y="272" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #0EA5E9)">R</text>
+<line x1="39.0" y1="97.0" x2="39.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="39.0" y1="175.0" x2="39.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="39.0" y1="253.0" x2="39.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="131.0" y1="97.0" x2="131.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="131.0" y1="175.0" x2="131.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="131.0" y1="253.0" x2="131.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="223.0" y1="97.0" x2="223.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="223.0" y1="175.0" x2="223.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="223.0" y1="253.0" x2="223.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="315.0" y1="97.0" x2="315.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="315.0" y1="175.0" x2="315.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="315.0" y1="253.0" x2="315.0" y2="49.0" stroke="var(--p0, #0EA5E9)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
+<line x1="61.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="245.0" y2="41.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="245.0" y2="119.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="245.0" y2="197.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #34D399)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.90</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
