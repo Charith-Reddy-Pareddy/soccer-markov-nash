@@ -1,0 +1,194 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Seven A10 coin-flip cases: verified policy selection</title>
+<style>
+:root{--ink:#1c2e26;--accent:#1f7a4d;--accent-dark:#155c39;--line:#dbe5df;
+--muted:#5b6b63;--warn:#a8501c;--warn-bg:#fbf3ea;--card:#f3f8f5}
+*{box-sizing:border-box}
+body{font:15px/1.6 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+max-width:960px;margin:40px auto;color:var(--ink);padding:0 28px}
+h1{font-size:25px;margin:0 0 8px;color:var(--accent-dark);letter-spacing:-.01em}
+h2{font-size:19px;margin:0 0 10px;color:var(--accent-dark);display:flex;
+align-items:center}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:20px 0 8px;font-weight:700}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;
+color:var(--accent);font-weight:700;margin:0 0 6px}
+p.lede{color:var(--muted);font-size:13px;margin:0 0 12px}
+p.muted{color:var(--muted);font-size:13px;margin:6px 0 0}
+.case-no{display:inline-flex;align-items:center;justify-content:center;
+background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;
+font-size:13px;font-weight:700;margin-right:10px;flex-shrink:0}
+.callout{background:var(--card);border:1px solid var(--line);
+border-left:4px solid var(--accent);border-radius:6px;padding:10px 16px;
+margin:12px 0}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.stat-row{display:flex;gap:28px;font-size:14px}
+.stat-row b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;font:12px/1.5 "SF Mono",Consolas,monospace}
+td,th{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--card);color:var(--accent-dark);font-weight:700}
+img{display:block;width:100%;max-height:290px;object-fit:contain;margin:14px 0}
+section{margin-top:36px;padding-top:18px;border-top:2px solid var(--line)}
+code{background:var(--card);border-radius:3px;padding:1px 5px;font-size:.92em}
+a{color:var(--accent-dark)}
+@page{size:A4;margin:14mm}
+@media print{body{margin:0;padding:0;font-size:10.5px} h1{font-size:21px}
+h2{font-size:16px} section{break-before:page;margin:0;padding:0;border:0}
+img{max-height:235px} table{font-size:9px} td,th{padding:4px}
+.callout{padding:8px 12px}}
+</style>
+<p class="eyebrow">Soccer Markov Nash &middot; A10-coinflip board</p>
+<h1>Seven edge cases on the A10 coin-flip board</h1>
+<p>7 by 5 board; goal rows 1, 2, 3; simultaneous U/D/L/R; A10's exact collision and swap
+structure, with one change -- a fair coin, not the ball carrier, decides who wins a
+contested square or a swap. Players never occupy the same square. The loser of a
+contested square or swap still receives the ball, regardless of who the coin favored.</p>
+<div class="callout">
+<p style="margin:0"><b>Selection rule:</b> preserve the best worst-case payoff, then maximize
+mean payoff over opponent actions among exact security ties. Identical-score
+ties use action order. The secondary criterion is a documented selection
+convention, not a claim that Nash equilibrium is unique. No uniform tie mix
+is substituted for the solver policy.</p>
+</div>
+<div class="callout warn">
+<p style="margin:0"><b>Every one of the 2380 states on this board still resolves to a pure
+equilibrium:</b> this board keeps A10's exact collision and swap structure but replaces the
+automatic "carrier always wins" resolution with a fair coin -- real randomness in
+<i>what happens after</i> an action pair is chosen, not A10's own headline finding of weak
+dominance among security ties. Re-solving every stage game confirms
+<code>no_saddle_count = 0</code>: zero states need a genuinely mixed policy, exactly matching
+A10 itself (see <code>docs/data/explorer.json</code>). The reason is different from A10's,
+though -- here, averaging two contest outcomes at a fixed 50/50 probability still collapses to
+a single worst-case-optimal action, because the coin only reweights <i>which</i> branch a
+contested cell leads to, not <i>whether</i> a dominant response to that reweighting exists.
+Genuine randomness in outcomes does not, by itself, force randomization in which action to
+pick.</p>
+</div>
+<p>Case 1 below is the most direct test of what the coin actually changes: at the exact same
+state as A10's own "swap trap," halving the swap's guaranteed loss into a 50/50 gamble is
+enough to flip player 0's selected action from Down to Right. It is not a universal effect --
+case 2, A10's own "pinned in the corner" at the same state, shows the identical halving
+arithmetic falling short of a flip, because the gap it needed to close was larger to begin
+with. These are discounted stationary values with gamma 0.9, not the undiscounted 100-turn
+assignment.</p>
+<p><a href="explorer.html?board=canonical_coinflip">Interactive explorer</a> &middot;
+<a href="equilibrium-debug.md">Audit and reproduction details</a></p><section><h2><span class="case-no">1</span>The swap trap, disarmed</h2>
+<p class="lede">State (4, 3, 5, 3, 0) &middot; player 0 carries the ball &middot;
+V = +0.000000</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=4,3,5,3,0">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R</b> (100%)</span>
+<span><b>P1 &rarr; R</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 U/D/L/R &middot;
+P1 R</p>
+</div>
+<p>This is A10&#x27;s own case 1 state (docs/a10_cases.html), replayed under a fair coin. Under the deterministic rule, R is player 0&#x27;s only action that reaches player 1&#x27;s square, and (R, L) triggers the same genuine swap A10 documents: the winner of the coin there is rigged 100% to the carrier, but the loser keeps the ball regardless of who &#x27;won&#x27; -- so DET&#x27;s swap sends the ball to the defender every single time, crashing (R, L) to -0.590490 and knocking R out of the safe tie. Flip the coin fair, and the same swap sometimes goes the other way: when the coin instead favors the defender, the loser is now the carrier, who keeps the ball, landing at (5,3,4,3,0), worth 0.9. Averaged with the still-possible carrier-loses branch (landing at (5,3,4,3,1), worth -0.6561, the same downstream value DET&#x27;s own swap always lands on), Q_cf(R,L) = 0.5*(0.9*-0.6561) + 0.5*(0.9*0.9) = 0.109755 (verified below against game.transitions()). R&#x27;s own worst case is no longer the swap cell at all -- it is now the harmless (R, R) cell at exactly 0, tying R with U, D, and L. Among that four-way tie, R&#x27;s mean payoff (0.432439) beats D&#x27;s (0.3645), so the solver&#x27;s secondary criterion now selects R, not D: the swap trap is genuinely defused, not just softened. This is not an isolated fluke -- the identical &#x27;R newly joins the safety tie&#x27; pattern recurs at 15 of the 30 same-row, ball-adjacent-defender states on this board, and every one of them has x0 &gt;= 3 (the attacking half); it never happens for x0 &lt;= 2.</p>
+<img src="figures/gallery/coinflip_case01.svg"
+ alt="Case 1 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.729000</td><td>0.000000</td><td>0.729000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.810000</td><td>0.810000</td><td>0.109755</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(4, 4, 5, 4, 0)</td><td>(4, 4, 5, 2, 0)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 6, 3, 0)</td></tr><tr><th>D</th><td>(4, 2, 5, 4, 0)</td><td>(4, 2, 5, 2, 0)</td><td>(4, 2, 4, 3, 0)</td><td>(4, 2, 6, 3, 0)</td></tr><tr><th>L</th><td>(3, 3, 5, 4, 0)</td><td>(3, 3, 5, 2, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 6, 3, 0)</td></tr><tr><th>R</th><td>(5, 3, 5, 4, 0)</td><td>(5, 3, 5, 2, 0)</td><td>(5, 3, 4, 3, 1)</td><td>(5, 3, 6, 3, 0)</td></tr></table></section><section><h2><span class="case-no">2</span>Pinned in the corner, still pinned</h2>
+<p class="lede">State (0, 0, 0, 2, 0) &middot; player 0 carries the ball &middot;
+V = +0.000000</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=0,0,0,2,0">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R</b> (100%)</span>
+<span><b>P1 &rarr; D</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 D/L/R &middot;
+P1 D/R</p>
+</div>
+<p>A10&#x27;s own case 2 state, for direct comparison. Player 0&#x27;s U still targets the same open, non-blocked contest cell (0,1) that player 1&#x27;s D also targets; under DET the carrier always wins the coin, but the loser -- the defender -- still ends up with the ball regardless, crashing the value to -0.9 exactly as A10 documents. Under coinflip, half the time the coin instead favors the defender, so the carrier keeps the ball and lands at the harmless (0,0,0,1,0), worth 0.0. Averaging: Q_cf(U,D) = 0.5*(0.9*-1.0) + 0.5*(0.9*0.0) = -0.45, exactly half of DET&#x27;s -0.9 (both branches verified below; the -1.0 continuation is A10&#x27;s own &#x27;open net&#x27; state, case 5, where scoring bypasses the coin entirely). But halving the wound is not the same as closing it: D, L, and R still guarantee exactly 0, so U&#x27;s floor of -0.45 remains strictly below the safe tie. The selected policy is unchanged from A10 -- R for player 0, D for player 1. This is the honest negative result case 1 does not give away for free: averaging a punishment only rescues an action when the punishment was already close enough to the safe floor, and -0.9 was not.</p>
+<img src="figures/gallery/coinflip_case02.svg"
+ alt="Case 2 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.478297</td><td>-0.450000</td><td>0.478297</td><td>0.000000</td></tr><tr><th>D</th><td>0.430467</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.430467</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.478297</td><td>0.000000</td><td>0.478297</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 1, 2, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>R</th><td>(1, 0, 0, 3, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 1, 2, 0)</td></tr></table></section><section><h2><span class="case-no">3</span>The tie that breaks</h2>
+<p class="lede">State (0, 1, 0, 0, 1) &middot; player 1 carries the ball &middot;
+V = +0.000000</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=0,1,0,0,1">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; L</b> (100%)</span>
+<span><b>P1 &rarr; R</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 L &middot;
+P1 R</p>
+</div>
+<p>The reverse of the swap trap, and the first case here where player 1 carries the ball. Player 0&#x27;s D at (0,1) and player 1&#x27;s U at (0,0) target each other&#x27;s current cell -- a genuine swap. Under DET, the carrier (player 1) always wins the coin, so the loser (player 0, the defender) always ends up with the ball after the swap, landing at (0,0,0,1,0), worth 0.0 -- a clean, guaranteed break-even for D, tied with L. Flip the coin fair, and half the time the carrier instead keeps the ball through the swap, landing player 0 at (0,0,0,1,1) -- the exact &#x27;open net&#x27; state from case 2&#x27;s note above, an unconditional loss worth -1.0 to player 0 since scoring bypasses the coin. Q_cf(D,U) = 0.5*(0.9*-1.0) + 0.5*(0.9*0.0) = -0.45 (verified below), so D&#x27;s guaranteed floor collapses from 0 to -0.45 and falls out of the tie -- L is now player 0&#x27;s only safe action. Randomizing a contest&#x27;s winner does not uniformly help the player who used to be locked out of winning it; here it strictly hurts the player who used to be guaranteed a fair split, because the alternative to &#x27;always break even&#x27; is a coin flip against an outcome that is scored, not just inconvenient.</p>
+<img src="figures/gallery/coinflip_case03.svg"
+ alt="Case 3 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.900000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>-0.450000</td><td>0.239148</td><td>0.239148</td><td>0.000000</td></tr><tr><th>L</th><td>0.239148</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>-0.900000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 0, 1, 1)</td><td>(0, 2, 0, 0, 1)</td><td>(0, 2, 0, 0, 1)</td><td>(0, 2, 1, 0, 1)</td></tr><tr><th>D</th><td>(0, 0, 0, 1, 1)</td><td>(0, 1, 0, 0, 1)</td><td>(0, 1, 0, 0, 1)</td><td>(0, 0, 1, 0, 1)</td></tr><tr><th>L</th><td>(0, 1, 0, 0, 1)</td><td>(0, 1, 0, 0, 1)</td><td>(0, 1, 0, 0, 1)</td><td>(0, 1, 1, 0, 1)</td></tr><tr><th>R</th><td>(1, 1, 0, 1, 1)</td><td>(1, 1, 0, 0, 1)</td><td>(1, 1, 0, 0, 1)</td><td>(1, 1, 1, 0, 1)</td></tr></table></section><section><h2><span class="case-no">4</span>The defender&#x27;s flip</h2>
+<p class="lede">State (0, 2, 0, 0, 0) &middot; player 0 carries the ball &middot;
+V = +0.531441</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=0,2,0,0,0">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R</b> (100%)</span>
+<span><b>P1 &rarr; R</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 R &middot;
+P1 U/D/L/R</p>
+</div>
+<p>The mirror image of case 2&#x27;s geometry -- same corner, same contest, but from the other side of the board and the other player&#x27;s turn to worry about it. Player 0 carries the ball at (0,2) and plays D into the open cell (0,1); player 1 defends from (0,0) and plays U into the same cell. Under DET, the carrier (0) always wins the coin, so the loser -- player 1 -- always ends up with the ball, landing at (0,1,0,0,1), worth 0.0; that is why U is player 1&#x27;s selected column on the deterministic board. Under coinflip, half the time the defender instead wins the coin, and the rule for a won, non-swap contest is that only the winner physically moves -- the loser stays put -- so the carrier (loser of the coin, but never forced to give up the ball) simply keeps it exactly where it stood, landing at (0,2,0,1,0), worth 0.531441. Q_cf(D,U) = 0.5*(0.9*0.0) + 0.5*(0.9*0.531441) = 0.23914845 (verified below). Player 1&#x27;s minimax tie set never changes -- all four columns still guarantee the same 0.531441 -- but U&#x27;s own mean payoff gets worse relative to R&#x27;s once this one cell rises, so the solver&#x27;s secondary criterion now selects R instead of U: a genuine flip that leaves the primary tie completely untouched.</p>
+<img src="figures/gallery/coinflip_case04.svg"
+ alt="Case 4 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.478297</td><td>0.478297</td><td>0.478297</td><td>0.478297</td></tr><tr><th>D</th><td>0.239148</td><td>0.478297</td><td>0.478297</td><td>0.000000</td></tr><tr><th>L</th><td>0.478297</td><td>0.478297</td><td>0.478297</td><td>0.478297</td></tr><tr><th>R</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>0.531441</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 3, 0, 1, 0)</td><td>(0, 3, 0, 0, 0)</td><td>(0, 3, 0, 0, 0)</td><td>(0, 3, 1, 0, 0)</td></tr><tr><th>D</th><td>(0, 1, 0, 0, 1)</td><td>(0, 1, 0, 0, 0)</td><td>(0, 1, 0, 0, 0)</td><td>(0, 1, 1, 0, 0)</td></tr><tr><th>L</th><td>(0, 2, 0, 1, 0)</td><td>(0, 2, 0, 0, 0)</td><td>(0, 2, 0, 0, 0)</td><td>(0, 2, 1, 0, 0)</td></tr><tr><th>R</th><td>(1, 2, 0, 1, 0)</td><td>(1, 2, 0, 0, 0)</td><td>(1, 2, 0, 0, 0)</td><td>(1, 2, 1, 0, 0)</td></tr></table></section><section><h2><span class="case-no">5</span>The open goal, mostly immune</h2>
+<p class="lede">State (6, 1, 4, 1, 0) &middot; player 0 carries the ball &middot;
+V = +1.000000</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=6,1,4,1,0">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R</b> (100%)</span>
+<span><b>P1 &rarr; R</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 R &middot;
+P1 U/D/L/R</p>
+</div>
+<p>A10&#x27;s own case 4 state. Player 0 already sits at the right wall in a goal row with the ball; R pushes past the attacking edge and scores unconditionally, exactly as in the deterministic game -- game.transitions() confirms every one of player 1&#x27;s replies to R still ends the game as a player-0 win, because a score is checked before _resolve_with_winner ever consults which player the coin favors. R&#x27;s entire row is therefore bit-for-bit identical between the two boards: [1.0, 1.0, 1.0, 1.0] in both. But &#x27;immune&#x27; describes only the winning row, not the whole matrix: player 0&#x27;s L still reaches a genuine swap against player 1&#x27;s R (verified below), and that cell does change -- DET sends it to -0.590490 (the defender always wins the coin-that-isn&#x27;t-a-coin, exactly as in case 1 above) while coinflip softens it to 0.154755 by the identical 0.5/0.5 averaging arithmetic used throughout this document. The optimum is untouched; the alternatives are not.</p>
+<img src="figures/gallery/coinflip_case05.svg"
+ alt="Case 5 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.900000</td><td>0.900000</td><td>0.900000</td><td>0.900000</td></tr><tr><th>D</th><td>0.810000</td><td>0.810000</td><td>0.810000</td><td>0.000000</td></tr><tr><th>L</th><td>0.810000</td><td>0.810000</td><td>0.810000</td><td>0.154755</td></tr><tr><th>R</th><td>1.000000</td><td>1.000000</td><td>1.000000</td><td>1.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(6, 2, 4, 2, 0)</td><td>(6, 2, 4, 0, 0)</td><td>(6, 2, 3, 1, 0)</td><td>(6, 2, 5, 1, 0)</td></tr><tr><th>D</th><td>(6, 0, 4, 2, 0)</td><td>(6, 0, 4, 0, 0)</td><td>(6, 0, 3, 1, 0)</td><td>(6, 0, 5, 1, 0)</td></tr><tr><th>L</th><td>(5, 1, 4, 2, 0)</td><td>(5, 1, 4, 0, 0)</td><td>(5, 1, 3, 1, 0)</td><td>(5, 1, 4, 1, 1)</td></tr><tr><th>R</th><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td></tr></table></section><section><h2><span class="case-no">6</span>The tightest tie, narrowly missed</h2>
+<p class="lede">State (1, 0, 0, 1, 0) &middot; player 0 carries the ball &middot;
+V = +0.000000</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=1,0,0,1,0">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R</b> (100%)</span>
+<span><b>P1 &rarr; R</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 D/R &middot;
+P1 R</p>
+</div>
+<p>A10&#x27;s own case 7 state -- the smallest tie shape on the deterministic board (16 of 2380 states: player 0&#x27;s D and R tied, player 1&#x27;s R alone). Player 0&#x27;s L still hides the same contest A10 documents: (L, D) both target (0,0); the carrier wins the physical race under DET but the loser keeps the ball anyway, crashing L to -0.9. Under coinflip the same contest sometimes lets the carrier keep its own square instead (verified below: the branch where the defender wins the coin lands at (1,0,0,0,0), worth 0.531441, not a loss at all), softening Q_cf(L,D) to 0.5*(0.9*-1.0) + 0.5*(0.9*0.531441) = -0.21085155 -- more than three-quarters of the way back to the safe floor of 0, the closest any cell in this document comes to flipping without actually doing so. It still falls short: D and R remain the only safe actions, unchanged from A10. This is not an isolated result -- across the whole board, the exact &#x27;two-tied-and-one-alone&#x27; shape that defines this case survives coinflip at only 8 of the 16 states where it occurs under DET; the other 8 widen the way case 1 above does.</p>
+<img src="figures/gallery/coinflip_case06.svg"
+ alt="Case 6 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>-0.450000</td></tr><tr><th>D</th><td>0.478297</td><td>0.478297</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>-0.210852</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 0, 0)</td><td>(1, 1, 0, 1, 0)</td><td>(1, 1, 0, 1, 1)</td></tr><tr><th>D</th><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 0, 0, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 1, 1, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 1, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 1, 1, 0)</td></tr><tr><th>R</th><td>(2, 0, 0, 2, 0)</td><td>(2, 0, 0, 0, 0)</td><td>(2, 0, 0, 1, 0)</td><td>(2, 0, 1, 1, 0)</td></tr></table></section><section><h2><span class="case-no">7</span>The dead zone, untouched</h2>
+<p class="lede">State (0, 0, 2, 0, 0) &middot; player 0 carries the ball &middot;
+V = +0.000000</p>
+<p><a href="explorer.html?board=canonical_coinflip&state=0,0,2,0,0">Open this position in the interactive explorer &rarr;</a></p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; U</b> (100%)</span>
+<span><b>P1 &rarr; U</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 U/D/L/R &middot;
+P1 U/D/L/R</p>
+</div>
+<p>A10&#x27;s own case 8 state -- the single most common shape on the whole board (514 of 2380 states, unchanged under coinflip too). Every one of the 16 Q-matrix cells is exactly 0.0 in both games, not merely tied at the same value but bit-for-bit identical, because this state&#x27;s own dozen successors (verified below) are themselves all exactly 0.0 in both games. Averaging two branches that are each worth 0 is worth 0 no matter which player the coin favors: 0.5*0 + 0.5*0 = 0 for any contest this state&#x27;s actions could reach. Not every quiet region of the board is this literal about it -- the open goal above shows a matrix that visibly changes even though its optimal row does not -- but the dead zone is: coinflip changes nothing here, down to the last decimal.</p>
+<img src="figures/gallery/coinflip_case07.svg"
+ alt="Case 7 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn (coinflip board)</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr></table>
+<h3>All 16 successor states, from the transition engine (higher-probability branch shown)</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 2, 1, 0)</td><td>(0, 1, 2, 0, 0)</td><td>(0, 1, 1, 0, 0)</td><td>(0, 1, 3, 0, 0)</td></tr><tr><th>D</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>L</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>R</th><td>(1, 0, 2, 1, 0)</td><td>(1, 0, 2, 0, 0)</td><td>(1, 0, 2, 0, 1)</td><td>(1, 0, 3, 0, 0)</td></tr></table></section></html>

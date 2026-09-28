@@ -17,7 +17,9 @@ export default function Footer() {
               <li><a href="positions.pdf">Twelve positions, as a PDF</a></li>
               <li><a href="tournament.md">The tournament, in full</a></li>
               <li><a href="a10_cases.pdf">A10 edge cases, as a PDF</a></li>
+              <li><a href="coinflip_cases.pdf">Coin-flip edge cases (PDF)</a></li>
               <li><a href="tackle_cases.pdf">Tackle-rule edge cases (PDF)</a></li>
+              <li><a href="territory_cases.pdf">Territory edge cases (PDF)</a></li>
             </ul>
           </div>
           <div>

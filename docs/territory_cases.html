@@ -1,0 +1,214 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Seven territory-reward edge cases: mixed equilibria and the dense reward</title>
+<style>
+:root{--ink:#1c2e26;--accent:#1f7a4d;--accent-dark:#155c39;--line:#dbe5df;
+--muted:#5b6b63;--warn:#a8501c;--warn-bg:#fbf3ea;--card:#f3f8f5}
+*{box-sizing:border-box}
+body{font:15px/1.6 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+max-width:960px;margin:40px auto;color:var(--ink);padding:0 28px}
+h1{font-size:25px;margin:0 0 8px;color:var(--accent-dark);letter-spacing:-.01em}
+h2{font-size:19px;margin:0 0 10px;color:var(--accent-dark);display:flex;
+align-items:center}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:20px 0 8px;font-weight:700}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;
+color:var(--accent);font-weight:700;margin:0 0 6px}
+p.lede{color:var(--muted);font-size:13px;margin:0 0 12px}
+p.muted{color:var(--muted);font-size:13px;margin:6px 0 0}
+.case-no{display:inline-flex;align-items:center;justify-content:center;
+background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;
+font-size:13px;font-weight:700;margin-right:10px;flex-shrink:0}
+.callout{background:var(--card);border:1px solid var(--line);
+border-left:4px solid var(--accent);border-radius:6px;padding:10px 16px;
+margin:12px 0}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.stat-row{display:flex;gap:28px;font-size:14px}
+.stat-row b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;font:12px/1.5 "SF Mono",Consolas,monospace}
+td,th{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--card);color:var(--accent-dark);font-weight:700}
+img{display:block;width:100%;max-height:290px;object-fit:contain;margin:14px 0}
+section{margin-top:36px;padding-top:18px;border-top:2px solid var(--line)}
+code{background:var(--card);border-radius:3px;padding:1px 5px;font-size:.92em}
+a{color:var(--accent-dark)}
+@page{size:A4;margin:14mm}
+@media print{body{margin:0;padding:0;font-size:10.5px} h1{font-size:21px}
+h2{font-size:16px} section{break-before:page;margin:0;padding:0;border:0}
+img{max-height:235px} table{font-size:9px} td,th{padding:4px}
+.callout{padding:8px 12px}}
+</style>
+<p class="eyebrow">Soccer Markov Nash &middot; Territory-reward board</p>
+<h1>Seven edge cases on the territory-reward board</h1>
+<p>7 by 5 board; goal rows 1, 2, 3; simultaneous U/D/L/R; the same deterministic
+carrier-wins-contests resolution as the A10 board -- no randomness in movement or
+contests at all. What changes is <code>scoring="territory"</code>: the first goal
+still ends the game outright, exactly as under plain <code>"win"</code> scoring, but
+every non-terminal transition additionally pays a small dense per-step reward based
+on which third of the board the ball carrier is standing in afterward
+(<code>territory_reward=0.05</code>): +0.05 for player 0 / -0.05 for player 1 if the
+carrier is in the rightmost third, the reverse in the leftmost third, nothing in the
+middle third. Player 0 attacks the right goal, player 1 the left, so this rewards
+controlling the ball in your attacking third every single turn, on top of the
+underlying win/lose game.</p>
+<div class="callout">
+<p style="margin:0"><b>Selection rule:</b> where a pure saddle exists (maximin equals
+minimax), the same convention as <a href="a10_cases.html">a10_cases.html</a> applies --
+preserve the best worst-case payoff, then maximize mean payoff among exact security
+ties, with no uniform tie mix substituted for the solver's policy. Where no pure
+saddle exists, the solver instead returns the linear program's own mixed Nash
+equilibrium probabilities directly, as computed, not rounded toward any single
+action.</p>
+</div>
+<div class="callout warn">
+<p style="margin:0"><b>Headline finding: 69 of 2380 states (~2.9%) genuinely mix --
+versus exactly 0 of 2380 on the A10 board.</b> A10's headline result is that its
+stage game is <i>always</i> pure, because nothing there ever gives the two players
+opposing reasons to want the same square at the same time in a way that a single
+action can't resolve. The territory reward changes that: it is a second, independent
+zero-sum tug-of-war over ball position layered on top of the win/lose game, active
+every single turn regardless of who is carrying. In most states the two objectives
+point the same direction and a pure equilibrium survives -- but in 69 states the
+position-control incentive and the win/lose incentive genuinely conflict, so the row
+and column players' pure security levels (maximin and minimax) disagree by a real,
+positive gap, and no single action is optimal against a rational opponent. That gap
+is exactly what a mixed equilibrium is: real, LP-computed randomization, not a
+uniform average glossed over a tie. See <a href="positions.pdf">positions.pdf</a> for
+the sibling source of mixed play on this project's <i>random</i>-move-order board --
+the two are unrelated mechanisms that happen to produce the same phenomenon.</p>
+</div>
+<p>Cases 1-4 below are the verified mixed-equilibrium states, each traced back to a
+real maximin/minimax gap and an LP support that often does not even match the naive
+pure-tie set. Case 5 isolates the territory-reward mechanic in a single Q-matrix
+cell whose continuation value happens to be exactly 0, so the cell equals the raw
+one-step reward. Cases 6 and 7 cross-solve the identical board and state under plain
+<code>scoring="win"</code> to show precisely what the territory reward adds --
+and, in case 7, what it deliberately does not touch. These are discounted stationary
+values with gamma 0.9, not an undiscounted turn-by-turn assignment.</p>
+<p><a href="explorer.html?board=territory">Interactive explorer</a> &middot;
+<a href="equilibrium-debug.md">Audit and reproduction details</a></p><section><h2><span class="case-no">1</span>The three-way tug of war</h2>
+<p class="lede">State (0, 1, 6, 1, 0) &middot; player 0 carries the ball &middot;
+V = -0.160151 &middot; mixed equilibrium</p>
+<div class="callout warn">
+<div class="stat-row"><span><b>P0 &rarr; U 48% / L 46% / R 6%</b></span>
+<span><b>P1 &rarr; R 42% / L 40% / U 18%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 U &middot;
+P1 L</p>
+</div>
+<p>Player 0 carries the ball at (0,1), deep in its own defending third (bx=0 &lt; width/3≈2.33); player 1&#x27;s defender sits at (6,1), all the way at the opposite wall. Every one of the 16 joint actions still lands the ball inside that same leftmost third next turn (verified below: every cell carries the identical -0.05/+0.05 step reward), so none of the Q matrix&#x27;s variation comes from this turn&#x27;s reward -- all of it comes from the 16 different continuation values. That is exactly what produces a real gap between the two pure security levels: row-maximin is -0.191873 (unique at U) but col-minimax is -0.135500 (unique at L), a genuine 0.056373 gap -- unlike every state in a10_cases.py, where that gap is always exactly zero. With no pure saddle, the LP instead finds row ≈ U 48% / L 46% / R 6% and col ≈ U 18% / L 40% / R 42%, with V=-0.160151 sitting strictly between the two pure bounds, as von Neumann&#x27;s minimax theorem requires. The equilibrium&#x27;s actual support does not even match the naive pure-tie set (U alone for player 0, L alone for player 1) -- once there is no saddle, that tie set stops being a guide to the joint mixed solution.</p>
+<a href="explorer.html?board=territory&amp;state=0,1,6,1,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case01.svg"
+ alt="Case 1 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.191873</td><td>-0.135500</td><td>-0.171950</td><td>-0.135500</td></tr><tr><th>D</th><td>-0.135500</td><td>-0.135500</td><td>-0.256784</td><td>-0.135500</td></tr><tr><th>L</th><td>-0.135500</td><td>-0.135500</td><td>-0.135500</td><td>-0.194136</td></tr><tr><th>R</th><td>-0.095000</td><td>-0.095000</td><td>-0.256784</td><td>-0.095000</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 6, 2, 0) (-0.05)</td><td>(0, 2, 6, 0, 0) (-0.05)</td><td>(0, 2, 5, 1, 0) (-0.05)</td><td>(0, 2, 6, 1, 0) (-0.05)</td></tr><tr><th>D</th><td>(0, 0, 6, 2, 0) (-0.05)</td><td>(0, 0, 6, 0, 0) (-0.05)</td><td>(0, 0, 5, 1, 0) (-0.05)</td><td>(0, 0, 6, 1, 0) (-0.05)</td></tr><tr><th>L</th><td>(0, 1, 6, 2, 0) (-0.05)</td><td>(0, 1, 6, 0, 0) (-0.05)</td><td>(0, 1, 5, 1, 0) (-0.05)</td><td>(0, 1, 6, 1, 0) (-0.05)</td></tr><tr><th>R</th><td>(1, 1, 6, 2, 0) (-0.05)</td><td>(1, 1, 6, 0, 0) (-0.05)</td><td>(1, 1, 5, 1, 0) (-0.05)</td><td>(1, 1, 6, 1, 0) (-0.05)</td></tr></table></section><section><h2><span class="case-no">2</span>The corner squeeze</h2>
+<p class="lede">State (0, 0, 1, 1, 0) &middot; player 0 carries the ball &middot;
+V = -0.236267 &middot; mixed equilibrium</p>
+<div class="callout warn">
+<div class="stat-row"><span><b>P0 &rarr; U 60% / L 40%</b></span>
+<span><b>P1 &rarr; R 98% / L 2%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 D/L &middot;
+P1 R</p>
+</div>
+<p>Player 0 carries the ball pinned in the exact corner (0,0); player 1&#x27;s defender is one diagonal step away at (1,1) -- close combat, and again deep in player 0&#x27;s own third the entire turn (every one of the 16 successors pays the same -0.05/+0.05 step reward, verified below). The pure security levels disagree -- row-maximin -0.246038, tied between D and L; col-minimax -0.229760, unique at R -- a 0.016278 gap, again ruling out a pure saddle. What makes this one worth a second look: the LP&#x27;s real mixed support (U 60% / L 40%) does not match the pure-tie set at all -- D never appears in the actual equilibrium, and U carries the majority weight despite never being among the maximin ties. Player 1 mirrors this: minimax is unique at R, yet the LP mostly plays R (97.6%) with a small 2.4% on L, not 100% R.</p>
+<a href="explorer.html?board=territory&amp;state=0,0,1,1,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case02.svg"
+ alt="Case 2 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.061671</td><td>-0.217820</td><td>-0.500000</td><td>-0.229760</td></tr><tr><th>D</th><td>0.159745</td><td>-0.246038</td><td>0.159745</td><td>-0.246038</td></tr><tr><th>L</th><td>0.159745</td><td>-0.246038</td><td>0.159745</td><td>-0.246038</td></tr><tr><th>R</th><td>0.233050</td><td>-0.905000</td><td>0.233050</td><td>-0.281352</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 1, 2, 0) (-0.05)</td><td>(0, 1, 1, 0, 0) (-0.05)</td><td>(0, 1, 1, 1, 1) (-0.05)</td><td>(0, 1, 2, 1, 0) (-0.05)</td></tr><tr><th>D</th><td>(0, 0, 1, 2, 0) (-0.05)</td><td>(0, 0, 1, 0, 0) (-0.05)</td><td>(0, 0, 0, 1, 0) (-0.05)</td><td>(0, 0, 2, 1, 0) (-0.05)</td></tr><tr><th>L</th><td>(0, 0, 1, 2, 0) (-0.05)</td><td>(0, 0, 1, 0, 0) (-0.05)</td><td>(0, 0, 0, 1, 0) (-0.05)</td><td>(0, 0, 2, 1, 0) (-0.05)</td></tr><tr><th>R</th><td>(1, 0, 1, 2, 0) (-0.05)</td><td>(1, 0, 1, 1, 1) (-0.05)</td><td>(1, 0, 0, 1, 0) (-0.05)</td><td>(1, 0, 2, 1, 0) (-0.05)</td></tr></table></section><section><h2><span class="case-no">3</span>A profitable break</h2>
+<p class="lede">State (0, 1, 1, 1, 0) &middot; player 0 carries the ball &middot;
+V = +0.041147 &middot; mixed equilibrium</p>
+<div class="callout warn">
+<div class="stat-row"><span><b>P0 &rarr; U 73% / R 27%</b></span>
+<span><b>P1 &rarr; R 96% / L 4%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 U &middot;
+P1 R</p>
+</div>
+<p>Player 0 again starts carrying the ball in its own third at (0,1), but here it has a real breakaway option: R threatens the middle of the board, and if it gets there (R/U and R/D both reach a continuation value of +0.609745) the position is very good for player 0. That threat is why the equilibrium value is positive, V=+0.041147, even though the ball starts the turn in player 0&#x27;s own third and this turn&#x27;s step reward is the same -0.05/+0.05 on every one of the 16 cells. Row-maximin (-0.012968, unique at U) and col-minimax (+0.084063, unique at R) leave a 0.097031 gap, so player 0 mixes U 73.5% / R 26.5% rather than only playing the safe U, and player 1 mostly plays R (95.8%) to shut the breakaway down, with a small 4.2% on L to keep player 0 honest.</p>
+<a href="explorer.html?board=territory&amp;state=0,1,1,1,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case03.svg"
+ alt="Case 3 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.012968</td><td>0.398893</td><td>0.398893</td><td>0.025657</td></tr><tr><th>D</th><td>0.159745</td><td>-0.246038</td><td>0.159745</td><td>-0.246038</td></tr><tr><th>L</th><td>-0.061671</td><td>-0.217820</td><td>-0.500000</td><td>-0.229760</td></tr><tr><th>R</th><td>0.498771</td><td>0.498771</td><td>-0.950000</td><td>0.084063</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 1, 2, 0) (-0.05)</td><td>(0, 2, 1, 0, 0) (-0.05)</td><td>(0, 2, 0, 1, 0) (-0.05)</td><td>(0, 2, 2, 1, 0) (-0.05)</td></tr><tr><th>D</th><td>(0, 0, 1, 2, 0) (-0.05)</td><td>(0, 0, 1, 0, 0) (-0.05)</td><td>(0, 0, 0, 1, 0) (-0.05)</td><td>(0, 0, 2, 1, 0) (-0.05)</td></tr><tr><th>L</th><td>(0, 1, 1, 2, 0) (-0.05)</td><td>(0, 1, 1, 0, 0) (-0.05)</td><td>(0, 1, 1, 1, 1) (-0.05)</td><td>(0, 1, 2, 1, 0) (-0.05)</td></tr><tr><th>R</th><td>(1, 1, 1, 2, 0) (-0.05)</td><td>(1, 1, 1, 0, 0) (-0.05)</td><td>(1, 1, 0, 1, 1) (-0.05)</td><td>(1, 1, 2, 1, 0) (-0.05)</td></tr></table></section><section><h2><span class="case-no">4</span>Splitting the wide side</h2>
+<p class="lede">State (0, 1, 3, 4, 0) &middot; player 0 carries the ball &middot;
+V = -0.112921 &middot; mixed equilibrium</p>
+<div class="callout warn">
+<div class="stat-row"><span><b>P0 &rarr; R 56% / L 44%</b></span>
+<span><b>P1 &rarr; R 89% / D 11%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 L &middot;
+P1 R</p>
+</div>
+<p>A long diagonal, not a close-quarters stand-off: player 0 carries the ball at (0,1) near its own goal, while player 1&#x27;s defender is clear across the board at (3,4), the far top corner. bx again never leaves the leftmost third across all 16 successors, so every cell again pays the identical -0.05/+0.05 step reward, and the Q matrix&#x27;s shape comes entirely from continuation values, which range from -0.256784 up to +0.609745 depending on whether player 0&#x27;s move threatens the open right side of the board. Row-maximin is -0.151629 (unique at L); col-minimax is -0.095000 (unique at R); a 0.056629 gap. The equilibrium mixes row onto L 44.2% / R 55.8% -- not the maximin-unique L alone -- and column onto D 11.1% / R 88.9% -- not the minimax-unique R alone. V=-0.112921 lands, as it must, strictly between the two pure bounds.</p>
+<a href="explorer.html?board=territory&amp;state=0,1,3,4,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case04.svg"
+ alt="Case 4 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.186466</td><td>-0.199733</td><td>-0.186466</td><td>-0.195404</td></tr><tr><th>D</th><td>0.159745</td><td>-0.256784</td><td>0.159745</td><td>-0.135500</td></tr><tr><th>L</th><td>-0.151629</td><td>0.068327</td><td>0.398893</td><td>-0.135500</td></tr><tr><th>R</th><td>0.498771</td><td>-0.256784</td><td>0.498771</td><td>-0.095000</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 3, 4, 0) (-0.05)</td><td>(0, 2, 3, 3, 0) (-0.05)</td><td>(0, 2, 2, 4, 0) (-0.05)</td><td>(0, 2, 4, 4, 0) (-0.05)</td></tr><tr><th>D</th><td>(0, 0, 3, 4, 0) (-0.05)</td><td>(0, 0, 3, 3, 0) (-0.05)</td><td>(0, 0, 2, 4, 0) (-0.05)</td><td>(0, 0, 4, 4, 0) (-0.05)</td></tr><tr><th>L</th><td>(0, 1, 3, 4, 0) (-0.05)</td><td>(0, 1, 3, 3, 0) (-0.05)</td><td>(0, 1, 2, 4, 0) (-0.05)</td><td>(0, 1, 4, 4, 0) (-0.05)</td></tr><tr><th>R</th><td>(1, 1, 3, 4, 0) (-0.05)</td><td>(1, 1, 3, 3, 0) (-0.05)</td><td>(1, 1, 2, 4, 0) (-0.05)</td><td>(1, 1, 4, 4, 0) (-0.05)</td></tr></table></section><section><h2><span class="case-no">5</span>The price of your own third</h2>
+<p class="lede">State (1, 0, 4, 2, 0) &middot; player 0 carries the ball &middot;
+V = -0.050000 &middot; pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R 100%</b></span>
+<span><b>P1 &rarr; D 100%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 R &middot;
+P1 D</p>
+</div>
+<p>This is the territory-reward mechanic isolated, with nothing compounded on top of it. The equilibrium here is pure: R is player 0&#x27;s unique maximin (-0.05) and D is player 1&#x27;s unique minimax (-0.05) -- a genuine pure saddle, gap exactly 0. Player 0&#x27;s equilibrium move R takes the carrier from x=1 to x=2, still inside the leftmost third (2 &lt; 7/3≈2.333), so it pays the -0.05 own-third penalty (verified: (R, D) -&gt; (2, 0, 4, 1, 0), reward -0.05). That successor state happens to be worth exactly 0.0 in the exact solve -- no advantage either way from there -- so the discounted continuation term 0.9×0.0 vanishes completely, and the entire state value is the single step&#x27;s reward, untouched by any downstream compounding: V=-0.05, exactly. That is the rule&#x27;s direct fingerprint on the numbers, not something inferred from a downstream difference.</p>
+<a href="explorer.html?board=territory&amp;state=1,0,4,2,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case05.svg"
+ alt="Case 5 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.184604</td><td>-0.095000</td><td>0.131474</td><td>-0.026421</td></tr><tr><th>D</th><td>-0.095000</td><td>-0.281105</td><td>-0.281105</td><td>-0.095000</td></tr><tr><th>L</th><td>-0.135500</td><td>-0.253277</td><td>-0.246038</td><td>-0.135500</td></tr><tr><th>R</th><td>0.314500</td><td>-0.050000</td><td>0.314500</td><td>0.044073</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(1, 1, 4, 3, 0) (-0.05)</td><td>(1, 1, 4, 1, 0) (-0.05)</td><td>(1, 1, 3, 2, 0) (-0.05)</td><td>(1, 1, 5, 2, 0) (-0.05)</td></tr><tr><th>D</th><td>(1, 0, 4, 3, 0) (-0.05)</td><td>(1, 0, 4, 1, 0) (-0.05)</td><td>(1, 0, 3, 2, 0) (-0.05)</td><td>(1, 0, 5, 2, 0) (-0.05)</td></tr><tr><th>L</th><td>(0, 0, 4, 3, 0) (-0.05)</td><td>(0, 0, 4, 1, 0) (-0.05)</td><td>(0, 0, 3, 2, 0) (-0.05)</td><td>(0, 0, 5, 2, 0) (-0.05)</td></tr><tr><th>R</th><td>(2, 0, 4, 3, 0) (-0.05)</td><td>(2, 0, 4, 1, 0) (-0.05)</td><td>(2, 0, 3, 2, 0) (-0.05)</td><td>(2, 0, 5, 2, 0) (-0.05)</td></tr></table></section><section><h2><span class="case-no">6</span>The dead zone wakes up</h2>
+<p class="lede">State (0, 0, 2, 0, 0) &middot; player 0 carries the ball &middot;
+V = -0.229760 &middot; pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; U 100%</b></span>
+<span><b>P1 &rarr; R 100%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 U &middot;
+P1 U/R</p>
+</div>
+<p>This exact state is a10_cases.py&#x27;s own case 8, &quot;the dead zone&quot;: the single most common shape on the whole board under plain scoring=&#x27;win&#x27; (514 of 2380 states) and worth exactly 0.0 there -- both players genuinely indifferent among all four actions in every one of the 16 Q-matrix cells. Cross-solved here with scoring=&#x27;territory&#x27; instead (nothing else about the board changed), the identical state is worth -0.229760, not 0. With the ball starting at (0,0), deep in player 0&#x27;s own third, and staying there in all 16 of this turn&#x27;s successors (bx never reaches 2.333, so every cell pays the identical -0.05/+0.05 step reward, verified below), player 0 now pays a steady toll just for standing on its own side of the pitch. It is still a pure equilibrium: maximin and minimax agree exactly at -0.229760, unique at U for player 0 and tied between U and R for player 1, resolved to R by the same tie-break convention a10_cases.py documents (preserve the security value, then maximize mean payoff among exact ties). The territory reward has quietly broken the tie between &quot;doing nothing&quot; and &quot;costing you something&quot; without changing which actions are chosen.</p>
+<a href="explorer.html?board=territory&amp;state=0,0,2,0,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case06.svg"
+ alt="Case 6 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.229760</td><td>-0.217820</td><td>-0.217820</td><td>-0.229760</td></tr><tr><th>D</th><td>-0.246038</td><td>-0.256784</td><td>-0.246038</td><td>-0.256784</td></tr><tr><th>L</th><td>-0.246038</td><td>-0.256784</td><td>-0.246038</td><td>-0.256784</td></tr><tr><th>R</th><td>-0.281352</td><td>-0.281105</td><td>-0.500000</td><td>-0.281105</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 2, 1, 0) (-0.05)</td><td>(0, 1, 2, 0, 0) (-0.05)</td><td>(0, 1, 1, 0, 0) (-0.05)</td><td>(0, 1, 3, 0, 0) (-0.05)</td></tr><tr><th>D</th><td>(0, 0, 2, 1, 0) (-0.05)</td><td>(0, 0, 2, 0, 0) (-0.05)</td><td>(0, 0, 1, 0, 0) (-0.05)</td><td>(0, 0, 3, 0, 0) (-0.05)</td></tr><tr><th>L</th><td>(0, 0, 2, 1, 0) (-0.05)</td><td>(0, 0, 2, 0, 0) (-0.05)</td><td>(0, 0, 1, 0, 0) (-0.05)</td><td>(0, 0, 3, 0, 0) (-0.05)</td></tr><tr><th>R</th><td>(1, 0, 2, 1, 0) (-0.05)</td><td>(1, 0, 2, 0, 0) (-0.05)</td><td>(1, 0, 2, 0, 1) (-0.05)</td><td>(1, 0, 3, 0, 0) (-0.05)</td></tr></table></section><section><h2><span class="case-no">7</span>Goals still trump territory</h2>
+<p class="lede">State (6, 1, 4, 1, 0) &middot; player 0 carries the ball &middot;
+V = +1.000000 &middot; pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; R 100%</b></span>
+<span><b>P1 &rarr; R 100%</b></span></div>
+<p class="muted">Pure security ties (not the mixed support itself):
+P0 R &middot;
+P1 U/D/L/R</p>
+</div>
+<p>This is a10_cases.py&#x27;s own case 4, &quot;the open goal,&quot; resolved here under scoring=&#x27;territory&#x27; instead. Player 0 sits at (6,1), the right wall, in a goal row, already carrying the ball; player 1 defends at (4,1). game.transitions() confirms R still scores unconditionally against every one of player 1&#x27;s four replies (R/U, R/D, R/L, R/R all return the terminal state (-1,-1,-1,-1,0) with reward (1,-1)) -- exactly as under plain win scoring, because transitions() only applies the per-step territory reward when the successor is non-terminal. Cross-solved on the identical board with scoring=&#x27;win&#x27;: V=1.0 there too, bit for bit identical to the territory-scoring value below. The dense per-step reward this document is otherwise about is never paid on the scoring transition itself -- carrying the ball into your own attacking third and finishing forfeits nothing. R is the unique maximin (1.0); every one of player 1&#x27;s four columns tie at the same minimax (1.0), because there is nothing player 1 can do about it.</p>
+<a href="explorer.html?board=territory&amp;state=6,1,4,1,0">
+Open this position in the interactive explorer &rarr;</a>
+<img src="figures/gallery/territory_case07.svg"
+ alt="Case 7 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.950000</td><td>0.950000</td><td>0.950000</td><td>0.950000</td></tr><tr><th>D</th><td>0.905000</td><td>0.905000</td><td>0.905000</td><td>0.500000</td></tr><tr><th>L</th><td>0.905000</td><td>0.905000</td><td>0.905000</td><td>-0.700245</td></tr><tr><th>R</th><td>1.000000</td><td>1.000000</td><td>1.000000</td><td>1.000000</td></tr></table>
+<h3>All 16 successor states and this turn's (player 0) territory reward</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(6, 2, 4, 2, 0) (+0.05)</td><td>(6, 2, 4, 0, 0) (+0.05)</td><td>(6, 2, 3, 1, 0) (+0.05)</td><td>(6, 2, 5, 1, 0) (+0.05)</td></tr><tr><th>D</th><td>(6, 0, 4, 2, 0) (+0.05)</td><td>(6, 0, 4, 0, 0) (+0.05)</td><td>(6, 0, 3, 1, 0) (+0.05)</td><td>(6, 0, 5, 1, 0) (+0.05)</td></tr><tr><th>L</th><td>(5, 1, 4, 2, 0) (+0.05)</td><td>(5, 1, 4, 0, 0) (+0.05)</td><td>(5, 1, 3, 1, 0) (+0.05)</td><td>(5, 1, 4, 1, 1)</td></tr><tr><th>R</th><td>(-1, -1, -1, -1, 0) (+1.00)</td><td>(-1, -1, -1, -1, 0) (+1.00)</td><td>(-1, -1, -1, -1, 0) (+1.00)</td><td>(-1, -1, -1, -1, 0) (+1.00)</td></tr></table></section></html>

@@ -88,6 +88,25 @@ const PRESETS = {
   27: { board: "tackle", doc: "edge", state: [1, 1, 2, 1, 0], label: "Tackle case 5 — the 50/50 duel in full" },
   28: { board: "tackle", doc: "edge", state: [4, 0, 4, 1, 0], label: "Tackle case 6 — head-on at the byline" },
   29: { board: "tackle", doc: "edge", state: [4, 1, 3, 1, 0], label: "Tackle case 7 — the goal that beats the tackle" },
+  // coinflip_cases.pdf: A10's exact structure with a fair coin (not the
+  // carrier) deciding contests -- still 0 of 2380 states genuinely mix,
+  // but the coin does change *which* pure action wins in several cases.
+  30: { board: "canonical_coinflip", doc: "edge", state: [4, 3, 5, 3, 0], label: "Coinflip case 1 — the swap trap, disarmed" },
+  31: { board: "canonical_coinflip", doc: "edge", state: [0, 0, 0, 2, 0], label: "Coinflip case 2 — pinned in the corner, still pinned" },
+  32: { board: "canonical_coinflip", doc: "edge", state: [0, 1, 0, 0, 1], label: "Coinflip case 3 — the tie that breaks" },
+  33: { board: "canonical_coinflip", doc: "edge", state: [0, 2, 0, 0, 0], label: "Coinflip case 4 — the defender's flip" },
+  34: { board: "canonical_coinflip", doc: "edge", state: [6, 1, 4, 1, 0], label: "Coinflip case 5 — the open goal, mostly immune" },
+  35: { board: "canonical_coinflip", doc: "edge", state: [1, 0, 0, 1, 0], label: "Coinflip case 6 — the tightest tie, narrowly missed" },
+  36: { board: "canonical_coinflip", doc: "edge", state: [0, 0, 2, 0, 0], label: "Coinflip case 7 — the dead zone, untouched" },
+  // territory_cases.pdf: a dense per-step reward for ball position creates
+  // 69 of 2380 genuinely mixed states, on top of the underlying win/lose game.
+  37: { board: "territory", doc: "edge", state: [0, 1, 6, 1, 0], label: "Territory case 1 — the three-way tug of war" },
+  38: { board: "territory", doc: "edge", state: [0, 0, 1, 1, 0], label: "Territory case 2 — the corner squeeze" },
+  39: { board: "territory", doc: "edge", state: [0, 1, 1, 1, 0], label: "Territory case 3 — a profitable break" },
+  40: { board: "territory", doc: "edge", state: [0, 1, 3, 4, 0], label: "Territory case 4 — splitting the wide side" },
+  41: { board: "territory", doc: "edge", state: [1, 0, 4, 2, 0], label: "Territory case 5 — the price of your own third" },
+  42: { board: "territory", doc: "edge", state: [0, 0, 2, 0, 0], label: "Territory case 6 — the dead zone wakes up" },
+  43: { board: "territory", doc: "edge", state: [6, 1, 4, 1, 0], label: "Territory case 7 — goals still trump territory" },
 };
 
 function toState(arr) {
