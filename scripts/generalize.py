@@ -148,7 +148,7 @@ def _figure(b_rows: list[dict]) -> None:
     series = [
         ("random, 2-cell goal", "var(--p0, #2f6bb0)", pts("random", "2-cell")),
         ("random, 1-cell goal", "var(--ember, #a94e18)", pts("random", "1-cell")),
-        ("deterministic, 2-cell", "var(--p1, #2f8a52)", pts("deterministic", "2-cell")),
+        ("deterministic, 2-cell", "var(--p1, #4CBB17)", pts("deterministic", "2-cell")),
         ("deterministic, 1-cell", "var(--ink-faint, #77817a)", pts("deterministic", "1-cell")),
     ]
     svg = line_chart_svg(

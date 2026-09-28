@@ -11,11 +11,11 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <rect x="31" y="207" width="42" height="42" fill="#c2d3de"/>
 <text x="52" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink, #19211c)">+.13</text>
@@ -85,7 +85,7 @@
 <text x="316" y="99" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--paper, #ffffff)">+1.00</text>
 <rect x="295" y="31" width="42" height="42" fill="#b5cada"/>
 <text x="316" y="55" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink, #19211c)">+.21</text>
-<circle cx="316.0" cy="140.0" r="12" fill="var(--p1, #2f8a52)"/>
+<circle cx="316.0" cy="140.0" r="12" fill="var(--p1, #4CBB17)"/>
 <text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">V* by player 0 position (blue = player 0 ahead)</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">win  (identical mixed region to rate)</text>
 </g></g>
@@ -101,11 +101,11 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <rect x="31" y="207" width="42" height="42" fill="#c2d3de"/>
 <text x="52" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink, #19211c)">+.11</text>
@@ -175,7 +175,7 @@
 <text x="316" y="99" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--paper, #ffffff)">+.88</text>
 <rect x="295" y="31" width="42" height="42" fill="#b5cada"/>
 <text x="316" y="55" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink, #19211c)">+.19</text>
-<circle cx="316.0" cy="140.0" r="12" fill="var(--p1, #2f8a52)"/>
+<circle cx="316.0" cy="140.0" r="12" fill="var(--p1, #4CBB17)"/>
 <text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">V* by player 0 position (blue = player 0 ahead)</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">rate  (same 94 states, value compressed)</text>
 </g></g>
@@ -191,11 +191,11 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <rect x="31" y="207" width="42" height="42" fill="#cddbe2"/>
 <text x="52" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink, #19211c)">+.06</text>
@@ -265,7 +265,7 @@
 <text x="316" y="99" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--paper, #ffffff)">+1.00</text>
 <rect x="295" y="31" width="42" height="42" fill="#86a8cb"/>
 <text x="316" y="55" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--paper, #ffffff)">+.50</text>
-<circle cx="316.0" cy="140.0" r="12" fill="var(--p1, #2f8a52)"/>
+<circle cx="316.0" cy="140.0" r="12" fill="var(--p1, #4CBB17)"/>
 <text x="30" y="291" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">V* by player 0 position (blue = player 0 ahead)</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">territory 0.05  (region drifts)</text>
 </g></g>

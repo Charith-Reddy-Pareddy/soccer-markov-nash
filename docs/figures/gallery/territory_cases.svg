@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 816 2434" role="img" aria-label="panel">
 <g transform="translate(16.0 18.0)"><clipPath id="pnl0"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl0)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -12,14 +12,14 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="316.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="316.0" cy="184.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <circle cx="52.0" cy="184.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.7" stroke-dasharray="2 2" opacity="0.65"/>
 <text x="52.0" y="210.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 46%</text>
@@ -27,22 +27,22 @@
 <text x="52.0" y="147.4" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">48%</text>
 <line x1="65.0" y1="184.0" x2="73.1" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="2.1" stroke-linecap="round" opacity="0.43" marker-end="url(#ah-2f6bb0)"/>
 <text x="84.1" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">6%</text>
-<circle cx="316.0" cy="184.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.63"/>
-<text x="316.0" y="210.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold 42%</text>
-<line x1="316.0" y1="171.0" x2="316.0" y2="160.8" stroke="var(--p1, #2f8a52)" stroke-width="2.8" stroke-linecap="round" opacity="0.50" marker-end="url(#ah-2f8a52)"/>
-<text x="316.0" y="152.8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">18%</text>
-<line x1="303.0" y1="184.0" x2="288.8" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.1" stroke-linecap="round" opacity="0.62" marker-end="url(#ah-2f8a52)"/>
-<text x="277.8" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">40%</text>
+<circle cx="316.0" cy="184.0" r="15" fill="none" stroke="var(--p1, #4CBB17)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.63"/>
+<text x="316.0" y="210.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">hold 42%</text>
+<line x1="316.0" y1="171.0" x2="316.0" y2="160.8" stroke="var(--p1, #4CBB17)" stroke-width="2.8" stroke-linecap="round" opacity="0.50" marker-end="url(#ah-2f8a52)"/>
+<text x="316.0" y="152.8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">18%</text>
+<line x1="303.0" y1="184.0" x2="288.8" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="4.1" stroke-linecap="round" opacity="0.62" marker-end="url(#ah-2f8a52)"/>
+<text x="277.8" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">40%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = -0.160</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The three-way tug of war</text>
 </g></g>
 <g transform="translate(432.0 16.0)"><clipPath id="pnl1"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl1)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 1, 6, 1, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -59,18 +59,18 @@
 <line x1="315.0" y1="49.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="127.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="205.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="245.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="245.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="119.0" x2="215.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="245.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="245.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.19</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -106,7 +106,7 @@
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
 <g transform="translate(16.0 368.0)"><clipPath id="pnl2"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl2)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -118,33 +118,33 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="96.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="96.0" cy="184.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <circle cx="52.0" cy="228.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.1" stroke-dasharray="2 2" opacity="0.62"/>
 <text x="52.0" y="254.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 40%</text>
 <line x1="52.0" y1="215.0" x2="52.0" y2="197.2" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.73" marker-end="url(#ah-2f6bb0)"/>
 <text x="52.0" y="189.2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">60%</text>
-<line x1="83.0" y1="184.0" x2="75.6" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="1.9" stroke-linecap="round" opacity="0.41" marker-end="url(#ah-2f8a52)"/>
-<text x="64.6" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">2%</text>
-<line x1="109.0" y1="184.0" x2="133.6" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.94" marker-end="url(#ah-2f8a52)"/>
-<text x="144.6" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">98%</text>
+<line x1="83.0" y1="184.0" x2="75.6" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="1.9" stroke-linecap="round" opacity="0.41" marker-end="url(#ah-2f8a52)"/>
+<text x="64.6" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">2%</text>
+<line x1="109.0" y1="184.0" x2="133.6" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.94" marker-end="url(#ah-2f8a52)"/>
+<text x="144.6" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">98%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = -0.236</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The corner squeeze</text>
 </g></g>
 <g transform="translate(432.0 366.0)"><clipPath id="pnl3"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl3)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 0, 1, 1, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -161,18 +161,18 @@
 <line x1="315.0" y1="97.0" x2="315.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="175.0" x2="315.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="253.0" x2="315.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="61.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="245.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="41.0" x2="215.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="245.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.06</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -208,7 +208,7 @@
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
 <g transform="translate(16.0 718.0)"><clipPath id="pnl4"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl4)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -220,33 +220,33 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="96.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="96.0" cy="184.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="52.0" y1="171.0" x2="52.0" y2="150.8" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.80" marker-end="url(#ah-2f6bb0)"/>
 <text x="52.0" y="142.8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">73%</text>
 <line x1="65.0" y1="184.0" x2="76.8" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="2.7" stroke-linecap="round" opacity="0.55" marker-end="url(#ah-2f6bb0)"/>
 <text x="87.8" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">27%</text>
-<line x1="83.0" y1="184.0" x2="75.3" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="1.9" stroke-linecap="round" opacity="0.42" marker-end="url(#ah-2f8a52)"/>
-<text x="64.3" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">4%</text>
-<line x1="109.0" y1="184.0" x2="133.3" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.93" marker-end="url(#ah-2f8a52)"/>
-<text x="144.3" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">96%</text>
+<line x1="83.0" y1="184.0" x2="75.3" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="1.9" stroke-linecap="round" opacity="0.42" marker-end="url(#ah-2f8a52)"/>
+<text x="64.3" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">4%</text>
+<line x1="109.0" y1="184.0" x2="133.3" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.93" marker-end="url(#ah-2f8a52)"/>
+<text x="144.3" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">96%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = +0.041</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">A profitable break</text>
 </g></g>
 <g transform="translate(432.0 716.0)"><clipPath id="pnl5"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl5)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 1, 1, 1, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -263,18 +263,18 @@
 <line x1="315.0" y1="49.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="127.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="205.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="197.0" x2="245.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="197.0" x2="215.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="245.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.01</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -310,7 +310,7 @@
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
 <g transform="translate(16.0 1068.0)"><clipPath id="pnl6"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl6)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -322,33 +322,33 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="184.0" cy="52.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="184.0" cy="52.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <circle cx="52.0" cy="184.0" r="15" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="3.3" stroke-dasharray="2 2" opacity="0.64"/>
 <text x="52.0" y="210.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">hold 44%</text>
 <line x1="65.0" y1="184.0" x2="82.0" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.71" marker-end="url(#ah-2f6bb0)"/>
 <text x="93.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">56%</text>
-<line x1="184.0" y1="65.0" x2="184.0" y2="74.0" stroke="var(--p1, #2f8a52)" stroke-width="2.1" stroke-linecap="round" opacity="0.46" marker-end="url(#ah-2f8a52)"/>
-<text x="184.0" y="88.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">11%</text>
-<line x1="197.0" y1="52.0" x2="220.0" y2="52.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.89" marker-end="url(#ah-2f8a52)"/>
-<text x="231.0" y="55.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">89%</text>
+<line x1="184.0" y1="65.0" x2="184.0" y2="74.0" stroke="var(--p1, #4CBB17)" stroke-width="2.1" stroke-linecap="round" opacity="0.46" marker-end="url(#ah-2f8a52)"/>
+<text x="184.0" y="88.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">11%</text>
+<line x1="197.0" y1="52.0" x2="220.0" y2="52.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.89" marker-end="url(#ah-2f8a52)"/>
+<text x="231.0" y="55.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">89%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">mixed equilibrium · V = -0.113</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Splitting the wide side</text>
 </g></g>
 <g transform="translate(432.0 1066.0)"><clipPath id="pnl7"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl7)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 1, 3, 4, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -365,18 +365,18 @@
 <line x1="315.0" y1="49.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="127.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="205.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="61.0" y1="41.0" x2="123.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="123.0" y1="197.0" x2="61.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="197.0" x2="61.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="197.0" x2="61.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="41.0" x2="123.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="123.0" y1="197.0" x2="61.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="197.0" x2="61.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="61.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.19</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -412,7 +412,7 @@
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="#a94e18">arrows cycle -- no cell is a stable outcome, must mix</text>
 </g></g>
 <g transform="translate(16.0 1418.0)"><clipPath id="pnl8"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl8)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -424,29 +424,29 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="96.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="228.0" cy="140.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="228.0" cy="140.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="106.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="109.0" y1="228.0" x2="134.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
 <text x="145.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
-<line x1="228.0" y1="153.0" x2="228.0" y2="178.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
-<text x="228.0" y="192.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
+<line x1="228.0" y1="153.0" x2="228.0" y2="178.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="228.0" y="192.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = -0.050</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The price of your own third</text>
 </g></g>
 <g transform="translate(432.0 1416.0)"><clipPath id="pnl9"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl9)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (1, 0, 4, 2, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -463,18 +463,18 @@
 <line x1="315.0" y1="49.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="127.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="205.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="61.0" y1="41.0" x2="123.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="41.0" x2="123.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="153.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="123.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="153.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.18</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -510,7 +510,7 @@
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at R/D</text>
 </g></g>
 <g transform="translate(16.0 1768.0)"><clipPath id="pnl10"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl10)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -522,29 +522,29 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="52.0" cy="228.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="140.0" cy="228.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="140.0" cy="228.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
 <text x="52.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
-<line x1="153.0" y1="228.0" x2="178.0" y2="228.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
-<text x="189.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
+<line x1="153.0" y1="228.0" x2="178.0" y2="228.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="189.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = -0.230</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The dead zone wakes up</text>
 </g></g>
 <g transform="translate(432.0 1766.0)"><clipPath id="pnl11"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl11)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (0, 0, 2, 0, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -561,18 +561,18 @@
 <line x1="315.0" y1="97.0" x2="315.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="175.0" x2="315.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="253.0" x2="315.0" y2="49.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="123.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="119.0" x2="153.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="123.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="197.0" x2="153.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="275.0" x2="215.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="245.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">-0.23</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
@@ -608,7 +608,7 @@
 <text x="46" y="298" font-family="ui-monospace,monospace" font-size="9.5" fill="var(--ink-faint, #77817a)">pure saddle at U/R</text>
 </g></g>
 <g transform="translate(16.0 2118.0)"><clipPath id="pnl12"><rect x="-16.0" y="-16.0" width="400.0" height="330.0"/></clipPath><g clip-path="url(#pnl12)">
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
 <rect x="30" y="30" width="308" height="220" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.5"/>
 <line x1="74" y1="30" x2="74" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="118" y1="30" x2="118" y2="250" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
@@ -620,29 +620,29 @@
 <line x1="30" y1="118" x2="338" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="338" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="206" x2="338" y2="206" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
-<rect x="24" y="162" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="162" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="162" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="118" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
-<rect x="24" y="74" width="6" height="44" fill="var(--p1, #2f8a52)"/>
+<rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
 <rect x="338" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
 <circle cx="316.0" cy="184.0" r="11" fill="var(--p0, #2f6bb0)"/>
-<circle cx="228.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
+<circle cx="228.0" cy="184.0" r="11" fill="var(--p1, #4CBB17)"/>
 <circle cx="326.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="329.0" y1="184.0" x2="354.0" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
 <text x="365.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
-<line x1="241.0" y1="184.0" x2="266.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
-<text x="277.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
+<line x1="241.0" y1="184.0" x2="266.0" y2="184.0" stroke="var(--p1, #4CBB17)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="277.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Goals still trump territory</text>
 </g></g>
 <g transform="translate(432.0 2116.0)"><clipPath id="pnl13"><rect x="-16.0" y="-16.0" width="400.0" height="334.0"/></clipPath><g clip-path="url(#pnl13)">
 <text x="31" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Q matrix -- (6, 1, 4, 1, 0)</text>
-<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #2f8a52)"/></marker></defs>
-<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">U</text>
-<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">D</text>
-<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">L</text>
-<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #2f8a52)">R</text>
+<defs><marker id="ah-2f6bb0" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p0, #2f6bb0)"/></marker><marker id="ah-2f8a52" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0.5 L8 4 L0 7.5 z" fill="var(--p1, #4CBB17)"/></marker></defs>
+<text x="46" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">U</text>
+<text x="138" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">D</text>
+<text x="230" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">L</text>
+<text x="322" y="12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p1, #4CBB17)">R</text>
 <text x="12" y="38" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">U</text>
 <text x="12" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">D</text>
 <text x="12" y="194" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="var(--p0, #2f6bb0)">L</text>
@@ -659,18 +659,18 @@
 <line x1="315.0" y1="49.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="127.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
 <line x1="315.0" y1="205.0" x2="315.0" y2="253.0" stroke="var(--p0, #2f6bb0)" stroke-width="2" marker-end="url(#ah-2f6bb0)" opacity=".85"/>
-<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="119.0" x2="307.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="119.0" x2="307.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="245.0" y1="119.0" x2="307.0" y2="119.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="61.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="153.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="245.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="123.0" y1="275.0" x2="61.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="215.0" y1="275.0" x2="61.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
-<line x1="307.0" y1="275.0" x2="61.0" y2="275.0" stroke="var(--p1, #2f8a52)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="123.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="41.0" x2="61.0" y2="41.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="119.0" x2="307.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="119.0" x2="307.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="245.0" y1="119.0" x2="307.0" y2="119.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="61.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="153.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="245.0" y1="197.0" x2="307.0" y2="197.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="123.0" y1="275.0" x2="61.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="215.0" y1="275.0" x2="61.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
+<line x1="307.0" y1="275.0" x2="61.0" y2="275.0" stroke="var(--p1, #4CBB17)" stroke-width="2" marker-end="url(#ah-2f8a52)" opacity=".85"/>
 <circle cx="46.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>
 <text x="46.0" y="38.0" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="600" font-size="11" fill="var(--ink, #19211c)">+0.95</text>
 <circle cx="138.0" cy="34.0" r="15" fill="var(--tint, #eef2ec)" stroke="var(--rule-strong, #b7c4b9)" stroke-width="1.6"/>

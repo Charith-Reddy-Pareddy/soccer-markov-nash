@@ -13,7 +13,7 @@ from __future__ import annotations
 from soccer_nash.game import SoccerGame, State
 
 P0 = "var(--p0, #2f6bb0)"   # player 0 -- blue
-P1 = "var(--p1, #2f8a52)"   # player 1 -- green
+P1 = "var(--p1, #4CBB17)"   # player 1 -- Kelly green
 BALL = "var(--ball, #cf7a20)"
 BOARD = "var(--tint, #eef2ec)"
 LINE = "var(--rule, #cdd8ce)"

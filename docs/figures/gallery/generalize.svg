@@ -23,12 +23,12 @@
 <circle cx="244.0" cy="88.3" r="2.4" fill="var(--ember, #a94e18)"/>
 <circle cx="344.0" cy="92.0" r="2.4" fill="var(--ember, #a94e18)"/>
 <text x="348.0" y="95.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--ember, #a94e18)">random, 1-cell goal</text>
-<path d="M44.0 188.0 L144.0 58.8 L244.0 69.9 L344.0 88.3" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="2" stroke-linejoin="round"/>
-<circle cx="44.0" cy="188.0" r="2.4" fill="var(--p1, #2f8a52)"/>
-<circle cx="144.0" cy="58.8" r="2.4" fill="var(--p1, #2f8a52)"/>
-<circle cx="244.0" cy="69.9" r="2.4" fill="var(--p1, #2f8a52)"/>
-<circle cx="344.0" cy="88.3" r="2.4" fill="var(--p1, #2f8a52)"/>
-<text x="348.0" y="91.3" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">deterministic, 2-cell</text>
+<path d="M44.0 188.0 L144.0 58.8 L244.0 69.9 L344.0 88.3" fill="none" stroke="var(--p1, #4CBB17)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="188.0" r="2.4" fill="var(--p1, #4CBB17)"/>
+<circle cx="144.0" cy="58.8" r="2.4" fill="var(--p1, #4CBB17)"/>
+<circle cx="244.0" cy="69.9" r="2.4" fill="var(--p1, #4CBB17)"/>
+<circle cx="344.0" cy="88.3" r="2.4" fill="var(--p1, #4CBB17)"/>
+<text x="348.0" y="91.3" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #4CBB17)">deterministic, 2-cell</text>
 <path d="M44.0 188.0 L144.0 73.4 L244.0 88.3 L344.0 80.9" fill="none" stroke="var(--ink-faint, #77817a)" stroke-width="2" stroke-linejoin="round"/>
 <circle cx="44.0" cy="188.0" r="2.4" fill="var(--ink-faint, #77817a)"/>
 <circle cx="144.0" cy="73.4" r="2.4" fill="var(--ink-faint, #77817a)"/>

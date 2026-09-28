@@ -8,8 +8,8 @@
 <text x="100" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">always-left</text>
 <rect x="46.0" y="49.1" width="24.8" height="55.0" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
 <text x="58.4" y="46.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.64</text>
-<rect x="73.8" y="22.0" width="24.8" height="82.1" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="86.1" y="19.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+0.95</text>
+<rect x="73.8" y="22.0" width="24.8" height="82.1" fill="var(--p1, #4CBB17)" opacity="0.9"/>
+<text x="86.1" y="19.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #4CBB17)">+0.95</text>
 <rect x="101.5" y="104.1" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
 <text x="113.9" y="101.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.00</text>
 <rect x="129.2" y="104.1" width="24.8" height="0.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
@@ -17,8 +17,8 @@
 <text x="234" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">random</text>
 <rect x="180.0" y="49.8" width="24.8" height="54.3" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
 <text x="192.4" y="46.8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.63</text>
-<rect x="207.8" y="24.3" width="24.8" height="79.8" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="220.1" y="21.3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+0.92</text>
+<rect x="207.8" y="24.3" width="24.8" height="79.8" fill="var(--p1, #4CBB17)" opacity="0.9"/>
+<text x="220.1" y="21.3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #4CBB17)">+0.92</text>
 <rect x="235.5" y="98.4" width="24.8" height="5.7" fill="var(--ember, #a94e18)" opacity="0.9"/>
 <text x="247.9" y="95.4" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.07</text>
 <rect x="263.2" y="42.6" width="24.8" height="61.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
@@ -26,8 +26,8 @@
 <text x="368" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">hand-built</text>
 <rect x="314.0" y="87.6" width="24.8" height="16.5" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
 <text x="326.4" y="84.6" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.19</text>
-<rect x="341.8" y="36.2" width="24.8" height="67.9" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="354.1" y="33.2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">+0.79</text>
+<rect x="341.8" y="36.2" width="24.8" height="67.9" fill="var(--p1, #4CBB17)" opacity="0.9"/>
+<text x="354.1" y="33.2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #4CBB17)">+0.79</text>
 <rect x="369.5" y="104.1" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
 <text x="381.9" y="101.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">+0.00</text>
 <rect x="397.2" y="104.1" width="24.8" height="0.5" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
@@ -35,15 +35,15 @@
 <text x="502" y="186" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">challenger</text>
 <rect x="448.0" y="92.9" width="24.8" height="11.2" fill="var(--p0, #2f6bb0)" opacity="0.9"/>
 <text x="460.4" y="89.9" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p0, #2f6bb0)">+0.13</text>
-<rect x="475.8" y="104.1" width="24.8" height="46.2" fill="var(--p1, #2f8a52)" opacity="0.9"/>
-<text x="488.1" y="159.3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #2f8a52)">-0.54</text>
+<rect x="475.8" y="104.1" width="24.8" height="46.2" fill="var(--p1, #4CBB17)" opacity="0.9"/>
+<text x="488.1" y="159.3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--p1, #4CBB17)">-0.54</text>
 <rect x="503.5" y="104.1" width="24.8" height="0.5" fill="var(--ember, #a94e18)" opacity="0.9"/>
 <text x="515.9" y="113.1" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ember, #a94e18)">-0.00</text>
 <rect x="531.2" y="104.1" width="24.8" height="67.9" fill="var(--ink-faint, #77817a)" opacity="0.9"/>
 <text x="543.6" y="181.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" fill="var(--ink-faint, #77817a)">-0.79</text>
 <rect x="46" y="196" width="9" height="9" fill="var(--p0, #2f6bb0)"/>
 <text x="59" y="204" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink, #19211c)">minimax</text>
-<rect x="105" y="196" width="9" height="9" fill="var(--p1, #2f8a52)"/>
+<rect x="105" y="196" width="9" height="9" fill="var(--p1, #4CBB17)"/>
 <text x="118" y="204" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink, #19211c)">greedy/rand</text>
 <rect x="190" y="196" width="9" height="9" fill="var(--ember, #a94e18)"/>
 <text x="203" y="204" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink, #19211c)">greedy/self</text>
