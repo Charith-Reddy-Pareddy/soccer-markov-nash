@@ -119,11 +119,17 @@ def _html_case(number, label, why, g, solver, result, state, note=""):
             f"<td>{g.transitions(state, a0, a1)[0][1]}</td>"
             for a1 in MOVE_ACTIONS) + "</tr>" for a0 in MOVE_ACTIONS)
     headers = "<tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr>"
-    return f"""<section><h2>Case {number}: {html.escape(label)}</h2>
-<p>State {state}; player {state[4]} carries the ball. V = {result.values[state]:+.6f}.</p>
-<p><b>Selected policy: P0 {_ACT[i]} 100%; P1 {_ACT[j]} 100%.</b>
-Security-tied alternatives: P0 {'/'.join(_ACT[k] for k in rows)};
-P1 {'/'.join(_ACT[k] for k in cols)}. Alternatives are not probabilities.</p>
+    v = result.values[state]
+    return f"""<section><h2><span class="case-no">{number}</span>{html.escape(label)}</h2>
+<p class="lede">State {state} &middot; player {state[4]} carries the ball &middot;
+V = {v:+.6f}</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr; {_ACT[i]}</b> (100%)</span>
+<span><b>P1 &rarr; {_ACT[j]}</b> (100%)</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 {'/'.join(_ACT[k] for k in rows)} &middot;
+P1 {'/'.join(_ACT[k] for k in cols)}</p>
+</div>
 <p>{html.escape(why)}</p>
 {note}<img src="figures/gallery/a10_case{number:02d}.svg"
  alt="Case {number} selected policy and payoff graph">
@@ -259,25 +265,66 @@ def main() -> None:
     intro = """<!doctype html><html lang="en"><meta charset="utf-8">
 <title>Eight A10 edge cases: verified policy selection</title>
 <style>
-body {font: 14px/1.45 system-ui,sans-serif; max-width: 1000px; margin: 32px auto;
-color: #203329; padding: 0 24px} h1,h2 {color: #286444} h3 {font-size: 13px}
-table {border-collapse:collapse; width:100%; font: 12px/1.4 monospace}
-td,th {border:1px solid #c7d4cb; padding:5px; text-align:center}
-img {display:block; width:100%; max-height:290px; object-fit:contain}
-section {margin-top:32px; border-top:1px solid #c7d4cb; padding-top:16px}
-@page {size:A4; margin:12mm}
-@media print {body{margin:0;padding:0;font-size:10px} h1{font-size:20px}
-h2{font-size:17px} section{break-before:page;margin:0;padding:0;border:0}
-img{max-height:245px} table{font-size:9px} td,th{padding:4px}}
-</style><h1>Eight edge cases on the A10 deterministic board</h1>
+:root{--ink:#1c2e26;--accent:#1f7a4d;--accent-dark:#155c39;--line:#dbe5df;
+--muted:#5b6b63;--warn:#a8501c;--warn-bg:#fbf3ea;--card:#f3f8f5}
+*{box-sizing:border-box}
+body{font:15px/1.6 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+max-width:960px;margin:40px auto;color:var(--ink);padding:0 28px}
+h1{font-size:25px;margin:0 0 8px;color:var(--accent-dark);letter-spacing:-.01em}
+h2{font-size:19px;margin:0 0 10px;color:var(--accent-dark);display:flex;
+align-items:center}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:20px 0 8px;font-weight:700}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;
+color:var(--accent);font-weight:700;margin:0 0 6px}
+p.lede{color:var(--muted);font-size:13px;margin:0 0 12px}
+p.muted{color:var(--muted);font-size:13px;margin:6px 0 0}
+.case-no{display:inline-flex;align-items:center;justify-content:center;
+background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;
+font-size:13px;font-weight:700;margin-right:10px;flex-shrink:0}
+.callout{background:var(--card);border:1px solid var(--line);
+border-left:4px solid var(--accent);border-radius:6px;padding:10px 16px;
+margin:12px 0}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.stat-row{display:flex;gap:28px;font-size:14px}
+.stat-row b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;font:12px/1.5 "SF Mono",Consolas,monospace}
+td,th{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--card);color:var(--accent-dark);font-weight:700}
+img{display:block;width:100%;max-height:290px;object-fit:contain;margin:14px 0}
+section{margin-top:36px;padding-top:18px;border-top:2px solid var(--line)}
+code{background:var(--card);border-radius:3px;padding:1px 5px;font-size:.92em}
+a{color:var(--accent-dark)}
+@page{size:A4;margin:14mm}
+@media print{body{margin:0;padding:0;font-size:10.5px} h1{font-size:21px}
+h2{font-size:16px} section{break-before:page;margin:0;padding:0;border:0}
+img{max-height:235px} table{font-size:9px} td,th{padding:4px}
+.callout{padding:8px 12px}}
+</style>
+<p class="eyebrow">Soccer Markov Nash &middot; A10-deterministic board</p>
+<h1>Eight edge cases on the A10 deterministic board</h1>
 <p>7 by 5 board; goal rows 1, 2, 3; simultaneous U/D/L/R; deterministic
 carrier-wins-contests resolution. Players never occupy the same square.
 The loser of a contested square or swap receives the ball.</p>
-<p><b>Selection rule:</b> preserve the best worst-case payoff, then maximize
+<div class="callout">
+<p style="margin:0"><b>Selection rule:</b> preserve the best worst-case payoff, then maximize
 mean payoff over opponent actions among exact security ties. Identical-score
 ties use action order. The secondary criterion is a documented selection
 convention, not a claim that Nash equilibrium is unique. No uniform tie mix
 is substituted for the solver policy.</p>
+</div>
+<div class="callout warn">
+<p style="margin:0"><b>Why every probability below is 0% or 100%, never a fraction:</b>
+this project's headline finding is that <i>every</i> stage game on this
+deterministic board has a pure equilibrium -- so a single action at 100% is
+the correct, expected answer here, not a simplification. Fractional
+probabilities only show up in the sibling document, <a href="positions.pdf">
+positions.pdf</a>, which covers Littman's cases on the <i>random</i>-move-order
+board, where mixed equilibria are the point. If you're looking for the
+mixed-strategy numbers, that is the document to read; this one is about what
+"pure but not obvious" looks like instead: ties, dominance, and the collision
+rule.</p>
+</div>
 <p>Case 1 selects Down for player 0: it weakly dominates Up and Left.
 The four zeros against Right describe optimal continuation from four
 new states, not a defender committed to Right forever. These are discounted
