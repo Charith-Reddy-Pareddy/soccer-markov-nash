@@ -10,6 +10,19 @@ import "./explorer.css";
 const BOARD_ORDER = ["canonical", "canonical_det", "canonical_coinflip", "tackle", "territory", "slip"];
 
 // case number -> {board, state}, coordinates as printed in docs/positions.md
+// Each board with its own dedicated case-study PDF (every case there links
+// back into this same explorer via ?board=&state=). A board can carry both
+// this AND entries from positions.pdf's original 14 (tackle/territory/slip
+// do) -- the two are shown as separate lines, filtered by each preset's own
+// `doc` field ("edge" for these, unset/"positions" for positions.pdf's own).
+const BOARD_CASE_DOCS = {
+  canonical_det: { pdf: "a10_cases.pdf", label: "A10-deterministic" },
+  canonical_coinflip: { pdf: "coinflip_cases.pdf", label: "coin-flip" },
+  tackle: { pdf: "tackle_cases.pdf", label: "tackle-rule" },
+  territory: { pdf: "territory_cases.pdf", label: "territory-reward" },
+  slip: { pdf: "slip_cases.pdf", label: "movement-slip" },
+};
+
 const PRESETS = {
   1: { board: "canonical", state: [4, 0, 5, 0, 0], label: "Case 1 — pure, for contrast" },
   2: { board: "canonical", state: [0, 1, 1, 1, 0], label: "Case 2 — the typical mix" },
@@ -30,24 +43,24 @@ const PRESETS = {
   // structure in the matrix -- these show it. Numbered 1-8 within their own
   // set (not 15+) since the presets list below only ever shows one set or
   // the other, keyed off which board is selected.
-  15: { board: "canonical_det", state: [4, 3, 5, 3, 0], label: "Edge case 1 — the swap trap" },
-  16: { board: "canonical_det", state: [0, 0, 0, 2, 0], label: "Edge case 2 — pinned in the corner" },
-  17: { board: "canonical_det", state: [3, 4, 4, 4, 0], label: "Edge case 3 — the standoff" },
+  15: { board: "canonical_det", doc: "edge", state: [4, 3, 5, 3, 0], label: "Edge case 1 — the swap trap" },
+  16: { board: "canonical_det", doc: "edge", state: [0, 0, 0, 2, 0], label: "Edge case 2 — pinned in the corner" },
+  17: { board: "canonical_det", doc: "edge", state: [3, 4, 4, 4, 0], label: "Edge case 3 — the standoff" },
   // Player 0 sits at the right wall in a goal row: R isn't wall-clamped here
   // -- a goal column is the one place the boundary action ends the game
   // instead of holding in place, verified against game.transitions() (every
   // reply from player 1 gives the same certain win).
-  18: { board: "canonical_det", state: [6, 1, 4, 1, 0], label: "Edge case 4 — the open goal" },
+  18: { board: "canonical_det", doc: "edge", state: [6, 1, 4, 1, 0], label: "Edge case 4 — the open goal" },
   // The mirror of 18 from player 1's side: L at the left wall in a goal row,
   // ball with player 1, scores outright regardless of player 0's reply.
-  19: { board: "canonical_det", state: [0, 0, 0, 1, 1], label: "Edge case 5 — the open net" },
+  19: { board: "canonical_det", doc: "edge", state: [0, 0, 0, 1, 1], label: "Edge case 5 — the open net" },
   // R is the *unique* safe action here (every column gives the same 0.531441
   // -- player 1 can't stop a clean break into open space); U looks equally
   // natural but is a trap -- if player 1 answers with D the two target the
   // same empty cell, player 0 "wins" the race there and immediately hands
   // over the ball anyway, per the A10 contest rule (loser keeps the ball
   // either way). Verified against game.transitions().
-  20: { board: "canonical_det", state: [0, 1, 0, 3, 0], label: "Edge case 6 — the getaway" },
+  20: { board: "canonical_det", doc: "edge", state: [0, 1, 0, 3, 0], label: "Edge case 6 — the getaway" },
   // Every state on this board ties on at least one side -- (1,1), a fully
   // unique best action for both players simultaneously, never once occurs
   // among all 2380 states (checked exhaustively). This is the smallest tie
@@ -56,7 +69,7 @@ const PRESETS = {
   // contest -- (U, R) and (L, D) both send player 0 and player 1 to the same
   // cell, verified against game.transitions() -- leaving D/R as the only
   // two moves that never reach player 1 at all.
-  21: { board: "canonical_det", state: [1, 0, 0, 1, 0], label: "Edge case 7 — the tightest tie" },
+  21: { board: "canonical_det", doc: "edge", state: [1, 0, 0, 1, 0], label: "Edge case 7 — the tightest tie" },
   // The single most common shape on the whole board (514 of 2380 states,
   // rowties=colties=4): both players are fully indifferent among all four
   // actions. It's not merely that the *guaranteed* values tie -- every one
@@ -64,7 +77,17 @@ const PRESETS = {
   // genuine ball-swapping contest (verified: (R, L) -> a state that is
   // itself also worth exactly 0). Nothing that happens this turn, for
   // either player, changes anything.
-  22: { board: "canonical_det", state: [0, 0, 2, 0, 0], label: "Edge case 8 — the dead zone" },
+  22: { board: "canonical_det", doc: "edge", state: [0, 0, 2, 0, 0], label: "Edge case 8 — the dead zone" },
+  // tackle_cases.pdf: this project's own probabilistic-duel collision rule
+  // (docs/tackle.md) produces 56 of 760 genuinely mixed states -- the
+  // richest source of real mixing among the non-A10 board variants.
+  23: { board: "tackle", doc: "edge", state: [0, 0, 1, 0, 0], label: "Tackle case 1 — the corner duel" },
+  24: { board: "tackle", doc: "edge", state: [0, 0, 1, 0, 1], label: "Tackle case 2 — the committed challenge" },
+  25: { board: "tackle", doc: "edge", state: [0, 0, 1, 1, 0], label: "Tackle case 3 — mixing without a duel" },
+  26: { board: "tackle", doc: "edge", state: [0, 0, 4, 3, 0], label: "Tackle case 4 — no challenge, plain A10" },
+  27: { board: "tackle", doc: "edge", state: [1, 1, 2, 1, 0], label: "Tackle case 5 — the 50/50 duel in full" },
+  28: { board: "tackle", doc: "edge", state: [4, 0, 4, 1, 0], label: "Tackle case 6 — head-on at the byline" },
+  29: { board: "tackle", doc: "edge", state: [4, 1, 3, 1, 0], label: "Tackle case 7 — the goal that beats the tackle" },
 };
 
 function toState(arr) {
@@ -723,18 +746,35 @@ export default function ExplorerApp() {
             </div>
           </div>
 
-          <div className="presets">
-            {currentBoard === "canonical_det" ? (
-              <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to an A10-deterministic edge case (<a href="a10_cases.pdf">a10_cases.pdf</a>):</span>
-            ) : (
-              <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
-            )}
-            {Object.keys(PRESETS)
-              .filter((n) => (PRESETS[n].board === "canonical_det") === (currentBoard === "canonical_det"))
-              .map((n) => (
-                <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
-              ))}
-          </div>
+          {(() => {
+            const positionsKeys = Object.keys(PRESETS).filter(
+              (n) => PRESETS[n].board === currentBoard && PRESETS[n].doc !== "edge"
+            );
+            const edgeDoc = BOARD_CASE_DOCS[currentBoard];
+            const edgeKeys = edgeDoc
+              ? Object.keys(PRESETS).filter((n) => PRESETS[n].board === currentBoard && PRESETS[n].doc === "edge")
+              : [];
+            return (
+              <>
+                {positionsKeys.length > 0 && (
+                  <div className="presets">
+                    <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
+                    {positionsKeys.map((n) => (
+                      <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
+                    ))}
+                  </div>
+                )}
+                {edgeKeys.length > 0 && (
+                  <div className="presets">
+                    <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to an edge case on the {edgeDoc.label} board (<a href={edgeDoc.pdf}>{edgeDoc.pdf}</a>):</span>
+                    {edgeKeys.map((n) => (
+                      <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           <div className="stat-strip">
             <div><div className="s-k">States solved exactly</div><div className="s-v">{board.state_count.toLocaleString()}</div></div>

@@ -63,10 +63,18 @@ technical answer, start with **[report.pdf](report.pdf)**
 
 - [assumptions.md](assumptions.md) — the A10 geometry instance and which of its
   collision rules are quoted vs. interpreted.
+- [a10_cases.pdf](a10_cases.pdf) — eight edge cases on the A10-deterministic
+  board: every stage game there is provably pure (this project's own headline
+  result), but ties, weak dominance, and the collision rule still hide real
+  structure a single 100% action doesn't show on its own (`make a10-cases`,
+  `make a10-cases-pdf`); each case links straight to that position in
+  [explorer.html](explorer.html).
 - [explorer.html](explorer.html) — interactive board: place both players
-  anywhere on any of the five boards from positions.md and get the live
-  equilibrium policy and exact Q matrix (table or best-response graph) for
-  all 9,100 states, plus that state's own rounding diagnostic (same
+  anywhere on any of the six boards (the two canonical boards side by side,
+  plus the three used in positions.md and the coin-flip contest-resolution
+  variant) and get the live equilibrium policy and exact Q matrix (table or
+  best-response graph) for all 11,480 states, plus that state's own rounding
+  diagnostic (same
   3/2/1-decimal re-solve as positions.md and numerics.md, shown whenever
   rounding actually changes the classification or support — most states
   report that it doesn't). A React app (source in [../site/](../site/), data

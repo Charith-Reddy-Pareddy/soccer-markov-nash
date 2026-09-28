@@ -1,0 +1,203 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<title>Seven tackle-rule edge cases: verified policy selection</title>
+<style>
+:root{--ink:#1c2e26;--accent:#1f7a4d;--accent-dark:#155c39;--line:#dbe5df;
+--muted:#5b6b63;--warn:#a8501c;--warn-bg:#fbf3ea;--card:#f3f8f5}
+*{box-sizing:border-box}
+body{font:15px/1.6 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+max-width:960px;margin:40px auto;color:var(--ink);padding:0 28px}
+h1{font-size:25px;margin:0 0 8px;color:var(--accent-dark);letter-spacing:-.01em}
+h2{font-size:19px;margin:0 0 10px;color:var(--accent-dark);display:flex;
+align-items:center}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:20px 0 8px;font-weight:700}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;
+color:var(--accent);font-weight:700;margin:0 0 6px}
+p.lede{color:var(--muted);font-size:13px;margin:0 0 12px}
+p.muted{color:var(--muted);font-size:13px;margin:6px 0 0}
+.case-no{display:inline-flex;align-items:center;justify-content:center;
+background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;
+font-size:13px;font-weight:700;margin-right:10px;flex-shrink:0}
+.callout{background:var(--card);border:1px solid var(--line);
+border-left:4px solid var(--accent);border-radius:6px;padding:10px 16px;
+margin:12px 0}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.stat-row{display:flex;gap:28px;font-size:14px}
+.stat-row b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;font:12px/1.5 "SF Mono",Consolas,monospace}
+td,th{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--card);color:var(--accent-dark);font-weight:700}
+img{display:block;width:100%;max-height:290px;object-fit:contain;margin:14px 0}
+section{margin-top:36px;padding-top:18px;border-top:2px solid var(--line)}
+code{background:var(--card);border-radius:3px;padding:1px 5px;font-size:.92em}
+a{color:var(--accent-dark)}
+@page{size:A4;margin:14mm}
+@media print{body{margin:0;padding:0;font-size:10.5px} h1{font-size:21px}
+h2{font-size:16px} section{break-before:page;margin:0;padding:0;border:0}
+img{max-height:235px} table{font-size:9px} td,th{padding:4px}
+.callout{padding:8px 12px}}
+</style>
+<p class="eyebrow">Soccer Markov Nash &middot; tackle board</p>
+<h1>Seven edge cases on the tackle board</h1>
+<p>5 by 4 board; goal rows 1, 2; simultaneous U/D/L/R; this project's own
+collision rule, not Littman's and not the A10 rule. A challenge is the
+defender's move landing on the carrier's current cell. With no challenge
+this turn resolves exactly like the plain deterministic A10 rule. With a
+challenge, a duel: probability <code>tackle_prob</code> (0.5 on this board)
+the defender wins the ball, shoving the carrier one cell along its own
+approach direction (clamped at the wall) and taking the vacated cell;
+otherwise the challenge fails, the defender bounces back, and the carrier
+keeps the ball, completing its own move only if it was already running
+clear of both its own start cell and the defender's.</p>
+<div class="callout warn">
+<p style="margin:0"><b>Why this board has real, fractional probabilities,
+unlike its A10 twin:</b> 56 of this board's 760 states (about 7.4%) have a
+genuine mixed equilibrium -- no pure saddle exists. That is the richest
+source of real randomization among this project's four non-A10 board
+variants, and a sharp contrast with the A10-deterministic board
+(<a href="a10_cases.html">a10_cases.html</a>), which has exactly 0 of 2380 --
+verified fresh in this same session. The mechanism is the 50/50 duel itself:
+whenever a challenge is reachable, neither committing to it nor avoiding it
+is a safe pure answer to a fixed coin the opponent also knows is coming, so
+both players are pushed into randomizing over it. (The project's other main
+source of mixed play is a structurally different mechanism -- Littman's
+random move order on the canonical board, <a href="positions.pdf">
+positions.pdf</a> -- where the randomness is in whose move applies first,
+not in a probabilistic duel.)</p>
+</div>
+<p>Three of the seven cases below are genuinely mixed (cases 1-3); the other
+four are pure but each puts a different facet of the collision rule on a
+board diagram: no challenge at all, the duel's two branches in full, a
+head-on collision that freezes both positions, and a goal that outraces an
+incoming tackle. These are discounted stationary values with gamma 0.9, the
+same solver configuration as every other board in this project.</p>
+<p><a href="explorer.html?board=tackle">Interactive explorer</a> ·
+<a href="equilibrium-debug.md">Audit and reproduction details</a></p><section><h2><span class="case-no">1</span>The corner duel</h2>
+<p class="lede">State (0, 0, 1, 0, 0) &middot; player 0 carries the ball &middot;
+V = -0.031247 &middot; Mixed equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> U 53.9% / L 46.1%</span>
+<span><b>P1 &rarr;</b> U 86.9% / L 13.1%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 U &middot;
+P1 U</p>
+</div>
+<p>player 0 carries the ball at (0, 0); player 1 defends from directly beside it at (1, 0). Player 1&#x27;s L is the board&#x27;s own challenge trigger here -- it targets (0, 0), player 0&#x27;s current cell -- and it fires a genuine 50/50 duel against *every* one of player 0&#x27;s four replies (verified below: U,L / D,L / L,L / R,L each split into two weighted branches), because the challenge test only checks where player 0 is standing at the start of the turn, not what player 0 chooses to do about it. Player 1 cannot make L safe by committing to it (a coin the carrier can see coming is no threat) nor make U (hold back) safe either (giving up 13% of the time on the duel loses ground it could contest) -- the exact solve settles player 1 at U 86.9% / L 13.1%. Player 0 answers by mixing U 53.9% / L 46.1%: U is a real advance to (0, 1); L is player 0&#x27;s own wall-clamped hold in place -- neither is safe on its own against a defender who is themself unpredictable.</p>
+<img src="figures/gallery/tackle_case01.svg"
+ alt="Case 1 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.033668</td><td>0.041311</td><td>-0.015241</td><td>-0.007598</td></tr><tr><th>D</th><td>-0.028417</td><td>-0.028122</td><td>-0.049958</td><td>-0.007062</td></tr><tr><th>L</th><td>-0.028417</td><td>-0.028122</td><td>-0.049958</td><td>-0.007062</td></tr><tr><th>R</th><td>-0.115770</td><td>-0.071793</td><td>-0.049958</td><td>-0.011944</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 1, 1, 0)</td><td>(0, 1, 1, 0, 0)</td><td>(0, 0, 1, 0, 1) @50% / (0, 1, 1, 0, 0) @50%</td><td>(0, 1, 2, 0, 0)</td></tr><tr><th>D</th><td>(0, 0, 1, 1, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 1, 0, 1) @50% / (0, 0, 1, 0, 0) @50%</td><td>(0, 0, 2, 0, 0)</td></tr><tr><th>L</th><td>(0, 0, 1, 1, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 1, 0, 1) @50% / (0, 0, 1, 0, 0) @50%</td><td>(0, 0, 2, 0, 0)</td></tr><tr><th>R</th><td>(1, 0, 1, 1, 0)</td><td>(0, 0, 1, 0, 1)</td><td>(0, 0, 1, 0, 1) @50% / (0, 0, 1, 0, 0) @50%</td><td>(1, 0, 2, 0, 0)</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=0,0,1,0,0">Open this position in the interactive explorer &rarr;</a></p>
+</section><section><h2><span class="case-no">2</span>The committed challenge</h2>
+<p class="lede">State (0, 0, 1, 0, 1) &middot; player 1 carries the ball &middot;
+V = -0.079770 &middot; Mixed equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> U 79.1% / R 20.9%</span>
+<span><b>P1 &rarr;</b> L 71.8% / U 28.2%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 U &middot;
+P1 U</p>
+</div>
+<p>the mirror of case 1 with the ball on the other foot: player 1 carries at (1, 0), player 0 defends from (0, 0). Player 0&#x27;s unique challenge action is R, targeting (1, 0) -- and here it fires against every one of player 1&#x27;s replies (all four R,* cells below split 50/50), because player 1&#x27;s own move can never get the ball out of range before the duel resolves. Player 0 mixes R 79.1% / U 20.9% -- diving in for the duel most of the time, but not always, since a challenge that always comes is one player 1 can simply shepherd around. Player 1 answers by mixing L 71.8% / U 28.2%, not U/D/R -- L is player 1&#x27;s own move deepest into open space away from the defender, so it is the best hedge against a duel that might or might not land.</p>
+<img src="figures/gallery/tackle_case02.svg"
+ alt="Case 2 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.054228</td><td>-0.072738</td><td>-0.089800</td><td>-0.024049</td></tr><tr><th>D</th><td>-0.340638</td><td>-0.071793</td><td>-0.028122</td><td>-0.051085</td></tr><tr><th>L</th><td>-0.340638</td><td>-0.071793</td><td>-0.028122</td><td>-0.051085</td></tr><tr><th>R</th><td>-0.176291</td><td>-0.041869</td><td>-0.041869</td><td>-0.031515</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 1, 1, 1)</td><td>(0, 1, 1, 0, 1)</td><td>(0, 1, 0, 0, 1)</td><td>(0, 1, 2, 0, 1)</td></tr><tr><th>D</th><td>(0, 0, 1, 1, 1)</td><td>(0, 0, 1, 0, 1)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 2, 0, 1)</td></tr><tr><th>L</th><td>(0, 0, 1, 1, 1)</td><td>(0, 0, 1, 0, 1)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 2, 0, 1)</td></tr><tr><th>R</th><td>(1, 0, 2, 0, 0) @50% / (0, 0, 1, 1, 1) @50%</td><td>(1, 0, 2, 0, 0) @50% / (0, 0, 1, 0, 1) @50%</td><td>(1, 0, 2, 0, 0) @50% / (0, 0, 1, 0, 1) @50%</td><td>(1, 0, 2, 0, 0) @50% / (0, 0, 2, 0, 1) @50%</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=0,0,1,0,1">Open this position in the interactive explorer &rarr;</a></p>
+</section><section><h2><span class="case-no">3</span>Mixing without a duel on the table</h2>
+<p class="lede">State (0, 0, 1, 1, 0) &middot; player 0 carries the ball &middot;
+V = -0.031575 &middot; Mixed equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> U 80.0% / R 20.0%</span>
+<span><b>P1 &rarr;</b> L 76.3% / D 23.7%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 U &middot;
+P1 R</p>
+</div>
+<p>player 0 carries at (0, 0); player 1 defends from the diagonal cell (1, 1) -- one step too far for any of U/D/L/R to reach (0, 0) this turn, so (verified below) all 16 joint actions resolve to a single deterministic successor: no challenge, no randomness, this turn looks exactly like a plain A10 stage game. It is still genuinely mixed (minimax - maximin = 0.0595, no pure saddle) -- because several of its own successors, including case 1 and case 2 above, are themselves mixed, and that uncertainty is already baked into V for those states before this turn&#x27;s Q matrix is even built. Player 0 mixes U 80.0% / R 20.0%; player 1 mixes L 76.3% / D 23.7%. See the note below for exactly which cells feed this.</p>
+<p><b>No challenge is on the table this turn, and it is still mixed:</b> every one of the 16 joint actions above resolves to a single deterministic successor -- the defender at (1, 1) is diagonally adjacent to the carrier at (0, 0), and none of U/D/L/R from there lands on (0, 0), so no duel can fire this turn. The gap between maximin and minimax still does not close, because the solver's values for several of <em>this turn's</em> successor states already price in a duel one move later -- e.g. (0,0,1,0,0) and (0,0,1,0,1), case 1 and case 2 below, are themselves mixed. A state does not need a challenge reachable in the current stage game to inherit real randomization from the continuation value; it only needs to be one move from a state that does.</p>
+<img src="figures/gallery/tackle_case03.svg"
+ alt="Case 3 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.020590</td><td>0.041311</td><td>-0.054228</td><td>-0.008641</td></tr><tr><th>D</th><td>-0.025575</td><td>-0.028122</td><td>-0.378487</td><td>-0.025575</td></tr><tr><th>L</th><td>-0.025575</td><td>-0.028122</td><td>-0.378487</td><td>-0.025575</td></tr><tr><th>R</th><td>0.058917</td><td>-0.322730</td><td>0.058917</td><td>0.005242</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 1, 2, 0)</td><td>(0, 1, 1, 0, 0)</td><td>(0, 1, 1, 1, 1)</td><td>(0, 1, 2, 1, 0)</td></tr><tr><th>D</th><td>(0, 0, 1, 2, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 2, 1, 0)</td></tr><tr><th>L</th><td>(0, 0, 1, 2, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 2, 1, 0)</td></tr><tr><th>R</th><td>(1, 0, 1, 2, 0)</td><td>(1, 0, 1, 1, 1)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 2, 1, 0)</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=0,0,1,1,0">Open this position in the interactive explorer &rarr;</a></p>
+</section><section><h2><span class="case-no">4</span>No challenge, plain A10</h2>
+<p class="lede">State (0, 0, 4, 3, 0) &middot; player 0 carries the ball &middot;
+V = +0.021644 &middot; Pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> R 100.0%</span>
+<span><b>P1 &rarr;</b> D 100.0%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 R &middot;
+P1 D</p>
+</div>
+<p>the two players sit at opposite corners, the maximum Manhattan distance (7) the 5x4 board allows. No defender move can land anywhere close to the carrier&#x27;s cell, so (verified below) every one of the 16 joint actions is a single deterministic outcome -- this state&#x27;s stage game is byte-for-byte the plain deterministic A10 rule, exactly as the tackle rule&#x27;s own docstring promises for a no-challenge turn. It is also a clean, tie-free pure saddle: R is player 0&#x27;s unique best action (0.021644, beating D/L&#x27;s 0.019479 and U&#x27;s 0.007777); D is player 1&#x27;s unique reply. Nothing here needs the tackle rule at all -- it is the baseline the rest of this document&#x27;s randomness is measured against.</p>
+<img src="figures/gallery/tackle_case04.svg"
+ alt="Case 4 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.022554</td><td>0.007777</td><td>0.007777</td><td>0.022554</td></tr><tr><th>D</th><td>0.019479</td><td>0.019479</td><td>0.022554</td><td>0.019479</td></tr><tr><th>L</th><td>0.019479</td><td>0.019479</td><td>0.022554</td><td>0.019479</td></tr><tr><th>R</th><td>0.058917</td><td>0.021644</td><td>0.025059</td><td>0.058917</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 4, 3, 0)</td><td>(0, 1, 4, 2, 0)</td><td>(0, 1, 3, 3, 0)</td><td>(0, 1, 4, 3, 0)</td></tr><tr><th>D</th><td>(0, 0, 4, 3, 0)</td><td>(0, 0, 4, 2, 0)</td><td>(0, 0, 3, 3, 0)</td><td>(0, 0, 4, 3, 0)</td></tr><tr><th>L</th><td>(0, 0, 4, 3, 0)</td><td>(0, 0, 4, 2, 0)</td><td>(0, 0, 3, 3, 0)</td><td>(0, 0, 4, 3, 0)</td></tr><tr><th>R</th><td>(1, 0, 4, 3, 0)</td><td>(1, 0, 4, 2, 0)</td><td>(1, 0, 3, 3, 0)</td><td>(1, 0, 4, 3, 0)</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=0,0,4,3,0">Open this position in the interactive explorer &rarr;</a></p>
+</section><section><h2><span class="case-no">5</span>The 50/50 duel, in full</h2>
+<p class="lede">State (1, 1, 2, 1, 0) &middot; player 0 carries the ball &middot;
+V = -0.024493 &middot; Pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> D 100.0%</span>
+<span><b>P1 &rarr;</b> L 100.0%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 D &middot;
+P1 L</p>
+</div>
+<p>player 0 carries at (1, 1); player 1 defends from directly beside it at (2, 1). The equilibrium here is pure -- D for player 0 (-0.024493, a unique maximin) against L for player 1 (a unique minimax) -- but (D, L) is itself a live challenge, and both of its branches are worth reading in full: player 1&#x27;s L targets (1, 1), player 0&#x27;s current cell, so with probability 0.5 the duel is won by the defender -- the carrier is shoved to (0, 1) along the defender&#x27;s own leftward approach, the defender takes the vacated (1, 1), and the ball changes hands: (0,1,1,1,1). With probability 0.5 the challenge fails -- the defender bounces back to (2, 1) (unchanged, already there), and the carrier, which was running clear toward (1, 0), keeps going and keeps the ball: (1,0,2,1,0). One state, two branches, a coin between them -- exactly the mechanic that makes 56 states on this board unable to settle on a pure answer, even though this particular one still can.</p>
+<img src="figures/gallery/tackle_case05.svg"
+ alt="Case 5 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.022044</td><td>0.226241</td><td>-0.024755</td><td>0.008641</td></tr><tr><th>D</th><td>0.004718</td><td>-0.011944</td><td>-0.024493</td><td>0.004718</td></tr><tr><th>L</th><td>-0.008442</td><td>-0.007598</td><td>-0.031434</td><td>-0.007598</td></tr><tr><th>R</th><td>0.251379</td><td>0.251379</td><td>-0.038136</td><td>0.009601</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(1, 2, 2, 2, 0)</td><td>(1, 2, 2, 0, 0)</td><td>(0, 1, 1, 1, 1) @50% / (1, 2, 2, 1, 0) @50%</td><td>(1, 2, 3, 1, 0)</td></tr><tr><th>D</th><td>(1, 0, 2, 2, 0)</td><td>(1, 0, 2, 0, 0)</td><td>(0, 1, 1, 1, 1) @50% / (1, 0, 2, 1, 0) @50%</td><td>(1, 0, 3, 1, 0)</td></tr><tr><th>L</th><td>(0, 1, 2, 2, 0)</td><td>(0, 1, 2, 0, 0)</td><td>(0, 1, 1, 1, 1) @50% / (0, 1, 2, 1, 0) @50%</td><td>(0, 1, 3, 1, 0)</td></tr><tr><th>R</th><td>(2, 1, 2, 2, 0)</td><td>(2, 1, 2, 0, 0)</td><td>(0, 1, 1, 1, 1) @50% / (1, 1, 2, 1, 0) @50%</td><td>(2, 1, 3, 1, 0)</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=1,1,2,1,0">Open this position in the interactive explorer &rarr;</a></p>
+</section><section><h2><span class="case-no">6</span>Head-on at the byline</h2>
+<p class="lede">State (4, 0, 4, 1, 0) &middot; player 0 carries the ball &middot;
+V = +0.099777 &middot; Pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> U 100.0%</span>
+<span><b>P1 &rarr;</b> D 100.0%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 U &middot;
+P1 D</p>
+</div>
+<p>player 0 carries at (4, 0), the right byline; player 1 defends from directly above at (4, 1). The equilibrium is U for player 0 against D for player 1, both unique -- and it is a head-on collision: player 1&#x27;s D targets (4, 0), the challenge condition, for every choice player 0 makes, and player 0&#x27;s own U targets (4, 1), player 1&#x27;s current cell, which is not itself a challenge (only the defender&#x27;s move onto the carrier&#x27;s cell counts) but does mean the carrier is not &#x27;running clear&#x27; if the duel fails. Both branches leave every position exactly where it started -- the win branch&#x27;s shove is clamped at y = 0 with nowhere to go, and the lose branch holds the carrier up rather than letting it complete U into the defender&#x27;s own square: (4,0,4,1,1) at 0.5 / (4,0,4,1,0) at 0.5. Nobody moves either way; only the ball&#x27;s owner is ever in doubt.</p>
+<img src="figures/gallery/tackle_case06.svg"
+ alt="Case 6 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.900000</td><td>0.099777</td><td>0.900000</td><td>0.109755</td></tr><tr><th>D</th><td>0.098779</td><td>0.099777</td><td>0.080820</td><td>0.089800</td></tr><tr><th>L</th><td>0.080820</td><td>0.091246</td><td>-0.045901</td><td>0.072738</td></tr><tr><th>R</th><td>0.098779</td><td>0.099777</td><td>0.080820</td><td>0.089800</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(4, 1, 4, 2, 0)</td><td>(4, 0, 4, 1, 1) @50% / (4, 0, 4, 1, 0) @50%</td><td>(4, 1, 3, 1, 0)</td><td>(4, 0, 4, 1, 1)</td></tr><tr><th>D</th><td>(4, 0, 4, 2, 0)</td><td>(4, 0, 4, 1, 1) @50% / (4, 0, 4, 1, 0) @50%</td><td>(4, 0, 3, 1, 0)</td><td>(4, 0, 4, 1, 0)</td></tr><tr><th>L</th><td>(3, 0, 4, 2, 0)</td><td>(4, 0, 4, 1, 1) @50% / (3, 0, 4, 1, 0) @50%</td><td>(3, 0, 3, 1, 0)</td><td>(3, 0, 4, 1, 0)</td></tr><tr><th>R</th><td>(4, 0, 4, 2, 0)</td><td>(4, 0, 4, 1, 1) @50% / (4, 0, 4, 1, 0) @50%</td><td>(4, 0, 3, 1, 0)</td><td>(4, 0, 4, 1, 0)</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=4,0,4,1,0">Open this position in the interactive explorer &rarr;</a></p>
+</section><section><h2><span class="case-no">7</span>The goal that beats the tackle</h2>
+<p class="lede">State (4, 1, 3, 1, 0) &middot; player 0 carries the ball &middot;
+V = +1.000000 &middot; Pure equilibrium</p>
+<div class="callout">
+<div class="stat-row"><span><b>P0 &rarr;</b> R 100.0%</span>
+<span><b>P1 &rarr;</b> R 100.0%</span></div>
+<p class="muted">Security-tied alternatives (not probabilities):
+P0 R &middot;
+P1 U/D/L/R</p>
+</div>
+<p>player 0 carries at (4, 1), already on the right goal line in a goal row; player 1 defends from directly beside it at (3, 1). Player 0&#x27;s R would, off a goal row, just hold in place -- here it scores outright, and it does so unconditionally: R is the unique maximin at exactly 1.0, and every one of player 1&#x27;s four replies to it ties at the same minimax 1.0, because none of them can stop it. That includes R, player 1&#x27;s own challenge action, which targets (4, 1) -- player 0&#x27;s cell -- and would ordinarily force a 50/50 duel. See the note below for exactly why the duel never gets the chance to fire here.</p>
+<p><b>Why the goal beats the tackle, exactly:</b> <code>soccer_nash/game.py</code>'s <code>_resolve_tackle</code> checks the carrier's own scoring move <em>before</em> resolving the duel -- <code>if scored: return self._score_result(carrier)</code> -- so a challenge that would otherwise fire never gets the chance. Verified above: player 1's R at (3, 1) targets (4, 1), player 0's current cell, which is a textbook challenge condition, yet every one of player 1's four replies to player 0's R produces the exact same single outcome, <code>GOAL:P0</code> at probability 1 -- no 50/50 split anywhere in that row. Compare row R to rows U/D/L, where the same defender challenge (col R) does split 50/50, because those rows' own moves do not score outright.</p>
+<img src="figures/gallery/tackle_case07.svg"
+ alt="Case 7 selected policy and payoff graph">
+<h3>Q: player 0 payoff, optimal continuation after this turn</h3>
+<table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.900000</td><td>0.900000</td><td>0.900000</td><td>0.358589</td></tr><tr><th>D</th><td>0.810000</td><td>0.330957</td><td>0.810000</td><td>-0.051001</td></tr><tr><th>L</th><td>0.322730</td><td>0.322730</td><td>0.322730</td><td>0.358589</td></tr><tr><th>R</th><td>1.000000</td><td>1.000000</td><td>1.000000</td><td>1.000000</td></tr></table>
+<h3>All 16 successor outcomes, from the transition engine</h3>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(4, 2, 3, 2, 0)</td><td>(4, 2, 3, 0, 0)</td><td>(4, 2, 2, 1, 0)</td><td>(4, 1, 3, 1, 1) @50% / (4, 2, 3, 1, 0) @50%</td></tr><tr><th>D</th><td>(4, 0, 3, 2, 0)</td><td>(4, 0, 3, 0, 0)</td><td>(4, 0, 2, 1, 0)</td><td>(4, 1, 3, 1, 1) @50% / (4, 0, 3, 1, 0) @50%</td></tr><tr><th>L</th><td>(3, 1, 3, 2, 0)</td><td>(3, 1, 3, 0, 0)</td><td>(3, 1, 2, 1, 0)</td><td>(4, 1, 3, 1, 1) @50% / (4, 1, 3, 1, 0) @50%</td></tr><tr><th>R</th><td>GOAL:P0</td><td>GOAL:P0</td><td>GOAL:P0</td><td>GOAL:P0</td></tr></table>
+<p><a href="explorer.html?board=tackle&state=4,1,3,1,0">Open this position in the interactive explorer &rarr;</a></p>
+</section></html>

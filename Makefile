@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf templates-n5 explorer-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf coinflip-cases coinflip-cases-pdf tackle-cases tackle-cases-pdf territory-cases territory-cases-pdf slip-cases slip-cases-pdf board-cases-pdfs templates-n5 explorer-data explorer-neural-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -40,9 +40,15 @@ help:
 	@echo "make positions    - player positions + stage game as a best-response-graph"
 	@echo "make positions-matrix - minimax/always-left/random/best-response policy matrix"
 	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
-	@echo "make a10-cases    - six edge cases on the A10-deterministic board (not Littman's)"
+	@echo "make a10-cases    - eight edge cases on the A10-deterministic board (not Littman's)"
 	@echo "make a10-cases-pdf - regenerate docs/a10_cases.pdf from docs/a10_cases.html"
+	@echo "make coinflip-cases / -pdf - edge cases on the coin-flip contest-resolution board"
+	@echo "make tackle-cases / -pdf   - edge cases on the tackle-duel collision board"
+	@echo "make territory-cases / -pdf - edge cases on the territory-reward board"
+	@echo "make slip-cases / -pdf     - edge cases on the movement-slip board"
+	@echo "make board-cases-pdfs - regenerate all 5 per-board case-study PDFs (A10 + the 4 above)"
 	@echo "make explorer-data - regenerate docs/data/explorer.json for the interactive board explorer"
+	@echo "make explorer-neural-data - regenerate docs/data/explorer_neural.json (DQN/PG cross-check panel)"
 	@echo "make site         - build the React site (site/) into docs/ -- index.html + explorer.html"
 	@echo "make numerics     - numerical-robustness analysis + figures"
 	@echo "make templates    - print the mixed-state geometric templates"
@@ -94,6 +100,53 @@ a10-cases-pdf:
 	  --print-to-pdf=docs/a10_cases.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/a10_cases.html"
 	@echo "wrote docs/a10_cases.pdf"
+
+coinflip-cases:
+	$(PY) scripts/coinflip_cases.py
+	$(PY) scripts/figures_png.py coinflip_case
+
+coinflip-cases-pdf:
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/coinflip_cases.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/coinflip_cases.html"
+	@echo "wrote docs/coinflip_cases.pdf"
+
+tackle-cases:
+	$(PY) scripts/tackle_cases.py
+	$(PY) scripts/figures_png.py tackle_case
+
+tackle-cases-pdf:
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/tackle_cases.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/tackle_cases.html"
+	@echo "wrote docs/tackle_cases.pdf"
+
+territory-cases:
+	$(PY) scripts/territory_cases.py
+	$(PY) scripts/figures_png.py territory_case
+
+territory-cases-pdf:
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/territory_cases.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/territory_cases.html"
+	@echo "wrote docs/territory_cases.pdf"
+
+slip-cases:
+	$(PY) scripts/slip_cases.py
+	$(PY) scripts/figures_png.py slip_case
+
+slip-cases-pdf:
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/slip_cases.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/slip_cases.html"
+	@echo "wrote docs/slip_cases.pdf"
+
+board-cases-pdfs: a10-cases-pdf coinflip-cases-pdf tackle-cases-pdf territory-cases-pdf slip-cases-pdf
+	@echo "regenerated all 5 per-board case-study PDFs"
 
 # The headline figures/tables the report and positions.pdf actually cite --
 # not the full experiment sweep, the phase diagram, or the DQN trainings,
