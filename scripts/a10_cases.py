@@ -102,7 +102,7 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
     print()
 
     board = policy_svg(g, state, {state: disp_row}, {state: disp_col},
-                        value=r.values[state], title=label, kind="pure")
+                        value=r.values[state], title=label, kind="pure", always_label=True)
     matrix = bestresponse_graph_svg(M, _ACT, _ACT, title=f"Q matrix -- {state}")
     panels.append(board)
     panels.append(matrix)

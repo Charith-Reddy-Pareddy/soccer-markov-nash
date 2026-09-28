@@ -22,7 +22,9 @@
 <circle cx="272.0" cy="96.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="238.0" cy="86.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="228.0" y1="109.0" x2="228.0" y2="134.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="228.0" y="148.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="285.0" y1="96.0" x2="310.0" y2="96.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="321.0" y="99.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The swap trap</text>
 </g></g>
@@ -118,7 +120,9 @@
 <circle cx="52.0" cy="140.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="65.0" y1="228.0" x2="90.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="101.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="52.0" y1="153.0" x2="52.0" y2="178.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="52.0" y="192.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">Pinned in the corner</text>
 </g></g>
@@ -214,7 +218,9 @@
 <circle cx="228.0" cy="52.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="194.0" cy="42.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="184.0" y1="65.0" x2="184.0" y2="90.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="184.0" y="104.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <circle cx="228.0" cy="52.0" r="15" fill="none" stroke="var(--p1, #2f8a52)" stroke-width="3.8" stroke-dasharray="2 2" opacity="0.95"/>
+<text x="228.0" y="78.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">hold 100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The standoff</text>
 </g></g>
@@ -310,7 +316,9 @@
 <circle cx="228.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="326.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="329.0" y1="184.0" x2="354.0" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="365.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="241.0" y1="184.0" x2="266.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="277.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The open goal</text>
 </g></g>
@@ -406,7 +414,9 @@
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="52.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="39.0" y1="184.0" x2="14.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="3.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = -1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The open net</text>
 </g></g>
@@ -502,7 +512,9 @@
 <circle cx="52.0" cy="96.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="65.0" y1="184.0" x2="90.0" y2="184.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="101.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="52.0" y1="109.0" x2="52.0" y2="134.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="52.0" y="148.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.531</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The getaway</text>
 </g></g>
@@ -598,7 +610,9 @@
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="106.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="109.0" y1="228.0" x2="134.0" y2="228.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="145.0" y="231.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="65.0" y1="184.0" x2="90.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="101.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The tightest tie</text>
 </g></g>
@@ -694,7 +708,9 @@
 <circle cx="140.0" cy="228.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="218.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="52.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="140.0" y1="215.0" x2="140.0" y2="190.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="140.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = +0.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The dead zone</text>
 </g></g>

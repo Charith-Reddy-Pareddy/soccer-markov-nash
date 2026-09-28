@@ -97,6 +97,7 @@ def _action_fan(
     cx: float, cy: float, dist: np.ndarray, colour: str,
     wall: np.ndarray | None = None,
     score: np.ndarray | None = None,
+    always_label: bool = False,
 ) -> list[str]:
     """``wall`` marks which of U/D/L/R a board edge clamps back onto the
     player's own cell -- mechanically legal but physically identical to
@@ -106,7 +107,11 @@ def _action_fan(
     happens. ``score`` (from ``_wall_mask``) carves the *scoring* subset of
     ``wall`` back out -- the carrier, in a goal row, pushing past their own
     attacking edge really does end the game, so it draws as a normal arrow
-    (toward the goal strip already drawn there), not a hold ring."""
+    (toward the goal strip already drawn there), not a hold ring.
+    ``always_label`` also labels a 100% action/hold (normally omitted as
+    redundant when it's the only arrow on the board) -- for documents like
+    the case-study PDFs where every case is pure and an unlabelled single
+    arrow reads as sparse rather than as "this is the whole answer"."""
     out = []
     dist = np.asarray(dist, dtype=float)
     wall_only = wall if score is None else np.asarray(wall) & ~np.asarray(score)
@@ -121,7 +126,7 @@ def _action_fan(
             f'stroke-dasharray="2 2" '
             f'opacity="{0.4 + 0.55 * hold:.2f}"/>'
         )
-        if hold < 0.985:
+        if hold < 0.985 or always_label:
             out.append(
                 f'<text x="{cx:.1f}" y="{cy + 26:.1f}" text-anchor="middle" '
                 f'font-family="ui-monospace,monospace" font-size="9" '
@@ -142,7 +147,7 @@ def _action_fan(
             f'stroke="{colour}" stroke-width="{wgt:.1f}" stroke-linecap="round" '
             f'opacity="{0.4 + 0.55 * p:.2f}" marker-end="url(#ah-{colour[-7:-1]})"/>'
         )
-        if p < 0.985:
+        if p < 0.985 or always_label:
             lx, ly = cx + dx * (length + 11), cy - dy * (length + 11)
             out.append(
                 f'<text x="{lx:.1f}" y="{ly + 3:.1f}" text-anchor="middle" '
@@ -160,6 +165,7 @@ def policy_svg(
     value: float | None = None,
     title: str | None = None,
     kind: str | None = None,
+    always_label: bool = False,
 ) -> str:
     """Board with both players' action distributions as probability arrows.
 
@@ -168,7 +174,8 @@ def policy_svg(
     policy passed in -- correct when that policy is the real thing, but
     wrong if it's a *display* policy spread uniformly over a pure saddle's
     tied actions (tieAwarePolicy's own Python mirror): several actions
-    having weight there does not make the equilibrium mixed."""
+    having weight there does not make the equilibrium mixed. ``always_label``
+    is passed straight through to :func:`_action_fan`."""
     w, h = game.width, game.height
     x0, y0, x1, y1, b = state
     tw = w * CELL + 2 * MARGIN
@@ -193,8 +200,8 @@ def policy_svg(
     )
     wall0, score0 = _wall_mask(x0, y0, w, h, game.goal_rows, b == 0, 0)
     wall1, score1 = _wall_mask(x1, y1, w, h, game.goal_rows, b == 1, 1)
-    body += _action_fan(cx0, cy0, p0, P0, wall=wall0, score=score0)
-    body += _action_fan(cx1, cy1, p1, P1, wall=wall1, score=score1)
+    body += _action_fan(cx0, cy0, p0, P0, wall=wall0, score=score0, always_label=always_label)
+    body += _action_fan(cx1, cy1, p1, P1, wall=wall1, score=score1, always_label=always_label)
 
     tag = kind if kind is not None else ("mixed" if (mixed0 or mixed1) else "pure")
     sub = f"{tag} equilibrium" + (f" · V = {value:+.3f}" if value is not None else "")

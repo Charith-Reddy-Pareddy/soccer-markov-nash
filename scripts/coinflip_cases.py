@@ -207,7 +207,7 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
     # are not pure by construction the way A10's are, so the classification
     # should come from the actual policy, not be forced.
     board = policy_svg(g, state, {state: disp_row}, {state: disp_col},
-                        value=r.values[state], title=label)
+                        value=r.values[state], title=label, always_label=True)
     matrix = bestresponse_graph_svg(M, _ACT, _ACT, title=f"Q matrix -- {state}")
     panels.append(board)
     panels.append(matrix)

@@ -22,7 +22,9 @@
 <circle cx="52.0" cy="184.0" r="11" fill="var(--p1, #2f8a52)"/>
 <circle cx="62.0" cy="174.0" r="4.5" fill="var(--ball, #cf7a20)" stroke="var(--paper, #ffffff)" stroke-width="1.2"/>
 <line x1="52.0" y1="215.0" x2="52.0" y2="190.0" stroke="var(--p0, #2f6bb0)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f6bb0)"/>
+<text x="52.0" y="182.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">100%</text>
 <line x1="39.0" y1="184.0" x2="14.0" y2="184.0" stroke="var(--p1, #2f8a52)" stroke-width="4.2" stroke-linecap="round" opacity="0.95" marker-end="url(#ah-2f8a52)"/>
+<text x="3.0" y="187.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #2f8a52)">100%</text>
 <text x="30" y="294" font-family="ui-monospace,monospace" font-size="10" fill="var(--ink-faint, #77817a)">pure equilibrium · V = -1.000</text>
 <text x="30" y="-6" font-family="Barlow Semi Condensed,sans-serif" font-weight="600" font-size="13" fill="var(--ink, #19211c)">The open net</text>
 </g></g>
