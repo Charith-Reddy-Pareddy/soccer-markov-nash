@@ -37,8 +37,12 @@ import numpy as np
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame
+from soccer_nash.nash_dqn import fit_q_to_exact, train_nash_dqn
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.viz import bestresponse_graph_svg, panel_svg, policy_svg
+
+DQN_EPOCHS = 400
+DQN_SEED = 0
 
 FIG = pathlib.Path("docs/figures/gallery/a10_cases.svg")
 CASE_DIR = pathlib.Path("docs/figures/gallery")
@@ -106,7 +110,40 @@ def _report(label: str, why: str, g: SoccerGame, solver, r, state, panels: list[
     (CASE_DIR / f"a10_case{case_no:02d}.svg").write_text(panel_svg([board, matrix], cols=2))
 
 
-def _html_case(number, label, why, g, solver, result, state, note=""):
+def _neural_table(state, M, dqn_zero, dqn_fit):
+    """Independent DQN cross-check for this one state: the exact matrix next
+    to two networks that never see each other's answer -- one trained from a
+    random init via TD bootstrap ("from zero"), one trained by direct
+    supervised regression onto the exact matrices ("fit to exact"). Neither
+    hits the exact numbers bit-for-bit (networks essentially never do), but
+    both should recover the same qualitative shape. Reused verbatim as the
+    site's own "Exact vs. DQN, cell by cell" table, with a second DQN column
+    added."""
+    Qz, Qf = dqn_zero.matrix(state), dqn_fit.matrix(state)
+    err_z = float(np.abs(M - Qz).max())
+    err_f = float(np.abs(M - Qf).max())
+    rows_html = "".join(
+        f"<tr><td>{_ACT[a]}/{_ACT[b]}</td><td>{M[a, b]:.4f}</td>"
+        f"<td>{Qz[a, b]:.4f}</td><td>{Qf[a, b]:.4f}</td></tr>"
+        for a in range(4) for b in range(4)
+    )
+    return f"""<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>{err_z:.4f}</b> &middot; fit to exact = <b>{err_f:.4f}</b>. "From zero" is
+{DQN_EPOCHS} epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed {DQN_SEED}), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state={",".join(map(str, state))}">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr>{rows_html}</table>"""
+
+
+def _html_case(number, label, why, g, solver, result, state, dqn_zero, dqn_fit, note=""):
     M = solver._matrix(state, result.values)
     p, q = result.row_policy[state], result.col_policy[state]
     _, _, rows, cols = _ties(M)
@@ -120,6 +157,7 @@ def _html_case(number, label, why, g, solver, result, state, note=""):
             for a1 in MOVE_ACTIONS) + "</tr>" for a0 in MOVE_ACTIONS)
     headers = "<tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr>"
     v = result.values[state]
+    neural = _neural_table(state, M, dqn_zero, dqn_fit)
     return f"""<section><h2><span class="case-no">{number}</span>{html.escape(label)}</h2>
 <p class="lede">State {state} &middot; player {state[4]} carries the ball &middot;
 V = {v:+.6f}</p>
@@ -136,7 +174,8 @@ P1 {'/'.join(_ACT[k] for k in cols)}</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table>{headers}{matrix}</table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions">{headers}{transitions}</table></section>"""
+<table class="transitions">{headers}{transitions}</table>
+{neural}</section>"""
 
 
 NOTES: dict[int, str] = {
@@ -190,6 +229,13 @@ def main() -> None:
     r = solver.run_exact()
     print(f"exact solve: |V_exact - V_iterative| = {r.exact_vs_iterative:.2e} "
           f"over {len(r.values)} states\n")
+
+    print("training DQN cross-check nets (from zero + fit to exact)...")
+    dqn_zero = train_nash_dqn(g, gamma=0.9, hidden=64, epochs=DQN_EPOCHS, seed=DQN_SEED).net
+    dqn_fit = fit_q_to_exact(
+        g, lambda s: solver._matrix(s, r.values), hidden=64, epochs=DQN_EPOCHS, seed=DQN_SEED,
+    )
+    print("done\n")
 
     panels: list[str] = []
     cases = [
@@ -340,7 +386,7 @@ mixed -- the richest source), <a href="territory_cases.pdf">territory_cases.pdf<
 mixed).</p>
 <p><a href="explorer.html?board=canonical_det">Interactive explorer</a> ·
 <a href="equilibrium-debug.md">Audit and reproduction details</a></p>"""
-    sections = [_html_case(n, label, why, g, solver, r, state, NOTES.get(n, ""))
+    sections = [_html_case(n, label, why, g, solver, r, state, dqn_zero, dqn_fit, NOTES.get(n, ""))
                 for n, (state, label, why) in enumerate(cases, 1)]
     pathlib.Path("docs/a10_cases.html").write_text(intro + "".join(sections) + "</html>")
     FIG.write_text(panel_svg(panels, cols=2))

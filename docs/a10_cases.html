@@ -91,7 +91,21 @@ P1 R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.729000</td><td>0.000000</td><td>0.729000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.810000</td><td>0.810000</td><td>-0.590490</td><td>0.000000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(4, 4, 5, 4, 0)</td><td>(4, 4, 5, 2, 0)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 6, 3, 0)</td></tr><tr><th>D</th><td>(4, 2, 5, 4, 0)</td><td>(4, 2, 5, 2, 0)</td><td>(4, 2, 4, 3, 0)</td><td>(4, 2, 6, 3, 0)</td></tr><tr><th>L</th><td>(3, 3, 5, 4, 0)</td><td>(3, 3, 5, 2, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 6, 3, 0)</td></tr><tr><th>R</th><td>(5, 3, 5, 4, 0)</td><td>(5, 3, 5, 2, 0)</td><td>(5, 3, 4, 3, 1)</td><td>(5, 3, 6, 3, 0)</td></tr></table></section><section><h2><span class="case-no">2</span>Pinned in the corner</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(4, 4, 5, 4, 0)</td><td>(4, 4, 5, 2, 0)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 6, 3, 0)</td></tr><tr><th>D</th><td>(4, 2, 5, 4, 0)</td><td>(4, 2, 5, 2, 0)</td><td>(4, 2, 4, 3, 0)</td><td>(4, 2, 6, 3, 0)</td></tr><tr><th>L</th><td>(3, 3, 5, 4, 0)</td><td>(3, 3, 5, 2, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 6, 3, 0)</td></tr><tr><th>R</th><td>(5, 3, 5, 4, 0)</td><td>(5, 3, 5, 2, 0)</td><td>(5, 3, 4, 3, 1)</td><td>(5, 3, 6, 3, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.4209</b> &middot; fit to exact = <b>0.4869</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=4,3,5,3,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.0000</td><td>0.2344</td><td>0.0128</td></tr><tr><td>U/D</td><td>0.0000</td><td>0.2672</td><td>0.1547</td></tr><tr><td>U/L</td><td>0.0000</td><td>0.2440</td><td>0.1559</td></tr><tr><td>U/R</td><td>0.0000</td><td>0.2150</td><td>0.0795</td></tr><tr><td>D/U</td><td>0.7290</td><td>0.3656</td><td>0.4529</td></tr><tr><td>D/D</td><td>0.0000</td><td>0.3172</td><td>0.1220</td></tr><tr><td>D/L</td><td>0.7290</td><td>0.5558</td><td>0.5696</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.2156</td><td>-0.1531</td></tr><tr><td>L/U</td><td>0.0000</td><td>0.1485</td><td>-0.0693</td></tr><tr><td>L/D</td><td>0.0000</td><td>0.1586</td><td>-0.0122</td></tr><tr><td>L/L</td><td>0.0000</td><td>0.1802</td><td>0.0685</td></tr><tr><td>L/R</td><td>0.0000</td><td>0.1910</td><td>-0.0170</td></tr><tr><td>R/U</td><td>0.8100</td><td>0.4788</td><td>0.3794</td></tr><tr><td>R/D</td><td>0.8100</td><td>0.3891</td><td>0.3231</td></tr><tr><td>R/L</td><td>-0.5905</td><td>-0.2911</td><td>-0.3680</td></tr><tr><td>R/R</td><td>0.0000</td><td>0.2988</td><td>0.0736</td></tr></table></section><section><h2><span class="case-no">2</span>Pinned in the corner</h2>
 <p class="lede">State (0, 0, 0, 2, 0) &middot; player 0 carries the ball &middot;
 V = +0.000000</p>
 <div class="callout">
@@ -107,7 +121,21 @@ P1 D/R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.478297</td><td>-0.900000</td><td>0.478297</td><td>0.000000</td></tr><tr><th>D</th><td>0.430467</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.430467</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.478297</td><td>0.000000</td><td>0.478297</td><td>0.000000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 1, 2, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>R</th><td>(1, 0, 0, 3, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 1, 2, 0)</td></tr></table></section><section><h2><span class="case-no">3</span>The standoff</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 1, 2, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 1, 2, 0)</td></tr><tr><th>R</th><td>(1, 0, 0, 3, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 1, 2, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.5168</b> &middot; fit to exact = <b>0.6558</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=0,0,0,2,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.4783</td><td>0.2704</td><td>0.5110</td></tr><tr><td>U/D</td><td>-0.9000</td><td>-0.3832</td><td>-0.2442</td></tr><tr><td>U/L</td><td>0.4783</td><td>0.2191</td><td>0.3945</td></tr><tr><td>U/R</td><td>0.0000</td><td>0.0232</td><td>-0.0067</td></tr><tr><td>D/U</td><td>0.4305</td><td>0.2484</td><td>0.5116</td></tr><tr><td>D/D</td><td>0.0000</td><td>-0.0452</td><td>-0.0777</td></tr><tr><td>D/L</td><td>0.0000</td><td>0.0963</td><td>0.3703</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.0582</td><td>-0.1063</td></tr><tr><td>L/U</td><td>0.4305</td><td>0.1762</td><td>0.1956</td></tr><tr><td>L/D</td><td>0.0000</td><td>-0.0492</td><td>-0.3925</td></tr><tr><td>L/L</td><td>0.0000</td><td>0.1503</td><td>0.1425</td></tr><tr><td>L/R</td><td>0.0000</td><td>0.0897</td><td>-0.0942</td></tr><tr><td>R/U</td><td>0.4783</td><td>0.3805</td><td>0.4999</td></tr><tr><td>R/D</td><td>0.0000</td><td>0.2344</td><td>0.2780</td></tr><tr><td>R/L</td><td>0.4783</td><td>0.2960</td><td>0.5072</td></tr><tr><td>R/R</td><td>0.0000</td><td>0.2674</td><td>0.2052</td></tr></table></section><section><h2><span class="case-no">3</span>The standoff</h2>
 <p class="lede">State (3, 4, 4, 4, 0) &middot; player 0 carries the ball &middot;
 V = +0.000000</p>
 <div class="callout">
@@ -125,7 +153,21 @@ P1 U/D/R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.000000</td><td>0.000000</td><td>0.656100</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.000000</td><td>0.000000</td><td>-0.590490</td><td>0.000000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(3, 4, 4, 4, 0)</td><td>(3, 4, 4, 3, 0)</td><td>(3, 4, 4, 4, 1)</td><td>(3, 4, 5, 4, 0)</td></tr><tr><th>D</th><td>(3, 3, 4, 4, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 3, 4, 0)</td><td>(3, 3, 5, 4, 0)</td></tr><tr><th>L</th><td>(2, 4, 4, 4, 0)</td><td>(2, 4, 4, 3, 0)</td><td>(2, 4, 3, 4, 0)</td><td>(2, 4, 5, 4, 0)</td></tr><tr><th>R</th><td>(3, 4, 4, 4, 1)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 3, 4, 1)</td><td>(4, 4, 5, 4, 0)</td></tr></table></section><section><h2><span class="case-no">4</span>The open goal</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(3, 4, 4, 4, 0)</td><td>(3, 4, 4, 3, 0)</td><td>(3, 4, 4, 4, 1)</td><td>(3, 4, 5, 4, 0)</td></tr><tr><th>D</th><td>(3, 3, 4, 4, 0)</td><td>(3, 3, 4, 3, 0)</td><td>(3, 3, 3, 4, 0)</td><td>(3, 3, 5, 4, 0)</td></tr><tr><th>L</th><td>(2, 4, 4, 4, 0)</td><td>(2, 4, 4, 3, 0)</td><td>(2, 4, 3, 4, 0)</td><td>(2, 4, 5, 4, 0)</td></tr><tr><th>R</th><td>(3, 4, 4, 4, 1)</td><td>(4, 4, 4, 3, 0)</td><td>(4, 4, 3, 4, 1)</td><td>(4, 4, 5, 4, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.3001</b> &middot; fit to exact = <b>0.2693</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=3,4,4,4,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.0000</td><td>0.1211</td><td>-0.0765</td></tr><tr><td>U/D</td><td>0.0000</td><td>0.0774</td><td>0.0149</td></tr><tr><td>U/L</td><td>0.0000</td><td>0.1048</td><td>0.0029</td></tr><tr><td>U/R</td><td>0.0000</td><td>0.1415</td><td>0.0550</td></tr><tr><td>D/U</td><td>0.0000</td><td>0.2338</td><td>0.2693</td></tr><tr><td>D/D</td><td>0.0000</td><td>0.2417</td><td>0.1020</td></tr><tr><td>D/L</td><td>0.6561</td><td>0.4552</td><td>0.4776</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.2489</td><td>-0.0465</td></tr><tr><td>L/U</td><td>0.0000</td><td>0.1602</td><td>-0.1495</td></tr><tr><td>L/D</td><td>0.0000</td><td>0.1269</td><td>-0.0593</td></tr><tr><td>L/L</td><td>0.0000</td><td>0.1386</td><td>-0.0028</td></tr><tr><td>L/R</td><td>0.0000</td><td>0.1168</td><td>0.0294</td></tr><tr><td>R/U</td><td>0.0000</td><td>0.2445</td><td>0.1532</td></tr><tr><td>R/D</td><td>0.0000</td><td>0.2369</td><td>0.1146</td></tr><tr><td>R/L</td><td>-0.5905</td><td>-0.2904</td><td>-0.3455</td></tr><tr><td>R/R</td><td>0.0000</td><td>0.1815</td><td>-0.0441</td></tr></table></section><section><h2><span class="case-no">4</span>The open goal</h2>
 <p class="lede">State (6, 1, 4, 1, 0) &middot; player 0 carries the ball &middot;
 V = +1.000000</p>
 <div class="callout">
@@ -141,7 +183,21 @@ P1 U/D/L/R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.900000</td><td>0.900000</td><td>0.900000</td><td>0.900000</td></tr><tr><th>D</th><td>0.810000</td><td>0.810000</td><td>0.810000</td><td>0.000000</td></tr><tr><th>L</th><td>0.810000</td><td>0.810000</td><td>0.810000</td><td>-0.590490</td></tr><tr><th>R</th><td>1.000000</td><td>1.000000</td><td>1.000000</td><td>1.000000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(6, 2, 4, 2, 0)</td><td>(6, 2, 4, 0, 0)</td><td>(6, 2, 3, 1, 0)</td><td>(6, 2, 5, 1, 0)</td></tr><tr><th>D</th><td>(6, 0, 4, 2, 0)</td><td>(6, 0, 4, 0, 0)</td><td>(6, 0, 3, 1, 0)</td><td>(6, 0, 5, 1, 0)</td></tr><tr><th>L</th><td>(5, 1, 4, 2, 0)</td><td>(5, 1, 4, 0, 0)</td><td>(5, 1, 3, 1, 0)</td><td>(5, 1, 4, 1, 1)</td></tr><tr><th>R</th><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td></tr></table></section><section><h2><span class="case-no">5</span>The open net</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(6, 2, 4, 2, 0)</td><td>(6, 2, 4, 0, 0)</td><td>(6, 2, 3, 1, 0)</td><td>(6, 2, 5, 1, 0)</td></tr><tr><th>D</th><td>(6, 0, 4, 2, 0)</td><td>(6, 0, 4, 0, 0)</td><td>(6, 0, 3, 1, 0)</td><td>(6, 0, 5, 1, 0)</td></tr><tr><th>L</th><td>(5, 1, 4, 2, 0)</td><td>(5, 1, 4, 0, 0)</td><td>(5, 1, 3, 1, 0)</td><td>(5, 1, 4, 1, 1)</td></tr><tr><th>R</th><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td><td>(-1, -1, -1, -1, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.4231</b> &middot; fit to exact = <b>0.7772</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=6,1,4,1,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.9000</td><td>0.9198</td><td>1.0031</td></tr><tr><td>U/D</td><td>0.9000</td><td>0.9515</td><td>1.0593</td></tr><tr><td>U/L</td><td>0.9000</td><td>0.9224</td><td>0.8627</td></tr><tr><td>U/R</td><td>0.9000</td><td>0.8560</td><td>0.9428</td></tr><tr><td>D/U</td><td>0.8100</td><td>0.6815</td><td>0.7381</td></tr><tr><td>D/D</td><td>0.8100</td><td>0.6681</td><td>0.8416</td></tr><tr><td>D/L</td><td>0.8100</td><td>0.7383</td><td>0.7128</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.4231</td><td>0.5073</td></tr><tr><td>L/U</td><td>0.8100</td><td>0.6379</td><td>0.8170</td></tr><tr><td>L/D</td><td>0.8100</td><td>0.7279</td><td>0.9228</td></tr><tr><td>L/L</td><td>0.8100</td><td>0.7493</td><td>0.7831</td></tr><tr><td>L/R</td><td>-0.5905</td><td>-0.1917</td><td>0.1867</td></tr><tr><td>R/U</td><td>1.0000</td><td>1.0035</td><td>0.9647</td></tr><tr><td>R/D</td><td>1.0000</td><td>0.9963</td><td>1.0290</td></tr><tr><td>R/L</td><td>1.0000</td><td>1.1082</td><td>1.2321</td></tr><tr><td>R/R</td><td>1.0000</td><td>0.9655</td><td>0.9798</td></tr></table></section><section><h2><span class="case-no">5</span>The open net</h2>
 <p class="lede">State (0, 0, 0, 1, 1) &middot; player 1 carries the ball &middot;
 V = -1.000000</p>
 <div class="callout">
@@ -157,7 +213,21 @@ P1 L</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>-0.900000</td><td>0.478297</td><td>-1.000000</td><td>0.000000</td></tr><tr><th>D</th><td>-0.900000</td><td>0.000000</td><td>-1.000000</td><td>0.000000</td></tr><tr><th>L</th><td>-0.900000</td><td>0.000000</td><td>-1.000000</td><td>0.000000</td></tr><tr><th>R</th><td>-0.900000</td><td>-0.810000</td><td>-1.000000</td><td>-0.810000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 0, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 1, 1, 1, 1)</td></tr><tr><th>D</th><td>(0, 0, 0, 2, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 0, 1, 1, 1)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 0, 1, 1, 1)</td></tr><tr><th>R</th><td>(1, 0, 0, 2, 1)</td><td>(1, 0, 0, 0, 1)</td><td>(-1, -1, -1, -1, 1)</td><td>(1, 0, 1, 1, 1)</td></tr></table></section><section><h2><span class="case-no">6</span>The getaway</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 0, 2, 1)</td><td>(0, 1, 0, 0, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 1, 1, 1, 1)</td></tr><tr><th>D</th><td>(0, 0, 0, 2, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 0, 1, 1, 1)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(-1, -1, -1, -1, 1)</td><td>(0, 0, 1, 1, 1)</td></tr><tr><th>R</th><td>(1, 0, 0, 2, 1)</td><td>(1, 0, 0, 0, 1)</td><td>(-1, -1, -1, -1, 1)</td><td>(1, 0, 1, 1, 1)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.4947</b> &middot; fit to exact = <b>0.4049</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=0,0,0,1,1">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>-0.9000</td><td>-0.6967</td><td>-0.6653</td></tr><tr><td>U/D</td><td>0.4783</td><td>0.3357</td><td>0.3346</td></tr><tr><td>U/L</td><td>-1.0000</td><td>-0.7185</td><td>-0.7320</td></tr><tr><td>U/R</td><td>0.0000</td><td>-0.3544</td><td>0.0854</td></tr><tr><td>D/U</td><td>-0.9000</td><td>-0.9347</td><td>-1.0265</td></tr><tr><td>D/D</td><td>0.0000</td><td>-0.1585</td><td>-0.3353</td></tr><tr><td>D/L</td><td>-1.0000</td><td>-0.9130</td><td>-0.8393</td></tr><tr><td>D/R</td><td>0.0000</td><td>-0.3615</td><td>-0.4049</td></tr><tr><td>L/U</td><td>-0.9000</td><td>-0.7078</td><td>-0.7625</td></tr><tr><td>L/D</td><td>0.0000</td><td>-0.0688</td><td>0.1335</td></tr><tr><td>L/L</td><td>-1.0000</td><td>-0.8956</td><td>-0.7354</td></tr><tr><td>L/R</td><td>0.0000</td><td>-0.2438</td><td>-0.0471</td></tr><tr><td>R/U</td><td>-0.9000</td><td>-0.9099</td><td>-0.9654</td></tr><tr><td>R/D</td><td>-0.8100</td><td>-0.3153</td><td>-0.5793</td></tr><tr><td>R/L</td><td>-1.0000</td><td>-1.0282</td><td>-0.8748</td></tr><tr><td>R/R</td><td>-0.8100</td><td>-0.5346</td><td>-0.5617</td></tr></table></section><section><h2><span class="case-no">6</span>The getaway</h2>
 <p class="lede">State (0, 1, 0, 3, 0) &middot; player 0 carries the ball &middot;
 V = +0.531441</p>
 <div class="callout">
@@ -173,7 +243,21 @@ P1 U/D/L/R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.478297</td><td>-0.900000</td><td>0.478297</td><td>0.000000</td></tr><tr><th>D</th><td>0.430467</td><td>0.000000</td><td>0.430467</td><td>0.000000</td></tr><tr><th>L</th><td>0.478297</td><td>0.478297</td><td>0.478297</td><td>0.478297</td></tr><tr><th>R</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>0.531441</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 0, 4, 0)</td><td>(0, 2, 0, 3, 1)</td><td>(0, 2, 0, 3, 0)</td><td>(0, 2, 1, 3, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 4, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 1, 3, 0)</td></tr><tr><th>L</th><td>(0, 1, 0, 4, 0)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 1, 3, 0)</td></tr><tr><th>R</th><td>(1, 1, 0, 4, 0)</td><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 3, 0)</td><td>(1, 1, 1, 3, 0)</td></tr></table></section><section><h2><span class="case-no">7</span>The tightest tie</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 2, 0, 4, 0)</td><td>(0, 2, 0, 3, 1)</td><td>(0, 2, 0, 3, 0)</td><td>(0, 2, 1, 3, 0)</td></tr><tr><th>D</th><td>(0, 0, 0, 4, 0)</td><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 3, 0)</td><td>(0, 0, 1, 3, 0)</td></tr><tr><th>L</th><td>(0, 1, 0, 4, 0)</td><td>(0, 1, 0, 2, 0)</td><td>(0, 1, 0, 3, 0)</td><td>(0, 1, 1, 3, 0)</td></tr><tr><th>R</th><td>(1, 1, 0, 4, 0)</td><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 3, 0)</td><td>(1, 1, 1, 3, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.6241</b> &middot; fit to exact = <b>0.6223</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=0,1,0,3,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.4783</td><td>0.2979</td><td>0.5357</td></tr><tr><td>U/D</td><td>-0.9000</td><td>-0.2759</td><td>-0.2777</td></tr><tr><td>U/L</td><td>0.4783</td><td>0.2296</td><td>0.3890</td></tr><tr><td>U/R</td><td>0.0000</td><td>0.0898</td><td>0.1222</td></tr><tr><td>D/U</td><td>0.4305</td><td>0.3734</td><td>0.4584</td></tr><tr><td>D/D</td><td>0.0000</td><td>0.2029</td><td>0.0880</td></tr><tr><td>D/L</td><td>0.4305</td><td>0.2627</td><td>0.3620</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.1858</td><td>0.1598</td></tr><tr><td>L/U</td><td>0.4783</td><td>0.3046</td><td>0.4892</td></tr><tr><td>L/D</td><td>0.4783</td><td>-0.0476</td><td>-0.0927</td></tr><tr><td>L/L</td><td>0.4783</td><td>0.3345</td><td>0.4042</td></tr><tr><td>L/R</td><td>0.4783</td><td>0.1470</td><td>0.2213</td></tr><tr><td>R/U</td><td>0.5314</td><td>0.4519</td><td>0.5313</td></tr><tr><td>R/D</td><td>0.5314</td><td>0.4052</td><td>0.4881</td></tr><tr><td>R/L</td><td>0.5314</td><td>0.4103</td><td>0.4914</td></tr><tr><td>R/R</td><td>0.5314</td><td>0.4345</td><td>0.4883</td></tr></table></section><section><h2><span class="case-no">7</span>The tightest tie</h2>
 <p class="lede">State (1, 0, 0, 1, 0) &middot; player 0 carries the ball &middot;
 V = +0.000000</p>
 <div class="callout">
@@ -189,7 +273,21 @@ P1 R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>-0.900000</td></tr><tr><th>D</th><td>0.478297</td><td>0.478297</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>-0.900000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.531441</td><td>0.531441</td><td>0.531441</td><td>0.000000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 0, 0)</td><td>(1, 1, 0, 1, 0)</td><td>(1, 1, 0, 1, 1)</td></tr><tr><th>D</th><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 0, 0, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 1, 1, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 1, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 1, 1, 0)</td></tr><tr><th>R</th><td>(2, 0, 0, 2, 0)</td><td>(2, 0, 0, 0, 0)</td><td>(2, 0, 0, 1, 0)</td><td>(2, 0, 1, 1, 0)</td></tr></table></section><section><h2><span class="case-no">8</span>The dead zone</h2>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(1, 1, 0, 2, 0)</td><td>(1, 1, 0, 0, 0)</td><td>(1, 1, 0, 1, 0)</td><td>(1, 1, 0, 1, 1)</td></tr><tr><th>D</th><td>(1, 0, 0, 2, 0)</td><td>(1, 0, 0, 0, 0)</td><td>(1, 0, 0, 1, 0)</td><td>(1, 0, 1, 1, 0)</td></tr><tr><th>L</th><td>(0, 0, 0, 2, 0)</td><td>(0, 0, 0, 1, 1)</td><td>(0, 0, 0, 1, 0)</td><td>(0, 0, 1, 1, 0)</td></tr><tr><th>R</th><td>(2, 0, 0, 2, 0)</td><td>(2, 0, 0, 0, 0)</td><td>(2, 0, 0, 1, 0)</td><td>(2, 0, 1, 1, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.3929</b> &middot; fit to exact = <b>0.5398</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=1,0,0,1,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.5314</td><td>0.3744</td><td>0.4738</td></tr><tr><td>U/D</td><td>0.5314</td><td>0.3351</td><td>0.1921</td></tr><tr><td>U/L</td><td>0.5314</td><td>0.2442</td><td>0.5397</td></tr><tr><td>U/R</td><td>-0.9000</td><td>-0.5770</td><td>-0.3602</td></tr><tr><td>D/U</td><td>0.4783</td><td>0.2666</td><td>0.2314</td></tr><tr><td>D/D</td><td>0.4783</td><td>0.0854</td><td>0.2215</td></tr><tr><td>D/L</td><td>0.0000</td><td>0.2194</td><td>0.4356</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.0576</td><td>-0.2646</td></tr><tr><td>L/U</td><td>0.0000</td><td>0.1828</td><td>0.0154</td></tr><tr><td>L/D</td><td>-0.9000</td><td>-0.7350</td><td>-0.5569</td></tr><tr><td>L/L</td><td>0.0000</td><td>-0.0909</td><td>0.1429</td></tr><tr><td>L/R</td><td>0.0000</td><td>-0.0770</td><td>-0.2302</td></tr><tr><td>R/U</td><td>0.5314</td><td>0.4398</td><td>0.5306</td></tr><tr><td>R/D</td><td>0.5314</td><td>0.4147</td><td>0.5372</td></tr><tr><td>R/L</td><td>0.5314</td><td>0.4231</td><td>0.5675</td></tr><tr><td>R/R</td><td>0.0000</td><td>0.2691</td><td>0.1459</td></tr></table></section><section><h2><span class="case-no">8</span>The dead zone</h2>
 <p class="lede">State (0, 0, 2, 0, 0) &middot; player 0 carries the ball &middot;
 V = +0.000000</p>
 <div class="callout">
@@ -205,4 +303,18 @@ P1 U/D/L/R</p>
 <h3>Q: player 0 payoff, optimal continuation after this turn</h3>
 <table><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>D</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>L</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr><tr><th>R</th><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>0.000000</td></tr></table>
 <h3>All 16 successor states, from the transition engine</h3>
-<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 2, 1, 0)</td><td>(0, 1, 2, 0, 0)</td><td>(0, 1, 1, 0, 0)</td><td>(0, 1, 3, 0, 0)</td></tr><tr><th>D</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>L</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>R</th><td>(1, 0, 2, 1, 0)</td><td>(1, 0, 2, 0, 0)</td><td>(1, 0, 2, 0, 1)</td><td>(1, 0, 3, 0, 0)</td></tr></table></section></html>
+<table class="transitions"><tr><th>P0 / P1</th><th>U</th><th>D</th><th>L</th><th>R</th></tr><tr><th>U</th><td>(0, 1, 2, 1, 0)</td><td>(0, 1, 2, 0, 0)</td><td>(0, 1, 1, 0, 0)</td><td>(0, 1, 3, 0, 0)</td></tr><tr><th>D</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>L</th><td>(0, 0, 2, 1, 0)</td><td>(0, 0, 2, 0, 0)</td><td>(0, 0, 1, 0, 0)</td><td>(0, 0, 3, 0, 0)</td></tr><tr><th>R</th><td>(1, 0, 2, 1, 0)</td><td>(1, 0, 2, 0, 0)</td><td>(1, 0, 2, 0, 1)</td><td>(1, 0, 3, 0, 0)</td></tr></table>
+<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+<p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
+<b>0.1744</b> &middot; fit to exact = <b>0.1498</b>. "From zero" is
+400 epochs of TD bootstrap from a random init with no access to the
+exact answer -- the honest baseline; "fit to exact" is direct supervised
+regression onto the exact matrices, isolating how well a network this size
+can even represent Q<sub>exact</sub> before any bootstrapping noise. One
+representative run each (seed 0), not the multi-seed study in
+<a href="neural.md">docs/neural.md</a>. Full per-state numbers for every
+board, plus a policy-gradient comparison, are in the
+<a href="explorer.html?board=canonical_det&amp;state=0,0,2,0,0">
+interactive explorer</a>'s "Show neural cross-check" panel.</p>
+<table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
+<th>DQN, fit to exact</th></tr><tr><td>U/U</td><td>0.0000</td><td>0.0451</td><td>-0.0391</td></tr><tr><td>U/D</td><td>0.0000</td><td>0.0795</td><td>-0.0000</td></tr><tr><td>U/L</td><td>0.0000</td><td>0.0911</td><td>0.1498</td></tr><tr><td>U/R</td><td>0.0000</td><td>0.0089</td><td>0.0374</td></tr><tr><td>D/U</td><td>0.0000</td><td>0.0130</td><td>0.0521</td></tr><tr><td>D/D</td><td>0.0000</td><td>0.0878</td><td>-0.0250</td></tr><tr><td>D/L</td><td>0.0000</td><td>-0.0387</td><td>0.0207</td></tr><tr><td>D/R</td><td>0.0000</td><td>0.0907</td><td>0.0729</td></tr><tr><td>L/U</td><td>0.0000</td><td>0.0408</td><td>0.0076</td></tr><tr><td>L/D</td><td>0.0000</td><td>0.0560</td><td>-0.0179</td></tr><tr><td>L/L</td><td>0.0000</td><td>-0.0322</td><td>-0.0095</td></tr><tr><td>L/R</td><td>0.0000</td><td>0.0744</td><td>0.0280</td></tr><tr><td>R/U</td><td>0.0000</td><td>0.0784</td><td>-0.0684</td></tr><tr><td>R/D</td><td>0.0000</td><td>0.0770</td><td>0.0203</td></tr><tr><td>R/L</td><td>0.0000</td><td>-0.1744</td><td>-0.0493</td></tr><tr><td>R/R</td><td>0.0000</td><td>0.0457</td><td>-0.0414</td></tr></table></section></html>
