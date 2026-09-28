@@ -23,10 +23,16 @@ const READ_LINKS = [
   { href: "slip_cases.pdf", text: "Movement-slip edge cases (PDF)" },
 ];
 
+// The per-board case-study docs (every value in BOARD_READ_DOC): when a
+// board is selected, only the matching one is shown -- the rest would be
+// documenting a different board's rule entirely, not "more reading" on
+// this one.
+const CASE_STUDY_HREFS = new Set(Object.values(BOARD_READ_DOC).map((d) => d.href));
+
 export default function Footer({ board } = {}) {
   const current = BOARD_READ_DOC[board];
   const links = current
-    ? [current, ...READ_LINKS.filter((l) => l.href !== current.href)]
+    ? [current, ...READ_LINKS.filter((l) => !CASE_STUDY_HREFS.has(l.href))]
     : READ_LINKS;
   return (
     <footer>
