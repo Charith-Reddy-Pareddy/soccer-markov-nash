@@ -11,29 +11,29 @@
 <text x="44.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">1.0</text>
 <text x="194.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">21.5</text>
 <text x="344.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">42.0</text>
-<path d="M44.0 60.5 L51.3 18.0 L58.6 18.0 L66.0 18.0 L73.3 18.0 L80.6 18.0 L87.9 18.0 L95.2 18.0 L102.5 18.0 L109.9 18.0 L117.2 18.0 L124.5 18.0 L131.8 18.0 L139.1 18.0 L146.4 18.0 L153.8 18.0 L161.1 188.0 L168.4 188.0 L175.7 188.0 L183.0 188.0 L190.3 188.0" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="2" stroke-linejoin="round"/>
-<circle cx="44.0" cy="60.5" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="51.3" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="58.6" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="66.0" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="73.3" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="80.6" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="87.9" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="95.2" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="102.5" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="109.9" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="117.2" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="124.5" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="131.8" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="139.1" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="146.4" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="153.8" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="161.1" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="168.4" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="175.7" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="183.0" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="190.3" cy="188.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<text x="194.3" y="191.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">p M q</text>
+<path d="M44.0 60.5 L51.3 18.0 L58.6 18.0 L66.0 18.0 L73.3 18.0 L80.6 18.0 L87.9 18.0 L95.2 18.0 L102.5 18.0 L109.9 18.0 L117.2 18.0 L124.5 18.0 L131.8 18.0 L139.1 18.0 L146.4 18.0 L153.8 18.0 L161.1 188.0 L168.4 188.0 L175.7 188.0 L183.0 188.0 L190.3 188.0" fill="none" stroke="var(--p0, #3B82F6)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="60.5" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="51.3" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="58.6" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="66.0" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="73.3" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="80.6" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="87.9" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="95.2" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="102.5" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="109.9" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="117.2" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="124.5" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="131.8" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="139.1" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="146.4" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="153.8" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="161.1" cy="188.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="168.4" cy="188.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="175.7" cy="188.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="183.0" cy="188.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="190.3" cy="188.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<text x="194.3" y="191.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #3B82F6)">p M q</text>
 <path d="M44.0 60.5 L51.3 18.0 L58.6 18.0 L66.0 18.0 L73.3 18.0 L80.6 18.0 L87.9 18.0 L95.2 18.0 L102.5 18.0 L109.9 18.0 L117.2 18.0 L124.5 18.0 L131.8 18.0 L139.1 31.4 L146.4 31.6 L153.8 26.9 L161.1 26.9 L168.4 26.9 L175.7 26.9 L183.0 26.9 L190.3 26.9 L197.7 61.6 L205.0 26.9 L212.3 188.0 L219.6 26.9 L226.9 26.9 L234.2 26.9 L241.6 26.9 L248.9 188.0 L256.2 26.9 L263.5 26.9 L270.8 188.0 L278.1 188.0 L285.5 26.9 L292.8 188.0 L300.1 188.0 L307.4 188.0 L314.7 26.9 L322.0 188.0 L329.4 188.0 L336.7 188.0 L344.0 188.0" fill="none" stroke="var(--p1, #4CBB17)" stroke-width="2" stroke-linejoin="round"/>
 <circle cx="44.0" cy="60.5" r="2.4" fill="var(--p1, #4CBB17)"/>
 <circle cx="51.3" cy="18.0" r="2.4" fill="var(--p1, #4CBB17)"/>

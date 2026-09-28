@@ -16,7 +16,7 @@ _INK = "var(--ink, #19211c)"
 _FAINT = "var(--ink-faint, #77817a)"
 _TINT = "var(--tint, #eef2ec)"
 _RULE = "var(--rule-strong, #b7c4b9)"
-_P0 = "var(--p0, #2f6bb0)"
+_P0 = "var(--p0, #3B82F6)"
 _EMBER = "var(--ember, #a94e18)"
 
 

@@ -11,15 +11,15 @@
 <text x="44.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.5</text>
 <text x="194.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.7</text>
 <text x="344.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">1.0</text>
-<path d="M44.0 23.6 L105.2 46.3 L166.4 72.4 L227.7 77.0 L288.9 75.9 L319.5 46.9 L344.0 18.0" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="2" stroke-linejoin="round"/>
-<circle cx="44.0" cy="23.6" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="105.2" cy="46.3" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="166.4" cy="72.4" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="227.7" cy="77.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="288.9" cy="75.9" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="319.5" cy="46.9" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="344.0" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<text x="348.0" y="21.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">% wrongly made pure</text>
+<path d="M44.0 23.6 L105.2 46.3 L166.4 72.4 L227.7 77.0 L288.9 75.9 L319.5 46.9 L344.0 18.0" fill="none" stroke="var(--p0, #3B82F6)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="23.6" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="105.2" cy="46.3" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="166.4" cy="72.4" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="227.7" cy="77.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="288.9" cy="75.9" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="319.5" cy="46.9" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="344.0" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<text x="348.0" y="21.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #3B82F6)">% wrongly made pure</text>
 <path d="M44.0 184.0 L105.2 177.1 L166.4 152.1 L227.7 142.2 L288.9 138.0 L319.5 152.4 L344.0 179.1" fill="none" stroke="var(--p1, #4CBB17)" stroke-width="2" stroke-linejoin="round"/>
 <circle cx="44.0" cy="184.0" r="2.4" fill="var(--p1, #4CBB17)"/>
 <circle cx="105.2" cy="177.1" r="2.4" fill="var(--p1, #4CBB17)"/>

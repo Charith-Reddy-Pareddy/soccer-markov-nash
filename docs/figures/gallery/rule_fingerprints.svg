@@ -9,9 +9,9 @@
 <line x1="30" y1="118" x2="250" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="250" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>
@@ -44,9 +44,9 @@
 <line x1="30" y1="118" x2="250" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="250" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>
@@ -79,9 +79,9 @@
 <line x1="30" y1="118" x2="250" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="250" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>
@@ -117,9 +117,9 @@
 <line x1="30" y1="118" x2="250" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="250" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="119" width="42" height="42" fill="#c69472"/>
 <text x="52" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.01</text>
@@ -157,9 +157,9 @@
 <line x1="30" y1="118" x2="250" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="250" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="119" width="42" height="42" fill="#d5b69e"/>
 <text x="52" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--paper, #ffffff)">.00</text>
@@ -196,9 +196,9 @@
 <line x1="30" y1="118" x2="250" y2="118" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <line x1="30" y1="162" x2="250" y2="162" stroke="var(--rule, #cdd8ce)" stroke-width="1"/>
 <rect x="24" y="118" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="118" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="118" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="24" y="74" width="6" height="44" fill="var(--p1, #4CBB17)"/>
-<rect x="250" y="74" width="6" height="44" fill="var(--p0, #2f6bb0)"/>
+<rect x="250" y="74" width="6" height="44" fill="var(--p0, #3B82F6)"/>
 <rect x="31" y="163" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="119" width="42" height="42" fill="#eef2ec"/>
 <rect x="31" y="75" width="42" height="42" fill="#eef2ec"/>

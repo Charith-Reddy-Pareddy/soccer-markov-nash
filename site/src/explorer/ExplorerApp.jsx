@@ -782,13 +782,19 @@ export default function ExplorerApp() {
             const edgeKeys = edgeDoc
               ? Object.keys(PRESETS).filter((n) => PRESETS[n].board === currentBoard && PRESETS[n].doc === "edge")
               : [];
+            // Highlights the preset whose exact state you're currently on, so
+            // browsing by clicking a board cell (or Go to state) still shows
+            // which documented case, if any, you've landed on -- not just
+            // which one you most recently clicked.
+            const curKey = stateKey(st);
+            const isActive = (n) => stateKey(toState(PRESETS[n].state)) === curKey;
             return (
               <>
                 {positionsKeys.length > 0 && (
                   <div className="presets">
                     <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to a documented case (<a href="positions.pdf">positions.pdf</a>) &mdash; each switches to that case's board:</span>
                     {positionsKeys.map((n) => (
-                      <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
+                      <button key={n} className={`preset-btn${isActive(n) ? " active" : ""}`} onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
                     ))}
                   </div>
                 )}
@@ -796,7 +802,7 @@ export default function ExplorerApp() {
                   <div className="presets">
                     <span className="hint" style={{ margin: "0 .3rem 0 0" }}>Jump to an edge case on the {edgeDoc.label} board (<a href={edgeDoc.pdf}>{edgeDoc.pdf}</a>):</span>
                     {edgeKeys.map((n) => (
-                      <button key={n} className="preset-btn" onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
+                      <button key={n} className={`preset-btn${isActive(n) ? " active" : ""}`} onClick={() => applyPreset(n)}>{PRESETS[n].label}</button>
                     ))}
                   </div>
                 )}

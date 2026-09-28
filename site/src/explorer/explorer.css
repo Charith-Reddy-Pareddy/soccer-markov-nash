@@ -98,8 +98,9 @@ table.qmatrix td.cell.support { box-shadow: inset 0 0 0 2px var(--pitch); }
 .legend-row .swatch { width: 18px; height: 3px; border-radius: 2px; }
 
 .presets { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.5rem; }
-.preset-btn { border: 1px solid var(--rule-strong); background: var(--raise); border-radius: 7px; padding: .42rem .8rem; font-size: .78rem; color: var(--ink-soft); cursor: pointer; font-family: "IBM Plex Mono", monospace; }
+.preset-btn { border: 1px solid var(--rule-strong); border-bottom: 3px solid var(--rule-strong); background: var(--raise); border-radius: 7px; padding: .42rem .8rem; font-size: .78rem; color: var(--ink-soft); cursor: pointer; font-family: "IBM Plex Mono", monospace; }
 .preset-btn:hover { border-color: var(--pitch); color: var(--ink); }
+.preset-btn.active { border-color: var(--pitch); border-bottom-color: var(--pitch); background: var(--pitch-soft); color: var(--pitch); font-weight: 600; }
 
 .sim-stats { display: flex; flex-wrap: wrap; gap: 1.6rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--rule); }
 .sim-stats .s-k { font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); }

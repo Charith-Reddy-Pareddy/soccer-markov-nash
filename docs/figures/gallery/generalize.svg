@@ -11,12 +11,12 @@
 <text x="44.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.0</text>
 <text x="194.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.1</text>
 <text x="344.0" y="200.0" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8.5" fill="var(--ink-faint, #77817a)">0.3</text>
-<path d="M44.0 47.7 L144.0 18.0 L244.0 66.1 L344.0 73.4" fill="none" stroke="var(--p0, #2f6bb0)" stroke-width="2" stroke-linejoin="round"/>
-<circle cx="44.0" cy="47.7" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="144.0" cy="18.0" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="244.0" cy="66.1" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<circle cx="344.0" cy="73.4" r="2.4" fill="var(--p0, #2f6bb0)"/>
-<text x="348.0" y="76.4" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #2f6bb0)">random, 2-cell goal</text>
+<path d="M44.0 47.7 L144.0 18.0 L244.0 66.1 L344.0 73.4" fill="none" stroke="var(--p0, #3B82F6)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="47.7" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="144.0" cy="18.0" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="244.0" cy="66.1" r="2.4" fill="var(--p0, #3B82F6)"/>
+<circle cx="344.0" cy="73.4" r="2.4" fill="var(--p0, #3B82F6)"/>
+<text x="348.0" y="76.4" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #3B82F6)">random, 2-cell goal</text>
 <path d="M44.0 188.0 L144.0 73.4 L244.0 88.3 L344.0 92.0" fill="none" stroke="var(--ember, #a94e18)" stroke-width="2" stroke-linejoin="round"/>
 <circle cx="44.0" cy="188.0" r="2.4" fill="var(--ember, #a94e18)"/>
 <circle cx="144.0" cy="73.4" r="2.4" fill="var(--ember, #a94e18)"/>

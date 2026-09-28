@@ -156,7 +156,7 @@ def main() -> None:
     FINGERPRINTS.write_text(panel_svg(fingerprints(), cols=3, gap=18))
 
     series = [
-        ("2-cell goal", "var(--p0, #2f6bb0)",
+        ("2-cell goal", "var(--p0, #3B82F6)",
          [(r["tackle_prob"], r["pct"]) for r in swp if r["goal"] == "2-cell"]),
         ("1-cell goal", "var(--ember, #a94e18)",
          [(r["tackle_prob"], r["pct"]) for r in swp if r["goal"] == "1-cell"]),
