@@ -20,15 +20,15 @@
 <circle cx="319.5" cy="46.9" r="2.4" fill="var(--p0, #0EA5E9)"/>
 <circle cx="344.0" cy="18.0" r="2.4" fill="var(--p0, #0EA5E9)"/>
 <text x="348.0" y="21.0" font-family="ui-monospace,monospace" font-size="9" fill="var(--p0, #0EA5E9)">% wrongly made pure</text>
-<path d="M44.0 184.0 L105.2 177.1 L166.4 152.1 L227.7 142.2 L288.9 138.0 L319.5 152.4 L344.0 179.1" fill="none" stroke="var(--p1, #34D399)" stroke-width="2" stroke-linejoin="round"/>
-<circle cx="44.0" cy="184.0" r="2.4" fill="var(--p1, #34D399)"/>
-<circle cx="105.2" cy="177.1" r="2.4" fill="var(--p1, #34D399)"/>
-<circle cx="166.4" cy="152.1" r="2.4" fill="var(--p1, #34D399)"/>
-<circle cx="227.7" cy="142.2" r="2.4" fill="var(--p1, #34D399)"/>
-<circle cx="288.9" cy="138.0" r="2.4" fill="var(--p1, #34D399)"/>
-<circle cx="319.5" cy="152.4" r="2.4" fill="var(--p1, #34D399)"/>
-<circle cx="344.0" cy="179.1" r="2.4" fill="var(--p1, #34D399)"/>
-<text x="348.0" y="182.1" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #34D399)">gap, % of the 0.1 grid</text>
+<path d="M44.0 184.0 L105.2 177.1 L166.4 152.1 L227.7 142.2 L288.9 138.0 L319.5 152.4 L344.0 179.1" fill="none" stroke="var(--p1, #1DB954)" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="44.0" cy="184.0" r="2.4" fill="var(--p1, #1DB954)"/>
+<circle cx="105.2" cy="177.1" r="2.4" fill="var(--p1, #1DB954)"/>
+<circle cx="166.4" cy="152.1" r="2.4" fill="var(--p1, #1DB954)"/>
+<circle cx="227.7" cy="142.2" r="2.4" fill="var(--p1, #1DB954)"/>
+<circle cx="288.9" cy="138.0" r="2.4" fill="var(--p1, #1DB954)"/>
+<circle cx="319.5" cy="152.4" r="2.4" fill="var(--p1, #1DB954)"/>
+<circle cx="344.0" cy="179.1" r="2.4" fill="var(--p1, #1DB954)"/>
+<text x="348.0" y="182.1" font-family="ui-monospace,monospace" font-size="9" fill="var(--p1, #1DB954)">gap, % of the 0.1 grid</text>
 <text x="194" y="214" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)">discount gamma</text>
 <text x="12" y="103" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="var(--ink-faint, #77817a)" transform="rotate(-90 12 103)">percent</text>
 </svg>
