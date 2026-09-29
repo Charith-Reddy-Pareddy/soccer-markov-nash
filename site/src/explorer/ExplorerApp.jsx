@@ -470,7 +470,7 @@ export default function ExplorerApp() {
                 </select>
               </div>
               <div className="board-svg-wrap">
-                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} heatmap={heatmap} rowPol={displayRowPol} colPol={displayColPol} />
+                <Board board={board} state={st} activePlayer={activePlayer} onCellClick={onCellClick} heatmap={heatmap} rowPol={displayRowPol} colPol={displayColPol} M={M} />
               </div>
               <div className="controls">
                 <div className="seg" role="group" aria-label="which player clicking the board moves">

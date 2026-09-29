@@ -22,7 +22,15 @@ function cellCenter(x, y, h) {
 // texts land close enough to overlap illegibly. The exact percentages are
 // still shown in the Carrier/Defender lines and the Q matrix's own headers,
 // so nothing is lost, just not doubled up on the board itself.
-function ActionFan({ cx, cy, pol, colour, wall, showLabels = true }) {
+//
+// preemptedIdx marks one action index (or null) whose arrow never actually
+// resolves: scoring is checked before any movement or collision (Rule 1), so
+// if the *other* player's own chosen action scores this turn, this player's
+// arrow -- even drawn pointing straight into the other player's square, e.g.
+// state (0,0,0,1,1) -- never gets a chance to execute. Drawn dashed, like a
+// wall-clamp hold ring, with a "(scored first)" label instead of a bare
+// percentage, so it doesn't read as a move that actually happens.
+function ActionFan({ cx, cy, pol, colour, wall, showLabels = true, preemptedIdx = null }) {
   const hold = ACT.reduce((sum, a, i) => (wall[a] === "hold" ? sum + pol[i] : sum), 0);
   const top = Math.max(...pol, hold, 1e-9);
   const els = [];
@@ -47,6 +55,7 @@ function ActionFan({ cx, cy, pol, colour, wall, showLabels = true }) {
     if (wall[a] === "hold") return;
     const p = pol[idx];
     if (p < 0.02) return;
+    const preempted = idx === preemptedIdx;
     const [dx, dy] = ARROW[a];
     const start = 13, length = start + 8 + 22 * p;
     const sx = cx + dx * start, sy = cy - dy * start;
@@ -56,14 +65,15 @@ function ActionFan({ cx, cy, pol, colour, wall, showLabels = true }) {
     els.push(
       <line key={"a-" + a} x1={sx} y1={sy} x2={ex} y2={ey} stroke={colour}
         strokeWidth={wgt.toFixed(1)} strokeLinecap="round"
-        opacity={(0.4 + 0.55 * p).toFixed(2)} markerEnd={`url(#ah-${markerId})`} />
+        strokeDasharray={preempted ? "3 3" : undefined}
+        opacity={preempted ? 0.55 : (0.4 + 0.55 * p).toFixed(2)} markerEnd={`url(#ah-${markerId})`} />
     );
-    if (showLabels && p < 0.985) {
+    if (showLabels && (p < 0.985 || preempted)) {
       const lx = cx + dx * (length + 13), ly = cy - dy * (length + 13);
       els.push(
         <text key={"l-" + a} x={lx} y={ly + 4} textAnchor="middle"
           fontFamily="ui-monospace,monospace" fontSize="10" fill={colour}>
-          {Math.round(p * 100)}%
+          {preempted ? `${Math.round(p * 100)}% (scored first)` : `${Math.round(p * 100)}%`}
         </text>
       );
     }
@@ -90,13 +100,29 @@ function Player({ cx, cy, label, colour, carrier, active }) {
 }
 
 // Arrows show the exported policy, also used by Step, Play, and Simulate.
-export default function Board({ board, state, activePlayer, onCellClick, heatmap, rowPol, colPol }) {
+export default function Board({ board, state, activePlayer, onCellClick, heatmap, rowPol, colPol, M }) {
   const W = board.width, H = board.height, GOALS = board.goal_rows;
   const boardW = W * CELL, boardH = H * CELL;
   const totalW = boardW + 2 * MARGIN, totalH = boardH + 2 * MARGIN;
   const c0 = cellCenter(state.x0, state.y0, H);
   const c1 = cellCenter(state.x1, state.y1, H);
   const bc = state.b === 0 ? c0 : c1;
+
+  // Rule 1: scoring is checked before any movement or collision, so if the
+  // primary (highest-weight) joint action pair is itself a goal, the *other*
+  // player's own primary action never actually resolves -- even when its
+  // arrow points straight at the scorer's square. Q(s,a0,a1) can only equal
+  // exactly +-1 on a genuine terminal transition (a non-terminal cell is
+  // r=0 plus a gamma-discounted continuation strictly inside (-1, 1)), so
+  // this reads directly off the already-computed Q matrix, no extra lookup.
+  let preemptedIdx0 = null, preemptedIdx1 = null;
+  if (M) {
+    const primary0 = rowPol.indexOf(Math.max(...rowPol));
+    const primary1 = colPol.indexOf(Math.max(...colPol));
+    const cell = M[primary0][primary1];
+    if (cell === -1) preemptedIdx0 = primary0;
+    else if (cell === 1) preemptedIdx1 = primary1;
+  }
 
   const heatVals = heatmap ? [...heatmap.values()] : [];
   const heatLo = Math.min(...heatVals), heatHi = Math.max(...heatVals);
@@ -152,8 +178,8 @@ export default function Board({ board, state, activePlayer, onCellClick, heatmap
         );
       })}
       {cells}
-      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H, GOALS, state.b === 0, 0)} showLabels={!heatmap} />
-      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H, GOALS, state.b === 1, 1)} showLabels={!heatmap} />
+      <ActionFan cx={c0[0]} cy={c0[1]} pol={rowPol} colour="var(--p0)" wall={wallMask(state.x0, state.y0, W, H, GOALS, state.b === 0, 0)} showLabels={!heatmap} preemptedIdx={preemptedIdx0} />
+      <ActionFan cx={c1[0]} cy={c1[1]} pol={colPol} colour="var(--p1)" wall={wallMask(state.x1, state.y1, W, H, GOALS, state.b === 1, 1)} showLabels={!heatmap} preemptedIdx={preemptedIdx1} />
       <Player cx={c0[0]} cy={c0[1]} label="0" colour="var(--p0)" carrier={state.b === 0} active={activePlayer === 0} />
       <Player cx={c1[0]} cy={c1[1]} label="1" colour="var(--p1)" carrier={state.b === 1} active={activePlayer === 1} />
       <circle cx={bc[0] + 15} cy={bc[1] - 15} r={5.5} fill="var(--ball)" stroke="var(--raise)" strokeWidth={1.3} />
