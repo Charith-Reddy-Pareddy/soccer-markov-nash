@@ -120,7 +120,8 @@ def _rollout(
 ) -> tuple[list[State], list[int], list[int], list[float], list[bool], State]:
     """One on-policy self-play rollout of ``rollout_len`` steps from
     ``start_state``. Returns the per-step states/actions/rewards plus the
-    state the rollout ended on (so a caller can continue from it)."""
+    terminal flags and the state the rollout ended on (so a caller can
+    continue collection while keeping episode returns separate)."""
     state = start_state
     states: list[State] = []
     a0s: list[int] = []

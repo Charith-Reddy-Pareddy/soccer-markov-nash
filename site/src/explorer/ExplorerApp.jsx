@@ -1046,15 +1046,14 @@ function NeuralCrossCheck({ neuralData, neuralError, board, stKey, M, rowPol, co
     <div style={{ marginTop: "1.4rem" }}>
       <div className="eyebrow" style={{ margin: "0 0 .5rem" }}>Neural cross-check</div>
       <p className="hint" style={{ margin: "0 0 .6rem" }}>
-        One representative training run (seed {seed}), not the multi-seed study in{" "}
-        <a href="neural.md">docs/neural.md</a> (see that page and{" "}
-        <span className="mono">experiments/nash_dqn_seeds.csv</span> /{" "}
-        <span className="mono">experiments/policy_gradient_seeds.csv</span> for error bars).
-        DQN is fitted-Q trained from a random init for {dqn_epochs} epochs (the honest
-        "from zero" baseline, not one fit to the exact answer). PG is self-play REINFORCE
-        for {pg_iterations} iterations, and is genuinely on-policy: a state its own rollouts
-        rarely reach from kickoff never gets corrected there, so a mismatch below can mean
-        that rather than anything wrong with the exact solve.
+        One representative run (seed {seed}). DQN uses {dqn_epochs} epochs of
+        fitted minimax-Q training from random initialization. PG uses {pg_iterations}
+        {" "}self-play iterations with returns stopped at terminal goals.
+        PG outputs action probabilities, not a Q matrix. Neural disagreement can
+        reflect approximation, optimization or limited state coverage; it does not
+        by itself validate or invalidate the exact solver. See the{" "}
+        <a href="reward-q-audit.md">reward audit and corrected multi-seed comparison</a>.
+
       </p>
       <h3 style={{ margin: "0 0 .4rem" }}>Exact vs. DQN, cell by cell</h3>
       <p className="support-line" style={{ marginBottom: ".6rem" }}>

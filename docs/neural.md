@@ -1,5 +1,12 @@
 # Neural Nash-Q: full ablation detail
 
+> September 28 audit: PG results below predate the terminal-return fix and
+> are historical, not validation of the corrected episodic trainer. The new
+> two-seed reward comparison is in [reward-q-audit.md](reward-q-audit.md).
+> The explorer's representative PG predictions have been regenerated with
+> terminal boundaries. DQN results are unaffected by that PG defect.
+
+
 Groundwork for the eventual continuous-action work, not an equal-weight
 contribution to [report.md](report.md) -- the exact solver stays the ground
 truth throughout. This page has the full tables and prose behind report.md

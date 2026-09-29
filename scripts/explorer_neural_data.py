@@ -27,6 +27,7 @@ Writes docs/data/explorer_neural.json, fetched only when the explorer's
 """
 from __future__ import annotations
 
+import argparse
 import json
 import pathlib
 import sys
@@ -69,6 +70,12 @@ def extract_policy(m: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pg-only', action='store_true', help='Refresh PG while preserving existing DQN predictions')
+    args = parser.parse_args()
+    import torch
+    torch.set_num_threads(1)
+    previous = json.loads(OUT.read_text()) if args.pg_only else None
     boards: dict[str, dict] = {}
     for board_id, kw in BOARDS.items():
         print(f"=== {board_id} ===", flush=True)
@@ -76,8 +83,11 @@ def main() -> None:
         states = list(g.states())
 
         t0 = time.time()
-        dqn = train_nash_dqn(g, gamma=0.9, hidden=64, epochs=DQN_EPOCHS, seed=SEED)
-        print(f"  DQN trained in {time.time() - t0:.1f}s ({len(states)} states)", flush=True)
+        dqn = None if args.pg_only else train_nash_dqn(g, gamma=0.9, hidden=64, epochs=DQN_EPOCHS, seed=SEED)
+        if args.pg_only:
+            print(f"  preserved DQN predictions ({len(states)} states)", flush=True)
+        else:
+            print(f"  DQN trained in {time.time() - t0:.1f}s ({len(states)} states)", flush=True)
 
         t0 = time.time()
         pg = train_reinforce_selfplay(g, gamma=0.9, hidden=64, iterations=PG_ITERATIONS, seed=SEED)
@@ -86,8 +96,12 @@ def main() -> None:
         state_data = {}
         for s in states:
             key = ",".join(map(str, s))
-            Qd = dqn.net.matrix(s)
-            p_dqn, q_dqn = extract_policy(Qd)
+            if previous:
+                old = previous['boards'][board_id][key]
+                Qd, p_dqn, q_dqn = old[:3]
+            else:
+                Qd = dqn.net.matrix(s)
+                p_dqn, q_dqn = extract_policy(Qd)
             p_pg = pg.net0.policy(s)
             q_pg = pg.net1.policy(s)
             state_data[key] = [
@@ -103,13 +117,12 @@ def main() -> None:
         "meta": {
             "dqn_epochs": DQN_EPOCHS,
             "pg_iterations": PG_ITERATIONS,
+            "pg_terminal_boundaries": True,
             "seed": SEED,
             "note": (
-                "One representative run per board (seed 0), not the "
-                "multi-seed study in docs/neural.md -- for the full "
-                "ablation with error bars, see that page and "
-                "experiments/nash_dqn_seeds.csv / experiments/"
-                "policy_gradient_seeds.csv."
+                "One representative run per board (seed 0). PG returns stop "
+                "at terminal goals. See docs/reward-q-audit.md for the "
+                "corrected two-seed comparison and limits of neural validation."
             ),
         },
         "boards": boards,
