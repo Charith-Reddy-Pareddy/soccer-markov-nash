@@ -60,8 +60,9 @@ def _minimax_batch(M: np.ndarray) -> np.ndarray:
     don't have one. This is what makes fitted-Q iteration correct on a game
     whose stage matrices are sometimes genuinely mixed (``move_order=
     "random"``/``"coinflip"``/``"tackle"``/``"blend"``) rather than the
-    pure-maximin-only shortcut that is exact solely on the ``deterministic``
-    game, where every stage game has a pure saddle."""
+    pure-maximin-only shortcut. Even on a deterministic environment whose
+    exact equilibrium matrices are pure, approximate network predictions
+    may be mixed and still require the LP fallback."""
     col_min = M.min(axis=2)
     lo = col_min.max(axis=1)
     row_max = M.max(axis=1)
@@ -205,17 +206,17 @@ def train_nash_dqn(
     seed: int = 0,
     init_net: _QNet | None = None,
 ) -> NashDQNResult:
-    """Fitted-Q / DQN-style training, exact for *any* move order.
+    """Fitted-Q training using full transition expectations for any move order.
 
     The bootstrap target at every ``(s, a0, a1)`` is the full expectation
     over ``game.transitions`` -- ``sum_outcomes prob * (r + gamma *
     minimax(Q_target(s')))`` -- using :func:`_minimax_batch`'s pure-fast-path
     + LP hybrid for ``minimax``, not the maximin-only shortcut that is exact
     solely when every stage game already has a pure saddle. On the
-    deterministic game this reduces to exactly the old behaviour (one
-    outcome per joint action, pure fast path every time); on ``"random"``/
-    ``"coinflip"``/``"tackle"``/``"blend"`` it is now the correct target
-    where a stage game is genuinely mixed.
+    deterministic game each joint action has one outcome, but the learned
+    next-state matrix may still require an LP. On ``"random"``/``"coinflip"``/
+    ``"tackle"``/``"blend"`` the expectation includes all possible outcomes.
+    Exact model expectations do not make the learned Q values exact.
 
     ``init_net``, when given, seeds both the online and target network's
     weights from it instead of the usual random (He-normal) init -- e.g. the
@@ -241,10 +242,13 @@ def train_nash_dqn(
     losses: list[float] = []
 
     for epoch in range(epochs):
-        preds = target.predict(X).reshape(n, 4, 4)
-        v_next = _minimax_batch(preds)
-        cont = np.where(term, 0.0, gamma * v_next[nidx])
-        tgt = (probs * (rews + cont)).sum(axis=2)  # shape (n, 16)
+        # The model and frozen target network are unchanged between syncs.
+        # Reuse their full Bellman targets instead of repeating identical LPs.
+        if epoch % target_sync == 0:
+            preds = target.predict(X).reshape(n, 4, 4)
+            v_next = _minimax_batch(preds)
+            cont = np.where(term, 0.0, gamma * v_next[nidx])
+            tgt = (probs * (rews + cont)).sum(axis=2)  # shape (n, 16)
 
         perm = rng.permutation(n)
         ep_loss = 0.0

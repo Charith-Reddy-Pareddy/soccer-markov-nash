@@ -206,3 +206,24 @@ def test_policy_baseline_regresses_toward_the_exact_strategies():
     assert m["duality_gap"] >= -1e-9
     p, q = net.policy(game.initial_state())
     assert np.isclose(p.sum(), 1.0) and np.isclose(q.sum(), 1.0)
+
+
+def test_frozen_targets_reuse_minimax_without_changing_training(monkeypatch):
+    import soccer_nash.nash_dqn as module
+
+    calls = []
+    original = module._minimax_batch
+
+    def counted(matrices):
+        calls.append(matrices.copy())
+        return original(matrices)
+
+    monkeypatch.setattr(module, '_minimax_batch', counted)
+    game = SoccerGame(width=5, height=3, goal_rows=(1,), move_order='deterministic')
+    result = train_nash_dqn(game, hidden=8, epochs=6, target_sync=2, seed=1)
+    assert len(calls) == 3  # one evaluation for each distinct frozen target
+    # Recorded from the uncached implementation on the same seeded game.
+    np.testing.assert_allclose(result.loss_trace, [
+        .018412522680555873, .017627506278934658, .01708391615548598,
+        .01667414834016498, .01654999772425931, .016326978257964815,
+    ], rtol=1e-9, atol=1e-12)

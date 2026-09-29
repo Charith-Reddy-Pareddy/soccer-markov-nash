@@ -1,5 +1,12 @@
 # Self-play REINFORCE: does policy gradient converge to a Nash equilibrium?
 
+> September 28 audit: PG results below predate the terminal-return fix and
+> are historical, not validation of the corrected episodic trainer. The new
+> two-seed reward comparison is in [reward-q-audit.md](reward-q-audit.md).
+> The explorer's representative PG predictions have been regenerated with
+> terminal boundaries. DQN results are unaffected by that PG defect.
+
+
 The Sept 17 meeting's own question, verbatim -- policy gradient "is not
 directly solving \[the] game anywhere... can this converge?" -- plus its own
 follow-up, left open at the time ("would pre-training help? ... minor

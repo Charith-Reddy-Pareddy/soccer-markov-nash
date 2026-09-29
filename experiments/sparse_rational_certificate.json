@@ -1,0 +1,1 @@
+{"states": 2380, "joint_actions": 38080, "rational_gamma": "9/10", "all_zero_Q": 514, "certificate": "exact rational maximin = minimax = V at every state"}
