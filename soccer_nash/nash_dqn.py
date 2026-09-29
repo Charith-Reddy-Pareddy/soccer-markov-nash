@@ -241,10 +241,13 @@ def train_nash_dqn(
     losses: list[float] = []
 
     for epoch in range(epochs):
-        preds = target.predict(X).reshape(n, 4, 4)
-        v_next = _minimax_batch(preds)
-        cont = np.where(term, 0.0, gamma * v_next[nidx])
-        tgt = (probs * (rews + cont)).sum(axis=2)  # shape (n, 16)
+        # The model and frozen target network are unchanged between syncs.
+        # Reuse their full Bellman targets instead of repeating identical LPs.
+        if epoch % target_sync == 0:
+            preds = target.predict(X).reshape(n, 4, 4)
+            v_next = _minimax_batch(preds)
+            cont = np.where(term, 0.0, gamma * v_next[nidx])
+            tgt = (probs * (rews + cont)).sum(axis=2)  # shape (n, 16)
 
         perm = rng.permutation(n)
         ep_loss = 0.0
