@@ -69,9 +69,30 @@ function ActionFan({ cx, cy, pol, colour, wall, showLabels = true, preemptedIdx 
         opacity={preempted ? 0.55 : (0.4 + 0.55 * p).toFixed(2)} markerEnd={`url(#ah-${markerId})`} />
     );
     if (showLabels && (p < 0.985 || preempted)) {
-      const lx = cx + dx * (length + 13), ly = cy - dy * (length + 13);
+      // The "(scored first)" label is much wider than a bare percentage and,
+      // for a target one cell away (the common case: the pre-empted action
+      // was headed straight at the other player), placing it past the
+      // arrow's tip the normal way lands it right on top of that player's
+      // own circle. Offset it sideways from the arrow's midpoint instead --
+      // perpendicular to the line, not along it -- so it clears both circles
+      // regardless of direction.
+      let lx, ly, anchor = "middle";
+      if (preempted) {
+        const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+        const perpX = dy, perpY = dx; // 90 deg rotation of the on-screen (dx,-dy) direction
+        lx = mx + perpX * 18;
+        ly = my + perpY * 18;
+        // Anchor the text to *start* (or end) at the offset point rather
+        // than centering on it, so the whole string flows away from the
+        // danger zone instead of spanning back across it.
+        if (perpX > 0) anchor = "start";
+        else if (perpX < 0) anchor = "end";
+      } else {
+        lx = cx + dx * (length + 13);
+        ly = cy - dy * (length + 13);
+      }
       els.push(
-        <text key={"l-" + a} x={lx} y={ly + 4} textAnchor="middle"
+        <text key={"l-" + a} x={lx} y={ly + 4} textAnchor={anchor}
           fontFamily="ui-monospace,monospace" fontSize="10" fill={colour}>
           {preempted ? `${Math.round(p * 100)}% (scored first)` : `${Math.round(p * 100)}%`}
         </text>
