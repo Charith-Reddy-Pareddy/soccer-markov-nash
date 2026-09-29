@@ -330,3 +330,31 @@ def test_train_reinforce_selfplay_with_baseline_and_entropy_runs_and_is_reproduc
     np.testing.assert_allclose(
         a.net0.policy(game.initial_state()), b.net0.policy(game.initial_state())
     )
+
+
+def test_terminal_returns_exclude_the_next_game():
+    # The winning reward ends its episode, even when collection continues.
+    assert _discounted_returns([0, 1, -1], .9, [False, True, True]) == pytest.approx([.9, 1, -1])
+    assert _discounted_returns([0, 1, -1], .9, [False, False, False]) == pytest.approx([.09, .1, -1])
+
+
+@pytest.mark.parametrize('shared', [False, True])
+def test_rollouts_record_terminal_boundaries(shared):
+    from soccer_nash.policy_gradient import _rollout, _rollout_shared
+
+    class EndingGame:
+        def initial_state(self):
+            return (0, 1, 6, 3, 0)
+
+        def step(self, state, a0, a1, rng):
+            return (-1, -1, -1, -1, 0), (1., -1.), True
+
+    game = EndingGame()
+    net0, net1 = PolicyNet(8), PolicyNet(8)
+    collect = _rollout_shared if shared else _rollout
+    states, _, _, rewards, dones, end = collect(
+        game, net0, net1, game.initial_state(), 3, np.random.default_rng(0))
+    assert dones == [True, True, True]
+    assert states == [game.initial_state()] * 3
+    assert end == game.initial_state()
+    assert _discounted_returns(rewards, .9, dones) == [1., 1., 1.]
