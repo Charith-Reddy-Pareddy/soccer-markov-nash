@@ -71,7 +71,10 @@ def extract_policy(m: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pg-only', action='store_true', help='Refresh PG while preserving existing DQN predictions')
+    parser.add_argument(
+        '--pg-only', action='store_true',
+        help='Refresh PG while preserving existing DQN predictions',
+    )
     args = parser.parse_args()
     import torch
     torch.set_num_threads(1)
@@ -83,7 +86,9 @@ def main() -> None:
         states = list(g.states())
 
         t0 = time.time()
-        dqn = None if args.pg_only else train_nash_dqn(g, gamma=0.9, hidden=64, epochs=DQN_EPOCHS, seed=SEED)
+        dqn = None if args.pg_only else train_nash_dqn(
+            g, gamma=0.9, hidden=64, epochs=DQN_EPOCHS, seed=SEED,
+        )
         if args.pg_only:
             print(f"  preserved DQN predictions ({len(states)} states)", flush=True)
         else:

@@ -268,13 +268,16 @@ def train_reinforce_selfplay(
 
         for k in range(n_rollouts):
             start = state if k == 0 else game.initial_state()
-            s_k, a0_k, a1_k, r0_k, done_k, end_state = _rollout(game, net0, net1, start, rollout_len, rng)
+            s_k, a0_k, a1_k, r0_k, done_k, end_state = _rollout(
+                game, net0, net1, start, rollout_len, rng,
+            )
             if k == 0:
                 state = end_state  # only the "main" trajectory carries over between iterations
             states += s_k
             a0s += a0_k
             a1s += a1_k
-            g0s += _discounted_returns(r0_k, gamma, done_k)  # per-rollout: no bleed across boundaries
+            # Stop returns at episode and rollout boundaries.
+            g0s += _discounted_returns(r0_k, gamma, done_k)
             raw_r0 += r0_k
 
         g1s = [-g for g in g0s]  # zero-sum: r1 == -r0 at every step, always

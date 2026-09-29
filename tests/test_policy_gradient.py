@@ -335,7 +335,9 @@ def test_train_reinforce_selfplay_with_baseline_and_entropy_runs_and_is_reproduc
 def test_terminal_returns_exclude_the_next_game():
     # The winning reward ends its episode, even when collection continues.
     assert _discounted_returns([0, 1, -1], .9, [False, True, True]) == pytest.approx([.9, 1, -1])
-    assert _discounted_returns([0, 1, -1], .9, [False, False, False]) == pytest.approx([.09, .1, -1])
+    assert _discounted_returns([0, 1, -1], .9, [False, False, False]) == pytest.approx(
+        [.09, .1, -1]
+    )
 
 
 @pytest.mark.parametrize('shared', [False, True])

@@ -178,7 +178,17 @@ P1 {'/'.join(_ACT[k] for k in cols)}</p>
 {neural}</section>"""
 
 
-NOTES: dict[int, str] = {3: "<p><b>Zero value is not an all-zero Q matrix.</b> This state has 14 zero\nentries, but Q(D,L) = 0.656100 and Q(R,L) = -0.590490. V = 0 means the\nminimax value is zero; it does not mean every action pair is equally good.</p>\n<p>A zero-reward self-loop alone cannot prove V = 0: another action might\nforce a win. The audit checks every action pair at all 2,380 states and\nverifies that both pure security bounds equal the computed V. Exactly 514\nstates have all 16 raw entries zero, including case 8. No display rounding\nis used in this count. See the reward comparison appendix for Jae's matrix\nat this same state and the new DQN/PG experiments.</p>"}
+NOTES: dict[int, str] = {
+    3: """<p><b>Zero value is not an all-zero Q matrix.</b> This state has 14 zero
+entries, but Q(D,L) = 0.656100 and Q(R,L) = -0.590490. V = 0 means the
+minimax value is zero; it does not mean every action pair is equally good.</p>
+<p>A zero-reward self-loop alone cannot prove V = 0: another action might
+force a win. The audit checks every action pair at all 2,380 states and
+verifies that both pure security bounds equal the computed V. Exactly 514
+states have all 16 raw entries zero, including case 8. No display rounding
+is used in this count. See the reward comparison appendix for Jae's matrix
+at this same state and the new DQN/PG experiments.</p>"""
+}
 
 
 def main() -> None:
@@ -347,7 +357,10 @@ mixed).</p>
 <a href="equilibrium-debug.md">Audit and reproduction details</a></p>"""
     sections = [_html_case(n, label, why, g, solver, r, state, dqn_zero, dqn_fit, NOTES.get(n, ""))
                 for n, (state, label, why) in enumerate(cases, 1)]
-    pathlib.Path("docs/a10_cases.html").write_text(intro + "".join(sections) + pathlib.Path("docs/reward_q_appendix.html").read_text() + "</html>")
+    appendix = pathlib.Path("docs/reward_q_appendix.html").read_text()
+    pathlib.Path("docs/a10_cases.html").write_text(
+        intro + "".join(sections) + appendix + "</html>"
+    )
     FIG.write_text(panel_svg(panels, cols=2))
     print(f"wrote {FIG}")
 
