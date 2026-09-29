@@ -2,6 +2,9 @@
 progression reward (winning +1, losing -1, possession 0.005, progression
 0.005*x0, gamma 0.9) and print the equilibrium policy at kickoff.
 
+This legacy pre-state experiment is not Jae's current reward formula.
+Use scripts/reward_q_audit.py for the verified next-state comparison.
+
     python scripts/possession_progression_policy.py
 """
 from __future__ import annotations
