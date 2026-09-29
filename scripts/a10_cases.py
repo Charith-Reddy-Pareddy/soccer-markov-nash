@@ -127,7 +127,7 @@ def _neural_table(state, M, dqn_zero, dqn_fit):
         f"<td>{Qz[a, b]:.4f}</td><td>{Qf[a, b]:.4f}</td></tr>"
         for a in range(4) for b in range(4)
     )
-    return f"""<h3>Independent learned cross-check: DQN vs. the exact matrix</h3>
+    return f"""<div class="neural-comparison"><h3>DQN comparison: state {state}</h3>
 <p class="muted">max |Q<sub>DQN</sub> &minus; Q<sub>exact</sub>|: from zero =
 <b>{err_z:.4f}</b> &middot; fit to exact = <b>{err_f:.4f}</b>. "From zero" is
 {DQN_EPOCHS} epochs of TD bootstrap from a random init with no access to the
@@ -140,7 +140,7 @@ board, plus a policy-gradient comparison, are in the
 <a href="explorer.html?board=canonical_det&amp;state={",".join(map(str, state))}">
 interactive explorer</a>'s "Show neural cross-check" panel.</p>
 <table><tr><th>P0 / P1</th><th>Exact</th><th>DQN, from zero</th>
-<th>DQN, fit to exact</th></tr>{rows_html}</table>"""
+<th>DQN, fit to exact</th></tr>{rows_html}</table></div>"""
 
 
 def _html_case(number, label, why, g, solver, result, state, dqn_zero, dqn_fit, note=""):
@@ -178,78 +178,7 @@ P1 {'/'.join(_ACT[k] for k in cols)}</p>
 {neural}</section>"""
 
 
-NOTES: dict[int, str] = {
-    3: (
-        "<p><b>Why an all-zero matrix is correct here, not a rounding "
-        "artifact:</b> the (U, U) cell is a genuine self-loop -- "
-        "<code>game.transitions()</code> confirms (U, U) &rarr; (3, 4, 4, 4, "
-        "0), the same state, with reward 0. The Bellman equation for a "
-        "self-loop with zero reward is V = 0 + 0.9&middot;V, whose only "
-        "solution is V = 0 exactly for any discount below 1 -- this is "
-        "algebra, not floating-point noise. The other 12 zero cells are not "
-        "assumed either: every successor state they lead to -- (3,4,4,3,0), "
-        "(3,4,4,4,1), (3,4,5,4,0), (3,3,4,4,0), (3,3,4,3,0), (3,3,3,4,0), "
-        "(2,4,4,4,0), (2,4,4,3,0), (2,4,3,4,0), (2,4,5,4,0), (4,4,4,3,0), "
-        "(4,4,3,4,1), (4,4,5,4,0) -- was looked up independently in the "
-        "exact solve, and each one is itself exactly 0.0. A flat all-zero "
-        "matrix is in fact the single most common shape on this board (514 "
-        "of 2380 states, see case 8, \"the dead zone\") -- the generic "
-        "outcome for a \"no one has an advantage yet\" configuration, not an "
-        "anomaly specific to this state.</p>\n"
-        "<p><b>Independent learned cross-check (DQN and policy gradient):"
-        "</b> a fitted-Q DQN trained from a random initialization (400 "
-        "epochs, seed 0, no access to the exact values) predicts D/L = "
-        "0.4552 and R/L = -0.2904 against the exact 0.6561 and -0.590490 -- "
-        "a max error of 0.30, worse than exact but correctly recovering the "
-        "sign and rough shape of every cell, and better than this project's "
-        "own documented average DQN error elsewhere on this board (roughly "
-        "0.4-0.5, see docs/neural.md). DQN's own action choice from that "
-        "matrix agrees with the exact solve: D for player 0 (81%), U for "
-        "player 1 (86%). A self-play policy-gradient net trained the same "
-        "way (1000 iterations, seed 0) does not agree here -- it converges "
-        "to R for player 0 (76%) and L for player 1 (96%), exactly the "
-        "exploitable swap-trap pairing this document's own case 1 warns "
-        "about. That is a known limitation of on-policy self-play, not a "
-        "contradiction of the exact solve: PG only trains on states its own "
-        "rollouts actually reach from kickoff, and this off-the-beaten-path "
-        "standoff is rarely if ever visited under the policy being trained, "
-        "so nothing ever corrects it there. DQN has no such gap, because it "
-        "trains against the full enumerated transition model for every "
-        "state regardless of how often it is visited. Full per-state "
-        "numbers for every board configuration are in the "
-        "<a href=\"explorer.html\">interactive explorer</a>'s \"Show neural "
-        "cross-check\" panel.</p>\n"
-        "<p><b>Why a differently-implemented reward would not show zeros "
-        "here, and that does not make either one wrong:</b> the field-"
-        "standard convention this assignment derives from is Littman's own "
-        "-- \"goals are worth one point and the discount factor is set to "
-        "0.9\" (Littman, <i>Markov games as a framework for multi-agent "
-        "reinforcement learning</i>, ICML 1994), nothing else. That is "
-        "exactly what this project implements: terminal &plusmn;1 on a "
-        "goal, 0 on every other step, gamma=0.9 -- verified directly "
-        "against <code>game.transitions()</code> for every rule in the A10 "
-        "spec, not just this state (<code>tests/test_game.py</code>, "
-        "<code>tests/test_a10_self_loop_zero.py</code>). A reward function "
-        "that instead pays something on every step -- a distance shaping "
-        "term, a possession bonus, anything beyond the terminal goal -- "
-        "will not produce exact zeros at a state like this one, because the "
-        "Bellman equation for its self-loop becomes V = r&#8320; + "
-        "0.9&middot;V for some r&#8320; &ne; 0, not V = 0 + 0.9&middot;V. "
-        "This project's own <code>scoring=\"territory\"</code> mode is a "
-        "concrete, checkable example: re-solved at this exact state with a "
-        "dense per-step reward added, only 5 of 16 cells stay at zero "
-        "(down from 14), and the safe row carries a nonzero -0.05 floor "
-        "instead. Two implementations disagreeing here is expected when "
-        "their reward functions genuinely differ -- it says nothing about "
-        "which one, if either, has a bug -- and only one of them is scored "
-        "against the terminal &plusmn;1 convention this assignment actually "
-        "specifies. The all-zero pattern itself is not particular to one "
-        "hand-picked state either: <code>tests/test_a10_self_loop_zero.py"
-        "</code> checks it against the exact solve for all 2380 states and "
-        "confirms exactly 514 have a fully flat, all-zero matrix -- the "
-        "single most common shape on the board.</p>\n"
-    ),
-}
+NOTES: dict[int, str] = {3: "<p><b>Zero value is not an all-zero Q matrix.</b> This state has 14 zero\nentries, but Q(D,L) = 0.656100 and Q(R,L) = -0.590490. V = 0 means the\nminimax value is zero; it does not mean every action pair is equally good.</p>\n<p>A zero-reward self-loop alone cannot prove V = 0: another action might\nforce a win. The audit checks every action pair at all 2,380 states and\nverifies that both pure security bounds equal the computed V. Exactly 514\nstates have all 16 raw entries zero, including case 8. No display rounding\nis used in this count. See the reward comparison appendix for Jae's matrix\nat this same state and the new DQN/PG experiments.</p>"}
 
 
 def main() -> None:
@@ -374,7 +303,8 @@ a{color:var(--accent-dark)}
 @media print{body{margin:0;padding:0;font-size:10.5px} h1{font-size:21px}
 h2{font-size:16px} section{break-before:page;margin:0;padding:0;border:0}
 img{max-height:235px} table{font-size:9px} td,th{padding:4px}
-.callout{padding:8px 12px}}
+.callout{padding:8px 12px} .neural-comparison{break-before:page}
+.neural-comparison table{break-inside:avoid}}
 </style>
 <p class="eyebrow">Soccer Markov Nash &middot; A10-deterministic board</p>
 <h1>Eight edge cases on the A10 deterministic board</h1>
@@ -417,7 +347,7 @@ mixed).</p>
 <a href="equilibrium-debug.md">Audit and reproduction details</a></p>"""
     sections = [_html_case(n, label, why, g, solver, r, state, dqn_zero, dqn_fit, NOTES.get(n, ""))
                 for n, (state, label, why) in enumerate(cases, 1)]
-    pathlib.Path("docs/a10_cases.html").write_text(intro + "".join(sections) + "</html>")
+    pathlib.Path("docs/a10_cases.html").write_text(intro + "".join(sections) + pathlib.Path("docs/reward_q_appendix.html").read_text() + "</html>")
     FIG.write_text(panel_svg(panels, cols=2))
     print(f"wrote {FIG}")
 
