@@ -1,0 +1,10 @@
+{
+  "transition_reward_pairs": 38080,
+  "mismatches": 0,
+  "value_max_error": 5.00000019165725e-09,
+  "Q_max_error": 4.5000001502870646e-09,
+  "max_bellman_residual": 1.6653345369377348e-16,
+  "max_equilibrium_gap": 2.220446049250313e-16,
+  "mixed_states": 62,
+  "screenshot_max_error": 4.999999998478444e-07
+}

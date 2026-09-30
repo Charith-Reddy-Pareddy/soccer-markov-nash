@@ -11,9 +11,9 @@ moving closer to the goal" on top of the sparse win/lose signal. Four flavours:
   Not potential-based, so it *can* change the optimal policy (the carrier may
   prefer to keep the ball over scoring).
 * :class:`StepProgressionBonus` -- a plain per-step bonus proportional to
-  player 0's raw ``x0``, unconditional on possession -- a labmate's own
-  reward term (his "progression" component), reproduced here to cross-check
-  against his site rather than this project's own design choice. Also not
+  player 0's raw ``x0``, unconditional on possession -- a legacy exploratory reward term.
+  This does not reproduce Jae's current next-state, carrier-dependent
+  viewer reward; see scripts/reward_q_audit.py. Also not
   potential-based.
 * :class:`CombinedShaping` -- sums several shaping terms' deltas, so e.g.
   possession and progression can be applied together in one solve.
@@ -64,7 +64,7 @@ class StepPossessionBonus:
 
 
 class StepProgressionBonus:
-    """A labmate's "progression" term: ``coeff * x0``, using player 0's raw
+    """Legacy exploratory "progression" term: ``coeff * x0``, using player 0's raw
     (unnormalised) x-coordinate -- *not* gated on who has the ball, unlike
     this project's own ``territory_reward`` (which only pays the carrier).
     Mirrors :class:`StepPossessionBonus` in reading the *pre*-transition state

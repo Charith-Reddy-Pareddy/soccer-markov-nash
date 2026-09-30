@@ -9,24 +9,12 @@ softmax over the 4 actions -- **PyTorch**, per that meeting's own instruction
 ``soccer_nash/nash_dqn.py``'s hand-rolled NumPy net (predating that
 instruction, kept as-is rather than rewritten under this change).
 
-Training is on-policy self-play, matching the meeting's own derivation
-exactly: the game used here is ``scoring="rate"`` (a goal scores and play
-continues from a restart -- "this is an infinitely repeating game"), so
-there is no natural episode boundary. Each training iteration rolls out one
-long trajectory, then reuses *every suffix* of that single trajectory as its
-own ``(state, return-from-here)`` pair --
-
-    (s_0, R_1 + gamma R_2 + gamma^2 R_3 + ...)
-    (s_1, R_2 + gamma R_3 + ...)
-    (s_2, R_3 + ...)
-    ...
-
--- exactly the reuse trick worked out on the whiteboard: a trajectory of
-length T gives T training pairs from one rollout, not one. Both players'
-losses are the plain REINFORCE gradient ``-E[log pi(a|s) * G]``; the
-meeting's own derivation has no baseline/critic term, so neither does this
--- a baseline is the natural next step if variance turns out to be the
-bottleneck, not assumed necessary in advance.
+Training uses the supplied game's reward and termination rules. In
+``scoring="rate"`` play continues after goals; in ``scoring="win"`` each
+goal ends an episode. Collection may restart within a rollout, but returns
+stop at terminal boundaries. Every suffix supplies a training pair; finite
+rollout cutoffs use zero continuation. Optional state-value baselines and
+entropy regularization are controlled by the training arguments.
 
 After training, both policies are checked against the *exact* solver's Q
 matrix at every state -- never against each other -- via
@@ -105,12 +93,18 @@ class ReinforceResult:
     mean_reward_trace: list[float] = field(default_factory=list)
 
 
-def _discounted_returns(rewards: list[float], gamma: float) -> list[float]:
+def _discounted_returns(
+    rewards: list[float], gamma: float, dones: list[bool] | None = None,
+) -> list[float]:
     """Every suffix's discounted return, computed once by a backward pass --
     the trajectory-reuse trick: a length-T trajectory yields T pairs."""
+    if dones is not None and len(dones) != len(rewards):
+        raise ValueError("dones must match rewards")
     out = [0.0] * len(rewards)
     g = 0.0
     for t in reversed(range(len(rewards))):
+        if dones is not None and dones[t]:
+            g = 0.0
         g = rewards[t] + gamma * g
         out[t] = g
     return out
@@ -123,15 +117,17 @@ def _rollout(
     start_state: State,
     rollout_len: int,
     rng: np.random.Generator,
-) -> tuple[list[State], list[int], list[int], list[float], State]:
+) -> tuple[list[State], list[int], list[int], list[float], list[bool], State]:
     """One on-policy self-play rollout of ``rollout_len`` steps from
     ``start_state``. Returns the per-step states/actions/rewards plus the
-    state the rollout ended on (so a caller can continue from it)."""
+    terminal flags and the state the rollout ended on (so a caller can
+    continue collection while keeping episode returns separate)."""
     state = start_state
     states: list[State] = []
     a0s: list[int] = []
     a1s: list[int] = []
     r0s: list[float] = []
+    dones: list[bool] = []
     for _t in range(rollout_len):
         x = torch.tensor(state, dtype=torch.float32)
         with torch.no_grad():
@@ -145,8 +141,9 @@ def _rollout(
         a0s.append(a0)
         a1s.append(a1)
         r0s.append(r0)
+        dones.append(done)
         state = game.initial_state() if done else ns
-    return states, a0s, a1s, r0s, state
+    return states, a0s, a1s, r0s, dones, state
 
 
 def pretrain_policy_nets(
@@ -271,13 +268,16 @@ def train_reinforce_selfplay(
 
         for k in range(n_rollouts):
             start = state if k == 0 else game.initial_state()
-            s_k, a0_k, a1_k, r0_k, end_state = _rollout(game, net0, net1, start, rollout_len, rng)
+            s_k, a0_k, a1_k, r0_k, done_k, end_state = _rollout(
+                game, net0, net1, start, rollout_len, rng,
+            )
             if k == 0:
                 state = end_state  # only the "main" trajectory carries over between iterations
             states += s_k
             a0s += a0_k
             a1s += a1_k
-            g0s += _discounted_returns(r0_k, gamma)  # per-rollout: no bleed across boundaries
+            # Stop returns at episode and rollout boundaries.
+            g0s += _discounted_returns(r0_k, gamma, done_k)
             raw_r0 += r0_k
 
         g1s = [-g for g in g0s]  # zero-sum: r1 == -r0 at every step, always
@@ -464,7 +464,7 @@ def _rollout_shared(
     start_state: State,
     rollout_len: int,
     rng: np.random.Generator,
-) -> tuple[list[State], list[int], list[int], list[float], State]:
+) -> tuple[list[State], list[int], list[int], list[float], list[bool], State]:
     """Like :func:`_rollout`, but ``logits0``/``logits1`` may come from a
     (partially) shared network instead of two independent ``PolicyNet``s --
     both are evaluated on the same raw state, no transform of any kind."""
@@ -473,6 +473,7 @@ def _rollout_shared(
     a0s: list[int] = []
     a1s: list[int] = []
     r0s: list[float] = []
+    dones: list[bool] = []
     for _t in range(rollout_len):
         x = torch.tensor(state, dtype=torch.float32)
         with torch.no_grad():
@@ -487,8 +488,9 @@ def _rollout_shared(
         a0s.append(a0)
         a1s.append(a1)
         r0s.append(r0)
+        dones.append(done)
         state = game.initial_state() if done else ns
-    return states, a0s, a1s, r0s, state
+    return states, a0s, a1s, r0s, dones, state
 
 
 def train_reinforce_selfplay_shared(
@@ -561,7 +563,7 @@ def train_reinforce_selfplay_shared(
 
         for k in range(n_rollouts):
             start = state if k == 0 else game.initial_state()
-            s_k, a0_k, a1_k, r0_k, end_state = _rollout_shared(
+            s_k, a0_k, a1_k, r0_k, done_k, end_state = _rollout_shared(
                 game, logits0, logits1, start, rollout_len, rng,
             )
             if k == 0:
@@ -569,7 +571,7 @@ def train_reinforce_selfplay_shared(
             states += s_k
             a0s += a0_k
             a1s += a1_k
-            g0s += _discounted_returns(r0_k, gamma)
+            g0s += _discounted_returns(r0_k, gamma, done_k)
             raw_r0 += r0_k
 
         g1s = [-g for g in g0s]

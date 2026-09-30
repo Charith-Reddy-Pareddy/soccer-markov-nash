@@ -1,13 +1,8 @@
-"""Regression test for a question raised about the A10-deterministic board's
-Q matrices: several states (514 of 2380, the most common shape on the board)
-have every one of their 16 Q-matrix cells exactly 0.0. That is not a rounding
-artifact -- it is an algebraic consequence of Littman's own reward convention
-(goals worth +-1, nothing else, gamma=0.9; Littman, "Markov games as a
-framework for multi-agent reinforcement learning," ICML 1994) whenever the
-equilibrium joint action is a genuine self-loop: the Bellman equation
-V = 0 + gamma*V has the unique solution V = 0 for any gamma < 1. This test
-checks that fact directly against the exact solve, for every state on the
-board, not just the one worked by hand in docs/a10_cases.html.
+"""Check raw zero matrices and zero-valued optimal self-loops separately.
+
+An optimal zero-reward self-loop implies V=0 for gamma<1; it does not imply
+that every Q entry is zero. The full-board equilibrium certificate is in
+test_reward_q_audit.py and also checks unilateral deviations.
 """
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame
