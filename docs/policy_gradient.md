@@ -275,6 +275,42 @@ variance on both metrics. A real but modest improvement, not the dramatic
 win the "more independent data should obviously help" intuition might
 predict -- and it costs 8x the environment interactions to get it.
 
+## REINFORCE vs. A2C vs. PPO, and fictitious play
+
+The research-group note asks for REINFORCE, A2C and PPO "to replicate the exact
+solver", and fictitious play as a side quest. `soccer_nash/actor_critic.py`
+adds A2C (n-step bootstrapped advantage, one step per batch) and PPO (GAE
+`lambda = 0.95`, clip 0.2, 4 epochs) with the same two-network self-play setup,
+the same `+/-1` reward, `gamma = 0.9`, and the same budget (2000 x 100 steps)
+as REINFORCE (here with the learned baseline and an entropy bonus of 0.01).
+All three are scored by the same evaluator against the exact A10 solve; 3 seeds,
+mean over seeds:
+
+| algorithm | exploitability (exact = 0) | mean equilibrium regret | row action agreement | row vs. random | row vs. best response |
+|---|---|---|---|---|---|
+| REINFORCE (+baseline, +entropy) | 0.834 | 0.124 | 0.281 | +0.161 | -0.393 |
+| A2C | 0.830 | 0.122 | 0.292 | +0.127 | -0.403 |
+| PPO | 0.874 | 0.167 | 0.253 | +0.170 | -0.371 |
+
+**None of the three gets near the equilibrium**: exploitability stays around
+0.83-0.87 (a deterministic offense has a perfect defense, so the worst case is
+close to -1), and the differences between algorithms are within seed noise
+(3 seeds; PPO's column agreement ranges 0.14-0.52). That is the same result as
+the REINFORCE sections above, so a better advantage estimator or a clipped update
+does not fix it. The A2C/PPO hyperparameters were **not tuned** (see
+[assumptions.md](assumptions.md), S8): this shows these defaults fail, not that
+the algorithms cannot succeed.
+
+**Fictitious play** (`soccer_nash/fictitious_play.py`) behaves as the note
+sketches. On rock-paper-scissors, best-response dynamics cycle through the three
+diagonal joint actions forever, while fictitious play converges to
+`(1/3, 1/3, 1/3)` (value bracket +/-0.004 at 10,000 rounds). Run on all 2,380
+stage games of the random move-order board (fixed exact `V*`, 94 of them with no
+pure saddle), the value error is below 0.0014 after 1,000 rounds and below
+0.0004 after 10,000; the mixed states are slower (mean bracket 0.0018 vs. 0.0002
+at 1,000 rounds). This is fictitious play on stage games with the exact
+continuation value, not yet a learning dynamic inside the Markov game.
+
 ## Reproducing
 
 ```
@@ -284,6 +320,8 @@ python scripts/policy_gradient_batch.py --seeds 5         # single trajectory vs
 python scripts/policy_gradient_batch.py --seeds 5 --match updates  # same, update-count-matched
 python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared vs. partial-share nets
 python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
+python scripts/pg_algos_and_fp.py pg --seeds 3             # REINFORCE vs. A2C vs. PPO
+python scripts/pg_algos_and_fp.py fp                       # best-response dynamics vs. fictitious play
 ```
 
 `soccer_nash/policy_gradient.py`'s `pretrain_policy_nets` and
