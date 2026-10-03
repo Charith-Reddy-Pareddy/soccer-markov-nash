@@ -43,3 +43,30 @@ def test_a2c_and_ppo_run_and_return_valid_policies():
         pol = res.net0.policy(g.initial_state())
         assert pol.shape == (4,) and np.isclose(pol.sum(), 1.0)
         assert len(res.mean_reward_trace) == 3
+
+
+def test_winrate_rates_sum_to_one_and_uniform_is_mirror_symmetric():
+    from soccer_nash.exploit import uniform_policy
+    from soccer_nash.game import SoccerGame
+    from soccer_nash.winrate import mirror_gap, play_matches
+
+    g = SoccerGame(move_order="random")
+    u = uniform_policy(g)
+    r = play_matches(g, u, u, n_games=20, max_steps=100, seed=1)
+    assert abs(r["win"] + r["tie"] + r["loss"] - 1.0) < 1e-12
+    assert mirror_gap(g, u, u) == (0.0, 0.0)
+    always_u = {s: np.array([1.0, 0, 0, 0]) for s in g.states()}
+    always_l = {s: np.array([0, 0, 1.0, 0]) for s in g.states()}
+    assert mirror_gap(g, always_u, always_l)[1] == 1.0  # U vs flip(L)=R
+
+
+def test_markov_fictitious_play_approaches_exact_values_on_a_small_board():
+    from soccer_nash.fictitious_play import markov_fictitious_play
+    from soccer_nash.game import SoccerGame
+    from soccer_nash.nash_q import NashQIteration
+
+    g = SoccerGame(width=4, height=3, goal_rows=(1,), move_order="random")
+    solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
+    exact = solver.run_exact()
+    _, hist = markov_fictitious_play(solver, exact.values, 60, persistent=False, rounds=200)
+    assert hist[-1][1] < 0.05

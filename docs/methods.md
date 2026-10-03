@@ -97,7 +97,8 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `distance_table.csv` | `distance_table.py` | no-pure-saddle / forced / degenerate counts, bucketed by Manhattan distance between the players | ~10 s |
 | `pure_vs_mixed_exploit.csv` | `pure_vs_mixed_exploit.py` | greedy-pure vs. Nash-mixed value against a best response, at each positions.md case | instant |
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
-| `pg_algos_seeds.csv` | `pg_algos_and_fp.py pg --seeds 3` | self-play REINFORCE vs. A2C vs. PPO vs. the exact solve, **3 seeds** | ~10 min |
+| `pg_algos_{a10,random}_seeds.csv` | `pg_algos_and_fp.py pg --board ... --seeds 3` | self-play REINFORCE vs. A2C vs. PPO vs. the exact solve, + win/tie/loss and mirror gap, **3 seeds** | ~10 min each |
+| `markov_fictitious_play.csv` | `pg_algos_and_fp.py markov-fp` | fictitious play inside the Markov game, restart vs. persistent beliefs | ~1 min |
 | `fictitious_play.csv` | `pg_algos_and_fp.py fp` | best-response dynamics vs. fictitious play on RPS and on all 2,380 stage games | ~5 s |
 | self-play | `selfplay.py --seeds 5` | Nash-vs-Nash return, **5 seeds × 3000 games** | ~5 min |
 | `board_sweep.csv` | `experiments.py board` | larger board sweep (legacy) | ~10 min |
@@ -115,7 +116,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 383 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 385 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34

@@ -20,10 +20,16 @@ import numpy as np
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from soccer_nash.actor_critic import train_actor_critic_selfplay
-from soccer_nash.fictitious_play import best_response_dynamics, fictitious_play
+from soccer_nash.exploit import best_response_to, onehot_policy, uniform_policy
+from soccer_nash.fictitious_play import (
+    best_response_dynamics,
+    fictitious_play,
+    markov_fictitious_play,
+)
 from soccer_nash.game import A10SoccerGame, SoccerGame
 from soccer_nash.nash_q import NashQIteration
 from soccer_nash.policy_gradient import evaluate_policy_gradient, train_reinforce_selfplay
+from soccer_nash.winrate import mirror_gap, play_matches
 
 EXP = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 RPS = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
@@ -75,8 +81,33 @@ def run_fp(rounds_list=(100, 1000, 10000)) -> None:
     print("wrote experiments/fictitious_play.csv")
 
 
-def run_pg(seeds: int, iterations: int, rollout_len: int) -> None:
-    game = A10SoccerGame()
+def run_markov_fp() -> None:
+    game = SoccerGame(move_order="random")
+    solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-10)
+    exact = solver.run_exact()
+    cps = (10, 50, 100, 200, 500, 1000, 2000)
+    rows = []
+    for persistent, label, sweeps, rounds in (
+        (False, "restart-200", 150, 200), (True, "persistent", 2000, 0),
+    ):
+        t = time.perf_counter()
+        _, hist = markov_fictitious_play(
+            solver, exact.values, sweeps, persistent, rounds, checkpoints=cps)
+        print(f"{label} ({time.perf_counter() - t:.0f}s):")
+        for k, err, br in hist:
+            print(f"  sweep {k:>5}: max|V-V*| = {err:.4f}, mean bracket = {br:.4f}")
+            rows.append({"variant": label, "sweep": k, "max_value_err": err,
+                         "mean_bracket": br})
+    EXP.mkdir(exist_ok=True)
+    with (EXP / "markov_fictitious_play.csv").open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    print("wrote experiments/markov_fictitious_play.csv")
+
+
+def run_pg(seeds: int, iterations: int, rollout_len: int, board: str, n_games: int) -> None:
+    game = A10SoccerGame() if board == "a10" else SoccerGame(move_order="random")
     solver = NashQIteration(game, gamma=0.9, mode="hybrid", tol=1e-10)
     exact = solver.run()
     matrix_of = lambda s: solver._matrix(s, exact.values)  # noqa: E731
@@ -97,29 +128,51 @@ def run_pg(seeds: int, iterations: int, rollout_len: int) -> None:
             dt = time.perf_counter() - t
             m = evaluate_policy_gradient(
                 game, res, exact.row_policy, exact.col_policy, matrix_of)
+            rp = {st: res.net0.policy(st) for st in game.states()}
+            cp = {st: res.net1.policy(st) for st in game.states()}
+            br_col = onehot_policy(
+                best_response_to(game, rp, responder=1).policy, game.n_actions)
+            opp = {"random": uniform_policy(game), "nash": exact.col_policy, "br": br_col}
+            wl = {}
+            for oname, op in opp.items():
+                for k, v in play_matches(game, rp, op, n_games, seed=sd).items():
+                    wl[f"row_{k}_vs_{oname}"] = v
+            wl["mirror_gap_mean"], wl["mirror_gap_max"] = mirror_gap(game, rp, cp)
             rows.append({"algo": name, "seed": sd, "train_s": round(dt, 1), **{
-                k: round(v, 4) for k, v in m.items()}})
+                k: round(v, 4) for k, v in {**m, **wl}.items()}})
             print(name, sd, rows[-1], flush=True)
     EXP.mkdir(exist_ok=True)
-    with (EXP / "pg_algos_seeds.csv").open("w", newline="") as f:
+    with (EXP / f"pg_algos_{board}_seeds.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
-    print("\nalgo | exploitability | mean eq. regret | row agree | row vs random | row vs BR")
+    print(f"\nboard: {board}")
+    print("algo | exploitability | mean eq. regret | row agree | row vs random | row vs BR")
     for name in algos:
         r = [x for x in rows if x["algo"] == name]
         def f(k, r=r):
             return f"{statistics.mean(x[k] for x in r):.3f}"
         print(f"{name:9s} | {f('duality_gap')} | {f('mean_equilibrium_regret')} | "
               f"{f('row_action_agreement')} | {f('row_vs_random')} | {f('row_vs_best_response')}")
-    print("wrote experiments/pg_algos_seeds.csv")
+        for o in ("random", "nash", "br"):
+            print(f"          vs {o:6s}: W/T/L = {f(f'row_win_vs_{o}')} / "
+                  f"{f(f'row_tie_vs_{o}')} / {f(f'row_loss_vs_{o}')}")
+        print(f"          mirror gap mean/max = {f('mirror_gap_mean')} / {f('mirror_gap_max')}")
+    print(f"wrote experiments/pg_algos_{board}_seeds.csv")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("which", choices=["fp", "pg"])
+    ap.add_argument("which", choices=["fp", "pg", "markov-fp"])
     ap.add_argument("--seeds", type=int, default=3)
+    ap.add_argument("--board", choices=["random", "a10"], default="random")
+    ap.add_argument("--games", type=int, default=1000)
     ap.add_argument("--iterations", type=int, default=2000)
     ap.add_argument("--rollout-len", type=int, default=100)
     a = ap.parse_args()
-    run_fp() if a.which == "fp" else run_pg(a.seeds, a.iterations, a.rollout_len)
+    if a.which == "fp":
+        run_fp()
+    elif a.which == "markov-fp":
+        run_markov_fp()
+    else:
+        run_pg(a.seeds, a.iterations, a.rollout_len, a.board, a.games)

@@ -27,6 +27,19 @@ def best_response_dynamics(M: np.ndarray, rounds: int, start=(0, 0)):
     return path
 
 
+def fp_step(M: np.ndarray, cr: np.ndarray, cc: np.ndarray) -> None:
+    """One simultaneous fictitious-play round, updating the action counts
+    ``cr`` / ``cc`` in place: each player best-responds to the other's
+    empirical mix so far (ties -> lowest index)."""
+    idx = np.arange(M.shape[0])
+    q = cc / cc.sum(1, keepdims=True)
+    p = cr / cr.sum(1, keepdims=True)
+    i = np.argmax(np.einsum("nab,nb->na", M, q), axis=1)
+    j = np.argmin(np.einsum("na,nab->nb", p, M), axis=1)
+    cr[idx, i] += 1.0
+    cc[idx, j] += 1.0
+
+
 def fictitious_play(M: np.ndarray, rounds: int):
     """Fictitious play on a batch of zero-sum matrix games ``M`` of shape
     ``(N, A, B)`` (row player maximises). Returns ``(p, q, lo, hi)``: the
@@ -41,14 +54,8 @@ def fictitious_play(M: np.ndarray, rounds: int):
     cc = np.zeros((N, B))
     cr[:, 0] = 1.0
     cc[:, 0] = 1.0
-    idx = np.arange(N)
-    for t in range(1, rounds):
-        q = cc / cc.sum(1, keepdims=True)
-        p = cr / cr.sum(1, keepdims=True)
-        i = np.argmax(np.einsum("nab,nb->na", M, q), axis=1)
-        j = np.argmin(np.einsum("na,nab->nb", p, M), axis=1)
-        cr[idx, i] += 1.0
-        cc[idx, j] += 1.0
+    for _ in range(1, rounds):
+        fp_step(M, cr, cc)
     p = cr / cr.sum(1, keepdims=True)
     q = cc / cc.sum(1, keepdims=True)
     lo = np.einsum("na,nab->nb", p, M).min(1)
@@ -56,3 +63,45 @@ def fictitious_play(M: np.ndarray, rounds: int):
     if single:
         return p[0], q[0], lo[0], hi[0]
     return p, q, lo, hi
+
+
+def markov_fictitious_play(
+    solver, exact_values: dict, sweeps: int, persistent: bool, rounds: int = 200,
+    checkpoints: tuple[int, ...] = (),
+):
+    """Fictitious play inside the Markov game: every sweep rebuilds each state's
+    4x4 stage matrix from the *current* value estimate ``V`` and updates ``V``
+    from fictitious play on it -- no exact continuation value is used.
+
+    ``persistent=True`` is the learning dynamic of the research note: the
+    empirical action counts at every state **carry over across sweeps** and each
+    sweep adds one best-response round (a player best-responds to the
+    opponent's whole past play). ``persistent=False`` restarts the beliefs and
+    runs ``rounds`` rounds each sweep. ``V`` is the midpoint of the value
+    bounds ``lo <= val <= hi`` of the empirical mixes. Returns
+    ``(V, history)`` where history rows are ``(sweep, max|V-V*|, mean bracket)``.
+    """
+    game = solver.game
+    states = list(game.states())
+    V = dict.fromkeys(states, 0.0)
+    v_star = np.array([exact_values[s] for s in states])
+    n = solver._n
+    cr = np.zeros((len(states), n))
+    cc = np.zeros((len(states), n))
+    cr[:, 0] = cc[:, 0] = 1.0
+    history = []
+    for k in range(1, sweeps + 1):
+        M = np.array([solver._matrix(s, V) for s in states])
+        if persistent:
+            fp_step(M, cr, cc)
+            p = cr / cr.sum(1, keepdims=True)
+            q = cc / cc.sum(1, keepdims=True)
+            lo = np.einsum("na,nab->nb", p, M).min(1)
+            hi = np.einsum("nab,nb->na", M, q).max(1)
+        else:
+            _, _, lo, hi = fictitious_play(M, rounds)
+        v = (lo + hi) / 2
+        V = dict(zip(states, v.tolist()))
+        if k in checkpoints or k == sweeps:
+            history.append((k, float(np.abs(v - v_star).max()), float((hi - lo).mean())))
+    return V, history

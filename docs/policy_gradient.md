@@ -311,6 +311,51 @@ pure saddle), the value error is below 0.0014 after 1,000 rounds and below
 at 1,000 rounds). This is fictitious play on stage games with the exact
 continuation value, not yet a learning dynamic inside the Markov game.
 
+### The same comparison on the random move-order board
+
+The 7x5 random move-order game (three goal rows, 94 mixed stage games) is the
+board where the equilibrium actually mixes, so it is the more demanding test.
+Same budget, 3 seeds, scored against the exact solve. Win / tie / loss are
+Monte-Carlo estimates from the kickoff over 1,000 games each (a tie is a game
+with no goal in 100 steps), for the row player only; the "best response" is
+the exact best response in *discounted value*, not in win probability.
+
+| row player | exploitability | mean eq. regret | W / T / L vs. random | vs. exact Nash | vs. best response | mirror gap (mean / max) |
+|---|---|---|---|---|---|---|
+| exact solver (reference) | 0 | 0 | 1.00 / 0.00 / 0.00 | 0.66 / 0.01 / 0.34 | 0.70 / 0.00 / 0.30 | 0 |
+| REINFORCE (+baseline, +entropy) | 0.733 | 0.056 | 0.92 / 0.04 / 0.04 | 0.25 / 0.00 / 0.75 | 0.07 / 0.00 / 0.93 | 0.42 / 0.97 |
+| A2C | 0.781 | 0.058 | 0.88 / 0.07 / 0.05 | 0.12 / 0.00 / 0.88 | 0.04 / 0.00 / 0.96 | 0.44 / 0.96 |
+| PPO | 0.852 | 0.108 | 0.44 / 0.49 / 0.07 | 0.15 / 0.09 / 0.76 | 0.00 / 0.00 / 1.00 | 0.78 / 1.00 |
+
+All three beat a random opponent (PPO mostly ties it) and all three lose
+heavily to the exact equilibrium and to a best response, so none has learned the
+equilibrium; REINFORCE and A2C are closer than PPO here, though three seeds
+cannot rank them. The exact row player wins 66% against the exact column player
+only because it starts with the ball. The *mirror gap* is how far the two
+separately trained policies are from being mirror images of each other (0 for the
+exact solve): 0.4-0.8 on average, so the two networks learn clearly different
+strategies, not a symmetric pair.
+
+### Fictitious play inside the Markov game
+
+`markov_fictitious_play` drops the exact continuation value. Every sweep rebuilds
+each state's stage matrix from the *current* value estimate and updates it from
+fictitious play on that matrix, on the random move-order board against the exact solve:
+
+| variant | after | max value error | mean value bracket |
+|---|---|---|---|
+| restart beliefs each sweep, 200 rounds | 50 sweeps | 0.0124 | 0.0012 |
+| persistent beliefs, one round per sweep | 100 sweeps | 0.083 | 0.0085 |
+| persistent beliefs, one round per sweep | 500 sweeps | 0.0165 | 0.0022 |
+| persistent beliefs, one round per sweep | 2,000 sweeps | 0.0051 | 0.0006 |
+
+The persistent variant is the learning dynamic of the note (each player
+best-responds to the opponent's whole past play, per state). It converges, slowly
+and at roughly a `1/sqrt(t)` rate; the restart variant plateaus at the fixed
+inexactness of 200 rounds of fictitious play. Unlike the policy-gradient methods,
+fictitious play recovers the equilibrium values here, because it solves each
+stage game by best-responding to a matrix rather than by sampling.
+
 ## Reproducing
 
 ```
@@ -321,7 +366,9 @@ python scripts/policy_gradient_batch.py --seeds 5 --match updates  # same, updat
 python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared vs. partial-share nets
 python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
 python scripts/pg_algos_and_fp.py pg --seeds 3             # REINFORCE vs. A2C vs. PPO
+python scripts/pg_algos_and_fp.py pg --board random --seeds 3   # same, on the random move-order board
 python scripts/pg_algos_and_fp.py fp                       # best-response dynamics vs. fictitious play
+python scripts/pg_algos_and_fp.py markov-fp                # fictitious play inside the Markov game
 ```
 
 `soccer_nash/policy_gradient.py`'s `pretrain_policy_nets` and
