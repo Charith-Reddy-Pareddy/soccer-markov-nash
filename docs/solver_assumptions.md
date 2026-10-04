@@ -25,6 +25,13 @@ instruction could change a result.
 | S9 | Win rates are Monte-Carlo estimates from the kickoff over 1,000 games, a tie is no goal in 100 steps, and the "best response" is exact in *discounted value*, not in win probability. | `winrate.py` | mine |
 | S10 | The main environment is the **7x5 random move-order** game with three goal rows (94 mixed stage games); the deterministic A10 game is the comparison. | `pg_algos_and_fp.py` | mine |
 
+## Exploring starts and DQN
+
+| # | assumption | where | status |
+|---|---|---|---|
+| S19 | **Exploring starts** (`--explore`) restart every training episode at a uniformly random non-terminal state instead of the kickoff. The default is still the kickoff. | `policy_gradient.py`, `actor_critic.py` | mine |
+| S20 | The Nash-DQN's *policy* is the minimax solution of its own predicted `Q` matrix at each state; ties are broken by the LP solver. | `pg_algos_and_fp.py` | mine |
+
 ## Fictitious play
 
 | # | assumption | where | status |
@@ -45,6 +52,7 @@ something runnable, and is meant to be replaced.
 | S16 | Dog and sheep start at fixed points `(0.2, 0.2)` and `(0.8, 0.8)`. | `dog_game.py` | **invented** |
 | S17 | The three continuous best-response methods (bisection on the derivative, finite-difference gradient ascent, quadratic fit) are tested on **analytic** functions with a known maximiser, not on any learned `Q`. | `continuous_br.py` | mine |
 | S18 | Dog-game results are a smoke test: there is no exact solution to compare against, so nothing is claimed about equilibrium. | `dog_game.md` | mine |
+| S21 | The 10-angle DQN dog trains against a **fixed fleeing sheep** (runs straight away at full speed), always moves at full speed, and the 10 angles are equally spaced. | `dog_game.py` | **invented** |
 
 ## Questions for the professor
 

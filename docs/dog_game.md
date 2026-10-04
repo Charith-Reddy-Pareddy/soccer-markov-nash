@@ -23,8 +23,23 @@ The trained dog catches the sheep it trained against, but slowly: a plain straig
 
 Nothing here says anything about equilibrium. There is no exact solution to compare against, and the dog's speed advantage means the right answer to this placeholder game is probably not interesting.
 
+## The note's other two dog-game items
+
+**DQN with one output per angle.** The note's `Q(a1) ... Q(a10)` head (not a network that takes the action as an input). The dog picks one of 10 equally spaced angles at full speed and trains with DQN against a fixed sheep that runs straight away from it (S19). 300 iterations of 64 games, 3 seeds:
+
+| matchup | capture rate | mean capture step |
+|---|---|---|
+| 10-angle DQN dog vs. fleeing sheep | 1.00 (3 seeds) | 23, 24, 26 |
+| straight-line dog vs. fleeing sheep | 1.00 | 19 |
+| 10-angle DQN dog vs. random sheep | 0.07, 0.09, 0.12 | about 50 |
+
+The DQN dog catches the sheep it trained against, a little slower than a straight chase (ten angles are coarse). Against a random sheep it mostly fails, so it has learned that one opponent, not pursuit.
+
+**Best response on a fitted network.** The note's "train a network to approximate a function, then find its extremum". `tests/test_continuous_br.py` fits a small network to `-(a - 1.3)^2` on `[0, 2 pi]` and checks that bisection, finite-difference gradient ascent and the quadratic fit all find the peak of the network within 0.15.
+
 ## Reproducing
 
 ```
 python scripts/dog_game.py --seeds 2     # ~20 min, writes experiments/dog_game.csv
+python scripts/dog_game.py dqn --seeds 3 # ~4 min, writes experiments/dog_game_dqn.csv
 ```

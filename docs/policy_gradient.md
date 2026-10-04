@@ -356,6 +356,37 @@ inexactness of 200 rounds of fictitious play. Unlike the policy-gradient methods
 fictitious play recovers the equilibrium values here, because it solves each
 stage game by best-responding to a matrix rather than by sampling.
 
+### Exploring starts, and Nash-DQN for comparison
+
+The policy-gradient runs above train from the kickoff, so most of the 2,380 states are rarely visited (S5 in [solver_assumptions.md](solver_assumptions.md)). `--explore` restarts every episode at a uniformly random state instead. Same board, budget and 3 seeds:
+
+| row player | exploitability | mean eq. regret | row action agreement | W / T / L vs. random | vs. exact Nash | vs. best response | mirror gap (mean / max) |
+|---|---|---|---|---|---|---|---|
+| REINFORCE, exploring starts | 0.801 | 0.027 | 0.710 | 0.92 / 0.07 / 0.01 | 0.06 / 0.00 / 0.95 | 0.00 / 0.00 / 1.00 | 0.11 / 0.79 |
+| A2C, exploring starts | 0.821 | 0.030 | 0.698 | 0.89 / 0.09 / 0.02 | 0.05 / 0.00 / 0.95 | 0.00 / 0.00 / 1.00 | 0.15 / 0.81 |
+| PPO, exploring starts | 0.910 | 0.072 | 0.509 | 0.90 / 0.05 / 0.06 | 0.02 / 0.00 / 0.98 | 0.01 / 0.00 / 0.99 | 0.41 / 0.99 |
+| Nash-DQN (minimax of its own `Q`) | 0.378 | -- | -- | 0.995 / 0.004 / 0.001 | 0.52 / 0.10 / 0.39 | 0.02 / 0.79 / 0.19 | 0.39 / 1.00 |
+| exact solver | 0 | 0 | 1 | 1.00 / 0.00 / 0.00 | 0.66 / 0.01 / 0.34 | 0.70 / 0.00 / 0.30 | 0 |
+
+Exploring starts do what they should on average: action agreement rises from 0.44 to 0.71 for REINFORCE, mean equilibrium regret halves, and the two networks become much closer to mirror images (0.42 to 0.11). They do **not** fix play from the kickoff: exploitability and the results against the exact equilibrium get slightly worse, so being right at more states is not the same as being unexploitable at the one that matters. Nash-DQN, which fits the exact `Q` matrix instead of sampling returns, is far closer to the exact solver on every measure. That is the same ordering as [neural.md](neural.md).
+
+### Best-response dynamics, and what the note's "???" resolves to
+
+With the standard payoffs, the best response to a half-and-half mix of rock and scissors is Rock (expected `+1/2`; Paper scores 0, Scissors `-1/2`), so the note's `br(1/2 R, 1/2 S)` is Rock. Of the 87 random-board states where the equilibrium actually mixes, 79 mix two actions and 8 mix three, the case the note sketches as `1/3, 1/3, 1/3`.
+
+### Fictitious play as a policy, not only a value
+
+Beyond the value error above, the final empirical mixes were scored as policies (2000 sweeps persistent, or 150 sweeps of 200 rounds restarted):
+
+| board | variant | mean eq. regret | max eq. regret | exploitability | row mix distance to exact, 94 mixed states |
+|---|---|---|---|---|---|
+| random | persistent | 0.0006 | 0.008 | 0.011 | 0.128 |
+| random | restart | 0.0011 | 0.009 | 0.025 | 0.159 |
+| deterministic | persistent | 0.0005 | 0.010 | 0.006 | -- (no mixed states) |
+| deterministic | restart | 0.0015 | 0.016 | 0.027 | -- |
+
+Fictitious play gets close to an equilibrium as a whole (exploitability about 0.01, against 0.4-0.9 for every learner above), but its empirical mixes at the mixed states are still about 0.13 off in total variation from the exact mix. Some of those states have several equilibria, so that distance is partly a comparison against one arbitrary choice.
+
 ## Reproducing
 
 ```
@@ -367,6 +398,8 @@ python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared 
 python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
 python scripts/pg_algos_and_fp.py pg --seeds 3             # REINFORCE vs. A2C vs. PPO
 python scripts/pg_algos_and_fp.py pg --board random --seeds 3   # same, on the random move-order board
+python scripts/pg_algos_and_fp.py pg --board random --explore --seeds 3   # exploring starts
+python scripts/pg_algos_and_fp.py dqn --seeds 3             # Nash-DQN win rates
 python scripts/pg_algos_and_fp.py fp                       # best-response dynamics vs. fictitious play
 python scripts/pg_algos_and_fp.py markov-fp                # fictitious play inside the Markov game
 ```
