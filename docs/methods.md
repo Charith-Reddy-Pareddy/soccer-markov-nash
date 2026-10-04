@@ -100,6 +100,7 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `pg_algos_{a10,random}_seeds.csv` | `pg_algos_and_fp.py pg --board ... --seeds 3` | self-play REINFORCE vs. A2C vs. PPO vs. the exact solve, + win/tie/loss and mirror gap, **3 seeds** | ~10 min each |
 | `markov_fictitious_play.csv` | `pg_algos_and_fp.py markov-fp` | fictitious play inside the Markov game, restart vs. persistent beliefs | ~1 min |
 | `fictitious_play.csv` | `pg_algos_and_fp.py fp` | best-response dynamics vs. fictitious play on RPS and on all 2,380 stage games | ~5 s |
+| `dog_game.csv` | `dog_game.py --seeds 2` | provisional dog-and-sheep game, angle-radius policy, self-play PPO, **2 seeds** | ~20 min |
 | self-play | `selfplay.py --seeds 5` | Nash-vs-Nash return, **5 seeds × 3000 games** | ~5 min |
 | `board_sweep.csv` | `experiments.py board` | larger board sweep (legacy) | ~10 min |
 
