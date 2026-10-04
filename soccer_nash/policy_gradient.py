@@ -110,6 +110,14 @@ def _discounted_returns(
     return out
 
 
+def reset_state(
+    game: SoccerGame, rng: np.random.Generator, starts: list[State] | None = None,
+) -> State:
+    """The kickoff, or (with ``starts``) a uniformly random non-terminal state --
+    exploring starts, so training visits states the kickoff rarely reaches."""
+    return game.initial_state() if starts is None else starts[int(rng.integers(len(starts)))]
+
+
 def _rollout(
     game: SoccerGame,
     net0: PolicyNet,
@@ -117,6 +125,7 @@ def _rollout(
     start_state: State,
     rollout_len: int,
     rng: np.random.Generator,
+    starts: list[State] | None = None,
 ) -> tuple[list[State], list[int], list[int], list[float], list[bool], State]:
     """One on-policy self-play rollout of ``rollout_len`` steps from
     ``start_state``. Returns the per-step states/actions/rewards plus the
@@ -142,7 +151,7 @@ def _rollout(
         a1s.append(a1)
         r0s.append(r0)
         dones.append(done)
-        state = game.initial_state() if done else ns
+        state = reset_state(game, rng, starts) if done else ns
     return states, a0s, a1s, r0s, dones, state
 
 
@@ -197,6 +206,7 @@ def train_reinforce_selfplay(
     init_net1: PolicyNet | None = None,
     use_baseline: bool = False,
     entropy_coef: float = 0.0,
+    explore_starts: bool = False,
 ) -> ReinforceResult:
     """Self-play REINFORCE: both players act simultaneously every step, from
     their own policy network, on the real (stochastic) transition -- sampled
@@ -258,7 +268,8 @@ def train_reinforce_selfplay(
         vopt1 = torch.optim.Adam(value_net1.parameters(), lr=lr)
 
     trace: list[float] = []
-    state = game.initial_state()
+    starts = list(game.states()) if explore_starts else None
+    state = reset_state(game, rng, starts)
     for _ in range(iterations):
         states: list[State] = []
         a0s: list[int] = []
@@ -267,9 +278,9 @@ def train_reinforce_selfplay(
         raw_r0: list[float] = []
 
         for k in range(n_rollouts):
-            start = state if k == 0 else game.initial_state()
+            start = state if k == 0 else reset_state(game, rng, starts)
             s_k, a0_k, a1_k, r0_k, done_k, end_state = _rollout(
-                game, net0, net1, start, rollout_len, rng,
+                game, net0, net1, start, rollout_len, rng, starts,
             )
             if k == 0:
                 state = end_state  # only the "main" trajectory carries over between iterations

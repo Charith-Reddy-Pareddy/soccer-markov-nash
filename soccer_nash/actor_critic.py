@@ -21,10 +21,10 @@ import numpy as np
 import torch
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame
-from soccer_nash.policy_gradient import PolicyNet, ReinforceResult, ValueNet
+from soccer_nash.policy_gradient import PolicyNet, ReinforceResult, ValueNet, reset_state
 
 
-def _collect(game, net0, net1, v0, v1, state, n_steps, rng):
+def _collect(game, net0, net1, v0, v1, state, n_steps, rng, starts=None):
     """One rollout of ``n_steps``; returns tensors plus the bootstrap values."""
     S, A0, A1, R, D, LP0, LP1 = [], [], [], [], [], [], []
     for _ in range(n_steps):
@@ -42,7 +42,7 @@ def _collect(game, net0, net1, v0, v1, state, n_steps, rng):
         A1.append(int(a1))
         R.append(r0)
         D.append(done)
-        state = game.initial_state() if done else ns
+        state = reset_state(game, rng, starts) if done else ns
     X = torch.tensor(np.array(S), dtype=torch.float32)
     xe = torch.tensor(state, dtype=torch.float32)
     with torch.no_grad():
@@ -89,6 +89,7 @@ def train_actor_critic_selfplay(
     ppo_epochs: int = 4,
     init_net0: PolicyNet | None = None,
     init_net1: PolicyNet | None = None,
+    explore_starts: bool = False,
 ) -> ReinforceResult:
     if algo not in ("a2c", "ppo"):
         raise ValueError("algo must be 'a2c' or 'ppo'")
@@ -105,10 +106,11 @@ def train_actor_critic_selfplay(
     epochs = 1 if algo == "a2c" else ppo_epochs
 
     trace: list[float] = []
-    state = game.initial_state()
+    starts = list(game.states()) if explore_starts else None
+    state = reset_state(game, rng, starts)
     for _ in range(iterations):
         b = _collect(game, nets[0], nets[1], vals[0], vals[1], state,
-                     rollout_len, rng)
+                     rollout_len, rng, starts)
         state = b["end_state"]
         trace.append(float(b["R"].mean()))
         for i in (0, 1):
