@@ -91,51 +91,5 @@ The experiments in this repo establish different things:
 The report makes Claim A and B, and Claim C' for the single-cell case; it does
 not make the general Claim C.
 
-## Solver and learner assumptions (beyond the game rules)
-
-The tables above cover the *game*. These are the choices the *solvers and
-learners* make on top of it. "Mine" means nothing in the A10 text or the group
-notes asked for it.
-
-| # | assumption | where | status |
-|---|---|---|---|
-| S1 | Value iteration is **stationary** with `gamma = 0.9`; the state has no step counter, so the 100-step tie is not modelled. The undiscounted game is solved separately by backward induction (`run_finite_horizon`). | `nash_q.py` | mine (A10 allows a discounted training reward) |
-| S2 | Each stage game is solved as a **zero-sum matrix game** (minimax value, Shapley 1953). | `nash_q.py` | standard |
-| S3 | Where a stage game has several equilibria (degenerate states), the reported policy is **one** of them (the LP vertex); the value and Q are unique, the policy is not. | `degeneracy.csv` | mine |
-| S4 | Pure-vs-mixed is decided with a tolerance that scales with the matrix entries. | `numerics.py` | mine |
-| S5 | **Policy gradient (REINFORCE / A2C / PPO)** trains on the same `+/-1` goal reward, `gamma = 0.9`, from the A10 kickoff; episodes restart at kickoff after a goal. Off-path states are therefore visited rarely, yet the evaluation scores *all* 2,380 states against the exact solve. | `policy_gradient.py`, `actor_critic.py` | mine |
-| S6 | The 100-step tie is **not** enforced inside PG episodes; a rollout is cut every 100 steps and the cut is bootstrapped by the critic (A2C/PPO) or given zero continuation (REINFORCE). | same | mine |
-| S7 | The two players have **separate** policy and value networks (no mirror constraint). A shared-weights variant is tested in `policy_gradient.md`; mirror-symmetry is *measured*, not imposed. | same | mine |
-| S8 | A2C/PPO hyperparameters (`lr 1e-3`, hidden 64, entropy 0.01, GAE `lambda 0.95`, clip 0.2, 4 PPO epochs, 2000 x 100 steps) are **untuned**, and match REINFORCE's budget. A loss for PPO/A2C is therefore not evidence about the algorithm. | `actor_critic.py` | mine |
-| S9 | "Wins" are reported as **expected discounted goal difference** from kickoff against a random policy and against the exact best response, not as win probability. A tie is worth 0. | `evaluate_policy_gradient` | mine |
-| S10 | **Fictitious play** is run on the exact stage matrices (fixed `V*`), both players updating simultaneously, ties broken by lowest action index, first action `U`. It is *not* yet run as a learning dynamic inside the Markov game. Run on the **random move-order** board, where 94 stage games are genuinely mixed; the deterministic A10 board has none, so FP is trivial there. | `fictitious_play.py` | mine |
-| S11 | The **dog game** is *not implemented*. Its dynamics, speeds, capture rule, reward and horizon are not specified anywhere I can see. | -- | blocked on the professor |
-
-## Questions for the professor
-
-1. **Dog game definition.** Pursuit-evasion in the plane? Who is the dog and who
-   the sheep, what are the two speeds, the arena, the capture radius or goal,
-   the reward, and the horizon? Is time discrete? Is the angle-radius output a
-   displacement `r(cos t, sin t)` with `r <= delta` for *both* players?
-2. **Policy distribution for the angle and radius.** A von Mises for `t` and a
-   Beta (or squashed Gaussian) for `r`, or a deterministic output plus noise?
-3. **Which soccer variant is the target for PG and fictitious play?** The A10
-   deterministic board has **0** mixed stage games, so there is nothing mixed
-   to learn; the random move-order board has 94. Should the learners be judged
-   on the deterministic A10 game, the random one, or both?
-4. **Discount.** Is training at `gamma = 0.9` acceptable, or should the learners
-   see the undiscounted game with a 100-step timer (a non-stationary policy that
-   needs the step number as an input)?
-5. **"Win rate".** For the random / NE / best-response comparison: is it
-   `P(score first within 100 steps)`, and how is a tie counted? Against the exact
-   NE policy the expected goal difference is just `V*`, so a win rate is the more
-   informative number there. The note's "NE ??? 1/2" looks like it asks exactly this.
-6. **"Check symmetry."** Impose mirror equivariance (one network, a side flag),
-   or just test whether the two separately trained policies are mirror images?
-7. **Fictitious play scope.** Stage games with the exact `V*` (done), or FP as a
-   full learning dynamic in the Markov game, with a learned best-response
-   network per state?
-8. **`Q*` in "DQN, PG -> soccer => Q*".** Is that the per-state 4x4 joint-action
-   matrix `Q(s, a0, a1)` the exact solver produces? That is what is compared.
-9. **Continuous best response (page 3).** Bisection on `Q'`, finite-difference
-   gradient, quadratic/LQR approximation: are these for the dog game now, or later?
+The choices the solvers and learners make on top of the game are in
+[solver_assumptions.md](solver_assumptions.md).
