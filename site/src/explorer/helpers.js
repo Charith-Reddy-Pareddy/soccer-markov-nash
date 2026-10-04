@@ -5,6 +5,29 @@ export function stateKey(s) {
   return `${s.x0},${s.y0},${s.x1},${s.y1},${s.b}`;
 }
 
+// Keep a position when changing boards. Boards with smaller dimensions may
+// not contain the exact state, so choose the nearest legal state while
+// preserving ball possession whenever possible.
+export function stateForBoard(state, board) {
+  const key = stateKey(state);
+  if (board.states[key]) return { ...state };
+
+  let best = null;
+  let bestScore = Infinity;
+  for (const candidateKey of Object.keys(board.states)) {
+    const [x0, y0, x1, y1, b] = candidateKey.split(",").map(Number);
+    const possessionPenalty = b === state.b ? 0 : 1_000_000;
+    const distance = Math.abs(x0 - state.x0) + Math.abs(y0 - state.y0)
+      + Math.abs(x1 - state.x1) + Math.abs(y1 - state.y1);
+    const score = possessionPenalty + distance;
+    if (score < bestScore) {
+      bestScore = score;
+      best = { x0, y0, x1, y1, b };
+    }
+  }
+  return best;
+}
+
 export function kickoffState(board) {
   return { x0: 0, y0: Math.floor(board.height / 2), x1: board.width - 1, y1: Math.floor(board.height / 2), b: 0 };
 }

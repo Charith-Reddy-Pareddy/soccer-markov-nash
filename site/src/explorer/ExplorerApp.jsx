@@ -4,7 +4,7 @@ import Footer from "../Footer.jsx";
 import Board from "./Board.jsx";
 import QMatrixTable from "./QMatrixTable.jsx";
 import QMatrixGraph from "./QMatrixGraph.jsx";
-import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateKey, stepPolicy, support, wallMask } from "./helpers.js";
+import { ACT, certify, describeOutcome, expectedValues, fmtPct, kickoffState, nearestNiceFraction, POLICY_LABELS, POLICY_TYPES, simulateGames, stateForBoard, stateKey, stepPolicy, support, wallMask } from "./helpers.js";
 import "./explorer.css";
 
 const BOARD_ORDER = ["canonical", "canonical_det", "canonical_coinflip", "tackle", "territory", "slip"];
@@ -287,8 +287,7 @@ export default function ExplorerApp() {
 
   function switchBoard(id) {
     setCurrentBoard(id);
-    setActivePlayer(0);
-    resetPosition(kickoffState(data.boards[id]));
+    resetPosition(stateForBoard(st, data.boards[id]));
   }
 
   function onCellClick(x, y) {
