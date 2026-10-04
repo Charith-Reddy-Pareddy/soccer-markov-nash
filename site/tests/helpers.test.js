@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { certify, stepPolicy, simulateGames } from '../src/explorer/helpers.js';
+import { certify, stepPolicy, simulateGames, stateForBoard } from '../src/explorer/helpers.js';
 
 const M = [[0,0,0,0],[.729,0,.729,0],[0,0,0,0],[.81,.81,-.59049,0]];
 function board(p = [0,1,0,0], q = [0,0,0,1]) {
@@ -38,6 +38,31 @@ test('two-axis ties still have a saddle', () => {
   const cert = certify([[0,0,0,0],[0,0,0,0],[1,-1,0,0],[0,0,0,0]]);
   assert.equal(cert.kind, 'pure');
   assert.equal(cert.gap, 0);
+});
+
+test('switching boards preserves the exact position when it is legal', () => {
+  const state = { x0: 4, y0: 3, x1: 5, y1: 2, b: 1 };
+  const board = { states: { '4,3,5,2,1': [] } };
+  assert.deepEqual(stateForBoard(state, board), state);
+});
+
+test('switching to a smaller board keeps the nearest legal position and possession', () => {
+  const state = { x0: 6, y0: 4, x1: 0, y1: 0, b: 1 };
+  const board = { states: {
+    '4,3,0,0,1': [],
+    '4,3,1,0,1': [],
+    '4,3,0,0,0': [],
+  } };
+  assert.deepEqual(stateForBoard(state, board), { x0: 4, y0: 3, x1: 0, y1: 0, b: 1 });
+});
+
+test('position adaptation resolves an overlap without changing the ball holder', () => {
+  const state = { x0: 2, y0: 1, x1: 2, y1: 1, b: 0 };
+  const board = { states: {
+    '2,1,3,1,0': [],
+    '2,1,3,1,1': [],
+  } };
+  assert.deepEqual(stateForBoard(state, board), { x0: 2, y0: 1, x1: 3, y1: 1, b: 0 });
 });
 
 test('territory rewards count even when the game draws', () => {
