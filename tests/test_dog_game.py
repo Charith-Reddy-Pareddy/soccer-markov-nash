@@ -28,3 +28,10 @@ def test_ppo_selfplay_runs():
     dog, sheep = dg.train_ppo_selfplay(iterations=1, n_envs=4)
     x = dg.features(torch.rand(2, 2), torch.rand(2, 2), 0)
     assert dog.act(x)[0].shape == (2,) and sheep.act(x, greedy=True)[1].shape == (2,)
+
+
+def test_angle_dqn_runs_and_acts_on_the_discrete_angles():
+    q = dg.train_angle_dqn(n_angles=10, iterations=1, n_envs=4)
+    theta, frac = dg.angle_dqn_act(q, 10)(dg.features(torch.rand(3, 2), torch.rand(3, 2), 0))
+    assert torch.allclose(theta / (2 * torch.pi / 10), theta.div(2 * torch.pi / 10).round())
+    assert (frac == 1).all()

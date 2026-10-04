@@ -1,6 +1,7 @@
 """Self-play PPO with an angle-radius policy on the provisional dog-and-sheep game.
 
-    python scripts/dog_game.py --seeds 2     # writes experiments/dog_game.csv
+    python scripts/dog_game.py --seeds 2         # PPO, writes experiments/dog_game.csv
+    python scripts/dog_game.py dqn --seeds 2     # 10-angle DQN, writes dog_game_dqn.csv
 """
 
 from __future__ import annotations
@@ -23,11 +24,35 @@ def greedy(policy):
     return lambda x: policy.act(x, greedy=True)
 
 
+def run_dqn(seeds: int, iterations: int) -> None:
+    rows = []
+    for seed in range(seeds):
+        q = dg.train_angle_dqn(iterations=iterations, seed=seed)
+        with torch.no_grad():
+            dog = dg.angle_dqn_act(q, 10)
+            for name, sheep in (("fleeing", dg.fleeing_sheep_act), ("random", dg.random_act)):
+                r = {k: round(v, 3) for k, v in dg.play(dog, sheep, 500, seed).items()}
+                rows.append({"seed": seed, "matchup": f"10-angle DQN dog vs {name} sheep", **r})
+                print(rows[-1], flush=True)
+        r = {k: round(v, 3) for k, v in dg.play(
+            dg.greedy_dog_act, dg.fleeing_sheep_act, 500, seed).items()}
+        rows.append({"seed": seed, "matchup": "straight-line dog vs fleeing sheep", **r})
+    path = OUT.with_name("dog_game_dqn.csv")
+    with path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    print(f"wrote experiments/{path.name}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("which", nargs="?", choices=["ppo", "dqn"], default="ppo")
     ap.add_argument("--seeds", type=int, default=2)
     ap.add_argument("--iterations", type=int, default=300)
     args = ap.parse_args()
+    if args.which == "dqn":
+        return run_dqn(args.seeds, args.iterations)
 
     rows = []
     for seed in range(args.seeds):

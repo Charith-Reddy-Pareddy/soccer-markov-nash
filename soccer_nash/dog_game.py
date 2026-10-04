@@ -171,3 +171,71 @@ def _ppo_update(policy, value, opt, b, gamma, lam, clip, epochs) -> None:
         opt.zero_grad()
         (pl + 0.5 * vl).backward()
         opt.step()
+
+
+def fleeing_sheep_act(x: torch.Tensor):
+    rel = x[:, 4:6]
+    return torch.atan2(rel[:, 1], rel[:, 0]), torch.ones(x.shape[0])
+
+
+def angle_dqn_act(qnet: nn.Module, n_angles: int):
+    """Greedy dog from a Q-network with one output per discrete angle (full speed)."""
+    def act(x: torch.Tensor):
+        k = qnet(x).argmax(dim=1)
+        return k * (2 * np.pi / n_angles), torch.ones(x.shape[0])
+    return act
+
+
+def train_angle_dqn(
+    n_angles: int = 10, iterations: int = 150, n_envs: int = 64, gamma: float = 0.99,
+    lr: float = 1e-3, seed: int = 0, sheep_act=fleeing_sheep_act,
+) -> nn.Module:
+    """DQN for the dog with one Q output per angle (the note's "Q(a1) ... Q(a10)"
+    head, not a network that takes the action as an input), against a fixed sheep.
+    The dog always moves at full speed; epsilon decays from 1 to 0.05."""
+    torch.manual_seed(seed)
+    def mlp() -> nn.Module:
+        return nn.Sequential(nn.Linear(7, 64), nn.ReLU(), nn.Linear(64, 64), nn.ReLU(),
+                             nn.Linear(64, n_angles))
+
+    qnet, target = mlp(), mlp()
+    target.load_state_dict(qnet.state_dict())
+    opt = torch.optim.Adam(qnet.parameters(), lr=lr)
+    buf: list[tuple[torch.Tensor, ...]] = []
+    for it in range(iterations):
+        eps = max(0.05, 1.0 - it / (0.6 * iterations))
+        dog = torch.tensor([DOG_START] * n_envs)
+        sheep = torch.tensor([SHEEP_START] * n_envs)
+        alive = torch.ones(n_envs, dtype=torch.bool)
+        for t in range(HORIZON):
+            x = features(dog, sheep, t)
+            with torch.no_grad():
+                k = qnet(x).argmax(dim=1)
+            explore = torch.rand(n_envs) < eps
+            k = torch.where(explore, torch.randint(n_angles, (n_envs,)), k)
+            ts, fs = sheep_act(x)
+            dog = move(dog, k * (2 * np.pi / n_angles), torch.full((n_envs,), DOG_SPEED))
+            sheep = move(sheep, ts, fs * SHEEP_SPEED)
+            hit = torch.linalg.norm(dog - sheep, dim=1) <= CAPTURE
+            last = t == HORIZON - 1
+            reward = hit.float() - (last & ~hit).float()
+            done = (hit | last).float()
+            nx = features(dog, sheep, t + 1)
+            m = alive
+            buf.append((x[m], k[m], reward[m], nx[m], done[m]))
+            alive = alive & ~hit
+            if len(buf) > 4000:
+                buf.pop(0)
+            if t % 4 == 0:
+                X, K, R, NX, D = (torch.cat(c) for c in zip(*buf[-1500:]))
+                idx = torch.randint(len(X), (256,))
+                with torch.no_grad():
+                    y = R[idx] + gamma * (1 - D[idx]) * target(NX[idx]).max(dim=1).values
+                q = qnet(X[idx]).gather(1, K[idx, None]).squeeze(1)
+                loss = nn.functional.smooth_l1_loss(q, y)
+                opt.zero_grad()
+                loss.backward()
+                opt.step()
+        if it % 5 == 0:
+            target.load_state_dict(qnet.state_dict())
+    return qnet
