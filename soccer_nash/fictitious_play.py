@@ -79,7 +79,9 @@ def markov_fictitious_play(
     opponent's whole past play). ``persistent=False`` restarts the beliefs and
     runs ``rounds`` rounds each sweep. ``V`` is the midpoint of the value
     bounds ``lo <= val <= hi`` of the empirical mixes. Returns
-    ``(V, history)`` where history rows are ``(sweep, max|V-V*|, mean bracket)``.
+    ``(V, history, (row_policy, col_policy))``: history rows are ``(sweep,
+    max|V-V*|, mean bracket)`` and the policies are the final empirical mixes,
+    ``{state: length-4 array}``.
     """
     game = solver.game
     states = list(game.states())
@@ -99,9 +101,10 @@ def markov_fictitious_play(
             lo = np.einsum("na,nab->nb", p, M).min(1)
             hi = np.einsum("nab,nb->na", M, q).max(1)
         else:
-            _, _, lo, hi = fictitious_play(M, rounds)
+            p, q, lo, hi = fictitious_play(M, rounds)
         v = (lo + hi) / 2
         V = dict(zip(states, v.tolist()))
         if k in checkpoints or k == sweeps:
             history.append((k, float(np.abs(v - v_star).max()), float((hi - lo).mean())))
-    return V, history
+    policies = tuple(dict(zip(states, m)) for m in (p, q))
+    return V, history, policies

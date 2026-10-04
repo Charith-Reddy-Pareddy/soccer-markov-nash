@@ -68,5 +68,8 @@ def test_markov_fictitious_play_approaches_exact_values_on_a_small_board():
     g = SoccerGame(width=4, height=3, goal_rows=(1,), move_order="random")
     solver = NashQIteration(g, gamma=0.9, mode="hybrid", tol=1e-10)
     exact = solver.run_exact()
-    _, hist = markov_fictitious_play(solver, exact.values, 60, persistent=False, rounds=200)
+    _, hist, (row, col) = markov_fictitious_play(
+        solver, exact.values, 60, persistent=False, rounds=200)
     assert hist[-1][1] < 0.05
+    s0 = g.initial_state()
+    assert np.isclose(row[s0].sum(), 1.0) and np.isclose(col[s0].sum(), 1.0)
