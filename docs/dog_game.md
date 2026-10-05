@@ -2,6 +2,8 @@
 
 The group note's second half is a continuous game with a dog and a sheep, a policy that outputs an angle and a radius, and best responses found by bisection, finite differences or a quadratic fit. No definition of the game exists yet, so the game here is a placeholder. Every choice is listed in [solver_assumptions.md](solver_assumptions.md) (S14-S18), and none of it should be read as the intended game.
 
+The professor's reply is that policy gradient goes to continuous actions directly, and that the continuous best-response methods are for DQN. The angle-radius policy below is that direct route.
+
 ## What was built
 
 - `soccer_nash/dog_game.py` -- the game (unit square, dog speed 0.06, sheep speed 0.04, capture within 0.05, 100 steps), the angle-radius policy (von Mises angle, Beta radius), and self-play PPO for both players on the sparse terminal reward.

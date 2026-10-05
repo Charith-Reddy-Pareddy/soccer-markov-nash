@@ -1,5 +1,25 @@
 # Self-play REINFORCE: does policy gradient converge to a Nash equilibrium?
 
+## Finite-horizon REINFORCE, A2C and PPO, by self-play and by fictitious play
+
+The professor's answers to the group's questions changed the setup, so this is the main experiment and the sections below it are the earlier ones. The environment is the deterministic A10 board (fewer mixed stage games is better here: it has none). The objective is the **discounted 100-step game**, `gamma = 0.9`, a tie after 100 steps, and the network gets the **remaining step count** as an input (`soccer_nash/pg_finite.py`). The reference is the exact discounted backward induction over the same 100 steps (`soccer_nash/finite_horizon.py`), whose equilibrium has exploitability 0 by construction and ties itself every game.
+
+Fictitious play here is not a matrix solver, as the professor put it: policy gradient does the solving. Each player keeps improving its own network by policy gradient against the *empirical average of the opponent's past policies* (frozen snapshots, one drawn uniformly per episode), and the policy it reports is the average of its own snapshots. "Self-play" instead trains both current networks against each other. Win rates are counts over 1,000 repeated games from the kickoff, for the row player. 2,000 iterations of 64 episodes, 3 seeds, untuned:
+
+| learner | training | exploitability | W / T / L vs. random | vs. exact Nash | vs. best response |
+|---|---|---|---|---|---|
+| exact solver | -- | 0 | 0.92 / 0.08 / 0.00 | 0.00 / 1.00 / 0.00 | 0.00 / 1.00 / 0.00 |
+| REINFORCE | self-play | 0.788 | 0.68 / 0.29 / 0.03 | 0.00 / 0.71 / 0.29 | 0.00 / 0.00 / 1.00 |
+| REINFORCE | fictitious play | 0.861 | 0.92 / 0.02 / 0.07 | 0.00 / 0.00 / 1.00 | 0.02 / 0.00 / 0.98 |
+| A2C | self-play | 0.763 | 0.73 / 0.24 / 0.03 | 0.00 / 0.85 / 0.15 | 0.02 / 0.00 / 0.98 |
+| A2C | fictitious play | 0.888 | 0.96 / 0.00 / 0.03 | 0.00 / 0.00 / 1.00 | 0.01 / 0.00 / 0.99 |
+| PPO | self-play | 0.949 | 0.61 / 0.30 / 0.09 | 0.00 / 0.67 / 0.33 | 0.00 / 0.00 / 1.00 |
+| PPO | fictitious play | 0.864 | 0.88 / 0.05 / 0.07 | 0.00 / 0.19 / 0.81 | 0.00 / 0.00 / 1.00 |
+
+**None of the six gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv`.
+
+The earlier sections (stationary `gamma = 0.9`, no step count, kickoff or random-start training, both boards) follow.
+
 > September 28 audit: PG results below predate the terminal-return fix and
 > are historical, not validation of the corrected episodic trainer. The new
 > two-seed reward comparison is in [reward-q-audit.md](reward-q-audit.md).
