@@ -12,6 +12,8 @@ p.lede{color:var(--muted);font-size:14px;margin:0 0 14px}
 p.muted{color:var(--muted);font-size:12.5px;margin:6px 0 0}
 section{margin-top:26px;padding-top:14px;border-top:2px solid var(--line)}
 table,svg,.callout{break-inside:avoid}
+table.qa{break-inside:auto} tr{break-inside:avoid}
+table.qa td{text-align:left;vertical-align:top}
 h2{break-after:avoid}
 .callout{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
 border-radius:6px;padding:10px 16px;margin:12px 0}
@@ -46,7 +48,13 @@ for the exact solution).</li>
 These are 3 seeds at one untuned budget, so this shows that these settings did not
 converge, not that policy gradient cannot.</div>
 
-<section><h2>1. Setup</h2>
+<section><h2>1. What the professor said, and what was done</h2>
+<p>The group's questions and his answers (relayed in the group channel) set the design
+of everything below.</p>
+<table class="qa"><tr><th>question</th><th>his answer</th><th>what was done</th></tr><tr><td>Which environment for policy gradient?</td><td>Any one where the solver is right and the comparison is meaningful; fewer mixed-equilibrium stages is better this time.</td><td>The deterministic A10 board, which has no mixed stage games, is the main environment; the random move-order board is kept as an earlier comparison.</td></tr><tr><td>Discounted or finite-horizon objective?</td><td>Policy gradient can only approximate finite-horizon discounted rewards, so both.</td><td>Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input.</td></tr><tr><td>How should fictitious play be used?</td><td>No: there is no explicit game solving in policy gradient; fictitious play is how policy gradient solves things.</td><td>Each player is trained by policy gradient against the average of the opponent's past policies. Matrix-level fictitious play is kept only as a side check (section 7).</td></tr><tr><td>How to define the win rate?</td><td>Repeated game plays, and just count the wins.</td><td>1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.</td></tr><tr><td>Continuous best-response methods now?</td><td>No, those are for DQN, not policy gradient, which can be adapted to continuous actions directly.</td><td>Not applied to policy gradient. The dog game uses an angle-radius policy trained directly (section 8, provisional); the bisection, finite-difference and quadratic methods exist separately for DQN.</td></tr></table>
+</section>
+
+<section><h2>2. Setup</h2>
 <p>The environment is the deterministic A10 soccer game on a 7&times;5 board with a
 three-cell goal; it has no mixed-strategy stage games, which the professor preferred for
 this comparison. The objective is <b>discounted</b> (&gamma; = 0.9) over a
@@ -55,8 +63,8 @@ this comparison. The objective is <b>discounted</b> (&gamma; = 0.9) over a
 induction over the same 100 steps (<code>soccer_nash/finite_horizon.py</code>), whose
 equilibrium has exploitability 0 and ties itself every game.</p></section>
 
-<section><h2>2. The learners</h2>
-<table><tr><th>algorithm</th><th>update</th></tr><tr><td>REINFORCE</td><td>plain discounted returns, no baseline</td></tr><tr><td>A2C</td><td>10-step bootstrapped advantage from a learned critic</td></tr><tr><td>PPO</td><td>GAE (&lambda; = 0.95), clipped ratio 0.2, 4 epochs</td></tr><tr><td>Nash-DQN</td><td>fitted Q over (state, steps left); targets use the exact transitions and a target network's minimax value</td></tr></table>
+<section><h2>3. The learners</h2>
+<table class=""><tr><th>algorithm</th><th>update</th></tr><tr><td>REINFORCE</td><td>plain discounted returns, no baseline</td></tr><tr><td>A2C</td><td>10-step bootstrapped advantage from a learned critic</td></tr><tr><td>PPO</td><td>GAE (&lambda; = 0.95), clipped ratio 0.2, 4 epochs</td></tr><tr><td>Nash-DQN</td><td>fitted Q over (state, steps left); targets use the exact transitions and a target network's minimax value</td></tr></table>
 <p><b>Self-play</b> trains both current networks against each other.
 <b>Fictitious play</b> is how policy gradient solves the game here, with no matrix
 solving: each player keeps improving its own network by policy gradient against the
@@ -65,7 +73,7 @@ episode), and reports the average of its own snapshots. All learners use learnin
 10<sup>-3</sup>, 64 episodes per batch, 2,000 iterations, an entropy bonus of 0.01, and a
 64&times;64 network; none was tuned.</p></section>
 
-<section><h2>3. How they are scored</h2>
+<section><h2>4. How they are scored</h2>
 <ul>
 <li><b>Exploitability</b>: the discounted value both exact best responses earn from the
 kickoff, summed. Zero exactly at an equilibrium.</li>
@@ -75,8 +83,8 @@ against a random player, the exact Nash policy and the exact best response.</li>
 (flip the board, swap the players), averaged over all states at five points in the game.</li>
 </ul></section>
 
-<section><h2>4. Results</h2>
-<table><tr><th>learner</th><th>exploitability (mean &plusmn; sd)</th><th>W/T/L vs. random</th><th>vs. exact Nash</th><th>vs. best response</th><th>mirror gap</th></tr><tr><td>Exact solver</td><td>0.000 &plusmn; 0.000</td><td>0.92/0.08/0.00</td><td>0.00/1.00/0.00</td><td>0.00/1.00/0.00</td><td>0.00</td></tr><tr><td>REINFORCE, self-play</td><td>0.788 &plusmn; 0.106</td><td>0.68/0.29/0.03</td><td>0.00/0.71/0.29</td><td>0.00/0.00/1.00</td><td>0.66</td></tr><tr><td>REINFORCE, fictitious play</td><td>0.861 &plusmn; 0.010</td><td>0.92/0.02/0.07</td><td>0.00/0.00/1.00</td><td>0.02/0.00/0.98</td><td>0.44</td></tr><tr><td>A2C, self-play</td><td>0.763 &plusmn; 0.160</td><td>0.73/0.24/0.03</td><td>0.00/0.85/0.15</td><td>0.02/0.00/0.98</td><td>0.53</td></tr><tr><td>A2C, fictitious play</td><td>0.888 &plusmn; 0.008</td><td>0.96/0.00/0.03</td><td>0.00/0.00/1.00</td><td>0.01/0.00/0.99</td><td>0.44</td></tr><tr><td>PPO, self-play</td><td>0.949 &plusmn; 0.039</td><td>0.61/0.30/0.09</td><td>0.00/0.67/0.33</td><td>0.00/0.00/1.00</td><td>0.81</td></tr><tr><td>PPO, fictitious play</td><td>0.864 &plusmn; 0.006</td><td>0.88/0.05/0.07</td><td>0.00/0.19/0.81</td><td>0.00/0.00/1.00</td><td>0.48</td></tr><tr><td>Nash-DQN</td><td>0.887 &plusmn; 0.054</td><td>1.00/0.00/0.00</td><td>0.00/0.00/1.00</td><td>0.00/0.00/1.00</td><td>0.32</td></tr></table>
+<section><h2>5. Results</h2>
+<table class=""><tr><th>learner</th><th>exploitability (mean &plusmn; sd)</th><th>W/T/L vs. random</th><th>vs. exact Nash</th><th>vs. best response</th><th>mirror gap</th></tr><tr><td>Exact solver</td><td>0.000 &plusmn; 0.000</td><td>0.92/0.08/0.00</td><td>0.00/1.00/0.00</td><td>0.00/1.00/0.00</td><td>0.00</td></tr><tr><td>REINFORCE, self-play</td><td>0.788 &plusmn; 0.106</td><td>0.68/0.29/0.03</td><td>0.00/0.71/0.29</td><td>0.00/0.00/1.00</td><td>0.66</td></tr><tr><td>REINFORCE, fictitious play</td><td>0.861 &plusmn; 0.010</td><td>0.92/0.02/0.07</td><td>0.00/0.00/1.00</td><td>0.02/0.00/0.98</td><td>0.44</td></tr><tr><td>A2C, self-play</td><td>0.763 &plusmn; 0.160</td><td>0.73/0.24/0.03</td><td>0.00/0.85/0.15</td><td>0.02/0.00/0.98</td><td>0.53</td></tr><tr><td>A2C, fictitious play</td><td>0.888 &plusmn; 0.008</td><td>0.96/0.00/0.03</td><td>0.00/0.00/1.00</td><td>0.01/0.00/0.99</td><td>0.44</td></tr><tr><td>PPO, self-play</td><td>0.949 &plusmn; 0.039</td><td>0.61/0.30/0.09</td><td>0.00/0.67/0.33</td><td>0.00/0.00/1.00</td><td>0.81</td></tr><tr><td>PPO, fictitious play</td><td>0.864 &plusmn; 0.006</td><td>0.88/0.05/0.07</td><td>0.00/0.19/0.81</td><td>0.00/0.00/1.00</td><td>0.48</td></tr><tr><td>Nash-DQN</td><td>0.887 &plusmn; 0.054</td><td>1.00/0.00/0.00</td><td>0.00/0.00/1.00</td><td>0.00/0.00/1.00</td><td>0.32</td></tr></table>
 <div class="charts" style="grid-template-columns:1fr"><div><svg viewBox="0 0 660 242" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" font-size="11"><line x1="190.0" y1="6" x2="190.0" y2="220" stroke="#dbe5df"/><text x="190.0" y="234" text-anchor="middle" fill="#5b6b63">0</text><line x1="296.5" y1="6" x2="296.5" y2="220" stroke="#dbe5df"/><text x="296.5" y="234" text-anchor="middle" fill="#5b6b63">0.25</text><line x1="403.0" y1="6" x2="403.0" y2="220" stroke="#dbe5df"/><text x="403.0" y="234" text-anchor="middle" fill="#5b6b63">0.5</text><line x1="509.5" y1="6" x2="509.5" y2="220" stroke="#dbe5df"/><text x="509.5" y="234" text-anchor="middle" fill="#5b6b63">0.75</text><line x1="616.0" y1="6" x2="616.0" y2="220" stroke="#dbe5df"/><text x="616.0" y="234" text-anchor="middle" fill="#5b6b63">1</text><text x="182" y="23" text-anchor="end" fill="#1c2e26">Exact solver</text><rect x="190" y="13" width="0.0" height="14" fill="#1DB954" opacity=".85"/><circle cx="190.0" cy="20" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="24" fill="#1c2e26" font-weight="700">0.00</text><text x="182" y="49" text-anchor="end" fill="#1c2e26">REINFORCE, self-play</text><rect x="190" y="39" width="335.8" height="14" fill="#1DB954" opacity=".85"/><circle cx="510.4" cy="46" r="3" fill="#1c2e26" opacity=".7"/><circle cx="576.8" cy="46" r="3" fill="#1c2e26" opacity=".7"/><circle cx="490.3" cy="46" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="50" fill="#1c2e26" font-weight="700">0.79</text><text x="182" y="75" text-anchor="end" fill="#1c2e26">REINFORCE, fictitious play</text><rect x="190" y="65" width="366.9" height="14" fill="#1DB954" opacity=".85"/><circle cx="553.8" cy="72" r="3" fill="#1c2e26" opacity=".7"/><circle cx="561.9" cy="72" r="3" fill="#1c2e26" opacity=".7"/><circle cx="555.1" cy="72" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="76" fill="#1c2e26" font-weight="700">0.86</text><text x="182" y="101" text-anchor="end" fill="#1c2e26">A2C, self-play</text><rect x="190" y="91" width="325.2" height="14" fill="#1DB954" opacity=".85"/><circle cx="436.7" cy="98" r="3" fill="#1c2e26" opacity=".7"/><circle cx="557.6" cy="98" r="3" fill="#1c2e26" opacity=".7"/><circle cx="551.2" cy="98" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="102" fill="#1c2e26" font-weight="700">0.76</text><text x="182" y="127" text-anchor="end" fill="#1c2e26">A2C, fictitious play</text><rect x="190" y="117" width="378.4" height="14" fill="#1DB954" opacity=".85"/><circle cx="566.6" cy="124" r="3" fill="#1c2e26" opacity=".7"/><circle cx="572.1" cy="124" r="3" fill="#1c2e26" opacity=".7"/><circle cx="566.6" cy="124" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="128" fill="#1c2e26" font-weight="700">0.89</text><text x="182" y="153" text-anchor="end" fill="#1c2e26">PPO, self-play</text><rect x="190" y="143" width="404.4" height="14" fill="#1DB954" opacity=".85"/><circle cx="610.0" cy="150" r="3" fill="#1c2e26" opacity=".7"/><circle cx="596.0" cy="150" r="3" fill="#1c2e26" opacity=".7"/><circle cx="577.2" cy="150" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="154" fill="#1c2e26" font-weight="700">0.95</text><text x="182" y="179" text-anchor="end" fill="#1c2e26">PPO, fictitious play</text><rect x="190" y="169" width="368.2" height="14" fill="#1DB954" opacity=".85"/><circle cx="560.2" cy="176" r="3" fill="#1c2e26" opacity=".7"/><circle cx="558.9" cy="176" r="3" fill="#1c2e26" opacity=".7"/><circle cx="555.5" cy="176" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="180" fill="#1c2e26" font-weight="700">0.86</text><text x="182" y="205" text-anchor="end" fill="#1c2e26">Nash-DQN</text><rect x="190" y="195" width="377.7" height="14" fill="#1DB954" opacity=".85"/><circle cx="556.8" cy="202" r="3" fill="#1c2e26" opacity=".7"/><circle cx="594.3" cy="202" r="3" fill="#1c2e26" opacity=".7"/><circle cx="552.1" cy="202" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="206" fill="#1c2e26" font-weight="700">0.89</text></svg></div></div>
 <p class="muted">Exploitability by learner: bar = mean, dots = individual seeds.</p>
 <div class="legend"><span style="background:#1DB954"></span>win<span style="background:#c3cec8"></span>tie<span style="background:#a8501c"></span>loss</div>
@@ -87,29 +95,29 @@ wins less often against random and ties the equilibrium more often: it plays mor
 cautiously. Neither is close to equilibrium play, and every learner loses almost every
 game to the exact best response.</p></section>
 
-<section><h2>5. Earlier experiments</h2>
+<section><h2>6. Earlier experiments</h2>
 <p>Before the professor's answers, the same algorithms were run on the stationary
 discounted game (no step count), from the kickoff or from random starting states.</p>
-<table><tr><th>setup</th><th>algorithm</th><th>exploitability</th><th>mean equilibrium regret</th><th>action agreement</th></tr><tr><td>A10 board, stationary, kickoff starts</td><td>REINFORCE</td><td>0.83</td><td>0.124</td><td>0.28</td></tr><tr><td>A10 board, stationary, kickoff starts</td><td>A2C</td><td>0.83</td><td>0.122</td><td>0.29</td></tr><tr><td>A10 board, stationary, kickoff starts</td><td>PPO</td><td>0.87</td><td>0.167</td><td>0.25</td></tr><tr><td>random board, stationary, kickoff starts</td><td>REINFORCE</td><td>0.73</td><td>0.056</td><td>0.44</td></tr><tr><td>random board, stationary, kickoff starts</td><td>A2C</td><td>0.78</td><td>0.058</td><td>0.45</td></tr><tr><td>random board, stationary, kickoff starts</td><td>PPO</td><td>0.85</td><td>0.108</td><td>0.32</td></tr><tr><td>random board, stationary, exploring starts</td><td>REINFORCE</td><td>0.80</td><td>0.027</td><td>0.71</td></tr><tr><td>random board, stationary, exploring starts</td><td>A2C</td><td>0.82</td><td>0.030</td><td>0.70</td></tr><tr><td>random board, stationary, exploring starts</td><td>PPO</td><td>0.91</td><td>0.072</td><td>0.51</td></tr></table>
+<table class=""><tr><th>setup</th><th>algorithm</th><th>exploitability</th><th>mean equilibrium regret</th><th>action agreement</th></tr><tr><td>A10 board, stationary, kickoff starts</td><td>REINFORCE</td><td>0.83</td><td>0.124</td><td>0.28</td></tr><tr><td>A10 board, stationary, kickoff starts</td><td>A2C</td><td>0.83</td><td>0.122</td><td>0.29</td></tr><tr><td>A10 board, stationary, kickoff starts</td><td>PPO</td><td>0.87</td><td>0.167</td><td>0.25</td></tr><tr><td>random board, stationary, kickoff starts</td><td>REINFORCE</td><td>0.73</td><td>0.056</td><td>0.44</td></tr><tr><td>random board, stationary, kickoff starts</td><td>A2C</td><td>0.78</td><td>0.058</td><td>0.45</td></tr><tr><td>random board, stationary, kickoff starts</td><td>PPO</td><td>0.85</td><td>0.108</td><td>0.32</td></tr><tr><td>random board, stationary, exploring starts</td><td>REINFORCE</td><td>0.80</td><td>0.027</td><td>0.71</td></tr><tr><td>random board, stationary, exploring starts</td><td>A2C</td><td>0.82</td><td>0.030</td><td>0.70</td></tr><tr><td>random board, stationary, exploring starts</td><td>PPO</td><td>0.91</td><td>0.072</td><td>0.51</td></tr></table>
 <p class="muted">Exploring starts raise per-state accuracy (action agreement) but not
 play from the kickoff.</p></section>
 
-<section><h2>6. Fictitious play on the exact stage games</h2>
+<section><h2>7. Fictitious play on the exact stage games</h2>
 <p>As a side check, fictitious play was also run on the exact 4&times;4 stage matrices of
 the random move-order board (2,380 states, 94 with no pure saddle). On
 rock-paper-scissors best-response dynamics cycle forever while fictitious play settles at
-1/3 each; on the soccer stage games it recovers the exact values.</p><table><tr><th>rounds</th><th>mean stage-game gap</th><th>max stage-game gap</th><th>max value error</th></tr><tr><td>100</td><td>0.00233</td><td>0.02020</td><td>0.01010</td></tr><tr><td>1000</td><td>0.00026</td><td>0.00296</td><td>0.00133</td></tr><tr><td>10000</td><td>0.00004</td><td>0.00094</td><td>0.00037</td></tr></table>
+1/3 each; on the soccer stage games it recovers the exact values.</p><table class=""><tr><th>rounds</th><th>mean stage-game gap</th><th>max stage-game gap</th><th>max value error</th></tr><tr><td>100</td><td>0.00233</td><td>0.02020</td><td>0.01010</td></tr><tr><td>1000</td><td>0.00026</td><td>0.00296</td><td>0.00133</td></tr><tr><td>10000</td><td>0.00004</td><td>0.00094</td><td>0.00037</td></tr></table>
 <p class="muted">This is matrix-level fictitious play. The professor's point is that policy
-gradient itself does the solving, which is what section 4 tests.</p></section>
+gradient itself does the solving, which is what section 5 tests.</p></section>
 
-<section><h2>7. Continuous actions: the dog game (provisional)</h2>
+<section><h2>8. Continuous actions: the dog game (provisional)</h2>
 <p>Policy gradient is applied to continuous actions directly: a network outputs an angle
 (von Mises) and a radius (scaled Beta) and is trained by self-play PPO. The dog-and-sheep
 game itself is <b>my placeholder</b>, since no definition exists yet, so these numbers
 say nothing about equilibrium.</p>
-<table><tr><th>matchup</th><th>capture rate</th><th>mean capture step</th></tr><tr><td>random dog vs random sheep</td><td>0.00</td><td>96</td></tr><tr><td>trained dog vs random sheep</td><td>0.26</td><td>41</td></tr><tr><td>random dog vs trained sheep</td><td>0.00</td><td>-</td></tr><tr><td>trained dog vs trained sheep</td><td>1.00</td><td>30</td></tr><tr><td>straight-line dog vs trained sheep</td><td>1.00</td><td>19</td></tr><tr><td>10-angle DQN dog vs fleeing sheep</td><td>1.00</td><td>24</td></tr><tr><td>10-angle DQN dog vs random sheep</td><td>0.09</td><td>51</td></tr><tr><td>straight-line dog vs fleeing sheep</td><td>1.00</td><td>19</td></tr></table></section>
+<table class=""><tr><th>matchup</th><th>capture rate</th><th>mean capture step</th></tr><tr><td>random dog vs random sheep</td><td>0.00</td><td>96</td></tr><tr><td>trained dog vs random sheep</td><td>0.26</td><td>41</td></tr><tr><td>random dog vs trained sheep</td><td>0.00</td><td>-</td></tr><tr><td>trained dog vs trained sheep</td><td>1.00</td><td>30</td></tr><tr><td>straight-line dog vs trained sheep</td><td>1.00</td><td>19</td></tr><tr><td>10-angle DQN dog vs fleeing sheep</td><td>1.00</td><td>24</td></tr><tr><td>10-angle DQN dog vs random sheep</td><td>0.09</td><td>51</td></tr><tr><td>straight-line dog vs fleeing sheep</td><td>1.00</td><td>19</td></tr></table></section>
 
-<section><h2>8. Assumptions and open questions</h2>
+<section><h2>9. Assumptions and open questions</h2>
 <p>All 27 assumptions are listed, each marked as quoted, answered by the professor, mine or
 invented, in <code>docs/solver_assumptions.md</code>. Still open for the professor: the
 dog-game rules, the polar-policy distribution, what &ldquo;check symmetry&rdquo; should
