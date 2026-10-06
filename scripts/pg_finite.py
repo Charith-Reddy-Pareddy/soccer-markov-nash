@@ -34,6 +34,7 @@ def main() -> None:
     ap.add_argument("--gamma", type=float, default=0.9)
     ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS))
     ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"])
+    ap.add_argument("--tag", default="", help="suffix for the output file")
     a = ap.parse_args()
 
     game = A10SoccerGame() if a.board == "a10" else SoccerGame(move_order="random")
@@ -55,7 +56,7 @@ def main() -> None:
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
                                         a.gamma, horizon, a.games, seed)})
                 print(rows[-1], flush=True)
-    path = EXP / f"pg_finite_{a.board}.csv"
+    path = EXP / f"pg_finite_{a.board}{a.tag}.csv"
     with path.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()

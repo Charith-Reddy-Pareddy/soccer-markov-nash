@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf coinflip-cases coinflip-cases-pdf tackle-cases tackle-cases-pdf territory-cases territory-cases-pdf slip-cases slip-cases-pdf board-cases-pdfs templates-n5 explorer-data explorer-neural-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf pg-report pg-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf coinflip-cases coinflip-cases-pdf tackle-cases tackle-cases-pdf territory-cases territory-cases-pdf slip-cases slip-cases-pdf board-cases-pdfs templates-n5 explorer-data explorer-neural-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -40,6 +40,7 @@ help:
 	@echo "make positions    - player positions + stage game as a best-response-graph"
 	@echo "make positions-matrix - minimax/always-left/random/best-response policy matrix"
 	@echo "make positions-pdf - regenerate docs/positions.pdf from docs/positions.html"
+	@echo "make pg-report / pg-pdf - policy-gradient report (docs/policy_gradient.html / .pdf)"
 	@echo "make a10-cases    - eight edge cases on the A10-deterministic board (not Littman's)"
 	@echo "make a10-cases-pdf - regenerate docs/a10_cases.pdf from docs/a10_cases.html"
 	@echo "make coinflip-cases / -pdf - edge cases on the coin-flip contest-resolution board"
@@ -93,6 +94,16 @@ positions-pdf:
 	  --print-to-pdf=docs/positions.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/positions.html"
 	@echo "wrote docs/positions.pdf"
+
+pg-report:
+	$(PY) scripts/pg_report.py
+
+pg-pdf: pg-report
+	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	"$$BROWSER" --headless --disable-gpu --no-pdf-header-footer \
+	  --print-to-pdf=docs/policy_gradient.pdf --virtual-time-budget=10000 \
+	  "file://$(CURDIR)/docs/policy_gradient.html"
+	@echo "wrote docs/policy_gradient.pdf"
 
 a10-cases-pdf:
 	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
