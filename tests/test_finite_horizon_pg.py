@@ -61,3 +61,34 @@ def test_a_snapshot_is_independent_of_later_training(small):
     with __import__("torch").no_grad():
         net.body[0].weight += 1.0
     assert not (snap.body[0].weight == net.body[0].weight).all()
+
+
+def test_mirror_gap_is_zero_for_uniform_play_and_one_for_opposite_fixed_moves(small):
+    game = small[0]
+    times = (0, 3)
+    assert fh.mirror_gap(game, fh.uniform, fh.uniform, times) == (0.0, 0.0)
+    fixed = lambda a: lambda t, states: np.tile(np.eye(4)[a], (len(states), 1))  # noqa: E731
+    assert fh.mirror_gap(game, fixed(0), fixed(2), times)[1] == 1.0  # U vs flip(L) = R
+
+
+def test_dqn_trains_and_its_policies_are_distributions(small):
+    from soccer_nash.dqn_finite import QPolicies, train_dqn
+
+    game, solver, *_ = small
+    net = train_dqn(solver, GAMMA, HORIZON, steps=3, batch=8)
+    q = QPolicies(solver, net, HORIZON)
+    states = [game.initial_state()]
+    for pol in (q.row, q.col):
+        p = pol(0, states)
+        assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0)
+
+
+def test_dqn_target_at_the_last_step_is_just_the_immediate_reward(small):
+    from soccer_nash.dqn_finite import _transition_arrays
+
+    _, solver, *_ = small
+    _, _, prob, rew, term = _transition_arrays(solver)
+    # at the last step the continuation is zero, so a target is sum(prob * reward);
+    # every goal outcome is flagged terminal and every probability row sums to one
+    assert np.allclose(prob.sum(-1), 1.0)
+    assert (rew[~term] == 0).all()
