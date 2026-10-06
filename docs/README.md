@@ -6,6 +6,10 @@ reproducible from the repo's own code. For the technical answer, start with
 
 - [design.md](design.md) — the game as a configurable family: every axis, the
   reward, the three transition rules, and the reason each is there.
+- [policy_gradient.md](policy_gradient.md) (also [policy_gradient.pdf](policy_gradient.pdf)) —
+  REINFORCE, A2C and PPO against the exact solver, by self-play and by
+  fictitious play; the group-note checklist is [group_note.md](group_note.md) and
+  every assumption is in [solver_assumptions.md](solver_assumptions.md).
 - [methods.md](methods.md) — the solver, the state encoding, seeds, repeat
   counts, board ranges: how every number was produced.
 - [discussion.md](discussion.md) — research-level open questions, the best

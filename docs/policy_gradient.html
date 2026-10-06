@@ -1,0 +1,120 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Policy gradient on the soccer game</title><style>
+:root{--ink:#1c2e26;--accent:#1DB954;--accent-dark:#178A42;--line:#dbe5df;--muted:#5b6b63;
+--card:#f3f8f5;--warn:#a8501c;--warn-bg:#fbf3ea}
+*{box-sizing:border-box}
+body{font:14px/1.6 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;max-width:900px;
+margin:36px auto;color:var(--ink);padding:0 28px}
+h1{font-size:26px;margin:0 0 6px;color:var(--accent-dark);letter-spacing:-.01em}
+h2{font-size:18px;margin:0 0 8px;color:var(--accent-dark)}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:700}
+p.lede{color:var(--muted);font-size:14px;margin:0 0 14px}
+p.muted{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+section{margin-top:26px;padding-top:14px;border-top:2px solid var(--line)}
+table,svg,.callout{break-inside:avoid}
+h2{break-after:avoid}
+.callout{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
+border-radius:6px;padding:10px 16px;margin:12px 0}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+table{border-collapse:collapse;width:100%;font:11.5px/1.45 "SF Mono",Consolas,monospace;margin:10px 0}
+td,th{border:1px solid var(--line);padding:5px 7px;text-align:center}
+td:first-child{text-align:left} th{background:var(--card);color:var(--accent-dark)}
+code{background:var(--card);border-radius:3px;padding:1px 5px;font-size:.92em}
+.charts{display:grid;grid-template-columns:150px 1fr 1fr;gap:6px;align-items:start;margin-top:8px}
+.nm{height:26px;line-height:26px;font-size:11px;text-align:right;padding-right:6px;white-space:nowrap}
+.names{padding-top:22px} svg{width:100%;height:auto}
+.legend span{display:inline-block;width:10px;height:10px;margin:0 4px 0 12px;vertical-align:-1px}
+ul{margin:6px 0 6px 18px;padding:0} li{margin:3px 0}
+@page{size:A4;margin:14mm}
+</style></head><body>
+<div class="eyebrow">Research-group note &middot; policy gradient</div>
+<h1>Can policy gradient replicate the exact soccer solver?</h1>
+<p class="lede">REINFORCE, A2C and PPO, trained by self-play and by fictitious play, scored
+against the exact solution of the discounted 100-step soccer game. Every number below is
+read from the experiment files in the repository.</p>
+
+<div class="callout warn"><b>The short answer: not yet.</b>
+<ul>
+<li>All seven learners (three policy-gradient algorithms in two training schemes, plus a
+Nash-DQN) stay far from the equilibrium: exploitability 0.76 to 0.95, where the exact
+solution is 0.</li>
+<li>Fictitious-play training wins more against a random player but loses to the exact
+equilibrium; self-play training ties it more often.</li>
+<li>No learner is mirror-symmetric (mirror gap 0.32 to 0.81, against 0
+for the exact solution).</li>
+</ul>
+These are 3 seeds at one untuned budget, so this shows that these settings did not
+converge, not that policy gradient cannot.</div>
+
+<section><h2>1. Setup</h2>
+<p>The environment is the deterministic A10 soccer game on a 7&times;5 board with a
+three-cell goal; it has no mixed-strategy stage games, which the professor preferred for
+this comparison. The objective is <b>discounted</b> (&gamma; = 0.9) over a
+<b>100-step horizon</b>, a tie if nobody scores, and the network receives the
+<b>remaining step count</b> as an input. The reference is the exact discounted backward
+induction over the same 100 steps (<code>soccer_nash/finite_horizon.py</code>), whose
+equilibrium has exploitability 0 and ties itself every game.</p></section>
+
+<section><h2>2. The learners</h2>
+<table><tr><th>algorithm</th><th>update</th></tr><tr><td>REINFORCE</td><td>plain discounted returns, no baseline</td></tr><tr><td>A2C</td><td>10-step bootstrapped advantage from a learned critic</td></tr><tr><td>PPO</td><td>GAE (&lambda; = 0.95), clipped ratio 0.2, 4 epochs</td></tr><tr><td>Nash-DQN</td><td>fitted Q over (state, steps left); targets use the exact transitions and a target network's minimax value</td></tr></table>
+<p><b>Self-play</b> trains both current networks against each other.
+<b>Fictitious play</b> is how policy gradient solves the game here, with no matrix
+solving: each player keeps improving its own network by policy gradient against the
+<i>empirical average</i> of the opponent's past policies (frozen snapshots, one drawn per
+episode), and reports the average of its own snapshots. All learners use learning rate
+10<sup>-3</sup>, 64 episodes per batch, 2,000 iterations, an entropy bonus of 0.01, and a
+64&times;64 network; none was tuned.</p></section>
+
+<section><h2>3. How they are scored</h2>
+<ul>
+<li><b>Exploitability</b>: the discounted value both exact best responses earn from the
+kickoff, summed. Zero exactly at an equilibrium.</li>
+<li><b>Wins, ties and losses</b>: counts over 1,000 repeated games from the kickoff,
+against a random player, the exact Nash policy and the exact best response.</li>
+<li><b>Mirror gap</b>: how far the two players' policies are from being mirror images
+(flip the board, swap the players), averaged over all states at five points in the game.</li>
+</ul></section>
+
+<section><h2>4. Results</h2>
+<table><tr><th>learner</th><th>exploitability (mean &plusmn; sd)</th><th>W/T/L vs. random</th><th>vs. exact Nash</th><th>vs. best response</th><th>mirror gap</th></tr><tr><td>Exact solver</td><td>0.000 &plusmn; 0.000</td><td>0.92/0.08/0.00</td><td>0.00/1.00/0.00</td><td>0.00/1.00/0.00</td><td>0.00</td></tr><tr><td>REINFORCE, self-play</td><td>0.788 &plusmn; 0.106</td><td>0.68/0.29/0.03</td><td>0.00/0.71/0.29</td><td>0.00/0.00/1.00</td><td>0.66</td></tr><tr><td>REINFORCE, fictitious play</td><td>0.861 &plusmn; 0.010</td><td>0.92/0.02/0.07</td><td>0.00/0.00/1.00</td><td>0.02/0.00/0.98</td><td>0.44</td></tr><tr><td>A2C, self-play</td><td>0.763 &plusmn; 0.160</td><td>0.73/0.24/0.03</td><td>0.00/0.85/0.15</td><td>0.02/0.00/0.98</td><td>0.53</td></tr><tr><td>A2C, fictitious play</td><td>0.888 &plusmn; 0.008</td><td>0.96/0.00/0.03</td><td>0.00/0.00/1.00</td><td>0.01/0.00/0.99</td><td>0.44</td></tr><tr><td>PPO, self-play</td><td>0.949 &plusmn; 0.039</td><td>0.61/0.30/0.09</td><td>0.00/0.67/0.33</td><td>0.00/0.00/1.00</td><td>0.81</td></tr><tr><td>PPO, fictitious play</td><td>0.864 &plusmn; 0.006</td><td>0.88/0.05/0.07</td><td>0.00/0.19/0.81</td><td>0.00/0.00/1.00</td><td>0.48</td></tr><tr><td>Nash-DQN</td><td>0.887 &plusmn; 0.054</td><td>1.00/0.00/0.00</td><td>0.00/0.00/1.00</td><td>0.00/0.00/1.00</td><td>0.32</td></tr></table>
+<div class="charts" style="grid-template-columns:1fr"><div><svg viewBox="0 0 660 242" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" font-size="11"><line x1="190.0" y1="6" x2="190.0" y2="220" stroke="#dbe5df"/><text x="190.0" y="234" text-anchor="middle" fill="#5b6b63">0</text><line x1="296.5" y1="6" x2="296.5" y2="220" stroke="#dbe5df"/><text x="296.5" y="234" text-anchor="middle" fill="#5b6b63">0.25</text><line x1="403.0" y1="6" x2="403.0" y2="220" stroke="#dbe5df"/><text x="403.0" y="234" text-anchor="middle" fill="#5b6b63">0.5</text><line x1="509.5" y1="6" x2="509.5" y2="220" stroke="#dbe5df"/><text x="509.5" y="234" text-anchor="middle" fill="#5b6b63">0.75</text><line x1="616.0" y1="6" x2="616.0" y2="220" stroke="#dbe5df"/><text x="616.0" y="234" text-anchor="middle" fill="#5b6b63">1</text><text x="182" y="23" text-anchor="end" fill="#1c2e26">Exact solver</text><rect x="190" y="13" width="0.0" height="14" fill="#1DB954" opacity=".85"/><circle cx="190.0" cy="20" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="24" fill="#1c2e26" font-weight="700">0.00</text><text x="182" y="49" text-anchor="end" fill="#1c2e26">REINFORCE, self-play</text><rect x="190" y="39" width="335.8" height="14" fill="#1DB954" opacity=".85"/><circle cx="510.4" cy="46" r="3" fill="#1c2e26" opacity=".7"/><circle cx="576.8" cy="46" r="3" fill="#1c2e26" opacity=".7"/><circle cx="490.3" cy="46" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="50" fill="#1c2e26" font-weight="700">0.79</text><text x="182" y="75" text-anchor="end" fill="#1c2e26">REINFORCE, fictitious play</text><rect x="190" y="65" width="366.9" height="14" fill="#1DB954" opacity=".85"/><circle cx="553.8" cy="72" r="3" fill="#1c2e26" opacity=".7"/><circle cx="561.9" cy="72" r="3" fill="#1c2e26" opacity=".7"/><circle cx="555.1" cy="72" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="76" fill="#1c2e26" font-weight="700">0.86</text><text x="182" y="101" text-anchor="end" fill="#1c2e26">A2C, self-play</text><rect x="190" y="91" width="325.2" height="14" fill="#1DB954" opacity=".85"/><circle cx="436.7" cy="98" r="3" fill="#1c2e26" opacity=".7"/><circle cx="557.6" cy="98" r="3" fill="#1c2e26" opacity=".7"/><circle cx="551.2" cy="98" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="102" fill="#1c2e26" font-weight="700">0.76</text><text x="182" y="127" text-anchor="end" fill="#1c2e26">A2C, fictitious play</text><rect x="190" y="117" width="378.4" height="14" fill="#1DB954" opacity=".85"/><circle cx="566.6" cy="124" r="3" fill="#1c2e26" opacity=".7"/><circle cx="572.1" cy="124" r="3" fill="#1c2e26" opacity=".7"/><circle cx="566.6" cy="124" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="128" fill="#1c2e26" font-weight="700">0.89</text><text x="182" y="153" text-anchor="end" fill="#1c2e26">PPO, self-play</text><rect x="190" y="143" width="404.4" height="14" fill="#1DB954" opacity=".85"/><circle cx="610.0" cy="150" r="3" fill="#1c2e26" opacity=".7"/><circle cx="596.0" cy="150" r="3" fill="#1c2e26" opacity=".7"/><circle cx="577.2" cy="150" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="154" fill="#1c2e26" font-weight="700">0.95</text><text x="182" y="179" text-anchor="end" fill="#1c2e26">PPO, fictitious play</text><rect x="190" y="169" width="368.2" height="14" fill="#1DB954" opacity=".85"/><circle cx="560.2" cy="176" r="3" fill="#1c2e26" opacity=".7"/><circle cx="558.9" cy="176" r="3" fill="#1c2e26" opacity=".7"/><circle cx="555.5" cy="176" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="180" fill="#1c2e26" font-weight="700">0.86</text><text x="182" y="205" text-anchor="end" fill="#1c2e26">Nash-DQN</text><rect x="190" y="195" width="377.7" height="14" fill="#1DB954" opacity=".85"/><circle cx="556.8" cy="202" r="3" fill="#1c2e26" opacity=".7"/><circle cx="594.3" cy="202" r="3" fill="#1c2e26" opacity=".7"/><circle cx="552.1" cy="202" r="3" fill="#1c2e26" opacity=".7"/><text x="626" y="206" fill="#1c2e26" font-weight="700">0.89</text></svg></div></div>
+<p class="muted">Exploitability by learner: bar = mean, dots = individual seeds.</p>
+<div class="legend"><span style="background:#1DB954"></span>win<span style="background:#c3cec8"></span>tie<span style="background:#a8501c"></span>loss</div>
+<div><svg viewBox="0 0 660 238" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica,Arial,sans-serif" font-size="11"><text x="190.0" y="12" fill="#5b6b63" font-weight="700">vs. a random player</text><text x="432.0" y="12" fill="#5b6b63" font-weight="700">vs. the exact Nash policy</text><text x="182" y="34" text-anchor="end" fill="#1c2e26">Exact solver</text><rect x="190.0" y="22" width="199.9" height="16" fill="#1DB954"/><rect x="389.9" y="22" width="18.1" height="16" fill="#c3cec8"/><rect x="408.0" y="22" width="0.0" height="16" fill="#a8501c"/><rect x="432.0" y="22" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="22" width="218.0" height="16" fill="#c3cec8"/><rect x="650.0" y="22" width="0.0" height="16" fill="#a8501c"/><text x="182" y="60" text-anchor="end" fill="#1c2e26">REINFORCE, self-play</text><rect x="190.0" y="48" width="147.9" height="16" fill="#1DB954"/><rect x="337.9" y="48" width="63.4" height="16" fill="#c3cec8"/><rect x="401.3" y="48" width="6.7" height="16" fill="#a8501c"/><rect x="432.0" y="48" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="48" width="155.4" height="16" fill="#c3cec8"/><rect x="587.4" y="48" width="62.6" height="16" fill="#a8501c"/><text x="182" y="86" text-anchor="end" fill="#1c2e26">REINFORCE, fictitious play</text><rect x="190.0" y="74" width="200.1" height="16" fill="#1DB954"/><rect x="390.1" y="74" width="3.6" height="16" fill="#c3cec8"/><rect x="393.7" y="74" width="14.3" height="16" fill="#a8501c"/><rect x="432.0" y="74" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="74" width="0.0" height="16" fill="#c3cec8"/><rect x="432.0" y="74" width="218.0" height="16" fill="#a8501c"/><text x="182" y="112" text-anchor="end" fill="#1c2e26">A2C, self-play</text><rect x="190.0" y="100" width="159.9" height="16" fill="#1DB954"/><rect x="349.9" y="100" width="52.1" height="16" fill="#c3cec8"/><rect x="402.0" y="100" width="6.0" height="16" fill="#a8501c"/><rect x="432.0" y="100" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="100" width="186.3" height="16" fill="#c3cec8"/><rect x="618.3" y="100" width="31.7" height="16" fill="#a8501c"/><text x="182" y="138" text-anchor="end" fill="#1c2e26">A2C, fictitious play</text><rect x="190.0" y="126" width="210.0" height="16" fill="#1DB954"/><rect x="400.0" y="126" width="0.7" height="16" fill="#c3cec8"/><rect x="400.7" y="126" width="7.3" height="16" fill="#a8501c"/><rect x="432.0" y="126" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="126" width="0.0" height="16" fill="#c3cec8"/><rect x="432.0" y="126" width="218.0" height="16" fill="#a8501c"/><text x="182" y="164" text-anchor="end" fill="#1c2e26">PPO, self-play</text><rect x="190.0" y="152" width="132.8" height="16" fill="#1DB954"/><rect x="322.8" y="152" width="65.0" height="16" fill="#c3cec8"/><rect x="387.8" y="152" width="20.2" height="16" fill="#a8501c"/><rect x="432.0" y="152" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="152" width="145.3" height="16" fill="#c3cec8"/><rect x="577.3" y="152" width="72.7" height="16" fill="#a8501c"/><text x="182" y="190" text-anchor="end" fill="#1c2e26">PPO, fictitious play</text><rect x="190.0" y="178" width="192.1" height="16" fill="#1DB954"/><rect x="382.1" y="178" width="10.0" height="16" fill="#c3cec8"/><rect x="392.1" y="178" width="15.9" height="16" fill="#a8501c"/><rect x="432.0" y="178" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="178" width="41.3" height="16" fill="#c3cec8"/><rect x="473.3" y="178" width="176.7" height="16" fill="#a8501c"/><text x="182" y="216" text-anchor="end" fill="#1c2e26">Nash-DQN</text><rect x="190.0" y="204" width="217.9" height="16" fill="#1DB954"/><rect x="407.9" y="204" width="0.0" height="16" fill="#c3cec8"/><rect x="407.9" y="204" width="0.1" height="16" fill="#a8501c"/><rect x="432.0" y="204" width="0.0" height="16" fill="#1DB954"/><rect x="432.0" y="204" width="0.0" height="16" fill="#c3cec8"/><rect x="432.0" y="204" width="218.0" height="16" fill="#a8501c"/></svg></div>
+<p>Two patterns repeat. Fictitious-play training beats a random player more often
+(0.88 to 0.96) but loses almost every game to the exact equilibrium. Self-play training
+wins less often against random and ties the equilibrium more often: it plays more
+cautiously. Neither is close to equilibrium play, and every learner loses almost every
+game to the exact best response.</p></section>
+
+<section><h2>5. Earlier experiments</h2>
+<p>Before the professor's answers, the same algorithms were run on the stationary
+discounted game (no step count), from the kickoff or from random starting states.</p>
+<table><tr><th>setup</th><th>algorithm</th><th>exploitability</th><th>mean equilibrium regret</th><th>action agreement</th></tr><tr><td>A10 board, stationary, kickoff starts</td><td>REINFORCE</td><td>0.83</td><td>0.124</td><td>0.28</td></tr><tr><td>A10 board, stationary, kickoff starts</td><td>A2C</td><td>0.83</td><td>0.122</td><td>0.29</td></tr><tr><td>A10 board, stationary, kickoff starts</td><td>PPO</td><td>0.87</td><td>0.167</td><td>0.25</td></tr><tr><td>random board, stationary, kickoff starts</td><td>REINFORCE</td><td>0.73</td><td>0.056</td><td>0.44</td></tr><tr><td>random board, stationary, kickoff starts</td><td>A2C</td><td>0.78</td><td>0.058</td><td>0.45</td></tr><tr><td>random board, stationary, kickoff starts</td><td>PPO</td><td>0.85</td><td>0.108</td><td>0.32</td></tr><tr><td>random board, stationary, exploring starts</td><td>REINFORCE</td><td>0.80</td><td>0.027</td><td>0.71</td></tr><tr><td>random board, stationary, exploring starts</td><td>A2C</td><td>0.82</td><td>0.030</td><td>0.70</td></tr><tr><td>random board, stationary, exploring starts</td><td>PPO</td><td>0.91</td><td>0.072</td><td>0.51</td></tr></table>
+<p class="muted">Exploring starts raise per-state accuracy (action agreement) but not
+play from the kickoff.</p></section>
+
+<section><h2>6. Fictitious play on the exact stage games</h2>
+<p>As a side check, fictitious play was also run on the exact 4&times;4 stage matrices of
+the random move-order board (2,380 states, 94 with no pure saddle). On
+rock-paper-scissors best-response dynamics cycle forever while fictitious play settles at
+1/3 each; on the soccer stage games it recovers the exact values.</p><table><tr><th>rounds</th><th>mean stage-game gap</th><th>max stage-game gap</th><th>max value error</th></tr><tr><td>100</td><td>0.00233</td><td>0.02020</td><td>0.01010</td></tr><tr><td>1000</td><td>0.00026</td><td>0.00296</td><td>0.00133</td></tr><tr><td>10000</td><td>0.00004</td><td>0.00094</td><td>0.00037</td></tr></table>
+<p class="muted">This is matrix-level fictitious play. The professor's point is that policy
+gradient itself does the solving, which is what section 4 tests.</p></section>
+
+<section><h2>7. Continuous actions: the dog game (provisional)</h2>
+<p>Policy gradient is applied to continuous actions directly: a network outputs an angle
+(von Mises) and a radius (scaled Beta) and is trained by self-play PPO. The dog-and-sheep
+game itself is <b>my placeholder</b>, since no definition exists yet, so these numbers
+say nothing about equilibrium.</p>
+<table><tr><th>matchup</th><th>capture rate</th><th>mean capture step</th></tr><tr><td>random dog vs random sheep</td><td>0.00</td><td>96</td></tr><tr><td>trained dog vs random sheep</td><td>0.26</td><td>41</td></tr><tr><td>random dog vs trained sheep</td><td>0.00</td><td>-</td></tr><tr><td>trained dog vs trained sheep</td><td>1.00</td><td>30</td></tr><tr><td>straight-line dog vs trained sheep</td><td>1.00</td><td>19</td></tr><tr><td>10-angle DQN dog vs fleeing sheep</td><td>1.00</td><td>24</td></tr><tr><td>10-angle DQN dog vs random sheep</td><td>0.09</td><td>51</td></tr><tr><td>straight-line dog vs fleeing sheep</td><td>1.00</td><td>19</td></tr></table></section>
+
+<section><h2>8. Assumptions and open questions</h2>
+<p>All 27 assumptions are listed, each marked as quoted, answered by the professor, mine or
+invented, in <code>docs/solver_assumptions.md</code>. Still open for the professor: the
+dog-game rules, the polar-policy distribution, what &ldquo;check symmetry&rdquo; should
+mean, which states to evaluate on, how degenerate equilibria should be compared, and two
+page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
+<p class="muted">Reproduce: <code>python scripts/pg_finite.py --seeds 3</code>,
+<code>python scripts/dqn_finite.py --seeds 3</code>, then <code>make pg-pdf</code>.</p></section>
+</body></html>
