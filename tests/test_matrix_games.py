@@ -108,3 +108,19 @@ def test_lp_still_reports_failure_when_retry_fails(monkeypatch):
     ))
     with pytest.raises(RuntimeError, match="still failed"):
         games.solve_zero_sum(MATCHING_PENNIES)
+
+
+
+def test_batch_solver_matches_the_lp_and_returns_equilibrium_strategies():
+    from soccer_nash.matrix_games import game_value, solve_zero_sum_batch
+
+    rng = np.random.default_rng(0)
+    M = np.concatenate([
+        rng.normal(size=(150, 4, 4)),
+        rng.integers(-1, 2, size=(150, 4, 4)).astype(float),   # many ties / degenerate
+    ])
+    value, P, Q = solve_zero_sum_batch(M)
+    for m, v, p, q in zip(M, value, P, Q):
+        assert v == pytest.approx(game_value(m), abs=1e-7)
+        assert p.sum() == pytest.approx(1.0) and q.sum() == pytest.approx(1.0)
+        assert (p @ m).min() >= v - 1e-7 and (m @ q).max() <= v + 1e-7
