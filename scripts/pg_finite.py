@@ -24,26 +24,6 @@ from soccer_nash.nash_q import NashQIteration
 EXP = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 
 
-def evaluate(game, solver, exact, row, col, gamma, horizon, n_games, seed) -> dict:
-    """Exploitability plus repeated-play win / tie / loss counts for both players
-    against a random player, the exact equilibrium and the exact best response."""
-    e_row, e_col = exact
-    v0, t0 = fh.best_response(solver, col, 0, gamma, horizon)
-    v1, t1 = fh.best_response(solver, row, 1, gamma, horizon)
-    out = {"exploitability": round(v0 + v1, 4)}
-    opp_for_row = {"random": fh.uniform, "nash": e_col, "br": fh.br_policy(t1)}
-    opp_for_col = {"random": fh.uniform, "nash": e_row, "br": fh.br_policy(t0)}
-    for name, op in opp_for_row.items():
-        r = fh.play(game, row, op, n_games, horizon, seed)
-        out.update({f"row_win_vs_{name}": r["win"], f"row_tie_vs_{name}": r["tie"],
-                    f"row_loss_vs_{name}": r["loss"]})
-    for name, op in opp_for_col.items():
-        r = fh.play(game, op, col, n_games, horizon, seed)
-        out.update({f"col_win_vs_{name}": r["loss"], f"col_tie_vs_{name}": r["tie"],
-                    f"col_loss_vs_{name}": r["win"]})
-    return {k: round(v, 3) for k, v in out.items()}
-
-
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--board", choices=["a10", "random"], default="a10")
@@ -62,7 +42,7 @@ def main() -> None:
     _, row_t, col_t = fh.solve_finite_horizon(solver, a.gamma, horizon)
     exact = (fh.tables_to_policy(row_t), fh.tables_to_policy(col_t))
     rows = [{"algo": "exact", "mode": "-", "seed": 0, "train_s": 0.0,
-             **evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
+             **fh.evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
     print(rows[0], flush=True)
     for algo in a.algos:
         for mode in a.modes:
@@ -72,7 +52,7 @@ def main() -> None:
                               a.episodes, seed=seed)
                 dt = round(time.perf_counter() - t, 1)
                 rows.append({"algo": algo, "mode": mode, "seed": seed, "train_s": dt,
-                             **evaluate(game, solver, exact, tr.pol0, tr.pol1,
+                             **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
                                         a.gamma, horizon, a.games, seed)})
                 print(rows[-1], flush=True)
     path = EXP / f"pg_finite_{a.board}.csv"
@@ -80,14 +60,14 @@ def main() -> None:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
-    print("\nalgo | mode | exploitability | row wins vs random / nash / br")
+    print("\nalgo | mode | exploitability | row wins vs random / nash / br | mirror gap")
     for algo in a.algos:
         for mode in a.modes:
             r = [x for x in rows if x["algo"] == algo and x["mode"] == mode]
             m = lambda k, r=r: statistics.mean(x[k] for x in r)  # noqa: E731
             print(f"{algo:9s} {mode:10s} {m('exploitability'):.3f}  "
                   f"{m('row_win_vs_random'):.3f} / {m('row_win_vs_nash'):.3f} / "
-                  f"{m('row_win_vs_br'):.3f}")
+                  f"{m('row_win_vs_br'):.3f}  mirror {m('mirror_gap_mean'):.3f}")
     print(f"wrote experiments/{path.name}")
 
 

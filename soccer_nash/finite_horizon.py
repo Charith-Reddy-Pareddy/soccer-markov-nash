@@ -13,6 +13,7 @@ from __future__ import annotations
 import numpy as np
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
+from soccer_nash.symmetry import flip_distribution, mirror_state
 
 
 def solve_finite_horizon(solver, gamma: float, horizon: int):
@@ -119,3 +120,38 @@ def play(
         live = still
     return {"win": wins / n_games, "tie": 1 - (wins + losses) / n_games,
             "loss": losses / n_games}
+
+
+def mirror_gap(game: SoccerGame, row, col, times=(0, 25, 50, 75, 99)) -> tuple[float, float]:
+    """(mean, max) over all states and the given steps of
+    ``max_a |row(t, s) - flip(col(t, mirror(s)))|``: how far the two players'
+    policies are from being mirror images (0 for a mirror-symmetric pair)."""
+    states = list(game.states())
+    mirrored = [mirror_state(s, game.width) for s in states]
+    gaps = []
+    for t in times:
+        want = np.array([flip_distribution(q) for q in col(t, mirrored)])
+        gaps.append(np.abs(row(t, states) - want).max(axis=1))
+    g = np.concatenate(gaps)
+    return float(g.mean()), float(g.max())
+
+
+def evaluate(game, solver, exact, row, col, gamma, horizon, n_games, seed) -> dict:
+    """Exploitability plus repeated-play win / tie / loss counts for both players
+    against a random player, the exact equilibrium and the exact best response."""
+    e_row, e_col = exact
+    v0, t0 = best_response(solver, col, 0, gamma, horizon)
+    v1, t1 = best_response(solver, row, 1, gamma, horizon)
+    out = {"exploitability": round(v0 + v1, 4)}
+    opp_for_row = {"random": uniform, "nash": e_col, "br": br_policy(t1)}
+    opp_for_col = {"random": uniform, "nash": e_row, "br": br_policy(t0)}
+    for name, op in opp_for_row.items():
+        r = play(game, row, op, n_games, horizon, seed)
+        out.update({f"row_win_vs_{name}": r["win"], f"row_tie_vs_{name}": r["tie"],
+                    f"row_loss_vs_{name}": r["loss"]})
+    for name, op in opp_for_col.items():
+        r = play(game, op, col, n_games, horizon, seed)
+        out.update({f"col_win_vs_{name}": r["loss"], f"col_tie_vs_{name}": r["tie"],
+                    f"col_loss_vs_{name}": r["win"]})
+    out["mirror_gap_mean"], out["mirror_gap_max"] = mirror_gap(game, row, col)
+    return {k: round(v, 3) for k, v in out.items()}
