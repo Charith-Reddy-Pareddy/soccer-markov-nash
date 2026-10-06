@@ -6,17 +6,20 @@ The professor's answers to the group's questions changed the setup, so this is t
 
 Fictitious play here is not a matrix solver, as the professor put it: policy gradient does the solving. Each player keeps improving its own network by policy gradient against the *empirical average of the opponent's past policies* (frozen snapshots, one drawn uniformly per episode), and the policy it reports is the average of its own snapshots. "Self-play" instead trains both current networks against each other. Win rates are counts over 1,000 repeated games from the kickoff, for the row player. 2,000 iterations of 64 episodes, 3 seeds, untuned:
 
-| learner | training | exploitability | W / T / L vs. random | vs. exact Nash | vs. best response |
-|---|---|---|---|---|---|
-| exact solver | -- | 0 | 0.92 / 0.08 / 0.00 | 0.00 / 1.00 / 0.00 | 0.00 / 1.00 / 0.00 |
-| REINFORCE | self-play | 0.788 | 0.68 / 0.29 / 0.03 | 0.00 / 0.71 / 0.29 | 0.00 / 0.00 / 1.00 |
-| REINFORCE | fictitious play | 0.861 | 0.92 / 0.02 / 0.07 | 0.00 / 0.00 / 1.00 | 0.02 / 0.00 / 0.98 |
-| A2C | self-play | 0.763 | 0.73 / 0.24 / 0.03 | 0.00 / 0.85 / 0.15 | 0.02 / 0.00 / 0.98 |
-| A2C | fictitious play | 0.888 | 0.96 / 0.00 / 0.03 | 0.00 / 0.00 / 1.00 | 0.01 / 0.00 / 0.99 |
-| PPO | self-play | 0.949 | 0.61 / 0.30 / 0.09 | 0.00 / 0.67 / 0.33 | 0.00 / 0.00 / 1.00 |
-| PPO | fictitious play | 0.864 | 0.88 / 0.05 / 0.07 | 0.00 / 0.19 / 0.81 | 0.00 / 0.00 / 1.00 |
+| learner | training | exploitability | W / T / L vs. random | vs. exact Nash | vs. best response | mirror gap (mean) |
+|---|---|---|---|---|---|---|
+| exact solver | -- | 0 | 0.92 / 0.08 / 0.00 | 0.00 / 1.00 / 0.00 | 0.00 / 1.00 / 0.00 | 0 |
+| REINFORCE | self-play | 0.788 | 0.68 / 0.29 / 0.03 | 0.00 / 0.71 / 0.29 | 0.00 / 0.00 / 1.00 | 0.66 |
+| REINFORCE | fictitious play | 0.861 | 0.92 / 0.02 / 0.07 | 0.00 / 0.00 / 1.00 | 0.02 / 0.00 / 0.98 | 0.44 |
+| A2C | self-play | 0.763 | 0.73 / 0.24 / 0.03 | 0.00 / 0.85 / 0.15 | 0.02 / 0.00 / 0.98 | 0.53 |
+| A2C | fictitious play | 0.888 | 0.96 / 0.00 / 0.03 | 0.00 / 0.00 / 1.00 | 0.01 / 0.00 / 0.99 | 0.44 |
+| PPO | self-play | 0.949 | 0.61 / 0.30 / 0.09 | 0.00 / 0.67 / 0.33 | 0.00 / 0.00 / 1.00 | 0.81 |
+| PPO | fictitious play | 0.864 | 0.88 / 0.05 / 0.07 | 0.00 / 0.19 / 0.81 | 0.00 / 0.00 / 1.00 | 0.49 |
+| Nash-DQN | fitted Q | 0.887 | 1.00 / 0.00 / 0.00 | 0.00 / 0.00 / 1.00 | 0.00 / 0.00 / 1.00 | 0.32 |
 
-**None of the six gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv`.
+The *mirror gap* is how far the two players' policies are from being mirror images of each other (flip the board, swap the players, swap left and right), averaged over every state at steps 0, 25, 50, 75 and 99. It is 0 for the exact solution and is measured, not imposed. The Nash-DQN (`soccer_nash/dqn_finite.py`) is a fitted-Q network over (state, remaining steps) whose targets use the exact transition expectations and a target network's minimax value; its policy is the minimax solution of its own matrix.
+
+**None of the seven gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. The Nash-DQN wins every game against a random player and loses every game against the exact equilibrium, as the fictitious-play learners do. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. No learner is symmetric: the mirror gap is 0.32-0.81 against 0, so the two networks play clearly different strategies; the fictitious-play runs (0.44-0.49) are somewhat more symmetric than self-play (0.53-0.81), though three seeds cannot make much of that. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv` and `experiments/dqn_finite_a10.csv`.
 
 The earlier sections (stationary `gamma = 0.9`, no step count, kickoff or random-start training, both boards) follow.
 
@@ -417,6 +420,8 @@ python scripts/policy_gradient_batch.py --seeds 5 --match updates  # same, updat
 python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared vs. partial-share nets
 python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
 python scripts/pg_algos_and_fp.py pg --seeds 3             # REINFORCE vs. A2C vs. PPO
+python scripts/pg_finite.py --seeds 3                       # finite-horizon PG, self-play and fictitious play
+python scripts/dqn_finite.py --seeds 3                      # finite-horizon Nash-DQN
 python scripts/pg_algos_and_fp.py pg --board random --seeds 3   # same, on the random move-order board
 python scripts/pg_algos_and_fp.py pg --board random --explore --seeds 3   # exploring starts
 python scripts/pg_algos_and_fp.py dqn --seeds 3             # Nash-DQN win rates

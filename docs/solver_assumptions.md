@@ -49,6 +49,9 @@ instruction could change a result.
 | S24 | **Fictitious play** snapshots each network every 5 iterations; the opponent's average policy is realised by playing one uniformly drawn snapshot per episode, and the *reported* policy is the per-state average of the snapshots' action probabilities. Averaging behaviour per state is not the same as averaging whole strategies, so the reported policy is an approximation to the mixture that was trained against. | `pg_finite.py` | mine |
 | S25 | Exploitability is the discounted finite-horizon best-response value of both players from the kickoff; the "best response" opponent in the win counts is that exact best response, optimal in discounted value, not in win probability. | `finite_horizon.py` | mine |
 
+| S26 | **Finite-horizon Nash-DQN**: one 64x64 network over (state, remaining steps) outputs the 4x4 matrix; 4,000 fitted-Q steps on 128 random (state, step) pairs, `lr 1e-3`, target network synced every 100 steps, targets from the exact transition expectations. Its policy is an equilibrium of its own matrix (a batched support-enumeration solver, LP fallback). Untuned. | `dqn_finite.py` | mine |
+| S27 | The **mirror gap** compares the two policies at steps 0, 25, 50, 75, 99 over all states; the exact solution's gap is 0, so the measure is not tripped by tie-breaking there. | `finite_horizon.py` | mine |
+
 ## Continuous actions and the dog game (provisional)
 
 None of this has a specification yet. Everything here is a placeholder to get
@@ -75,7 +78,7 @@ The professor's replies to the group's questions, and what changed:
 
 ## Questions for the professor
 
-Still open: 1, 2, 6, 8, 10, 11 and 12. Answered above: 3, 4, 5, 7 and 9.
+Still open: 1, 2, 6, 8, 10, 11, 12, 13 and 14. Answered above: 3, 4, 5, 7 and 9.
 
 
 1. **Dog game.** Pursuit-evasion in the plane? Who is the dog and who the sheep,
@@ -102,3 +105,8 @@ Still open: 1, 2, 6, 8, 10, 11 and 12. Answered above: 3, 4, 5, 7 and 9.
     match one particular equilibrium? (S3)
 12. **A possible slip in the note.** With standard rock-paper-scissors payoffs the
     best response to `1/2 R + 1/2 S` is Rock (expected `+1/2`), not Paper.
+13. **"Closed form solution to R game"** (page 3, next to the `Q(s, a1, a2)` network).
+    Which game is the "R game"? I did not implement it.
+14. **"# time f is activated"** (page 3, side quest on fitting a network to a
+    function). What is counted: how often the function is evaluated by the
+    best-response search, or something else? I count nothing.

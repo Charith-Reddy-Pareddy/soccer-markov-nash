@@ -98,6 +98,7 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `pure_vs_mixed_exploit.csv` | `pure_vs_mixed_exploit.py` | greedy-pure vs. Nash-mixed value against a best response, at each positions.md case | instant |
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | `pg_finite_a10.csv` | `pg_finite.py --seeds 3` | discounted 100-step game: REINFORCE / A2C / PPO by self-play and by fictitious play vs. the exact finite-horizon solution, **3 seeds** | ~40 min |
+| `dqn_finite_a10.csv` | `dqn_finite.py --seeds 3` | Nash-DQN on the discounted 100-step game, same scoring, **3 seeds** | ~10 min |
 | `pg_algos_{a10,random}_seeds.csv` | `pg_algos_and_fp.py pg --board ... --seeds 3` | self-play REINFORCE vs. A2C vs. PPO vs. the exact solve, + win/tie/loss and mirror gap, **3 seeds** | ~10 min each |
 | `pg_algos_random_explore_seeds.csv` | `pg_algos_and_fp.py pg --board random --explore --seeds 3` | same with exploring starts | ~10 min |
 | `dqn_winrates.csv` | `pg_algos_and_fp.py dqn --seeds 3` | Nash-DQN win/tie/loss vs. random, exact Nash and best response | ~4 min |
@@ -121,7 +122,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 408 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 412 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34
