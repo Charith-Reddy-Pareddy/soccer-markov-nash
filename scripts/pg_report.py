@@ -53,7 +53,7 @@ GREEN, GREY, ORANGE = "#1DB954", "#c3cec8", "#a8501c"
 
 def bar_chart(items, width=660) -> str:
     """Horizontal bars of mean exploitability with one dot per seed."""
-    row_h, left, right = 26, 190, 30
+    row_h, left, right = 26, 190, 44
     h = row_h * len(items) + 34
     x = lambda v: left + v / 1.0 * (width - left - right)  # noqa: E731
     out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
@@ -69,25 +69,30 @@ def bar_chart(items, width=660) -> str:
                    f'fill="{GREEN}" opacity=".85"/>')
         for v in vals:
             out.append(f'<circle cx="{x(v):.1f}" cy="{y + 10}" r="3" fill="#1c2e26" opacity=".7"/>')
-        out.append(f'<text x="{x(m) + 8:.1f}" y="{y + 14}" fill="#1c2e26">{m:.2f}</text>')
+        out.append(f'<text x="{width - right + 10}" y="{y + 14}" fill="#1c2e26" font-weight="700">{m:.2f}</text>')
     out.append("</svg>")
     return "".join(out)
 
 
-def stacked_chart(items, title, width=320) -> str:
-    row_h, left = 26, 8
+def stacked_chart(items, titles, width=660) -> str:
+    """Two stacked win/tie/loss panels side by side, sharing one label column."""
+    row_h, left, gap = 26, 190, 24
+    panel = (width - left - gap - 10) / 2
     h = row_h * len(items) + 30
-    x = lambda v: left + v * (width - left - 8)  # noqa: E731
     out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
-           'font-family="Helvetica,Arial,sans-serif" font-size="11">'
-           f'<text x="{left}" y="12" fill="#5b6b63" font-weight="700">{title}</text>']
-    for i, (_, w) in enumerate(items):
+           'font-family="Helvetica,Arial,sans-serif" font-size="11">']
+    for k, title in enumerate(titles):
+        x0 = left + k * (panel + gap)
+        out.append(f'<text x="{x0}" y="12" fill="#5b6b63" font-weight="700">{title}</text>')
+    for i, (label, panels) in enumerate(items):
         y = 22 + i * row_h
-        pos = 0.0
-        for frac, col in zip(w, (GREEN, GREY, ORANGE)):
-            out.append(f'<rect x="{x(pos):.1f}" y="{y}" width="{max(x(frac) - left, 0):.1f}" '
-                       f'height="16" fill="{col}"/>')
-            pos += frac
+        out.append(f'<text x="{left - 8}" y="{y + 12}" text-anchor="end" fill="#1c2e26">{label}</text>')
+        for k, w in enumerate(panels):
+            pos = 0.0
+            for frac, col in zip(w, (GREEN, GREY, ORANGE)):
+                out.append(f'<rect x="{left + k * (panel + gap) + pos * panel:.1f}" y="{y}" '
+                           f'width="{frac * panel:.1f}" height="16" fill="{col}"/>')
+                pos += frac
     out.append("</svg>")
     return "".join(out)
 
@@ -169,11 +174,9 @@ other settings are unchanged).</p>
         dog_rows.append([name, f(mean(rs, "capture_rate")), f"{st.mean(steps):.0f}" if steps else "-"])
 
     chart1 = bar_chart(expl)
-    chart2 = stacked_chart([(n, wtl(data[(a, m)], "row", "random")) for n, a, m in LEARNERS],
-                           "vs. a random player")
-    chart3 = stacked_chart([(n, wtl(data[(a, m)], "row", "nash")) for n, a, m in LEARNERS],
-                           "vs. the exact Nash policy")
-    names = "".join(f'<div class="nm">{n}</div>' for n, _, _ in LEARNERS)
+    chart2 = stacked_chart(
+        [(n, [wtl(data[(a, m)], "row", "random"), wtl(data[(a, m)], "row", "nash")])
+         for n, a, m in LEARNERS], ["vs. a random player", "vs. the exact Nash policy"])
 
     html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>Policy gradient on the soccer game</title><style>
@@ -187,7 +190,9 @@ h2{{font-size:18px;margin:0 0 8px;color:var(--accent-dark)}}
 .eyebrow{{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:700}}
 p.lede{{color:var(--muted);font-size:14px;margin:0 0 14px}}
 p.muted{{color:var(--muted);font-size:12.5px;margin:6px 0 0}}
-section{{margin-top:26px;padding-top:14px;border-top:2px solid var(--line);break-inside:avoid-page}}
+section{{margin-top:26px;padding-top:14px;border-top:2px solid var(--line)}}
+table,svg,.callout{{break-inside:avoid}}
+h2{{break-after:avoid}}
 .callout{{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
 border-radius:6px;padding:10px 16px;margin:12px 0}}
 .callout.warn{{border-left-color:var(--warn);background:var(--warn-bg)}}
@@ -260,7 +265,7 @@ against a random player, the exact Nash policy and the exact best response.</li>
 <div class="charts" style="grid-template-columns:1fr"><div>{chart1}</div></div>
 <p class="muted">Exploitability by learner: bar = mean, dots = individual seeds.</p>
 <div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
-<div class="charts"><div class="names">{names}</div><div>{chart2}</div><div>{chart3}</div></div>
+<div>{chart2}</div>
 <p>Two patterns repeat. Fictitious-play training beats a random player more often
 (0.88 to 0.96) but loses almost every game to the exact equilibrium. Self-play training
 wins less often against random and ties the equilibrium more often: it plays more
