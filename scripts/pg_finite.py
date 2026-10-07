@@ -28,6 +28,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--board", choices=["a10", "random"], default="a10")
     ap.add_argument("--seeds", type=int, default=3)
+    ap.add_argument("--seed-start", type=int, default=0, help="first seed to run")
     ap.add_argument("--iterations", type=int, default=1000)
     ap.add_argument("--episodes", type=int, default=64)
     ap.add_argument("--games", type=int, default=1000)
@@ -45,9 +46,17 @@ def main() -> None:
     rows = [{"algo": "exact", "mode": "-", "seed": 0, "train_s": 0.0,
              **fh.evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
     print(rows[0], flush=True)
+    path = EXP / f"pg_finite_{a.board}{a.tag}.csv"
+
+    def save() -> None:
+        with path.open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(rows[0]))
+            w.writeheader()
+            w.writerows(rows)
+
     for algo in a.algos:
         for mode in a.modes:
-            for seed in range(a.seeds):
+            for seed in range(a.seed_start, a.seed_start + a.seeds):
                 t = time.perf_counter()
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
                               a.episodes, seed=seed)
@@ -56,11 +65,7 @@ def main() -> None:
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
                                         a.gamma, horizon, a.games, seed)})
                 print(rows[-1], flush=True)
-    path = EXP / f"pg_finite_{a.board}{a.tag}.csv"
-    with path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
-        w.writeheader()
-        w.writerows(rows)
+                save()
     print("\nalgo | mode | exploitability | row wins vs random / nash / br | mirror gap")
     for algo in a.algos:
         for mode in a.modes:
