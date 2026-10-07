@@ -227,3 +227,19 @@ main result. Future work.
 `make dqn` / `make dqn-random` / `make dqn-ablation` regenerate the three
 tables above (`nash_dqn.py --seeds 5`, `nash_dqn_random.py --seeds 5`,
 `nash_dqn_ablation.py --seeds 2`).
+
+## Nash-DQN scored like the policy-gradient learners
+
+The same scoring used in [policy_gradient.md](policy_gradient.md) (exploitability, 1,000 repeated games counted as wins, ties and losses, and the mirror gap), applied to a fitted-Q Nash-DQN whose policy is the minimax solution of its own `Q` matrix (3 seeds):
+
+| setup | exploitability | W / T / L vs. random | vs. exact Nash | vs. best response | mirror gap |
+|---|---|---|---|---|---|
+| discounted 100-step A10 game, remaining steps as an input (`soccer_nash/dqn_finite.py`) | 0.887 | 1.00 / 0.00 / 0.00 | 0.00 / 0.00 / 1.00 | 0.00 / 0.00 / 1.00 | 0.32 |
+| stationary random move-order board (`nash_dqn.py`) | 0.378 | 0.995 / 0.004 / 0.001 | 0.52 / 0.10 / 0.39 | 0.02 / 0.79 / 0.19 | 0.39 |
+
+On the professor's finite-horizon setup the DQN is as far from the equilibrium as the policy-gradient learners (0.85-0.95 per seed). On the stationary random board it is much closer than policy gradient on the same board (0.38 against 0.73-0.91), because it fits the exact transition expectations instead of sampling returns. Neither is the equilibrium.
+
+```
+python scripts/dqn_finite.py --seeds 3            # finite-horizon Nash-DQN
+python scripts/pg_algos_and_fp.py dqn --seeds 3   # stationary random board
+```

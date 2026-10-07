@@ -15,11 +15,10 @@ Fictitious play here is not a matrix solver, as the professor put it: policy gra
 | A2C | fictitious play | 0.888 | 0.96 / 0.00 / 0.03 | 0.00 / 0.00 / 1.00 | 0.01 / 0.00 / 0.99 | 0.44 |
 | PPO | self-play | 0.949 | 0.61 / 0.30 / 0.09 | 0.00 / 0.67 / 0.33 | 0.00 / 0.00 / 1.00 | 0.81 |
 | PPO | fictitious play | 0.864 | 0.88 / 0.05 / 0.07 | 0.00 / 0.19 / 0.81 | 0.00 / 0.00 / 1.00 | 0.49 |
-| Nash-DQN | fitted Q | 0.887 | 1.00 / 0.00 / 0.00 | 0.00 / 0.00 / 1.00 | 0.00 / 0.00 / 1.00 | 0.32 |
 
-The *mirror gap* is how far the two players' policies are from being mirror images of each other (flip the board, swap the players, swap left and right), averaged over every state at steps 0, 25, 50, 75 and 99. It is 0 for the exact solution and is measured, not imposed. The Nash-DQN (`soccer_nash/dqn_finite.py`) is a fitted-Q network over (state, remaining steps) whose targets use the exact transition expectations and a target network's minimax value; its policy is the minimax solution of its own matrix.
+The *mirror gap* is how far the two players' policies are from being mirror images of each other (flip the board, swap the players, swap left and right), averaged over every state at steps 0, 25, 50, 75 and 99. It is 0 for the exact solution and is measured, not imposed.
 
-**None of the seven gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. The Nash-DQN wins every game against a random player and loses every game against the exact equilibrium, as the fictitious-play learners do. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. No learner is symmetric: the mirror gap is 0.32-0.81 against 0, so the two networks play clearly different strategies; the fictitious-play runs (0.44-0.49) are somewhat more symmetric than self-play (0.53-0.81), though three seeds cannot make much of that. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv` and `experiments/dqn_finite_a10.csv`.
+**None of the six gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. No learner is symmetric: the mirror gap is 0.44-0.81 against 0, so the two networks play clearly different strategies; the fictitious-play runs (0.44-0.49) are somewhat more symmetric than self-play (0.53-0.81), though three seeds cannot make much of that. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv`.
 
 **Does more training help?** Self-play at 8,000 iterations instead of 2,000, two seeds per learner, everything else unchanged (the fictitious-play runs were too slow to repeat):
 
@@ -389,7 +388,7 @@ inexactness of 200 rounds of fictitious play. Unlike the policy-gradient methods
 fictitious play recovers the equilibrium values here, because it solves each
 stage game by best-responding to a matrix rather than by sampling.
 
-### Exploring starts, and Nash-DQN for comparison
+### Exploring starts
 
 The policy-gradient runs above train from the kickoff, so most of the 2,380 states are rarely visited (S5 in [solver_assumptions.md](solver_assumptions.md)). `--explore` restarts every episode at a uniformly random state instead. Same board, budget and 3 seeds:
 
@@ -398,10 +397,9 @@ The policy-gradient runs above train from the kickoff, so most of the 2,380 stat
 | REINFORCE, exploring starts | 0.801 | 0.027 | 0.710 | 0.92 / 0.07 / 0.01 | 0.06 / 0.00 / 0.95 | 0.00 / 0.00 / 1.00 | 0.11 / 0.79 |
 | A2C, exploring starts | 0.821 | 0.030 | 0.698 | 0.89 / 0.09 / 0.02 | 0.05 / 0.00 / 0.95 | 0.00 / 0.00 / 1.00 | 0.15 / 0.81 |
 | PPO, exploring starts | 0.910 | 0.072 | 0.509 | 0.90 / 0.05 / 0.06 | 0.02 / 0.00 / 0.98 | 0.01 / 0.00 / 0.99 | 0.41 / 0.99 |
-| Nash-DQN (minimax of its own `Q`) | 0.378 | -- | -- | 0.995 / 0.004 / 0.001 | 0.52 / 0.10 / 0.39 | 0.02 / 0.79 / 0.19 | 0.39 / 1.00 |
 | exact solver | 0 | 0 | 1 | 1.00 / 0.00 / 0.00 | 0.66 / 0.01 / 0.34 | 0.70 / 0.00 / 0.30 | 0 |
 
-Exploring starts do what they should on average: action agreement rises from 0.44 to 0.71 for REINFORCE, mean equilibrium regret halves, and the two networks become much closer to mirror images (0.42 to 0.11). They do **not** fix play from the kickoff: exploitability and the results against the exact equilibrium get slightly worse, so being right at more states is not the same as being unexploitable at the one that matters. Nash-DQN, which fits the exact `Q` matrix instead of sampling returns, is far closer to the exact solver on every measure. That is the same ordering as [neural.md](neural.md).
+Exploring starts do what they should on average: action agreement rises from 0.44 to 0.71 for REINFORCE, mean equilibrium regret halves, and the two networks become much closer to mirror images (0.42 to 0.11). They do **not** fix play from the kickoff: exploitability and the results against the exact equilibrium get slightly worse, so being right at more states is not the same as being unexploitable at the one that matters.
 
 ### Best-response dynamics, and what the note's "???" resolves to
 
@@ -431,10 +429,8 @@ python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared 
 python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
 python scripts/pg_algos_and_fp.py pg --seeds 3             # REINFORCE vs. A2C vs. PPO
 python scripts/pg_finite.py --seeds 3                       # finite-horizon PG, self-play and fictitious play
-python scripts/dqn_finite.py --seeds 3                      # finite-horizon Nash-DQN
 python scripts/pg_algos_and_fp.py pg --board random --seeds 3   # same, on the random move-order board
 python scripts/pg_algos_and_fp.py pg --board random --explore --seeds 3   # exploring starts
-python scripts/pg_algos_and_fp.py dqn --seeds 3             # Nash-DQN win rates
 python scripts/pg_algos_and_fp.py fp                       # best-response dynamics vs. fictitious play
 python scripts/pg_algos_and_fp.py markov-fp                # fictitious play inside the Markov game
 ```

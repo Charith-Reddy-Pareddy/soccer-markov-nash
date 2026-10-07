@@ -23,7 +23,6 @@ LEARNERS = [
     ("A2C, fictitious play", "a2c", "fictitious"),
     ("PPO, self-play", "ppo", "selfplay"),
     ("PPO, fictitious play", "ppo", "fictitious"),
-    ("Nash-DQN", "dqn", "-"),
 ]
 
 
@@ -108,7 +107,7 @@ def f(v, d=2):
 
 
 def main() -> None:
-    main_rows = read(EXP / "pg_finite_a10.csv") + read(EXP / "dqn_finite_a10.csv")
+    main_rows = read(EXP / "pg_finite_a10.csv")
     long_rows = [r for p in sorted(glob.glob(str(EXP / "pg_finite_a10_long_*.csv")))
                  for r in read(p) if r["algo"] != "exact"]
     data = {(a, m): pick(main_rows, a, m) for _, a, m in LEARNERS}
@@ -132,7 +131,7 @@ def main() -> None:
         lrows, ends = [], []
         for lbl, a, m in learners:
             rs = sorted(pick(long_rows, a, m), key=lambda r: int(r["seed"]))
-            if a != "dqn" and rs:
+            if rs:
                 short = mean(data[(a, m)], "exploitability")
                 per_seed = [float(r["exploitability"]) for r in rs]
                 ends += [(short, v) for v in per_seed]
@@ -175,7 +174,7 @@ seeds per learner this is a trend, not a result.</p></section>"""
         [[r["rounds"], f"{float(r['mean_gap_all']):.5f}", f"{float(r['max_gap_all']):.5f}",
           f"{float(r['max_value_err_all']):.5f}"] for r in fp]) if fp else ""
 
-    dog = read(EXP / "dog_game.csv") + read(EXP / "dog_game_dqn.csv")
+    dog = read(EXP / "dog_game.csv")
     dog_rows = []
     for name in dict.fromkeys(r["matchup"] for r in dog):
         rs = [r for r in dog if r["matchup"] == name]
@@ -226,8 +225,8 @@ read from the experiment files in the repository.</p>
 
 <div class="callout warn"><b>The short answer: not yet.</b>
 <ul>
-<li>All seven learners (three policy-gradient algorithms in two training schemes, plus a
-Nash-DQN) stay far from the equilibrium: exploitability {lo:.2f} to {hi:.2f}, where the exact
+<li>All six learners (REINFORCE, A2C and PPO, each trained by self-play and by fictitious
+play) stay far from the equilibrium: exploitability {lo:.2f} to {hi:.2f}, where the exact
 solution is 0.</li>
 <li>Fictitious-play training wins more against a random player but loses to the exact
 equilibrium; self-play training ties it more often.</li>
@@ -261,8 +260,7 @@ equilibrium has exploitability 0 and ties itself every game.</p></section>
 {table(["algorithm", "update"], [
   ["REINFORCE", "plain discounted returns, no baseline"],
   ["A2C", "10-step bootstrapped advantage from a learned critic"],
-  ["PPO", "GAE (&lambda; = 0.95), clipped ratio 0.2, 4 epochs"],
-  ["Nash-DQN", "fitted Q over (state, steps left); targets use the exact transitions and a target network's minimax value"]])}
+  ["PPO", "GAE (&lambda; = 0.95), clipped ratio 0.2, 4 epochs"]])}
 <p><b>Self-play</b> trains both current networks against each other.
 <b>Fictitious play</b> is how policy gradient solves the game here, with no matrix
 solving: each player keeps improving its own network by policy gradient against the
@@ -323,7 +321,7 @@ dog-game rules, the polar-policy distribution, what &ldquo;check symmetry&rdquo;
 mean, which states to evaluate on, how degenerate equilibria should be compared, and two
 page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
 <p class="muted">Reproduce: <code>python scripts/pg_finite.py --seeds 3</code>,
-<code>python scripts/dqn_finite.py --seeds 3</code>, then <code>make pg-pdf</code>.</p></section>
+then <code>make pg-pdf</code>.</p></section>
 </body></html>"""
     (DOCS / "policy_gradient.html").write_text(html)
     print("wrote docs/policy_gradient.html")
