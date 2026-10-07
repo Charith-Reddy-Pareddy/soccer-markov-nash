@@ -21,6 +21,16 @@ The *mirror gap* is how far the two players' policies are from being mirror imag
 
 **None of the seven gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. The Nash-DQN wins every game against a random player and loses every game against the exact equilibrium, as the fictitious-play learners do. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. No learner is symmetric: the mirror gap is 0.32-0.81 against 0, so the two networks play clearly different strategies; the fictitious-play runs (0.44-0.49) are somewhat more symmetric than self-play (0.53-0.81), though three seeds cannot make much of that. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv` and `experiments/dqn_finite_a10.csv`.
 
+**Does more training help?** Self-play at 8,000 iterations instead of 2,000, two seeds per learner, everything else unchanged (the fictitious-play runs were too slow to repeat):
+
+| learner | exploitability at 2,000 iterations (3-seed mean) | at 8,000 iterations, each seed | W / T / L vs. random | vs. exact Nash |
+|---|---|---|---|---|
+| REINFORCE | 0.788 | 0.49, 0.91 | 0.91 / 0.08 / 0.02 | 0.00 / 0.38 / 0.62 |
+| A2C | 0.763 | 0.44, 0.50 | 0.79 / 0.20 / 0.01 | 0.00 / 0.79 / 0.21 |
+| PPO | 0.949 | 0.91, 0.96 | 0.97 / 0.01 / 0.02 | 0.00 / 0.00 / 1.00 |
+
+A2C ends clearly lower on both seeds, REINFORCE on one of two, PPO on neither, and the best single run is 0.44, still far from 0. With two seeds this is a trend, not a result. These runs were interrupted by a restart: four of the six finished runs were recovered from the run logs (same script, same settings) and the other two were rerun, which is why they sit in separate files, `experiments/pg_finite_a10_long_*.csv`.
+
 The earlier sections (stationary `gamma = 0.9`, no step count, kickoff or random-start training, both boards) follow.
 
 > September 28 audit: PG results below predate the terminal-return fix and

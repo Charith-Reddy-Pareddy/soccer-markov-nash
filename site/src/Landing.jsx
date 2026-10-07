@@ -365,9 +365,10 @@ export default function Landing() {
             <b> 0.76 and 0.95</b>. Fictitious-play training beats a random player more
             often but loses almost every game to the exact equilibrium, while self-play
             training ties it more often: it plays more cautiously, without winning. None
-            of them is a mirror-symmetric pair either. That is three seeds at one untuned
-            budget, so it shows these settings did not converge, not that policy gradient
-            cannot. Setup, every assumption, and the continuous-action dog game:
+            of them is a mirror-symmetric pair either. At four times the training, A2C reaches about
+            0.45&ndash;0.50 on both seeds while REINFORCE and PPO do not, still far from 0. That is
+            a few seeds at an untuned budget, so it shows these settings did not converge, not that
+            policy gradient cannot. Setup, every assumption, and the continuous-action dog game:
             <a href="policy_gradient.pdf"> the policy-gradient report (PDF)</a> and
             <a href="policy_gradient.md"> docs/policy_gradient.md</a>.</p>
         </div>

@@ -95,6 +95,12 @@ wins less often against random and ties the equilibrium more often: it plays mor
 cautiously. Neither is close to equilibrium play, and every learner loses almost every
 game to the exact best response.</p></section>
 
+<section><h2>Does more training help?</h2>
+<p>Self-play with <b>8,000</b> iterations instead of 2,000 (2 seeds per learner; every other
+setting unchanged). The fictitious-play runs were too slow to repeat at this length.</p>
+<table class=""><tr><th>learner</th><th>exploitability, 2,000 it. (3-seed mean)</th><th>exploitability, 8,000 it. (each seed)</th><th>W/T/L vs. random (8,000 it.)</th><th>W/T/L vs. exact Nash (8,000 it.)</th></tr><tr><td>REINFORCE, self-play</td><td>0.788</td><td>0.49 / 0.91</td><td>0.91/0.08/0.02</td><td>0.00/0.38/0.62</td></tr><tr><td>A2C, self-play</td><td>0.763</td><td>0.44 / 0.50</td><td>0.79/0.20/0.01</td><td>0.00/0.79/0.21</td></tr><tr><td>PPO, self-play</td><td>0.949</td><td>0.91 / 0.96</td><td>0.97/0.01/0.02</td><td>0.00/0.00/1.00</td></tr></table>
+<p class="muted">REINFORCE ends clearly lower on 1 of 2 seeds; A2C ends clearly lower on 2 of 2 seeds; PPO ends clearly lower on 0 of 2 seeds; the best single run reaches 0.44, still far from 0. With two
+seeds per learner this is a trend, not a result.</p></section>
 <section><h2>6. Earlier experiments</h2>
 <p>Before the professor's answers, the same algorithms were run on the stationary
 discounted game (no step count), from the kickoff or from random starting states.</p>

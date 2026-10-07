@@ -129,25 +129,34 @@ def main() -> None:
 
     long_html = ""
     if long_rows:
-        lrows = []
+        lrows, ends = [], []
         for lbl, a, m in learners:
-            rs = pick(long_rows, a, m)
+            rs = sorted(pick(long_rows, a, m), key=lambda r: int(r["seed"]))
             if a != "dqn" and rs:
                 short = mean(data[(a, m)], "exploitability")
-                lrows.append([lbl, f"{short:.3f}", f"{mean(rs, 'exploitability'):.3f}",
+                per_seed = [float(r["exploitability"]) for r in rs]
+                ends += [(short, v) for v in per_seed]
+                lrows.append([lbl, f"{short:.3f}", " / ".join(f"{v:.2f}" for v in per_seed),
                               "/".join(f(v) for v in wtl(rs, "row", "random")),
                               "/".join(f(v) for v in wtl(rs, "row", "nash"))])
-        gain = [float(r[1]) - float(r[2]) for r in lrows]
-        verdict = ("Four times the training lowers exploitability only slightly or not at all"
-                   if max(gain) < 0.15 else
-                   "Four times the training lowers exploitability noticeably for some learners")
+        names = {"reinforce": "REINFORCE", "a2c": "A2C", "ppo": "PPO"}
+        parts = []
+        for algo in ("reinforce", "a2c", "ppo"):
+            runs = [(mean(data[(algo, "selfplay")], "exploitability"), float(r["exploitability"]))
+                    for r in pick(long_rows, algo, "selfplay")]
+            if runs:
+                lower = sum(1 for short, v in runs if v < short - 0.15)
+                parts.append(f"{names[algo]} ends clearly lower on {lower} of {len(runs)} seeds")
+        verdict = "; ".join(parts)
+        best = min(v for _, v in ends)
         long_html = f"""
 <section><h2>Does more training help?</h2>
-<p>The same learners with <b>8,000</b> iterations instead of 2,000 (2 seeds each; the
-other settings are unchanged).</p>
-{table(["learner", "exploitability, 2,000 it.", "exploitability, 8,000 it.",
-        "W/T/L vs. random", "W/T/L vs. exact Nash"], lrows)}
-<p class="muted">{verdict}: the largest drop is {max(gain):.2f}.</p></section>"""
+<p>Self-play with <b>8,000</b> iterations instead of 2,000 (2 seeds per learner; every other
+setting unchanged). The fictitious-play runs were too slow to repeat at this length.</p>
+{table(["learner", "exploitability, 2,000 it. (3-seed mean)", "exploitability, 8,000 it. (each seed)",
+        "W/T/L vs. random (8,000 it.)", "W/T/L vs. exact Nash (8,000 it.)"], lrows)}
+<p class="muted">{verdict}; the best single run reaches {best:.2f}, still far from 0. With two
+seeds per learner this is a trend, not a result.</p></section>"""
 
     earlier = []
     for lbl, path in (("A10 board, stationary, kickoff starts", "pg_algos_a10_seeds.csv"),
