@@ -342,7 +342,7 @@ export default function Landing() {
             solution of that same game. Two ways of training each: plain self-play, and
             fictitious play, where each player keeps improving by policy gradient against
             the <em>average</em> of its opponent&rsquo;s past policies, so no game is ever
-            solved explicitly. A Nash-DQN is scored the same way. Win rates are counts over
+            solved explicitly. Win rates are counts over
             1,000 repeated games.</p>
           <div className="tbl-wrap">
             <table>
@@ -357,12 +357,11 @@ export default function Landing() {
                 <tr><td>A2C</td><td>fictitious play</td><td>0.89</td><td>0.96 / 0.00 / 0.03</td><td>0.00 / 0.00 / 1.00</td></tr>
                 <tr><td>PPO</td><td>self-play</td><td className="lo">0.95</td><td>0.61 / 0.30 / 0.09</td><td>0.00 / 0.67 / 0.33</td></tr>
                 <tr><td>PPO</td><td>fictitious play</td><td>0.86</td><td>0.88 / 0.05 / 0.07</td><td>0.00 / 0.19 / 0.81</td></tr>
-                <tr><td>Nash-DQN</td><td>fitted Q</td><td>0.89</td><td>1.00 / 0.00 / 0.00</td><td>0.00 / 0.00 / 1.00</td></tr>
               </tbody>
             </table>
           </div>
           <p>Exploitability is how much the two exact best responses win from the
-            kickoff; it is 0 only at an equilibrium. All seven learners sit between
+            kickoff; it is 0 only at an equilibrium. All six learners sit between
             <b> 0.76 and 0.95</b>. Fictitious-play training beats a random player more
             often but loses almost every game to the exact equilibrium, while self-play
             training ties it more often: it plays more cautiously, without winning. None
