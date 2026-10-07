@@ -31,6 +31,7 @@ export default function Landing() {
             <div className="cta-row">
               <a className="btn btn-primary" href="report.pdf">Read the full report &rarr;</a>
               <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">View the code on GitHub &rarr;</a>
+              <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash" aria-label="Star soccer-markov-nash on GitHub">&#9733; Star on GitHub</a>
             </div>
           </div>
           <div className="hero-card">

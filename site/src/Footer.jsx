@@ -70,6 +70,7 @@ export default function Footer({ board } = {}) {
             <h4>Project</h4>
             <ul>
               <li><a href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">GitHub repository</a></li>
+              <li><a href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash/blob/main/LICENSE">MIT License</a></li>
               <li><a href="README.md">Documentation index</a></li>
               <li><a href="methods.md">Methods &amp; reproducibility</a></li>
             </ul>

@@ -1,5 +1,8 @@
 # When Does a Soccer Markov Game Need Mixed Strategies?
 
+[![GitHub stars](https://img.shields.io/github/stars/Charith-Reddy-Pareddy/soccer-markov-nash?style=social)](https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 This repo is the technical notebook: every proof, every experiment, every
 figure, reproducible from the code in it — written for a reader who wants the
 exact math.
