@@ -92,3 +92,18 @@ def test_dqn_target_at_the_last_step_is_just_the_immediate_reward(small):
     # every goal outcome is flagged terminal and every probability row sums to one
     assert np.allclose(prob.sum(-1), 1.0)
     assert (rew[~term] == 0).all()
+
+
+def test_fictitious_play_with_best_responses_reports_every_round(small):
+    game = small[0]
+    seen = []
+    tr = pf.train_fp_br(game, "a2c", rounds=2, br_iters=2, gamma=GAMMA, horizon=HORIZON,
+                        episodes=4, on_round=lambda r, trained: seen.append(r))
+    assert seen == [1, 2]
+    p = tr.pol0(0, [game.initial_state()])
+    assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def test_fictitious_play_with_best_responses_rejects_an_unknown_algorithm(small):
+    with pytest.raises(ValueError):
+        pf.train_fp_br(small[0], "sarsa", rounds=1, br_iters=1)

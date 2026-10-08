@@ -207,3 +207,39 @@ def train(
     if mode == "selfplay":
         return Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon))
     return Trained(_policy(snaps[0], horizon), _policy(snaps[1], horizon))
+
+
+def train_fp_br(
+    game: SoccerGame, algo: str, rounds: int = 20, br_iters: int = 100, gamma: float = 0.9,
+    horizon: int = 100, episodes: int = 64, lr: float = 1e-3, entropy: float = 0.01,
+    seed: int = 0, on_round=None,
+) -> Trained:
+    """Fictitious play with best-response phases, all by policy gradient.
+
+    Each round, each player runs ``br_iters`` policy-gradient iterations against
+    the empirical average of the opponent's earlier best responses (a snapshot
+    drawn uniformly per episode), then adds the resulting policy to its own
+    history. The reported policy is the per-state average of a player's best
+    responses, excluding the random initial network. ``on_round(r, trained)``
+    is called after every round."""
+    if algo not in ALGOS:
+        raise ValueError("algo must be one of ALGOS")
+    torch.manual_seed(seed)
+    rng = np.random.default_rng(seed)
+    nets = [Net(game, 4), Net(game, 4)]
+    critics = [Net(game, 1) if algo != "reinforce" else None for _ in nets]
+    opts = [torch.optim.Adam(
+        [*n.parameters(), *(c.parameters() if c is not None else [])], lr=lr)
+        for n, c in zip(nets, critics)]
+    snaps = [[_frozen(n)] for n in nets]
+    for r in range(1, rounds + 1):
+        for i in (0, 1):
+            for _ in range(br_iters):
+                theirs = _Mixture(snaps[1 - i], episodes, rng)
+                players = (_Current(nets[i]), theirs) if i == 0 else (theirs, _Current(nets[i]))
+                batch = collect(game, *players, episodes, horizon, rng)
+                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy)
+            snaps[i].append(_frozen(nets[i]))
+        if on_round is not None:
+            on_round(r, Trained(_policy(snaps[0][1:], horizon), _policy(snaps[1][1:], horizon)))
+    return Trained(_policy(snaps[0][1:], horizon), _policy(snaps[1][1:], horizon))
