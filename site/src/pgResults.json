@@ -1,0 +1,379 @@
+{
+ "exact": {
+  "seeds": 1,
+  "exploitability": {
+   "mean": 0.0,
+   "sd": 0.0,
+   "runs": [
+    0.0
+   ]
+  },
+  "vs_random": [
+   0.917,
+   0.083,
+   0.0
+  ],
+  "vs_nash": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "vs_best_response": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "mirror_gap": 0.0
+ },
+ "learners": [
+  {
+   "label": "REINFORCE",
+   "training": "self-play",
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.788333,
+    "sd": 0.106265,
+    "runs": [
+     0.752,
+     0.908,
+     0.705
+    ]
+   },
+   "vs_random": [
+    0.678667,
+    0.290667,
+    0.030667
+   ],
+   "vs_nash": [
+    0.0,
+    0.713,
+    0.287
+   ],
+   "vs_best_response": [
+    0.004333,
+    0.0,
+    0.995667
+   ],
+   "mirror_gap": 0.658
+  },
+  {
+   "label": "REINFORCE",
+   "training": "fictitious play",
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.861333,
+    "sd": 0.010214,
+    "runs": [
+     0.854,
+     0.873,
+     0.857
+    ]
+   },
+   "vs_random": [
+    0.918,
+    0.016333,
+    0.065667
+   ],
+   "vs_nash": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "vs_best_response": [
+    0.020333,
+    0.0,
+    0.979667
+   ],
+   "mirror_gap": 0.443333
+  },
+  {
+   "label": "A2C",
+   "training": "self-play",
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.763333,
+    "sd": 0.159813,
+    "runs": [
+     0.579,
+     0.863,
+     0.848
+    ]
+   },
+   "vs_random": [
+    0.733333,
+    0.239,
+    0.027667
+   ],
+   "vs_nash": [
+    0.0,
+    0.854667,
+    0.145333
+   ],
+   "vs_best_response": [
+    0.023,
+    0.0,
+    0.977
+   ],
+   "mirror_gap": 0.527667
+  },
+  {
+   "label": "A2C",
+   "training": "fictitious play",
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.888333,
+    "sd": 0.007506,
+    "runs": [
+     0.884,
+     0.897,
+     0.884
+    ]
+   },
+   "vs_random": [
+    0.963333,
+    0.003333,
+    0.033333
+   ],
+   "vs_nash": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "vs_best_response": [
+    0.006333,
+    0.0,
+    0.993667
+   ],
+   "mirror_gap": 0.44
+  },
+  {
+   "label": "PPO",
+   "training": "self-play",
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.949333,
+    "sd": 0.038631,
+    "runs": [
+     0.986,
+     0.953,
+     0.909
+    ]
+   },
+   "vs_random": [
+    0.609,
+    0.298333,
+    0.092667
+   ],
+   "vs_nash": [
+    0.0,
+    0.666667,
+    0.333333
+   ],
+   "vs_best_response": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "mirror_gap": 0.812667
+  },
+  {
+   "label": "PPO",
+   "training": "fictitious play",
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.864333,
+    "sd": 0.005686,
+    "runs": [
+     0.869,
+     0.866,
+     0.858
+    ]
+   },
+   "vs_random": [
+    0.881,
+    0.046,
+    0.073
+   ],
+   "vs_nash": [
+    0.0,
+    0.189667,
+    0.810333
+   ],
+   "vs_best_response": [
+    0.003,
+    0.0,
+    0.997
+   ],
+   "mirror_gap": 0.484667
+  }
+ ],
+ "longer": [
+  {
+   "label": "REINFORCE",
+   "training": "self-play",
+   "short_mean": 0.788333,
+   "runs": [
+    0.486,
+    0.907
+   ],
+   "vs_random": [
+    0.906,
+    0.077,
+    0.017
+   ],
+   "vs_nash": [
+    0.0,
+    0.381,
+    0.619
+   ]
+  },
+  {
+   "label": "A2C",
+   "training": "self-play",
+   "short_mean": 0.763333,
+   "runs": [
+    0.44,
+    0.502
+   ],
+   "vs_random": [
+    0.789,
+    0.199,
+    0.012
+   ],
+   "vs_nash": [
+    0.0,
+    0.7875,
+    0.2125
+   ]
+  },
+  {
+   "label": "PPO",
+   "training": "self-play",
+   "short_mean": 0.949333,
+   "runs": [
+    0.909,
+    0.962
+   ],
+   "vs_random": [
+    0.973,
+    0.005,
+    0.022
+   ],
+   "vs_nash": [
+    0.0,
+    0.0,
+    1.0
+   ]
+  }
+ ],
+ "fp_br": [
+  {
+   "label": "A2C",
+   "best_response_iterations": 100,
+   "checkpoints": [
+    {
+     "round": 5,
+     "exploitability": 0.854
+    },
+    {
+     "round": 10,
+     "exploitability": 0.876
+    },
+    {
+     "round": 15,
+     "exploitability": 0.89
+    },
+    {
+     "round": 20,
+     "exploitability": 0.902
+    },
+    {
+     "round": 25,
+     "exploitability": 0.912
+    },
+    {
+     "round": 30,
+     "exploitability": 0.919
+    }
+   ]
+  },
+  {
+   "label": "A2C",
+   "best_response_iterations": 300,
+   "checkpoints": [
+    {
+     "round": 5,
+     "exploitability": 0.887
+    },
+    {
+     "round": 10,
+     "exploitability": 0.924
+    },
+    {
+     "round": 15,
+     "exploitability": 0.932
+    }
+   ]
+  },
+  {
+   "label": "PPO",
+   "best_response_iterations": 100,
+   "checkpoints": [
+    {
+     "round": 5,
+     "exploitability": 0.885
+    },
+    {
+     "round": 10,
+     "exploitability": 0.915
+    },
+    {
+     "round": 15,
+     "exploitability": 0.898
+    },
+    {
+     "round": 20,
+     "exploitability": 0.903
+    },
+    {
+     "round": 25,
+     "exploitability": 0.911
+    },
+    {
+     "round": 30,
+     "exploitability": 0.912
+    }
+   ]
+  },
+  {
+   "label": "REINFORCE",
+   "best_response_iterations": 100,
+   "checkpoints": [
+    {
+     "round": 5,
+     "exploitability": 0.852
+    },
+    {
+     "round": 10,
+     "exploitability": 0.847
+    },
+    {
+     "round": 15,
+     "exploitability": 0.866
+    },
+    {
+     "round": 20,
+     "exploitability": 0.859
+    },
+    {
+     "round": 25,
+     "exploitability": 0.867
+    },
+    {
+     "round": 30,
+     "exploitability": 0.873
+    }
+   ]
+  }
+ ]
+}

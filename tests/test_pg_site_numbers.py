@@ -1,66 +1,111 @@
-import csv
+import importlib.util
+import json
 import re
 import shutil
-import statistics as st
 import subprocess
 
 import pytest
 import test_pg_policy_outputs as shared  # for ROOT only
 
 ROOT = shared.ROOT
-LANDING = (ROOT / "site" / "src" / "Landing.jsx").read_text()
-ROWS = list(csv.DictReader((ROOT / "experiments" / "pg_finite_a10.csv").open()))
-LEARNERS = [("REINFORCE", "self-play", "reinforce", "selfplay"),
-            ("REINFORCE", "fictitious play", "reinforce", "fictitious"),
-            ("A2C", "self-play", "a2c", "selfplay"),
-            ("A2C", "fictitious play", "a2c", "fictitious"),
-            ("PPO", "self-play", "ppo", "selfplay"),
-            ("PPO", "fictitious play", "ppo", "fictitious")]
+SITE = ROOT / "site"
+LANDING = (SITE / "src" / "Landing.jsx").read_text()
+PAGE = (SITE / "src" / "PolicyPage.jsx").read_text()
+RESULTS = json.loads((SITE / "src" / "pgResults.json").read_text())
+
+spec = importlib.util.spec_from_file_location("pg_site_data", ROOT / "scripts" / "pg_site_data.py")
+pg_site_data = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(pg_site_data)
 
 
-def mean(rows, key):
-    return st.mean(float(r[key]) for r in rows)
+def learner(label, training):
+    return next(x for x in RESULTS["learners"] if x["label"] == label and x["training"] == training)
 
 
-def wtl(rows, opp):
-    return " / ".join(f"{mean(rows, f'row_{k}_vs_{opp}'):.2f}" for k in ("win", "tie", "loss"))
+# ---- the page shows what the runs produced -------------------------------------------------
+def test_the_results_file_is_exactly_what_the_result_csvs_produce():
+    assert pg_site_data.build() == RESULTS
 
 
-@pytest.mark.parametrize("label,training,algo,mode", LEARNERS)
-def test_every_row_of_the_site_table_matches_the_result_file(label, training, algo, mode):
-    rs = [r for r in ROWS if r["algo"] == algo and r["mode"] == mode]
-    pattern = (f"<td>{label}</td><td>{training}</td><td[^>]*>{mean(rs, 'exploitability'):.2f}</td>"
-               f"<td>{wtl(rs, 'random')}</td><td>{wtl(rs, 'nash')}</td>")
-    assert re.search(pattern, LANDING), pattern
+def test_there_is_one_row_per_learner_and_a_longer_run_for_each_selfplay_learner():
+    assert [(x["label"], x["training"]) for x in RESULTS["learners"]] == [
+        (a, t) for a, t, _, _ in pg_site_data.LEARNERS]
+    assert [x["label"] for x in RESULTS["longer"]] == ["REINFORCE", "A2C", "PPO"]
+    assert all(len(x["runs"]) == 2 for x in RESULTS["longer"])
 
 
-def test_the_exact_solver_row_matches_the_result_file():
-    ex = [r for r in ROWS if r["algo"] == "exact"]
-    pattern = (f'<td>Exact solver</td><td>&mdash;</td><td[^>]*>0</td><td>{wtl(ex, "random")}</td>'
-               f'<td>{wtl(ex, "nash")}</td>')
-    assert re.search(pattern, LANDING), pattern
+def test_win_tie_loss_triples_sum_to_one():
+    rows = [RESULTS["exact"], *RESULTS["learners"]]
+    for r in rows:
+        for key in ("vs_random", "vs_nash", "vs_best_response"):
+            assert sum(r[key]) == pytest.approx(1.0, abs=1e-4)
 
 
-def test_the_longer_training_sentence_quotes_every_long_run():
-    import glob
-    runs = []
-    for p in glob.glob(str(ROOT / "experiments" / "pg_finite_a10_long_*.csv")):
-        with open(p) as fh:
-            runs += [r for r in csv.DictReader(fh) if r["algo"] != "exact"]
-    assert len(runs) == 6
-    for r in runs:
-        assert f"{float(r['exploitability']):.2f}" in LANDING
+def test_the_exact_solver_is_unexploitable_and_ties_itself():
+    assert RESULTS["exact"]["exploitability"]["mean"] == 0
+    assert RESULTS["exact"]["vs_nash"] == [0.0, 1.0, 0.0]
 
 
-def test_the_site_heading_does_not_claim_failure():
+# ---- every sentence on the page that makes a claim is true of the data ---------------------
+@pytest.mark.parametrize("label", ["REINFORCE", "A2C", "PPO"])
+def test_fictitious_play_wins_more_against_random_and_selfplay_ties_the_equilibrium_more(label):
+    fp, sp = learner(label, "fictitious play"), learner(label, "self-play")
+    assert fp["vs_random"][0] > sp["vs_random"][0]
+    assert sp["vs_nash"][1] > fp["vs_nash"][1]
+
+
+def test_the_best_response_runs_end_higher_than_they_start():
+    assert RESULTS["fp_br"]
+    for run in RESULTS["fp_br"]:
+        first, last = run["checkpoints"][0], run["checkpoints"][-1]
+        assert last["exploitability"] > first["exploitability"]
+
+
+def test_no_learner_is_a_mirror_image_pair():
+    assert min(x["mirror_gap"] for x in RESULTS["learners"]) > 0.3
+
+
+def test_the_hero_numbers_are_computed_not_typed():
+    assert "Math.min(...means)" in PAGE and "Math.min(...longer.flatMap" in PAGE
+
+
+# ---- what the pages must not say ------------------------------------------------------------
+def test_the_landing_page_has_no_star_button_and_points_to_the_tab():
+    assert "Star on GitHub" not in LANDING
+    assert "View the code on GitHub" in LANDING
+    assert 'href="policy.html"' in LANDING
     assert "Not yet: every learner" not in LANDING
-    assert "Policy gradient on the soccer game" in LANDING
+    assert "<tbody>" not in LANDING[LANDING.index('id="policy"'):LANDING.index('id="why"')]
 
 
+def test_the_policy_page_sources_never_name_the_professor_or_the_dog_game():
+    for text in (PAGE, json.dumps(RESULTS)):
+        assert not re.search(r"professor|\bdog\b|sheep|not yet", text, re.I)
+
+
+def test_the_tab_is_wired_into_the_build_the_nav_and_the_footer():
+    assert 'policy: resolve(root, "policy.html")' in (SITE / "vite.config.js").read_text()
+    assert 'href="policy.html"' in (SITE / "src" / "Nav.jsx").read_text()
+    assert 'href="policy.html"' in (SITE / "src" / "Footer.jsx").read_text()
+    built = (ROOT / "docs" / "policy.html").read_text()
+    asset = re.search(r'assets/(policy-[A-Za-z0-9_-]+\.js)', built).group(1)
+    assert (ROOT / "docs" / "assets" / asset).exists()
+
+
+def test_the_built_policy_page_bundle_is_clean_and_has_the_probabilities():
+    built = (ROOT / "docs" / "policy.html").read_text()
+    asset = re.search(r'assets/(policy-[A-Za-z0-9_-]+\.js)', built).group(1)
+    js = (ROOT / "docs" / "assets" / asset).read_text()
+    assert not re.search(r"professor|\bdog\b|sheep|Not yet", js, re.I)
+    assert "What the trained policies output" in js
+
+
+# ---- the report and the PDF -----------------------------------------------------------------
 def test_the_report_html_never_mentions_the_professor_and_has_the_probabilities():
     html = (ROOT / "docs" / "policy_gradient.html").read_text().lower()
     assert "professor" not in html
     assert "action probabilities" in html
+    assert "assumptions and open questions" not in html
 
 
 @pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
@@ -69,6 +114,7 @@ def test_the_published_pdf_never_mentions_the_professor():
                           capture_output=True, text=True, check=True).stdout.lower()
     assert "professor" not in text
     assert "action probabilities" in text
+    assert "assumptions and open questions" not in text
 
 
 def test_no_published_page_mentions_the_professor():
@@ -104,8 +150,3 @@ def test_the_dog_game_code_and_data_are_gone():
     for rel in ("soccer_nash/dog_game.py", "scripts/dog_game.py", "tests/test_dog_game.py",
                 "experiments/dog_game.csv", "experiments/dog_game_dqn.csv", "docs/dog_game.md"):
         assert not (ROOT / rel).exists(), rel
-
-
-def test_the_landing_page_has_no_star_button():
-    assert "Star on GitHub" not in LANDING
-    assert "View the code on GitHub" in LANDING
