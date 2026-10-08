@@ -128,13 +128,19 @@ def _returns(r, alive, value, algo, gamma, n_step=10, lam=0.95):
     return adv, adv + value
 
 
-def update(net, critic, opts, batch, player, algo, gamma, entropy, clip=0.2, epochs=4):
+def update(
+    net, critic, opts, batch, player, algo, gamma, entropy, clip=0.2, epochs=4, exact=None,
+):
     sign = 1.0 if player == 0 else -1.0
     X, alive = batch["X"], batch["alive"]
     r = sign * batch["R"]
-    with torch.no_grad():
-        value = critic(X).squeeze(-1) if critic is not None else None
-    adv, target = _returns(r, alive, value, algo, gamma)
+    if algo == "a2c_exact":
+        value, target = None, None
+        adv = sign * exact.advantage(batch)
+    else:
+        with torch.no_grad():
+            value = critic(X).squeeze(-1) if critic is not None else None
+        adv, target = _returns(r, alive, value, algo, gamma)
     x, a = X[alive], batch["A"][player][alive]
     old, adv_f = batch["LP"][player][alive], adv[alive]
     if algo == "ppo":
@@ -177,14 +183,16 @@ def _policy(nets: list[Net], horizon: int):
 def train(
     game: SoccerGame, algo: str, mode: str = "selfplay", gamma: float = 0.9,
     horizon: int = 100, iterations: int = 300, episodes: int = 64, lr: float = 1e-3,
-    entropy: float = 0.01, snap_every: int = 5, seed: int = 0,
+    entropy: float = 0.01, snap_every: int = 5, seed: int = 0, exact=None,
 ) -> Trained:
-    if algo not in ALGOS or mode not in ("selfplay", "fictitious"):
-        raise ValueError("algo must be one of ALGOS, mode 'selfplay' or 'fictitious'")
+    if (algo not in ALGOS and algo != "a2c_exact") or mode not in ("selfplay", "fictitious"):
+        raise ValueError("algo: one of ALGOS or 'a2c_exact'; mode: 'selfplay' or 'fictitious'")
+    if algo == "a2c_exact" and exact is None:
+        raise ValueError("a2c_exact needs the exact critic")
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     nets = [Net(game, 4), Net(game, 4)]
-    critics = [Net(game, 1) if algo != "reinforce" else None for _ in nets]
+    critics = [Net(game, 1) if algo not in ("reinforce", "a2c_exact") else None for _ in nets]
     opts = [torch.optim.Adam(
         [*n.parameters(), *(c.parameters() if c is not None else [])], lr=lr)
         for n, c in zip(nets, critics)]
@@ -193,14 +201,14 @@ def train(
         if mode == "selfplay":
             batch = collect(game, _Current(nets[0]), _Current(nets[1]), episodes, horizon, rng)
             for i in (0, 1):
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy)
+                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact)
         else:
             for i in (0, 1):
                 mine = _Current(nets[i])
                 theirs = _Mixture(snaps[1 - i], episodes, rng)
                 players = (mine, theirs) if i == 0 else (theirs, mine)
                 batch = collect(game, *players, episodes, horizon, rng)
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy)
+                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact)
             if (it + 1) % snap_every == 0:
                 for i in (0, 1):
                     snaps[i].append(_frozen(nets[i]))

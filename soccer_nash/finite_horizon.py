@@ -11,6 +11,7 @@ steps is a tie worth 0 (the A10 rule).
 from __future__ import annotations
 
 import numpy as np
+import torch
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
 from soccer_nash.matrix_games import pure_bounds
@@ -103,6 +104,7 @@ def play(
     rng = np.random.default_rng(seed)
     first = starts or [game.initial_state()]
     states: list[State] = [first[k % len(first)] for k in range(n_games)]
+    diff = np.zeros(n_games)  # goals for minus goals against, in the continuing game
     live = list(range(n_games))
     wins = losses = 0
     for t in range(horizon):
@@ -116,6 +118,7 @@ def play(
             a1 = rng.choice(4, p=p1[k] / p1[k].sum())
             ns, (r0, _r1), done = game.step(
                 cur[k], MOVE_ACTIONS[a0], MOVE_ACTIONS[a1], rng=rng)
+            diff[i] += r0
             if done:
                 wins += r0 > 0
                 losses += r0 < 0
@@ -123,8 +126,41 @@ def play(
                 states[i] = ns
                 still.append(i)
         live = still
+    if game.scoring == "rate":  # play never ends early: the player with more goals wins
+        wins, losses = int((diff > 0).sum()), int((diff < 0).sum())
     return {"win": wins / n_games, "tie": 1 - (wins + losses) / n_games,
             "loss": losses / n_games}
+
+
+class ExactCritic:
+    """The exact solver's values as a frozen critic: ``advantage`` is ``Q(t, s, a0, a1) - V(t, s)``
+    of the exact finite-horizon solution at the joint action actually sampled."""
+
+    def __init__(self, game: SoccerGame, solver, gamma: float, horizon: int):
+        values, _, _ = solve_finite_horizon(solver, gamma, horizon)
+        self.width, self.height, self.horizon = game.width, game.height, horizon
+        size = game.width * game.height * game.width * game.height * 2
+        self.Q = np.zeros((horizon, size, 4, 4), dtype=np.float32)
+        self.V = np.zeros((horizon, size), dtype=np.float32)
+        for st in solver._states:
+            c = self.code(*st)
+            for t in range(horizon):
+                self.Q[t, c] = solver._matrix(st, values[t + 1], gamma=gamma)
+                self.V[t, c] = values[t][st]
+        self.Q, self.V = torch.from_numpy(self.Q), torch.from_numpy(self.V)
+
+    def code(self, x0, y0, x1, y1, b):
+        h, w = self.height, self.width
+        return (((x0 * h + y0) * w + x1) * h + y1) * 2 + b
+
+    def advantage(self, batch) -> torch.Tensor:
+        """Player 0's advantage for every (step, episode) of a collected batch."""
+        X = batch["X"]
+        t = ((1 - X[..., 5]) * self.horizon).round().long().clamp(0, self.horizon - 1)
+        r = X[..., :5].round().long()
+        code = self.code(r[..., 0], r[..., 1], r[..., 2], r[..., 3], r[..., 4])
+        a0, a1 = batch["A"][0], batch["A"][1]
+        return self.Q[t, code, a0, a1] - self.V[t, code]
 
 
 def mirror_gap(game: SoccerGame, row, col, times=(0, 25, 50, 75, 99)) -> tuple[float, float]:

@@ -107,3 +107,53 @@ def test_fictitious_play_with_best_responses_reports_every_round(small):
 def test_fictitious_play_with_best_responses_rejects_an_unknown_algorithm(small):
     with pytest.raises(ValueError):
         pf.train_fp_br(small[0], "sarsa", rounds=1, br_iters=1)
+
+
+# ---- the continuing game (play restarts after a goal) and the exact critic ----------------------
+@pytest.fixture(scope="module")
+def continuing():
+    game = SoccerGame(width=4, height=3, goal_rows=(1,), move_order="deterministic",
+                      scoring="rate", max_steps=HORIZON)
+    solver = NashQIteration(game, gamma=GAMMA, mode="hybrid", tol=1e-10)
+    return game, solver
+
+
+def test_in_the_continuing_game_no_game_ends_early_and_the_rates_sum_to_one(continuing):
+    game, _ = continuing
+    last_step_players = []
+
+    def recording(t, states):
+        if t == HORIZON - 1:
+            last_step_players.append(len(states))
+        return fh.uniform(t, states)
+
+    r = fh.play(game, recording, fh.uniform, 30, HORIZON, seed=3)
+    assert last_step_players == [30]            # every game was still running at the last step
+    assert r["win"] + r["tie"] + r["loss"] == pytest.approx(1.0)
+
+
+def test_the_exact_critic_advantage_is_q_minus_v_of_the_exact_solution(continuing):
+    game, solver = continuing
+    critic = fh.ExactCritic(game, solver, GAMMA, HORIZON)
+    values, _, _ = fh.solve_finite_horizon(solver, GAMMA, HORIZON)
+    rng = np.random.default_rng(0)
+    batch = pf.collect(game, pf._Current(pf.Net(game, 4)), pf._Current(pf.Net(game, 4)),
+                       4, HORIZON, rng)
+    adv = critic.advantage(batch)
+    for t, e in [(0, 0), (2, 1), (HORIZON - 1, 3)]:
+        st = tuple(int(v) for v in batch["X"][t, e, :5].round().tolist())
+        a0, a1 = int(batch["A"][0][t, e]), int(batch["A"][1][t, e])
+        want = solver._matrix(st, values[t + 1], gamma=GAMMA)[a0, a1] - values[t][st]
+        assert float(adv[t, e]) == pytest.approx(want, abs=1e-5)
+
+
+def test_a2c_with_the_exact_critic_trains_in_both_schemes_and_needs_the_critic(continuing):
+    game, solver = continuing
+    critic = fh.ExactCritic(game, solver, GAMMA, HORIZON)
+    for mode in ("selfplay", "fictitious"):
+        tr = pf.train(game, "a2c_exact", mode, GAMMA, HORIZON, iterations=2, episodes=4,
+                      snap_every=1, exact=critic)
+        p = tr.pol0(0, [game.initial_state()])
+        assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0, abs=1e-5)
+    with pytest.raises(ValueError):
+        pf.train(game, "a2c_exact", "selfplay", GAMMA, HORIZON, iterations=1, episodes=2)

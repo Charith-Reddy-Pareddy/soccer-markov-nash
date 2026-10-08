@@ -33,20 +33,28 @@ def main() -> None:
     ap.add_argument("--episodes", type=int, default=64)
     ap.add_argument("--games", type=int, default=1000)
     ap.add_argument("--gamma", type=float, default=0.9)
-    ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS))
+    ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS), choices=[*pf.ALGOS, "a2c_exact"])
+    ap.add_argument("--scoring", choices=["win", "rate"], default="win",
+                    help="win: the first goal ends the game; rate: play continues after a goal")
     ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"])
     ap.add_argument("--tag", default="", help="suffix for the output file")
     a = ap.parse_args()
 
-    game = A10SoccerGame() if a.board == "a10" else SoccerGame(move_order="random")
+    order = "deterministic" if a.board == "a10" else "random"
+    if a.scoring == "rate":
+        game = SoccerGame(move_order=order, scoring="rate", max_steps=100)
+    else:
+        game = A10SoccerGame() if a.board == "a10" else SoccerGame(move_order="random")
     horizon = game.max_steps
     solver = NashQIteration(game, gamma=a.gamma, mode="hybrid", tol=1e-10)
     _, row_t, col_t = fh.solve_finite_horizon(solver, a.gamma, horizon)
     exact = (fh.tables_to_policy(row_t), fh.tables_to_policy(col_t))
+    critic = fh.ExactCritic(game, solver, a.gamma, horizon) if "a2c_exact" in a.algos else None
     rows = [{"algo": "exact", "mode": "-", "seed": 0, "train_s": 0.0,
              **fh.evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
     print(rows[0], flush=True)
-    path = EXP / f"pg_finite_{a.board}{a.tag}.csv"
+    name = a.board if a.scoring == "win" else f"rate_{a.board}"
+    path = EXP / f"pg_finite_{name}{a.tag}.csv"
 
     def save() -> None:
         with path.open("w", newline="") as f:
@@ -59,7 +67,7 @@ def main() -> None:
             for seed in range(a.seed_start, a.seed_start + a.seeds):
                 t = time.perf_counter()
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
-                              a.episodes, seed=seed)
+                              a.episodes, seed=seed, exact=critic)
                 dt = round(time.perf_counter() - t, 1)
                 rows.append({"algo": algo, "mode": mode, "seed": seed, "train_s": dt,
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
