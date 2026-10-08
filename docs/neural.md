@@ -237,7 +237,7 @@ The same scoring used in [policy_gradient.md](policy_gradient.md) (exploitabilit
 | discounted 100-step A10 game, remaining steps as an input (`soccer_nash/dqn_finite.py`) | 0.887 | 1.00 / 0.00 / 0.00 | 0.00 / 0.00 / 1.00 | 0.00 / 0.00 / 1.00 | 0.32 |
 | stationary random move-order board (`nash_dqn.py`) | 0.378 | 0.995 / 0.004 / 0.001 | 0.52 / 0.10 / 0.39 | 0.02 / 0.79 / 0.19 | 0.39 |
 
-On the professor's finite-horizon setup the DQN is as far from the equilibrium as the policy-gradient learners (0.85-0.95 per seed). On the stationary random board it is much closer than policy gradient on the same board (0.38 against 0.73-0.91), because it fits the exact transition expectations instead of sampling returns. Neither is the equilibrium.
+On the finite-horizon setup the DQN is as far from the equilibrium as the policy-gradient learners (0.85-0.95 per seed). On the stationary random board it is much closer than policy gradient on the same board (0.38 against 0.73-0.91), because it fits the exact transition expectations instead of sampling returns. Neither is the equilibrium.
 
 ```
 python scripts/dqn_finite.py --seeds 3            # finite-horizon Nash-DQN

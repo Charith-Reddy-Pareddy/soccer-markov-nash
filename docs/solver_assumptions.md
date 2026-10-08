@@ -37,7 +37,7 @@ instruction could change a result.
 | # | assumption | where | status |
 |---|---|---|---|
 | S11 | Both players update simultaneously, ties go to the lowest action index, and each starts on action `U`. | `fictitious_play.py` | mine |
-| S12 | Matrix-level fictitious play (a side comparison; the professor's fictitious play is the PG scheme in `pg_finite.py`). Two versions are run: on the **exact stage matrices**, and **inside the Markov game** where `V` is rebuilt every sweep. The in-game version keeps one count vector per state; it does not use a learned best-response network. | same | mine |
+| S12 | Matrix-level fictitious play (a side comparison; the fictitious play the learners use is the PG scheme in `pg_finite.py`). Two versions are run: on the **exact stage matrices**, and **inside the Markov game** where `V` is rebuilt every sweep. The in-game version keeps one count vector per state; it does not use a learned best-response network. | same | mine |
 | S13 | The value estimate is the midpoint of the bounds `min_j (pM)_j <= v <= max_i (Mq)_i` of the empirical mixes. | same | mine |
 
 ## Finite-horizon policy gradient
@@ -68,7 +68,7 @@ something runnable, and is meant to be replaced.
 
 ## Answers received
 
-The professor's replies to the group's questions, and what changed:
+The answers received to the group's questions, and what changed:
 
 - **Environment.** Any board where the solver is correct and the comparison is meaningful; fewer mixed stage games is better this time. The main policy-gradient experiments now use the deterministic A10 board (no mixed stage games), and the random board is the earlier comparison.
 - **Objective.** Policy gradient can only approximate a finite-horizon discounted reward, so both: `gamma = 0.9` **and** the 100-step horizon, with the remaining steps as a network input. This replaces S1 and S6 for the main experiment.
@@ -76,7 +76,7 @@ The professor's replies to the group's questions, and what changed:
 - **Win rate.** Repeated games, counting wins (this page also keeps the ties and losses).
 - **Continuous actions.** The bisection, finite-difference and quadratic best-response methods are for DQN, not policy gradient. Policy gradient is adapted to continuous actions directly, which is what the dog-game angle-radius policy already does.
 
-## Questions for the professor
+## Open questions
 
 Still open: 1, 2, 6, 8, 10, 11, 12, 13 and 14. Answered above: 3, 4, 5, 7 and 9.
 

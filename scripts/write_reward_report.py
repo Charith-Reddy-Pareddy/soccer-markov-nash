@@ -44,7 +44,7 @@ Across all 38,080 state/action pairs, transition and reward mismatches:
 {cert["value_max_error"]:.2e}; reconstructed Q: {cert["Q_max_error"]:.2e}.
 His stored V values use eight decimal places.</p></section>
 <section><h2>Zero matrices and neural cross-checks</h2>
-<p><b>The professor's concern needs a full check.</b> One zero-reward self-loop
+<p><b>A zero matrix needs a full check.</b> One zero-reward self-loop
 is insufficient proof: deviations may lead to a win. We check every action
 pair and each policy's guaranteed payoff at every state. Both bounds must
 agree with V. The sparse board's maximum residual is zero at machine
