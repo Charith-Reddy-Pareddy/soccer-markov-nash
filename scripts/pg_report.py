@@ -229,13 +229,6 @@ seeds per learner this is a trend, not a result.</p></section>"""
         [[r["rounds"], f"{float(r['mean_gap_all']):.5f}", f"{float(r['max_gap_all']):.5f}",
           f"{float(r['max_value_err_all']):.5f}"] for r in fp]) if fp else ""
 
-    dog = read(EXP / "dog_game.csv")
-    dog_rows = []
-    for name in dict.fromkeys(r["matchup"] for r in dog):
-        rs = [r for r in dog if r["matchup"] == name]
-        steps = [float(r["mean_capture_step"]) for r in rs if r["mean_capture_step"] != "nan"]
-        dog_rows.append([name, f(mean(rs, "capture_rate")), f"{st.mean(steps):.0f}" if steps else "-"])
-
     pol = policy_html()
     pol_section = ""
     if pol:
@@ -254,8 +247,8 @@ deterministic play; the exact solution is deterministic at these positions.</p><
 
     summary_end = (
         f"The action probabilities the trained policies output are in section 6, and every "
-        f"assumption is listed in section {sec(10)}." if pol
-        else f"Every assumption is listed in section {sec(10)}.")
+        f"assumption is listed in section {sec(9)}." if pol
+        else f"Every assumption is listed in section {sec(9)}.")
     chart1 = bar_chart(expl)
     chart2 = stacked_chart(
         [(n, [wtl(data[(a, m)], "row", "random"), wtl(data[(a, m)], "row", "nash")])
@@ -318,8 +311,7 @@ Results are for 3 seeds at one untuned budget. {summary_end}</div>
   ["Environment", "The deterministic A10 board is the main environment; the random move-order board is kept as an earlier comparison.", "The deterministic board has no mixed-equilibrium stages, so the comparison with the exact solution is clean."],
   ["Objective", "Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input.", "Policy gradient can only approximate a finite-horizon discounted reward."],
   ["Fictitious play", f"Each player is trained by policy gradient against the average of the opponent's past policies. Matrix-level fictitious play is kept only as a side check (section {sec(8)}).", "Policy gradient does the solving; no game is solved explicitly."],
-  ["Win rate", "1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.", "Repeated play and counting wins."],
-  ["Continuous actions", f"The dog game uses an angle-radius policy trained directly by policy gradient (section {sec(9)}, provisional). The bisection, finite-difference and quadratic best-response methods exist separately.", "Policy gradient adapts to continuous actions directly; the best-response search methods belong to DQN."]], "qa")}
+  ["Win rate", "1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.", "Repeated play and counting wins."]], "qa")}
 </section>
 
 <section><h2>2. Setup</h2>
@@ -390,18 +382,10 @@ rock-paper-scissors best-response dynamics cycle forever while fictitious play s
 <p class="muted">This is matrix-level fictitious play. Here policy gradient itself
 does the solving, which is what section 5 tests.</p></section>
 
-<section><h2>{sec(9)}. Continuous actions: the dog game (provisional)</h2>
-<p>Policy gradient is applied to continuous actions directly: a network outputs an angle
-(von Mises) and a radius (scaled Beta) and is trained by self-play PPO. The dog-and-sheep
-game itself is <b>my placeholder</b>, since no definition exists yet, so these numbers
-say nothing about equilibrium.</p>
-{table(["matchup", "capture rate", "mean capture step"], dog_rows)}</section>
-
-<section><h2>{sec(10)}. Assumptions and open questions</h2>
-<p>All 27 assumptions are listed, each marked as quoted, answered, mine or
-invented, in <code>docs/solver_assumptions.md</code>. Still open: the
-dog-game rules, the polar-policy distribution, what &ldquo;check symmetry&rdquo; should
-mean, which states to evaluate on, how degenerate equilibria should be compared, and two
+<section><h2>{sec(9)}. Assumptions and open questions</h2>
+<p>All assumptions are listed, each marked as quoted, answered, mine or
+invented, in <code>docs/solver_assumptions.md</code>. Still open: what
+&ldquo;check symmetry&rdquo; should mean, which states to evaluate on, how degenerate equilibria should be compared, and two
 page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
 <p class="muted">Reproduce: <code>python scripts/pg_finite.py --seeds 3</code>,
 then <code>make pg-pdf</code>.</p></section>

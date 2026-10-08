@@ -47,11 +47,11 @@ ties the exact equilibrium more often.</li>
 <li>The two players' policies are not mirror images (mirror gap 0.44 to
 0.81; 0 for the exact solution).</li>
 </ul>
-Results are for 3 seeds at one untuned budget. The action probabilities the trained policies output are in section 6, and every assumption is listed in section 10.</div>
+Results are for 3 seeds at one untuned budget. The action probabilities the trained policies output are in section 6, and every assumption is listed in section 9.</div>
 
 <section><h2>1. What was done</h2>
 <p>These choices fix the setup used throughout.</p>
-<table class="qa"><tr><th>topic</th><th>what was done</th><th>why</th></tr><tr><td>Environment</td><td>The deterministic A10 board is the main environment; the random move-order board is kept as an earlier comparison.</td><td>The deterministic board has no mixed-equilibrium stages, so the comparison with the exact solution is clean.</td></tr><tr><td>Objective</td><td>Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input.</td><td>Policy gradient can only approximate a finite-horizon discounted reward.</td></tr><tr><td>Fictitious play</td><td>Each player is trained by policy gradient against the average of the opponent's past policies. Matrix-level fictitious play is kept only as a side check (section 8).</td><td>Policy gradient does the solving; no game is solved explicitly.</td></tr><tr><td>Win rate</td><td>1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.</td><td>Repeated play and counting wins.</td></tr><tr><td>Continuous actions</td><td>The dog game uses an angle-radius policy trained directly by policy gradient (section 9, provisional). The bisection, finite-difference and quadratic best-response methods exist separately.</td><td>Policy gradient adapts to continuous actions directly; the best-response search methods belong to DQN.</td></tr></table>
+<table class="qa"><tr><th>topic</th><th>what was done</th><th>why</th></tr><tr><td>Environment</td><td>The deterministic A10 board is the main environment; the random move-order board is kept as an earlier comparison.</td><td>The deterministic board has no mixed-equilibrium stages, so the comparison with the exact solution is clean.</td></tr><tr><td>Objective</td><td>Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input.</td><td>Policy gradient can only approximate a finite-horizon discounted reward.</td></tr><tr><td>Fictitious play</td><td>Each player is trained by policy gradient against the average of the opponent's past policies. Matrix-level fictitious play is kept only as a side check (section 8).</td><td>Policy gradient does the solving; no game is solved explicitly.</td></tr><tr><td>Win rate</td><td>1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.</td><td>Repeated play and counting wins.</td></tr></table>
 </section>
 
 <section><h2>2. Setup</h2>
@@ -132,18 +132,10 @@ rock-paper-scissors best-response dynamics cycle forever while fictitious play s
 <p class="muted">This is matrix-level fictitious play. Here policy gradient itself
 does the solving, which is what section 5 tests.</p></section>
 
-<section><h2>9. Continuous actions: the dog game (provisional)</h2>
-<p>Policy gradient is applied to continuous actions directly: a network outputs an angle
-(von Mises) and a radius (scaled Beta) and is trained by self-play PPO. The dog-and-sheep
-game itself is <b>my placeholder</b>, since no definition exists yet, so these numbers
-say nothing about equilibrium.</p>
-<table class=""><tr><th>matchup</th><th>capture rate</th><th>mean capture step</th></tr><tr><td>random dog vs random sheep</td><td>0.00</td><td>96</td></tr><tr><td>trained dog vs random sheep</td><td>0.26</td><td>41</td></tr><tr><td>random dog vs trained sheep</td><td>0.00</td><td>-</td></tr><tr><td>trained dog vs trained sheep</td><td>1.00</td><td>30</td></tr><tr><td>straight-line dog vs trained sheep</td><td>1.00</td><td>19</td></tr></table></section>
-
-<section><h2>10. Assumptions and open questions</h2>
-<p>All 27 assumptions are listed, each marked as quoted, answered, mine or
-invented, in <code>docs/solver_assumptions.md</code>. Still open: the
-dog-game rules, the polar-policy distribution, what &ldquo;check symmetry&rdquo; should
-mean, which states to evaluate on, how degenerate equilibria should be compared, and two
+<section><h2>9. Assumptions and open questions</h2>
+<p>All assumptions are listed, each marked as quoted, answered, mine or
+invented, in <code>docs/solver_assumptions.md</code>. Still open: what
+&ldquo;check symmetry&rdquo; should mean, which states to evaluate on, how degenerate equilibria should be compared, and two
 page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
 <p class="muted">Reproduce: <code>python scripts/pg_finite.py --seeds 3</code>,
 then <code>make pg-pdf</code>.</p></section>
