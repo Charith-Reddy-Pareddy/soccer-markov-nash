@@ -98,6 +98,7 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `pure_vs_mixed_exploit.csv` | `pure_vs_mixed_exploit.py` | greedy-pure vs. Nash-mixed value against a best response, at each positions.md case | instant |
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | `pg_finite_a10.csv` | `pg_finite.py --seeds 3` | discounted 100-step game: REINFORCE / A2C / PPO by self-play and by fictitious play vs. the exact finite-horizon solution, **3 seeds** | ~40 min |
+| `pg_finite_random_{reinforce,a2c,ppo}.csv` | `pg_finite.py --board random --algos <algo> --tag _<algo>` | the same six learners on the random move-order board (94 mixed stage games), discounted 100-step objective, **3 seeds** | ~30 min each |
 | `pg_finite_a10_long_*.csv` | `pg_finite.py --iterations 8000 --modes selfplay --seeds 2` | the same self-play learners at 4x the training, **2 seeds** | ~15-35 min each |
 | `pg_fp_br_*.csv` | `pg_fp_br.py --algo a2c` | fictitious play with best-response phases (100 or 300 policy-gradient iterations per best response), exploitability every 5 rounds | ~8 min |
 | `site/src/pgResults.json` | `pg_site_data.py` | every number on the site's Policy gradient tab, regenerated from the result CSVs (a test checks the file against them) | instant |
