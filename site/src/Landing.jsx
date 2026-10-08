@@ -33,7 +33,6 @@ export default function Landing() {
             <div className="cta-row">
               <a className="btn btn-primary" href="report.pdf">Read the full report &rarr;</a>
               <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">View the code on GitHub &rarr;</a>
-              <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash" aria-label="Star soccer-markov-nash on GitHub">&#9733; Star on GitHub</a>
             </div>
           </div>
           <div className="hero-card">
@@ -374,7 +373,7 @@ export default function Landing() {
             of them is a mirror-symmetric pair either. At four times the training (two seeds each), A2C
             reaches 0.44 and 0.50, REINFORCE 0.49 and 0.91, and PPO 0.91 and 0.96, still far
             from 0. That is a few seeds at an untuned budget, so it describes these settings,
-            not policy gradient in general. Setup, every assumption, and the continuous-action dog game:
+            not policy gradient in general. Setup and every assumption:
             <a href="policy_gradient.pdf"> the policy-gradient report (PDF)</a> and
             <a href="policy_gradient.md"> docs/policy_gradient.md</a>.</p>
         </div>
