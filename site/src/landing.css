@@ -84,3 +84,9 @@ td.lo { color: var(--ember); font-weight: 600; }
 .probs th, .probs td { text-align: center; }
 .probs td:first-child { text-align: left; }
 .probs td.top { font-weight: 700; }
+
+.stat-list > div { padding: .7rem 0; border-bottom: 1px solid var(--rule); font-size: .95rem; color: var(--ink-soft); }
+.stat-list > div:last-child { border-bottom: none; }
+.stat-list b { color: var(--ink); }
+svg.pg-bars { width: 100%; height: auto; margin: 1.4rem 0 .2rem; }
+.text-table th, .text-table td { text-align: left; white-space: normal; vertical-align: top; }

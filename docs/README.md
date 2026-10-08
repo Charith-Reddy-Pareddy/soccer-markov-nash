@@ -6,7 +6,8 @@ reproducible from the repo's own code. For the technical answer, start with
 
 - [design.md](design.md) — the game as a configurable family: every axis, the
   reward, the three transition rules, and the reason each is there.
-- [policy_gradient.md](policy_gradient.md) (also [policy_gradient.pdf](policy_gradient.pdf)) —
+- [policy_gradient.md](policy_gradient.md) (also [policy_gradient.pdf](policy_gradient.pdf) and the
+  [Policy gradient tab](policy.html)) —
   REINFORCE, A2C and PPO against the exact solver, by self-play and by
   fictitious play; the group-note checklist is [group_note.md](group_note.md) and
   every assumption is in [solver_assumptions.md](solver_assumptions.md).

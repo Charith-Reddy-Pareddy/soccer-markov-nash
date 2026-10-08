@@ -19,6 +19,7 @@ export default defineConfig({
       input: {
         main: resolve(root, "index.html"),
         explorer: resolve(root, "explorer.html"),
+        policy: resolve(root, "policy.html"),
       },
     },
   },

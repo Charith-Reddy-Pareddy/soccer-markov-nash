@@ -61,6 +61,7 @@ export default function Footer({ board } = {}) {
             <h4>Explore</h4>
             <ul>
               <li><a href="explorer.html">Board explorer</a></li>
+              <li><a href="policy.html">Policy gradient</a></li>
               <li><a href="gallery.html">Diagram gallery</a></li>
               <li><a href="generalize.md">How far it generalizes</a></li>
               <li><a href="templates.md">The 8 geometric templates</a></li>

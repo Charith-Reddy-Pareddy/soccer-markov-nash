@@ -1,5 +1,3 @@
-import PolicyOutputs from "./PolicyOutputs.jsx";
-import pgPolicies from "./pgPolicies.json";
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import "./landing.css";
@@ -336,46 +334,16 @@ export default function Landing() {
 
       <section className="band-tint" id="policy">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p0">08</span>Can policy gradient find it?</div>
+          <div className="eyebrow"><span className="badge p0">08</span>Policy gradient</div>
           <h2>Policy gradient on the soccer game</h2>
-          <p className="lede">REINFORCE, A2C and PPO are trained on the discounted 100-step
-            game, with the number of steps left as an input, and scored against the exact
-            solution of that same game. Two ways of training each: plain self-play, and
-            fictitious play, where each player keeps improving by policy gradient against
-            the <em>average</em> of its opponent&rsquo;s past policies, so no game is ever
-            solved explicitly. Win rates are counts over
-            1,000 repeated games.</p>
-          <div className="tbl-wrap">
-            <table>
-              <thead>
-                <tr><th>Learner</th><th>Training</th><th>Exploitability</th><th>Win / tie / loss vs. random</th><th>vs. exact Nash</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Exact solver</td><td>&mdash;</td><td className="hi">0</td><td>0.92 / 0.08 / 0.00</td><td>0.00 / 1.00 / 0.00</td></tr>
-                <tr><td>REINFORCE</td><td>self-play</td><td>0.79</td><td>0.68 / 0.29 / 0.03</td><td>0.00 / 0.71 / 0.29</td></tr>
-                <tr><td>REINFORCE</td><td>fictitious play</td><td>0.86</td><td>0.92 / 0.02 / 0.07</td><td>0.00 / 0.00 / 1.00</td></tr>
-                <tr><td>A2C</td><td>self-play</td><td>0.76</td><td>0.73 / 0.24 / 0.03</td><td>0.00 / 0.85 / 0.15</td></tr>
-                <tr><td>A2C</td><td>fictitious play</td><td>0.89</td><td>0.96 / 0.00 / 0.03</td><td>0.00 / 0.00 / 1.00</td></tr>
-                <tr><td>PPO</td><td>self-play</td><td className="lo">0.95</td><td>0.61 / 0.30 / 0.09</td><td>0.00 / 0.67 / 0.33</td></tr>
-                <tr><td>PPO</td><td>fictitious play</td><td>0.86</td><td>0.88 / 0.05 / 0.07</td><td>0.00 / 0.19 / 0.81</td></tr>
-              </tbody>
-            </table>
+          <p className="lede">REINFORCE, A2C and PPO, trained by self-play and by fictitious play on
+            the discounted 100-step game and scored against the exact solution. The setup, the
+            results, and the probabilities each trained network gives to every move are on their
+            own page.</p>
+          <div className="cta-row">
+            <a className="btn btn-primary" href="policy.html">Open the Policy gradient tab &rarr;</a>
+            <a className="btn btn-outline" href="policy_gradient.pdf">Read the PDF &rarr;</a>
           </div>
-          <h3 className="sub">What the trained policies output</h3>
-          <p>The probability each trained network gives to every move, at four fixed
-            positions, next to the exact solver&rsquo;s move.</p>
-          <PolicyOutputs data={pgPolicies} />
-          <p>Exploitability is how much the two exact best responses win from the
-            kickoff; it is 0 only at an equilibrium. All six learners sit between
-            <b> 0.76 and 0.95</b>. Fictitious-play training beats a random player more
-            often but loses almost every game to the exact equilibrium, while self-play
-            training ties it more often: it plays more cautiously, without winning. None
-            of them is a mirror-symmetric pair either. At four times the training (two seeds each), A2C
-            reaches 0.44 and 0.50, REINFORCE 0.49 and 0.91, and PPO 0.91 and 0.96, still far
-            from 0. That is a few seeds at an untuned budget, so it describes these settings,
-            not policy gradient in general. Setup and every assumption:
-            <a href="policy_gradient.pdf"> the policy-gradient report (PDF)</a> and
-            <a href="policy_gradient.md"> docs/policy_gradient.md</a>.</p>
         </div>
       </section>
 
