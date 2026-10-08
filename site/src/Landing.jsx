@@ -1,3 +1,5 @@
+import PolicyOutputs from "./PolicyOutputs.jsx";
+import pgPolicies from "./pgPolicies.json";
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import "./landing.css";
@@ -336,7 +338,7 @@ export default function Landing() {
       <section className="band-tint" id="policy">
         <div className="wrap">
           <div className="eyebrow"><span className="badge p0">08</span>Can policy gradient find it?</div>
-          <h2>Not yet: every learner stays far from the equilibrium</h2>
+          <h2>Policy gradient on the soccer game</h2>
           <p className="lede">REINFORCE, A2C and PPO are trained on the discounted 100-step
             game, with the number of steps left as an input, and scored against the exact
             solution of that same game. Two ways of training each: plain self-play, and
@@ -360,15 +362,19 @@ export default function Landing() {
               </tbody>
             </table>
           </div>
+          <h3 className="sub">What the trained policies output</h3>
+          <p>The probability each trained network gives to every move, at four fixed
+            positions, next to the exact solver&rsquo;s move.</p>
+          <PolicyOutputs data={pgPolicies} />
           <p>Exploitability is how much the two exact best responses win from the
             kickoff; it is 0 only at an equilibrium. All six learners sit between
             <b> 0.76 and 0.95</b>. Fictitious-play training beats a random player more
             often but loses almost every game to the exact equilibrium, while self-play
             training ties it more often: it plays more cautiously, without winning. None
-            of them is a mirror-symmetric pair either. At four times the training, A2C reaches about
-            0.45&ndash;0.50 on both seeds while REINFORCE and PPO do not, still far from 0. That is
-            a few seeds at an untuned budget, so it shows these settings did not converge, not that
-            policy gradient cannot. Setup, every assumption, and the continuous-action dog game:
+            of them is a mirror-symmetric pair either. At four times the training (two seeds each), A2C
+            reaches 0.44 and 0.50, REINFORCE 0.49 and 0.91, and PPO 0.91 and 0.96, still far
+            from 0. That is a few seeds at an untuned budget, so it describes these settings,
+            not policy gradient in general. Setup, every assumption, and the continuous-action dog game:
             <a href="policy_gradient.pdf"> the policy-gradient report (PDF)</a> and
             <a href="policy_gradient.md"> docs/policy_gradient.md</a>.</p>
         </div>

@@ -72,3 +72,15 @@ thead th { color: var(--ink-faint); font-weight: 600; font-size: .72rem; letter-
 tbody tr:last-child td { border-bottom: none; }
 td.hi { color: var(--pitch); font-weight: 600; }
 td.lo { color: var(--ember); font-weight: 600; }
+
+.state-pick { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.4rem 0 .6rem; }
+.state-pick button {
+  font: inherit; font-size: .85rem; padding: .45rem .95rem; cursor: pointer;
+  border: 1px solid var(--rule-strong); border-radius: 999px;
+  background: var(--raise); color: var(--ink);
+}
+.state-pick button.on { background: var(--pitch-soft); border-color: var(--pitch); font-weight: 700; }
+.state-note { color: var(--ink-soft); font-size: .92rem; margin: 0; }
+.probs th, .probs td { text-align: center; }
+.probs td:first-child { text-align: left; }
+.probs td.top { font-weight: 700; }
