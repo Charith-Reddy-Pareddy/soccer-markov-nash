@@ -401,6 +401,21 @@ The policy-gradient runs above train from the kickoff, so most of the 2,380 stat
 
 Exploring starts do what they should on average: action agreement rises from 0.44 to 0.71 for REINFORCE, mean equilibrium regret halves, and the two networks become much closer to mirror images (0.42 to 0.11). They do **not** fix play from the kickoff: exploitability and the results against the exact equilibrium get slightly worse, so being right at more states is not the same as being unexploitable at the one that matters.
 
+### Fictitious play with best-response phases, and the action probabilities
+
+A stricter fictitious play (`train_fp_br`, `scripts/pg_fp_br.py`): each round, each player runs 100 (or 300) policy-gradient iterations to approximate a best response to the average of the opponent's earlier best responses, then adds that policy to its history; the reported policy is the per-state average. One seed per run:
+
+| algorithm | iterations per best response | first checkpoint | exploitability | last checkpoint | exploitability |
+|---|---|---|---|---|---|
+| A2C | 100 | 5 | 0.85 | 30 | 0.92 |
+| A2C | 300 | 5 | 0.89 | 15 | 0.93 |
+| PPO | 100 | 5 | 0.89 | 30 | 0.91 |
+| REINFORCE | 100 | 5 | 0.85 | 30 | 0.87 |
+
+In all four runs exploitability is higher at the last checkpoint than at the first, so this version does not get closer to the exact solution.
+
+The probabilities each trained network gives to U, D, L and R at four fixed positions (seed 0 of the 2,000-iteration runs, next to the exact solver's move) are in `experiments/pg_policy_outputs.json`, on the site's policy-gradient section, and in section 6 of [policy_gradient.pdf](policy_gradient.pdf).
+
 ### Best-response dynamics, and what the note's "???" resolves to
 
 With the standard payoffs, the best response to a half-and-half mix of rock and scissors is Rock (expected `+1/2`; Paper scores 0, Scissors `-1/2`), so the note's `br(1/2 R, 1/2 S)` is Rock. Of the 87 random-board states where the equilibrium actually mixes, 79 mix two actions and 8 mix three, the case the note sketches as `1/3, 1/3, 1/3`.

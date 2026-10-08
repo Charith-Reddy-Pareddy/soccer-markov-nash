@@ -99,6 +99,8 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | `pg_finite_a10.csv` | `pg_finite.py --seeds 3` | discounted 100-step game: REINFORCE / A2C / PPO by self-play and by fictitious play vs. the exact finite-horizon solution, **3 seeds** | ~40 min |
 | `pg_finite_a10_long_*.csv` | `pg_finite.py --iterations 8000 --modes selfplay --seeds 2` | the same self-play learners at 4x the training, **2 seeds** | ~15-35 min each |
+| `pg_fp_br_*.csv` | `pg_fp_br.py --algo a2c` | fictitious play with best-response phases (100 or 300 policy-gradient iterations per best response), exploitability every 5 rounds | ~8 min |
+| `pg_policy_outputs.json` | `pg_policy_outputs.py --algo a2c --mode selfplay`, then `--merge` | action probabilities (U, D, L, R) of the six learners at four fixed positions, shown on the site and in the PDF | ~3 min each |
 | `dqn_finite_a10.csv` | `dqn_finite.py --seeds 3` | Nash-DQN on the discounted 100-step game, same scoring, **3 seeds** | ~10 min |
 | `pg_algos_{a10,random}_seeds.csv` | `pg_algos_and_fp.py pg --board ... --seeds 3` | self-play REINFORCE vs. A2C vs. PPO vs. the exact solve, + win/tie/loss and mirror gap, **3 seeds** | ~10 min each |
 | `pg_algos_random_explore_seeds.csv` | `pg_algos_and_fp.py pg --board random --explore --seeds 3` | same with exploring starts | ~10 min |
@@ -123,7 +125,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 416 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 435 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34
