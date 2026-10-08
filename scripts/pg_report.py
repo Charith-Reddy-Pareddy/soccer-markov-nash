@@ -246,9 +246,7 @@ deterministic play; the exact solution is deterministic at these positions.</p><
         return n if pol or n < 7 else n - 1
 
     summary_end = (
-        f"The action probabilities the trained policies output are in section 6, and every "
-        f"assumption is listed in section {sec(9)}." if pol
-        else f"Every assumption is listed in section {sec(9)}.")
+        "The action probabilities the trained policies output are in section 6." if pol else "")
     chart1 = bar_chart(expl)
     chart2 = stacked_chart(
         [(n, [wtl(data[(a, m)], "row", "random"), wtl(data[(a, m)], "row", "nash")])
@@ -381,14 +379,6 @@ rock-paper-scissors best-response dynamics cycle forever while fictitious play s
 1/3 each; on the soccer stage games it recovers the exact values.</p>{fp_html}
 <p class="muted">This is matrix-level fictitious play. Here policy gradient itself
 does the solving, which is what section 5 tests.</p></section>
-
-<section><h2>{sec(9)}. Assumptions and open questions</h2>
-<p>All assumptions are listed, each marked as quoted, answered, mine or
-invented, in <code>docs/solver_assumptions.md</code>. Still open: what
-&ldquo;check symmetry&rdquo; should mean, which states to evaluate on, how degenerate equilibria should be compared, and two
-page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
-<p class="muted">Reproduce: <code>python scripts/pg_finite.py --seeds 3</code>,
-then <code>make pg-pdf</code>.</p></section>
 </body></html>"""
     (DOCS / "policy_gradient.html").write_text(html)
     print("wrote docs/policy_gradient.html")

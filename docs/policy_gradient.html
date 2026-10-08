@@ -47,7 +47,7 @@ ties the exact equilibrium more often.</li>
 <li>The two players' policies are not mirror images (mirror gap 0.44 to
 0.81; 0 for the exact solution).</li>
 </ul>
-Results are for 3 seeds at one untuned budget. The action probabilities the trained policies output are in section 6, and every assumption is listed in section 9.</div>
+Results are for 3 seeds at one untuned budget. The action probabilities the trained policies output are in section 6.</div>
 
 <section><h2>1. What was done</h2>
 <p>These choices fix the setup used throughout.</p>
@@ -131,12 +131,4 @@ rock-paper-scissors best-response dynamics cycle forever while fictitious play s
 1/3 each; on the soccer stage games it recovers the exact values.</p><table class=""><tr><th>rounds</th><th>mean stage-game gap</th><th>max stage-game gap</th><th>max value error</th></tr><tr><td>100</td><td>0.00233</td><td>0.02020</td><td>0.01010</td></tr><tr><td>1000</td><td>0.00026</td><td>0.00296</td><td>0.00133</td></tr><tr><td>10000</td><td>0.00004</td><td>0.00094</td><td>0.00037</td></tr></table>
 <p class="muted">This is matrix-level fictitious play. Here policy gradient itself
 does the solving, which is what section 5 tests.</p></section>
-
-<section><h2>9. Assumptions and open questions</h2>
-<p>All assumptions are listed, each marked as quoted, answered, mine or
-invented, in <code>docs/solver_assumptions.md</code>. Still open: what
-&ldquo;check symmetry&rdquo; should mean, which states to evaluate on, how degenerate equilibria should be compared, and two
-page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
-<p class="muted">Reproduce: <code>python scripts/pg_finite.py --seeds 3</code>,
-then <code>make pg-pdf</code>.</p></section>
 </body></html>
