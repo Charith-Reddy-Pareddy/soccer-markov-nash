@@ -35,7 +35,8 @@ def test_there_is_one_row_per_learner_and_a_longer_run_for_each_selfplay_learner
 
 
 def test_win_tie_loss_triples_sum_to_one():
-    rows = [RESULTS["exact"], *RESULTS["learners"]]
+    rows = [RESULTS["exact"], *RESULTS["learners"],
+            RESULTS["random"]["exact"], *RESULTS["random"]["learners"]]
     for r in rows:
         for key in ("vs_random", "vs_nash", "vs_best_response"):
             assert sum(r[key]) == pytest.approx(1.0, abs=1e-4)
@@ -65,8 +66,35 @@ def test_no_learner_is_a_mirror_image_pair():
     assert min(x["mirror_gap"] for x in RESULTS["learners"]) > 0.3
 
 
+def test_the_random_board_has_every_learner_with_three_seeds_and_an_unexploitable_reference():
+    rnd = RESULTS["random"]
+    assert [(x["label"], x["training"]) for x in rnd["learners"]] == [
+        (a, t) for a, t, _, _ in pg_site_data.LEARNERS]
+    assert all(x["seeds"] == 3 for x in rnd["learners"])
+    assert rnd["exact"]["exploitability"]["mean"] == 0
+
+
+def test_every_claim_the_random_board_text_makes_is_true():
+    det = [x["exploitability"]["mean"] for x in RESULTS["learners"]]
+    rnd = RESULTS["random"]["learners"]
+    mean_rnd = [x["exploitability"]["mean"] for x in rnd]
+    # "lower than on the deterministic board": both ends of the range, and learner by learner
+    assert max(mean_rnd) < max(det) and min(mean_rnd) < min(det)
+    assert all(r["exploitability"]["mean"] < d["exploitability"]["mean"]
+               for r, d in zip(rnd, RESULTS["learners"]))
+    # "the exact solver wins more than any learner against the exact Nash policy"
+    assert RESULTS["random"]["exact"]["vs_nash"][0] > max(x["vs_nash"][0] for x in rnd)
+    # "not mirror images"
+    assert min(x["mirror_gap"] for x in rnd) > 0.2
+
+
+def test_no_learner_wins_a_game_against_the_exact_nash_policy_on_the_deterministic_board():
+    assert all(x["vs_nash"][0] == 0 for x in RESULTS["learners"])
+    assert RESULTS["exact"]["vs_nash"] == [0.0, 1.0, 0.0]
+
+
 def test_the_hero_numbers_are_computed_not_typed():
-    assert "Math.min(...means)" in PAGE and "Math.min(...longer.flatMap" in PAGE
+    assert "range(results.learners)" in PAGE and "Math.min(...longer.flatMap" in PAGE
 
 
 # ---- what the pages must not say ------------------------------------------------------------
@@ -150,3 +178,18 @@ def test_the_dog_game_code_and_data_are_gone():
     for rel in ("soccer_nash/dog_game.py", "scripts/dog_game.py", "tests/test_dog_game.py",
                 "experiments/dog_game.csv", "experiments/dog_game_dqn.csv", "docs/dog_game.md"):
         assert not (ROOT / rel).exists(), rel
+
+
+def test_the_tab_shows_wins_as_percentages_with_both_boards():
+    assert "function WinCell" in PAGE and "Wins vs. random" in PAGE
+    assert "Random move-order board" in PAGE and "Deterministic board (A10)" in PAGE
+
+
+@pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
+def test_the_pdf_has_the_random_board_and_shows_wins_as_percentages():
+    text = subprocess.run(["pdftotext", str(ROOT / "docs" / "policy_gradient.pdf"), "-"],
+                          capture_output=True, text=True, check=True).stdout
+    text = " ".join(text.split())  # table headers wrap across lines
+    assert "The random move-order board" in text
+    assert "wins vs. random" in text
+    assert "W/T/L" not in text

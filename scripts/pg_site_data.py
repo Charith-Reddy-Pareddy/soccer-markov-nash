@@ -81,7 +81,17 @@ def build() -> dict:
                              "exploitability": round(float(r["exploitability"]), 6)} for r in rs],
         })
     return {"exact": summary([r for r in main if r["algo"] == "exact"]),
-            "learners": learners, "longer": longer, "fp_br": fp_br}
+            "learners": learners, "longer": longer, "fp_br": fp_br, "random": random_board()}
+
+
+def random_board() -> dict:
+    """The same six learners on the random move-order board (3 seeds each)."""
+    rows = [r for p in sorted(glob.glob(str(EXP / "pg_finite_random_*.csv"))) for r in read(p)]
+    learners = []
+    for label, training, algo, mode in LEARNERS:
+        rs = [r for r in rows if r["algo"] == algo and r["mode"] == mode]
+        learners.append({"label": label, "training": training, **summary(rs)})
+    return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners}
 
 
 def main() -> None:

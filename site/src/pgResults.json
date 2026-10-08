@@ -375,5 +375,217 @@
     }
    ]
   }
- ]
+ ],
+ "random": {
+  "exact": {
+   "seeds": 3,
+   "exploitability": {
+    "mean": 0.0,
+    "sd": 0.0,
+    "runs": [
+     -0.0,
+     -0.0,
+     -0.0
+    ]
+   },
+   "vs_random": [
+    0.999,
+    0.0,
+    0.001
+   ],
+   "vs_nash": [
+    0.671,
+    0.003,
+    0.326
+   ],
+   "vs_best_response": [
+    0.672,
+    0.0,
+    0.328
+   ],
+   "mirror_gap": 0.0
+  },
+  "learners": [
+   {
+    "label": "REINFORCE",
+    "training": "self-play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.639333,
+     "sd": 0.063406,
+     "runs": [
+      0.708,
+      0.627,
+      0.583
+     ]
+    },
+    "vs_random": [
+     0.886,
+     0.074333,
+     0.039667
+    ],
+    "vs_nash": [
+     0.291,
+     0.0,
+     0.709
+    ],
+    "vs_best_response": [
+     0.131667,
+     0.0,
+     0.868333
+    ],
+    "mirror_gap": 0.564333
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.745,
+     "sd": 0.013229,
+     "runs": [
+      0.74,
+      0.76,
+      0.735
+     ]
+    },
+    "vs_random": [
+     0.946,
+     0.017667,
+     0.036333
+    ],
+    "vs_nash": [
+     0.281333,
+     0.0,
+     0.718667
+    ],
+    "vs_best_response": [
+     0.078,
+     0.0,
+     0.922
+    ],
+    "mirror_gap": 0.294
+   },
+   {
+    "label": "A2C",
+    "training": "self-play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.605333,
+     "sd": 0.077571,
+     "runs": [
+      0.55,
+      0.572,
+      0.694
+     ]
+    },
+    "vs_random": [
+     0.924,
+     0.047333,
+     0.028667
+    ],
+    "vs_nash": [
+     0.327667,
+     0.0,
+     0.672333
+    ],
+    "vs_best_response": [
+     0.144667,
+     0.0,
+     0.855333
+    ],
+    "mirror_gap": 0.598
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.639667,
+     "sd": 0.025106,
+     "runs": [
+      0.616,
+      0.637,
+      0.666
+     ]
+    },
+    "vs_random": [
+     0.937333,
+     0.030667,
+     0.032
+    ],
+    "vs_nash": [
+     0.291333,
+     0.0,
+     0.708667
+    ],
+    "vs_best_response": [
+     0.123,
+     0.0,
+     0.877
+    ],
+    "mirror_gap": 0.356
+   },
+   {
+    "label": "PPO",
+    "training": "self-play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.75,
+     "sd": 0.134209,
+     "runs": [
+      0.778,
+      0.604,
+      0.868
+     ]
+    },
+    "vs_random": [
+     0.922,
+     0.036,
+     0.042
+    ],
+    "vs_nash": [
+     0.246667,
+     0.0,
+     0.753333
+    ],
+    "vs_best_response": [
+     0.093,
+     0.043667,
+     0.863333
+    ],
+    "mirror_gap": 0.695667
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.708333,
+     "sd": 0.061452,
+     "runs": [
+      0.656,
+      0.776,
+      0.693
+     ]
+    },
+    "vs_random": [
+     0.936333,
+     0.022333,
+     0.041333
+    ],
+    "vs_nash": [
+     0.299,
+     0.0,
+     0.701
+    ],
+    "vs_best_response": [
+     0.049667,
+     0.0,
+     0.950333
+    ],
+    "mirror_gap": 0.587
+   }
+  ]
+ }
 }
