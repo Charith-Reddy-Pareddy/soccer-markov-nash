@@ -33,7 +33,7 @@ STATES = [
     ("defend", "The right player holds the ball, players stacked", (3, 2, 3, 3, 1)),
 ]
 LABELS = {"reinforce": "REINFORCE", "a2c": "A2C", "ppo": "PPO"}
-MODES = {"selfplay": "self-play", "fictitious": "fictitious play"}
+MODES = {"selfplay": "standard", "fictitious": "fictitious play"}
 
 
 def merge() -> None:
@@ -46,6 +46,8 @@ def merge() -> None:
            "learners": [p["learner"] for p in parts]}
     order = {(a, m): k for k, (a, m) in enumerate(
         (a, m) for a in LABELS for m in MODES)}
+    for lr in (p["learner"] for p in parts):
+        lr["label"] = f"{LABELS[lr['algo']]}, {MODES[lr['mode']]}"
     out["learners"].sort(key=lambda lr: order[(lr["algo"], lr["mode"])])
     text = json.dumps(out, indent=1) + "\n"
     (EXP / "pg_policy_outputs.json").write_text(text)

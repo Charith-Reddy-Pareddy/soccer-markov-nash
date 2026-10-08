@@ -28,7 +28,7 @@
  "learners": [
   {
    "label": "REINFORCE",
-   "training": "self-play",
+   "training": "standard",
    "seeds": 3,
    "exploitability": {
     "mean": 0.788333,
@@ -88,7 +88,7 @@
   },
   {
    "label": "A2C",
-   "training": "self-play",
+   "training": "standard",
    "seeds": 3,
    "exploitability": {
     "mean": 0.763333,
@@ -148,7 +148,7 @@
   },
   {
    "label": "PPO",
-   "training": "self-play",
+   "training": "standard",
    "seeds": 3,
    "exploitability": {
     "mean": 0.949333,
@@ -210,8 +210,23 @@
  "longer": [
   {
    "label": "REINFORCE",
-   "training": "self-play",
+   "training": "standard",
    "short_mean": 0.788333,
+   "short_vs_nash": [
+    0.0,
+    0.713,
+    0.287
+   ],
+   "short_vs_best_response": [
+    0.004333,
+    0.0,
+    0.995667
+   ],
+   "vs_best_response": [
+    0.0385,
+    0.0,
+    0.9615
+   ],
    "runs": [
     0.486,
     0.907
@@ -229,8 +244,23 @@
   },
   {
    "label": "A2C",
-   "training": "self-play",
+   "training": "standard",
    "short_mean": 0.763333,
+   "short_vs_nash": [
+    0.0,
+    0.854667,
+    0.145333
+   ],
+   "short_vs_best_response": [
+    0.023,
+    0.0,
+    0.977
+   ],
+   "vs_best_response": [
+    0.176,
+    0.006,
+    0.818
+   ],
    "runs": [
     0.44,
     0.502
@@ -248,8 +278,23 @@
   },
   {
    "label": "PPO",
-   "training": "self-play",
+   "training": "standard",
    "short_mean": 0.949333,
+   "short_vs_nash": [
+    0.0,
+    0.666667,
+    0.333333
+   ],
+   "short_vs_best_response": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "vs_best_response": [
+    0.0,
+    0.0,
+    1.0
+   ],
    "runs": [
     0.909,
     0.962
@@ -273,27 +318,33 @@
    "checkpoints": [
     {
      "round": 5,
-     "exploitability": 0.854
+     "exploitability": 0.854,
+     "win_vs_best_response": 0.002
     },
     {
      "round": 10,
-     "exploitability": 0.876
+     "exploitability": 0.876,
+     "win_vs_best_response": 0.008
     },
     {
      "round": 15,
-     "exploitability": 0.89
+     "exploitability": 0.89,
+     "win_vs_best_response": 0.018
     },
     {
      "round": 20,
-     "exploitability": 0.902
+     "exploitability": 0.902,
+     "win_vs_best_response": 0.018
     },
     {
      "round": 25,
-     "exploitability": 0.912
+     "exploitability": 0.912,
+     "win_vs_best_response": 0.016
     },
     {
      "round": 30,
-     "exploitability": 0.919
+     "exploitability": 0.919,
+     "win_vs_best_response": 0.014
     }
    ]
   },
@@ -303,15 +354,18 @@
    "checkpoints": [
     {
      "round": 5,
-     "exploitability": 0.887
+     "exploitability": 0.887,
+     "win_vs_best_response": 0.014
     },
     {
      "round": 10,
-     "exploitability": 0.924
+     "exploitability": 0.924,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 15,
-     "exploitability": 0.932
+     "exploitability": 0.932,
+     "win_vs_best_response": 0.004
     }
    ]
   },
@@ -321,27 +375,33 @@
    "checkpoints": [
     {
      "round": 5,
-     "exploitability": 0.885
+     "exploitability": 0.885,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 10,
-     "exploitability": 0.915
+     "exploitability": 0.915,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 15,
-     "exploitability": 0.898
+     "exploitability": 0.898,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 20,
-     "exploitability": 0.903
+     "exploitability": 0.903,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 25,
-     "exploitability": 0.911
+     "exploitability": 0.911,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 30,
-     "exploitability": 0.912
+     "exploitability": 0.912,
+     "win_vs_best_response": 0.0
     }
    ]
   },
@@ -351,27 +411,33 @@
    "checkpoints": [
     {
      "round": 5,
-     "exploitability": 0.852
+     "exploitability": 0.852,
+     "win_vs_best_response": 0.0
     },
     {
      "round": 10,
-     "exploitability": 0.847
+     "exploitability": 0.847,
+     "win_vs_best_response": 0.002
     },
     {
      "round": 15,
-     "exploitability": 0.866
+     "exploitability": 0.866,
+     "win_vs_best_response": 0.008
     },
     {
      "round": 20,
-     "exploitability": 0.859
+     "exploitability": 0.859,
+     "win_vs_best_response": 0.012
     },
     {
      "round": 25,
-     "exploitability": 0.867
+     "exploitability": 0.867,
+     "win_vs_best_response": 0.014
     },
     {
      "round": 30,
-     "exploitability": 0.873
+     "exploitability": 0.873,
+     "win_vs_best_response": 0.008
     }
    ]
   }
@@ -408,7 +474,7 @@
   "learners": [
    {
     "label": "REINFORCE",
-    "training": "self-play",
+    "training": "standard",
     "seeds": 3,
     "exploitability": {
      "mean": 0.639333,
@@ -468,7 +534,7 @@
    },
    {
     "label": "A2C",
-    "training": "self-play",
+    "training": "standard",
     "seeds": 3,
     "exploitability": {
      "mean": 0.605333,
@@ -528,7 +594,7 @@
    },
    {
     "label": "PPO",
-    "training": "self-play",
+    "training": "standard",
     "seeds": 3,
     "exploitability": {
      "mean": 0.75,
@@ -617,7 +683,7 @@
   "learners": [
    {
     "label": "REINFORCE",
-    "training": "self-play",
+    "training": "standard",
     "seeds": 3,
     "vs_random": [
      0.522518,
@@ -667,7 +733,7 @@
    },
    {
     "label": "A2C",
-    "training": "self-play",
+    "training": "standard",
     "seeds": 3,
     "vs_random": [
      0.694681,
@@ -717,7 +783,7 @@
    },
    {
     "label": "PPO",
-    "training": "self-play",
+    "training": "standard",
     "seeds": 3,
     "vs_random": [
      0.632269,
@@ -853,7 +919,7 @@
    },
    "learners": [
     {
-     "label": "REINFORCE, self-play",
+     "label": "REINFORCE, standard",
      "row": [
       [
        0.8884999752044678,
@@ -939,7 +1005,7 @@
      ]
     },
     {
-     "label": "A2C, self-play",
+     "label": "A2C, standard",
      "row": [
       [
        0.656499981880188,
@@ -1025,7 +1091,7 @@
      ]
     },
     {
-     "label": "PPO, self-play",
+     "label": "PPO, standard",
      "row": [
       [
        0.7749000191688538,
@@ -1112,5 +1178,133 @@
     }
    ]
   }
+ },
+ "continuing": null,
+ "rps": {
+  "rounds": 60,
+  "best_response": [
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0,
+   1.0,
+   0.0,
+   0.0
+  ],
+  "average": [
+   1.0,
+   0.5,
+   0.333333,
+   0.25,
+   0.2,
+   0.166667,
+   0.142857,
+   0.125,
+   0.111111,
+   0.2,
+   0.272727,
+   0.333333,
+   0.384615,
+   0.428571,
+   0.466667,
+   0.4375,
+   0.411765,
+   0.388889,
+   0.368421,
+   0.35,
+   0.333333,
+   0.318182,
+   0.304348,
+   0.291667,
+   0.28,
+   0.269231,
+   0.259259,
+   0.25,
+   0.241379,
+   0.233333,
+   0.258065,
+   0.28125,
+   0.30303,
+   0.323529,
+   0.342857,
+   0.361111,
+   0.378378,
+   0.394737,
+   0.410256,
+   0.425,
+   0.414634,
+   0.404762,
+   0.395349,
+   0.386364,
+   0.377778,
+   0.369565,
+   0.361702,
+   0.354167,
+   0.346939,
+   0.34,
+   0.333333,
+   0.326923,
+   0.320755,
+   0.314815,
+   0.309091,
+   0.303571,
+   0.298246,
+   0.293103,
+   0.288136,
+   0.283333
+  ]
  }
 }

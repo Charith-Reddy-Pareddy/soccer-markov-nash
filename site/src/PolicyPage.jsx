@@ -6,14 +6,54 @@ import pgPolicies from "./pgPolicies.json";
 import results from "./pgResults.json";
 import "./landing.css";
 
-const f2 = (v) => v.toFixed(2);
 const pct = (v) => `${Math.round(v * 100)}%`;
 const name = (l) => `${l.label}, ${l.training}`;
 
-// Wins, ties and losses of every learner against a random player and against the exact
-// Nash policy (green = the player wins, grey = no goal in 100 steps, orange = the opponent wins).
+// Share of the 1,000 games the player wins (scores while the opponent does not), with the
+// ties (no goal, or equal goals) and the losses beside it.
+function WinCell({ t }) {
+  return (
+    <td>
+      <b>{pct(t[0])}</b>
+      <span className="sub">tie {pct(t[1])} &middot; loss {pct(t[2])}</span>
+    </td>
+  );
+}
+
+// The headline number: how often the trained player wins when the opponent is the best response
+// to it, with the exact solver's own rate as the reference line.
+function BestResponseBars({ rows, reference }) {
+  const W = 660, left = 210, right = 54, rowH = 26;
+  const H = rowH * rows.length + 40;
+  const x = (v) => left + v * (W - left - right);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="win rate against the best response" className="pg-bars">
+      {[0, 0.25, 0.5, 0.75, 1].map((g) => (
+        <g key={g}>
+          <line x1={x(g)} y1="22" x2={x(g)} y2={H - 22} stroke="var(--rule)" />
+          <text x={x(g)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{pct(g)}</text>
+        </g>
+      ))}
+      {rows.map((r, i) => {
+        const y = 26 + i * rowH;
+        return (
+          <g key={r.name}>
+            <text x={left - 8} y={y + 13} textAnchor="end" fontSize="12" fill="var(--ink)">{r.name}</text>
+            <rect x={left} y={y + 3} width={Math.max(x(r.win) - left, 0)} height="14" fill="var(--pitch)" opacity=".85" />
+            <text x={W - right + 10} y={y + 14} fontSize="12" fontWeight="700" fill="var(--ink)">{pct(r.win)}</text>
+          </g>
+        );
+      })}
+      <line x1={x(reference)} y1="18" x2={x(reference)} y2={H - 22} stroke="var(--ember)" strokeWidth="2" strokeDasharray="5 4" />
+      <text x={x(reference)} y="12" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--ember)">exact solver {pct(reference)}</text>
+    </svg>
+  );
+}
+
+// Wins (green), ties (grey) and losses (orange) of every learner against a random player and
+// against the exact Nash policy.
 function WinBars({ rows }) {
-  const W = 660, left = 200, gap = 26, rowH = 26, panel = (W - left - gap - 8) / 2;
+  const W = 660, left = 210, gap = 26, rowH = 26, panel = (W - left - gap - 8) / 2;
   const H = rowH * rows.length + 34;
   const cols = ["var(--pitch)", "var(--rule-strong)", "var(--ember)"];
   return (
@@ -41,70 +81,52 @@ function WinBars({ rows }) {
   );
 }
 
-// Exploitability of every learner: bar = mean, dots = individual seeds.
-function ExploitBars({ rows }) {
-  const W = 660, left = 200, right = 48, rowH = 26;
-  const H = rowH * rows.length + 34;
-  const x = (v) => left + v * (W - left - right);
+// Rock-paper-scissors: the share of rock in the current play of best-response dynamics (it
+// cycles for ever) against in the average of all play so far (it settles at one third).
+function RpsPlot({ data }) {
+  const W = 660, H = 250, l = 56, r = 20, t = 50, b = 40;
+  const x = (k) => l + (k / (data.rounds - 1)) * (W - l - r);
+  const y = (v) => t + (1 - v) * (H - t - b);
+  const line = (vals) => vals.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="exploitability of each learner" className="pg-bars">
-      {[0, 0.25, 0.5, 0.75, 1].map((g) => (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="best-response dynamics against fictitious play on rock-paper-scissors" className="pg-bars">
+      {[0, 1 / 3, 2 / 3, 1].map((g) => (
         <g key={g}>
-          <line x1={x(g)} y1="6" x2={x(g)} y2={H - 22} stroke="var(--rule)" />
-          <text x={x(g)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{g}</text>
+          <line x1={l} y1={y(g)} x2={W - r} y2={y(g)} stroke="var(--rule)" strokeDasharray={g === 1 / 3 ? "4 3" : undefined} />
+          <text x={l - 8} y={y(g) + 4} textAnchor="end" fontSize="11" fill="var(--ink-faint)">{g === 1 / 3 ? "1/3" : g === 2 / 3 ? "2/3" : g}</text>
         </g>
       ))}
-      {rows.map((r, i) => {
-        const y = 10 + i * rowH;
-        return (
-          <g key={r.name}>
-            <text x={left - 8} y={y + 13} textAnchor="end" fontSize="12" fill="var(--ink)">{r.name}</text>
-            <rect x={left} y={y + 3} width={Math.max(x(r.mean) - left, 0)} height="14" fill="var(--pitch)" opacity=".85" />
-            {r.runs.map((v, k) => <circle key={k} cx={x(v)} cy={y + 10} r="3" fill="var(--ink)" opacity=".7" />)}
-            <text x={W - right + 10} y={y + 14} fontSize="12" fontWeight="700" fill="var(--ink)">{f2(r.mean)}</text>
-          </g>
-        );
-      })}
+      <path d={line(data.best_response)} fill="none" stroke="var(--ember)" strokeWidth="1.6" opacity=".85" />
+      <path d={line(data.average)} fill="none" stroke="var(--pitch)" strokeWidth="2.6" />
+      <text x={l} y={H - 8} fontSize="11" fill="var(--ink-faint)">round 1</text>
+      <text x={W - r} y={H - 8} textAnchor="end" fontSize="11" fill="var(--ink-faint)">round {data.rounds}</text>
+      <text x={W - r} y="16" textAnchor="end" fontSize="12" fill="var(--ember)">best-response dynamics: the current play flips every round</text>
+      <text x={W - r} y="32" textAnchor="end" fontSize="12" fontWeight="700" fill="var(--pitch)">fictitious play: the average settles near 1/3</text>
     </svg>
   );
 }
 
-// Share of the 1,000 games the player wins (scores while the opponent does not),
-// with the ties (no goal in 100 steps) and losses beside it.
-function WinCell({ t }) {
-  return (
-    <td>
-      <b>{pct(t[0])}</b>
-      <span className="sub">tie {pct(t[1])} &middot; loss {pct(t[2])}</span>
-    </td>
-  );
-}
+const BOARDS = [
+  ["deterministic", "Deterministic board (A10)"],
+  ["random", "Random move-order board"],
+  ["continuing", "Continuing game (restarts after a goal)"],
+];
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed } = results;
-  const board = which === "random" ? results.random : results;
+  const { longer, fp_br: fpBr, mixed, rps } = results;
+  const boards = { deterministic: results, random: results.random, continuing: results.continuing };
+  const available = BOARDS.filter(([k]) => boards[k]);
+  const board = boards[which];
   const { learners, exact } = board;
-  const range = (ls) => {
-    const m = ls.map((l) => l.exploitability.mean);
-    return [Math.min(...m), Math.max(...m)];
-  };
-  const [lo, hi] = range(results.learners);
-  const [rlo, rhi] = range(results.random.learners);
-  const winsVsNash = learners.map((l) => l.vs_nash[0]);
+  const bestRow = (l) => ({ name: name(l), win: l.vs_best_response[0] });
   const winRows = [
     { name: "Exact solver", random: exact.vs_random, nash: exact.vs_nash },
     ...learners.map((l) => ({ name: name(l), random: l.vs_random, nash: l.vs_nash })),
   ];
-  const winsRandom = results.learners.map((l) => l.vs_random[0]);
-  const winsRandomRnd = results.random.learners.map((l) => l.vs_random[0]);
-  const winsNashRnd = results.random.learners.map((l) => l.vs_nash[0]);
-  const bars = [
-    { name: "Exact solver", mean: 0, runs: [0] },
-    ...learners.map((l) => ({ name: name(l), mean: l.exploitability.mean, runs: l.exploitability.runs })),
-  ];
-  const best = Math.min(...longer.flatMap((l) => l.runs));
-  const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((x, y) => x - y);
+  const brWins = learners.map((l) => l.vs_best_response[0]);
+  const rnd = results.random;
+  const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
 
   return (
     <>
@@ -115,11 +137,11 @@ export default function PolicyPage() {
           <div>
             <div className="kicker">Policy gradient &middot; soccer game</div>
             <h1>Policy gradient on the soccer game</h1>
-            <p className="lede">REINFORCE, A2C and PPO are trained on the discounted 100-step game,
-              with the number of steps left as an input, and scored against the exact solution of
-              that same game. Each is trained two ways: plain self-play, and fictitious play, where
-              every player keeps improving by policy gradient against the average of its opponent&rsquo;s
-              past policies, so no game is ever solved explicitly.</p>
+            <p className="lede">REINFORCE, A2C and PPO are trained on the discounted 100-step game and scored by
+              one number: how often the trained player wins when the opponent is the best response to it.
+              Each is trained two ways: the standard way, where both players keep updating against each
+              other, and fictitious play, where each player responds to the average of its opponent&rsquo;s past
+              strategies.</p>
             <div className="cta-row">
               <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>
               <a className="btn btn-outline" href="policy_gradient.md">Full write-up &rarr;</a>
@@ -127,11 +149,10 @@ export default function PolicyPage() {
           </div>
           <div className="hero-card">
             <div className="stat-list">
-              <div>Against a random player the six learners win <b>{pct(Math.min(...winsRandom, ...winsRandomRnd))} to {pct(Math.max(...winsRandom, ...winsRandomRnd))}</b> of games</div>
-              <div>Against the exact Nash policy they win <b>0%</b> on the deterministic board (it ties itself) and <b>{pct(Math.min(...winsNashRnd))} to {pct(Math.max(...winsNashRnd))}</b> on the random board, where the exact solver wins {pct(results.random.exact.vs_nash[0])}</div>
-              <div>Exploitability <b>{f2(lo)} to {f2(hi)}</b> deterministic, <b>{f2(rlo)} to {f2(rhi)}</b> random (the exact solution is 0)</div>
-              <div>Best single run at four times the training: <b>{f2(best)}</b></div>
-              <div><b>6</b> learners (REINFORCE, A2C, PPO; self-play and fictitious play), <b>1,000</b> repeated games per opponent</div>
+              <div>Win rate against the best response, random board: the exact solver wins <b>{pct(rnd.exact.vs_best_response[0])}</b>, the six learners <b>{pct(Math.min(...rnd.learners.map((l) => l.vs_best_response[0])))} to {pct(Math.max(...rnd.learners.map((l) => l.vs_best_response[0])))}</b></div>
+              <div>Against a random player the learners win <b>{pct(Math.min(...results.learners.map((l) => l.vs_random[0])))} to {pct(Math.max(...results.learners.map((l) => l.vs_random[0])))}</b> of games</div>
+              <div>From the {mixed.mixed_states} states where the exact answer has to mix, they win <b>{pct(Math.min(...mixed.learners.map((l) => l.vs_nash[0])))} to {pct(Math.max(...mixed.learners.map((l) => l.vs_nash[0])))}</b> against the exact Nash policy; the exact solver wins {pct(mixed.exact.vs_nash[0])}</div>
+              <div><b>6</b> learners (REINFORCE, A2C, PPO; standard and fictitious play), <b>1,000</b> games per opponent</div>
             </div>
           </div>
         </div>
@@ -139,195 +160,154 @@ export default function PolicyPage() {
 
       <section id="setup">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p0">01</span>What was done</div>
-          <h2>The setup</h2>
+          <div className="eyebrow"><span className="badge p0">01</span>How to read the numbers</div>
+          <h2>One number: the win rate against the best response</h2>
           <div className="tbl-wrap">
             <table className="text-table">
-              <thead><tr><th>Topic</th><th>What was done</th><th>Why</th></tr></thead>
+              <thead><tr><th>Number</th><th>What it is</th></tr></thead>
               <tbody>
-                <tr><td>Environment</td><td>The deterministic A10 board is the main environment; the random move-order board is kept as an earlier comparison.</td><td>The deterministic board has no mixed-equilibrium stages, so the comparison with the exact solution is clean.</td></tr>
-                <tr><td>Objective</td><td>Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input.</td><td>Policy gradient can only approximate a finite-horizon discounted reward.</td></tr>
-                <tr><td>Fictitious play</td><td>Each player is trained by policy gradient against the average of the opponent&rsquo;s past policies.</td><td>Policy gradient does the solving; no game is solved explicitly.</td></tr>
-                <tr><td>Win rate</td><td>1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.</td><td>Repeated play and counting wins.</td></tr>
+                <tr><td>Win rate against the best response</td><td>The share of 1,000 games the trained player wins when the opponent plays the exact best response to it, the move that is best against exactly what our player will do. A player who always does the same thing loses every game; the exact solver mixes optimally, so its rate is the ceiling to compare with.</td></tr>
+                <tr><td>Win rate against the exact Nash policy</td><td>The same, against the exact equilibrium player. The exact solver cannot be beaten by it; a learner that mixes well scores close to the exact solver&rsquo;s own rate.</td></tr>
+                <tr><td>Win rate against a random player</td><td>A sanity check: every learner should beat a player who moves at random.</td></tr>
+                <tr><td>A win</td><td>The player scores while the opponent does not. In the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal (or equal goals) are ties.</td></tr>
               </tbody>
             </table>
           </div>
+          <p className="fig-cap">Exploitability, the best-response player&rsquo;s gain, is not reported: it measures the attacker, and it is the player we train that we want to judge.</p>
         </div>
       </section>
 
       <section className="band-tint" id="learners">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p1">02</span>The learners</div>
+          <div className="eyebrow"><span className="badge p1">02</span>How it is implemented</div>
           <h2>Three algorithms, two ways of training</h2>
           <div className="tbl-wrap">
             <table className="text-table">
-              <thead><tr><th>Algorithm</th><th>Update</th></tr></thead>
+              <thead><tr><th>Setting</th><th>Value</th></tr></thead>
               <tbody>
-                <tr><td>REINFORCE</td><td>plain discounted returns, no baseline</td></tr>
-                <tr><td>A2C</td><td>10-step bootstrapped advantage from a learned critic</td></tr>
-                <tr><td>PPO</td><td>GAE (&lambda; = 0.95), clipped ratio 0.2, 4 epochs</td></tr>
+                <tr><td>Game</td><td>7&times;5 board, goal rows 1&ndash;3. First goal ends the game (A10 and random-order boards) or play restarts after a goal (continuing game). Fixed 100 steps, discount 0.9, the number of steps left is a network input.</td></tr>
+                <tr><td>Returns</td><td>REINFORCE: the discounted return from each step to the end of the episode, no baseline. A2C: 10-step bootstrapped advantage from a learned critic. A2C with the exact critic: the critic is the exact solver&rsquo;s value, frozen, so the advantage is the exact Q(s, a<sub>0</sub>, a<sub>1</sub>) minus V(s). PPO: GAE (&lambda; 0.95), ratio clipped at 0.2, 4 epochs.</td></tr>
+                <tr><td>Updates</td><td>Every iteration: 64 episodes of 100 steps, then one gradient step per player on all of that data (four for PPO). 2,000 iterations. Learning rate 10<sup>&minus;3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. No mini-batches, no replay.</td></tr>
+                <tr><td>Standard</td><td>Both players&rsquo; current networks play each other and keep updating: real-time best responses.</td></tr>
+                <tr><td>Fictitious play</td><td>Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations); the policy it reports is the average of its own snapshots.</td></tr>
               </tbody>
             </table>
           </div>
-          <p><b>Self-play</b> trains both current networks against each other. <b>Fictitious play</b> keeps
-            frozen snapshots of each player&rsquo;s network; the opponent in each episode is one snapshot drawn
-            uniformly, and the policy a player reports is the average of its own snapshots. Every learner
-            uses learning rate 10<sup>&minus;3</sup>, 64 episodes per batch, 2,000 iterations, an entropy
-            bonus of 0.01 and a 64&times;64 network; none was tuned.</p>
-          <p>Scoring: <b>exploitability</b> is the discounted value both exact best responses earn from the
-            kickoff, summed, and is zero exactly at an equilibrium. The <b>mirror gap</b> measures how far
-            the two players&rsquo; policies are from being mirror images of each other.</p>
         </div>
       </section>
 
-      <section id="results">
+      <section id="why">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p0">03</span>Results</div>
-          <h2>Scored against the exact solution</h2>
+          <div className="eyebrow"><span className="badge p0">03</span>Why fictitious play</div>
+          <h2>Best responses cycle; their average settles</h2>
+          <p className="lede">On rock-paper-scissors, answering the opponent&rsquo;s latest move makes the play flip between
+            rock, paper and scissors for ever. Answering the average of everything it has played converges to the equilibrium,
+            one third each.</p>
+          <RpsPlot data={rps} />
+        </div>
+      </section>
+
+      <section className="band-tint" id="results">
+        <div className="wrap">
+          <div className="eyebrow"><span className="badge p1">04</span>Results</div>
+          <h2>How often the trained player wins</h2>
           <div className="state-pick" role="group" aria-label="board">
-            <button className={which === "deterministic" ? "on" : ""} onClick={() => setWhich("deterministic")}>Deterministic board (A10)</button>
-            <button className={which === "random" ? "on" : ""} onClick={() => setWhich("random")}>Random move-order board</button>
+            {available.map(([k, label]) => (
+              <button key={k} className={which === k ? "on" : ""} onClick={() => setWhich(k)}>{label}</button>
+            ))}
           </div>
           <p className="state-note">
             {which === "random"
               ? "Players' moves are applied in a random order each step, so the exact solution mixes at 94 stage games and the dynamics are stochastic."
-              : "Players move simultaneously and the carrier wins every contested square, so the exact solution is pure everywhere."}
-            {" "}Each cell shows the share of 1,000 games the player wins (scores while the opponent does not); the ties
-            (no goal in 100 steps) and losses are beneath it.
+              : which === "continuing"
+                ? "Play restarts after every goal and runs for exactly 100 steps; a win is more goals than the opponent. Includes A2C with the exact solver's values as a frozen critic."
+                : "Players move simultaneously and the carrier wins every contested square, so the exact solution is pure everywhere and ties itself."}
           </p>
-          <div className="tbl-wrap">
-            <table>
-              <thead>
-                <tr><th>Learner</th><th>Training</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th><th>Exploitability</th><th>Mirror gap</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Exact solver</td><td>&mdash;</td><WinCell t={exact.vs_random} /><WinCell t={exact.vs_nash} /><WinCell t={exact.vs_best_response} /><td className="hi">0</td><td>0</td></tr>
-                {learners.map((l) => (
-                  <tr key={name(l)}>
-                    <td>{l.label}</td><td>{l.training}</td>
-                    <WinCell t={l.vs_random} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
-                    <td>{f2(l.exploitability.mean)} &plusmn; {f2(l.exploitability.sd)}</td>
-                    <td>{f2(l.mirror_gap)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h3>Win rate against the best response</h3>
+          <BestResponseBars rows={[{ name: "Exact solver", win: exact.vs_best_response[0] }, ...learners.map(bestRow)]} reference={exact.vs_best_response[0]} />
+          <p className="fig-cap">Share of 1,000 games won against the best response, mean of {learners[0].seeds} seeds. Dashed line: the exact solver.</p>
+          <h3>Against the exact Nash policy and a random player</h3>
           <WinBars rows={winRows} />
-          <p className="fig-cap">Share of games won (green), tied (grey) and lost (orange) by each learner, over {learners[0].seeds} seeds.</p>
-          <ExploitBars rows={bars} />
-          <p className="fig-cap">Exploitability by learner: bar = mean over {learners[0].seeds} seeds, dots = individual seeds.</p>
-          {which === "random" ? (
-            <p>Exploitability is {f2(rlo)} to {f2(rhi)}, lower than on the deterministic board ({f2(lo)} to {f2(hi)}),
-              though the two boards are scored on their own scales. The learners win {pct(Math.min(...winsVsNash))} to {pct(Math.max(...winsVsNash))} of
-              games against the exact Nash policy; the exact solver wins {pct(exact.vs_nash[0])}, helped by starting with the ball.
-              The two players&rsquo; policies are not mirror images (mirror gap {f2(Math.min(...learners.map((l) => l.mirror_gap)))} to {f2(Math.max(...learners.map((l) => l.mirror_gap)))}).</p>
-          ) : (
-            <p>Fictitious-play training wins more often against a random player; self-play training ties
-              the exact equilibrium more often. No learner wins a game against the exact Nash policy, because the
-              exact solution ties itself every game. The two players&rsquo; policies are not mirror images
-              (mirror gap {f2(Math.min(...learners.map((l) => l.mirror_gap)))} to {f2(Math.max(...learners.map((l) => l.mirror_gap)))},
-              against 0 for the exact solution). These are {learners[0].seeds} seeds at one untuned budget.</p>
-          )}
+          <p className="fig-cap">Wins (green), ties (grey) and losses (orange).</p>
+          <p>
+            {which === "deterministic"
+              ? `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])}, because it ties itself every game, and the learners win ${pct(Math.min(...brWins))} to ${pct(Math.max(...brWins))}. `
+              : `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])} and the learners ${pct(Math.min(...brWins))} to ${pct(Math.max(...brWins))}. `}
+            Fictitious-play training wins more often against a random player; no learner reaches the exact solver&rsquo;s rate against the best response or the exact Nash policy.
+          </p>
         </div>
       </section>
 
       {mixed && (
-        <section className="band-tint" id="mixed">
+        <section id="mixed">
           <div className="wrap">
-            <div className="eyebrow"><span className="badge p1">04</span>Mixed states</div>
+            <div className="eyebrow"><span className="badge p0">05</span>Mixed states</div>
             <h2>Where the exact answer has to mix</h2>
             <p className="lede">At {mixed.mixed_states} states of the random move-order board the exact equilibrium
-              has to randomize: the row player mixes two moves at {mixed.support_sizes["2"]}, three moves at {mixed.support_sizes["3"]},
-              and plays a single move at {mixed.support_sizes["1"]}, where the column player does the mixing. Each learner
-              starts {mixed.games_per_start} games from every one of these states with the full 100 steps left.</p>
+              has to randomize. Each learner starts {mixed.games_per_start} games from every one of them.</p>
             <div className="tbl-wrap">
               <table>
                 <thead>
-                  <tr><th>Learner</th><th>Training</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th></tr>
+                  <tr><th>Learner</th><th>Training</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th><th>Distance from the exact mix</th><th>Player 0 mixes</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>Exact solver</td><td>&mdash;</td><WinCell t={mixed.exact.vs_random} /><WinCell t={mixed.exact.vs_nash} /><WinCell t={mixed.exact.vs_best_response} /></tr>
+                  <tr><td>Exact solver</td><td>&mdash;</td><WinCell t={mixed.exact.vs_nash} /><WinCell t={mixed.exact.vs_best_response} /><td>0</td><td>&mdash;</td></tr>
                   {mixed.learners.map((l) => (
                     <tr key={name(l)}>
                       <td>{l.label}</td><td>{l.training}</td>
-                      <WinCell t={l.vs_random} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
+                      <WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
+                      <td>{(l.tv_row).toFixed(2)}</td><td>{pct(l.share_mixing_row)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="fig-cap">Share of games won, with ties and losses beneath, over {mixed.learners[0].seeds} seeds.</p>
-            <h3>How close are their probabilities to the exact mix?</h3>
-            <div className="tbl-wrap">
-              <table>
-                <thead>
-                  <tr><th>Learner</th><th>Training</th><th>Distance from the exact mix, player 0</th><th>Distance, player 1</th><th>Equilibrium regret, mean (max)</th><th>Player 0 mixes</th></tr>
-                </thead>
-                <tbody>
-                  {mixed.learners.map((l) => (
-                    <tr key={name(l)}>
-                      <td>{l.label}</td><td>{l.training}</td>
-                      <td>{f2(l.tv_row)}</td><td>{f2(l.tv_col)}</td>
-                      <td>{f2(l.regret_mean)} ({f2(l.regret_max)})</td><td>{pct(l.share_mixing_row)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="fig-cap">Distance is the total-variation distance between the learner&rsquo;s probabilities and the exact
-              equilibrium mix at the first step (0 = identical, 1 = no overlap), averaged over the {mixed.mixed_states} states.
-              Equilibrium regret is how much either player could gain by deviating from the learner&rsquo;s pair of policies
-              at that state (0 at any equilibrium). &ldquo;Player 0 mixes&rdquo; is the share of states where it puts
-              less than 90% on its most likely move.</p>
+            <p className="fig-cap">Distance: total-variation distance between the learner&rsquo;s probabilities and the exact mix at the first step (0 = identical, 1 = no overlap). &ldquo;Player 0 mixes&rdquo;: the share of states where it puts less than 90% on its top move.</p>
             <h3>Three of these states in full</h3>
             <PolicyOutputs data={mixed.policy_outputs} />
           </div>
         </section>
       )}
 
-      <section id="probabilities">
+      <section className="band-tint" id="probabilities">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p0">05</span>Action probabilities</div>
+          <div className="eyebrow"><span className="badge p1">06</span>Action probabilities</div>
           <h2>What the trained policies output</h2>
           <p className="lede">The probability each trained network gives to every move, at four fixed
-            positions, next to the exact solver&rsquo;s move. The networks are seed 0 of the runs above.</p>
+            positions of the deterministic board, next to the exact solver&rsquo;s move.</p>
           <PolicyOutputs data={pgPolicies} />
         </div>
       </section>
 
-      <section className="band-tint" id="more">
+      <section id="more">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p1">06</span>More training</div>
-          <h2>Self-play at four times the training</h2>
-          <p className="lede">The same self-play learners with 8,000 iterations instead of 2,000
-            (two seeds each; every other setting unchanged).</p>
+          <div className="eyebrow"><span className="badge p0">07</span>More training</div>
+          <h2>Standard training at four times the iterations</h2>
+          <p className="lede">8,000 instead of 2,000 iterations (two seeds each), deterministic board.</p>
           <div className="tbl-wrap">
             <table>
               <thead>
-                <tr><th>Learner</th><th>Exploitability at 2,000 iterations (mean)</th><th>At 8,000 iterations (each seed)</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th></tr>
+                <tr><th>Learner</th><th>Wins vs. exact Nash, 2,000 iterations</th><th>Wins vs. exact Nash, 8,000 iterations</th><th>Wins vs. random, 8,000 iterations</th></tr>
               </thead>
               <tbody>
                 {longer.map((l) => (
                   <tr key={l.label}>
-                    <td>{l.label}, {l.training}</td><td>{f2(l.short_mean)}</td>
-                    <td>{l.runs.map(f2).join(" and ")}</td><WinCell t={l.vs_random} /><WinCell t={l.vs_nash} />
+                    <td>{l.label}, {l.training}</td>
+                    <WinCell t={l.short_vs_nash} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_random} />
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p>With two seeds per learner this is a trend, not a result; the best single run is {f2(best)}.</p>
         </div>
       </section>
 
-      <section id="best-response">
+      <section className="band-tint" id="best-response">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p0">07</span>Fictitious play with best responses</div>
-          <h2>A stricter fictitious play</h2>
-          <p className="lede">In each round every player runs 100 (or 300) policy-gradient iterations to
-            approximate a best response to the average of the opponent&rsquo;s earlier best responses, then adds it
-            to its history. Exploitability after each checkpoint round (one seed per run).</p>
+          <div className="eyebrow"><span className="badge p1">08</span>Fictitious play with long best responses</div>
+          <h2>Train each best response for 100 or 300 iterations</h2>
+          <p className="lede">Each round a player trains for many iterations against the average of its opponent&rsquo;s earlier
+            best responses, then adds the result to its history. Win rate against the best response after each checkpoint round (one seed per run).</p>
           <div className="tbl-wrap">
             <table>
               <thead>
@@ -339,14 +319,13 @@ export default function PolicyPage() {
                     <td>{r.label}, {r.best_response_iterations} iterations per best response</td>
                     {rounds.map((k) => {
                       const c = r.checkpoints.find((x) => x.round === k);
-                      return <td key={k}>{c ? f2(c.exploitability) : ""}</td>;
+                      return <td key={k}>{c ? pct(c.win_vs_best_response) : ""}</td>;
                     })}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p>In every run the exploitability at the last checkpoint is higher than at the first.</p>
           <div className="cta-row">
             <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>
             <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">View the code on GitHub &rarr;</a>

@@ -112,7 +112,7 @@
    "mode": "selfplay",
    "seed": 0,
    "iterations": 2000,
-   "label": "REINFORCE, self-play",
+   "label": "REINFORCE, standard",
    "row": [
     [
      0.4634999930858612,
@@ -230,7 +230,7 @@
    "mode": "selfplay",
    "seed": 0,
    "iterations": 2000,
-   "label": "A2C, self-play",
+   "label": "A2C, standard",
    "row": [
     [
      0.3075000047683716,
@@ -348,7 +348,7 @@
    "mode": "selfplay",
    "seed": 0,
    "iterations": 2000,
-   "label": "PPO, self-play",
+   "label": "PPO, standard",
    "row": [
     [
      1.0,

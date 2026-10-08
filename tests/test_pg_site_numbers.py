@@ -50,7 +50,7 @@ def test_the_exact_solver_is_unexploitable_and_ties_itself():
 # ---- every sentence on the page that makes a claim is true of the data ---------------------
 @pytest.mark.parametrize("label", ["REINFORCE", "A2C", "PPO"])
 def test_fictitious_play_wins_more_against_random_and_selfplay_ties_the_equilibrium_more(label):
-    fp, sp = learner(label, "fictitious play"), learner(label, "self-play")
+    fp, sp = learner(label, "fictitious play"), learner(label, "standard")
     assert fp["vs_random"][0] > sp["vs_random"][0]
     assert sp["vs_nash"][1] > fp["vs_nash"][1]
 
@@ -94,7 +94,7 @@ def test_no_learner_wins_a_game_against_the_exact_nash_policy_on_the_determinist
 
 
 def test_the_hero_numbers_are_computed_not_typed():
-    assert "range(results.learners)" in PAGE and "Math.min(...longer.flatMap" in PAGE
+    assert "Math.min(...rnd.learners.map" in PAGE and "mixed.exact.vs_nash[0]" in PAGE
 
 
 # ---- what the pages must not say ------------------------------------------------------------
@@ -180,9 +180,19 @@ def test_the_dog_game_code_and_data_are_gone():
         assert not (ROOT / rel).exists(), rel
 
 
-def test_the_tab_shows_wins_as_percentages_with_both_boards():
-    assert "function WinCell" in PAGE and "Wins vs. random" in PAGE
-    assert "Random move-order board" in PAGE and "Deterministic board (A10)" in PAGE
+def test_the_tab_leads_with_the_win_rate_against_the_best_response():
+    for part in ("function WinCell", "function BestResponseBars", "function RpsPlot"):
+        assert part in PAGE
+    assert "Win rate against the best response" in PAGE
+    assert "Exploitability</th>" not in PAGE and "Mirror gap" not in PAGE
+    assert PAGE.index("Win rate against the best response") < PAGE.index("and a random player")
+    for k in ("Deterministic board (A10)", "Random move-order board", "Continuing game"):
+        assert k in PAGE
+
+
+def test_the_tab_uses_the_agreed_terms():
+    assert "self-play" not in PAGE.lower()
+    assert "standard" in PAGE.lower() and "fictitious play" in PAGE.lower()
 
 
 @pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
@@ -191,7 +201,7 @@ def test_the_pdf_has_the_random_board_and_shows_wins_as_percentages():
                           capture_output=True, text=True, check=True).stdout
     text = " ".join(text.split())  # table headers wrap across lines
     assert "The random move-order board" in text
-    assert "wins vs. random" in text
+    assert "Win rate against the best response" in text
     assert "W/T/L" not in text
 
 
@@ -212,10 +222,11 @@ def test_the_mixed_state_claims_on_the_page_hold_for_the_data():
 
 
 def test_the_win_rates_come_first_on_the_tab_and_in_the_pdf():
-    head = PAGE[PAGE.index("<thead>", PAGE.index('id="results"')):]
-    assert head.index("Wins vs. random") < head.index("Exploitability")
+    assert PAGE.index("Win rate against the best response") < PAGE.index("and a random player")
     if shutil.which("pdftotext"):
         pdf = str(ROOT / "docs" / "policy_gradient.pdf")
         out = subprocess.run(["pdftotext", pdf, "-"], capture_output=True, text=True, check=True)
         text = " ".join(out.stdout.split())
-        assert text.index("wins vs. random") < text.index("exploitability (mean")
+        first = text.index("Against the best response, the exact solver wins")
+        assert first < text.index("How to read the numbers")
+        assert "exploitability (mean" not in text.lower()

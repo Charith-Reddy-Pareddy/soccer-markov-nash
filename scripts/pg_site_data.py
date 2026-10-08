@@ -11,17 +11,22 @@ import glob
 import json
 import pathlib
 import statistics as st
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 EXP = ROOT / "experiments"
 
 LEARNERS = [
-    ("REINFORCE", "self-play", "reinforce", "selfplay"),
+    ("REINFORCE", "standard", "reinforce", "selfplay"),
     ("REINFORCE", "fictitious play", "reinforce", "fictitious"),
-    ("A2C", "self-play", "a2c", "selfplay"),
+    ("A2C", "standard", "a2c", "selfplay"),
     ("A2C", "fictitious play", "a2c", "fictitious"),
-    ("PPO", "self-play", "ppo", "selfplay"),
+    ("PPO", "standard", "ppo", "selfplay"),
     ("PPO", "fictitious play", "ppo", "fictitious"),
+]
+EXTRA = [
+    ("A2C, exact critic", "standard", "a2c_exact", "selfplay"),
+    ("A2C, exact critic", "fictitious play", "a2c_exact", "fictitious"),
 ]
 NAMES = {"reinforce": "REINFORCE", "a2c": "A2C", "ppo": "PPO"}
 
@@ -69,6 +74,8 @@ def build() -> dict:
             longer.append({
                 "label": label, "training": training,
                 "short_mean": round(mean(rs, "exploitability"), 6),
+                "short_vs_nash": wtl(rs, "nash"), "short_vs_best_response": wtl(rs, "br"),
+                "vs_best_response": wtl(lr, "br"),
                 "runs": [round(float(r["exploitability"]), 6) for r in lr],
                 "vs_random": wtl(lr, "random"), "vs_nash": wtl(lr, "nash"),
             })
@@ -78,11 +85,14 @@ def build() -> dict:
         fp_br.append({
             "label": NAMES[rs[0]["algo"]], "best_response_iterations": int(rs[0]["br_iters"]),
             "checkpoints": [{"round": int(r["round"]),
-                             "exploitability": round(float(r["exploitability"]), 6)} for r in rs],
+                             "exploitability": round(float(r["exploitability"]), 6),
+                             "win_vs_best_response": round(float(r["row_win_vs_br"]), 6)}
+                            for r in rs],
         })
     return {"exact": summary([r for r in main if r["algo"] == "exact"]),
             "learners": learners, "longer": longer, "fp_br": fp_br,
-            "random": random_board(), "mixed": mixed_states()}
+            "random": random_board(), "mixed": mixed_states(),
+            "continuing": continuing_game(), "rps": rock_paper_scissors()}
 
 
 def random_board() -> dict:
@@ -101,6 +111,44 @@ def _avg(values) -> float:
 
 def _kind(row) -> str:
     return "three-way mix" if sum(v > 1e-6 for v in row) >= 3 else "two-way mix"
+
+
+def continuing_game() -> dict | None:
+    """The deterministic board as a fixed-length game that restarts after every goal; a
+    player wins a game by scoring more goals than the opponent in 100 steps."""
+    paths = sorted(glob.glob(str(EXP / "pg_finite_rate_a10_*.csv")))
+    if not paths:
+        return None
+    rows = [r for p in paths for r in read(p)]
+    learners = []
+    for label, training, algo, mode in [*LEARNERS, *EXTRA]:
+        rs = [r for r in rows if r["algo"] == algo and r["mode"] == mode]
+        if rs:
+            learners.append({"label": label, "training": training, **summary(rs)})
+    if len(learners) < len(LEARNERS) + len(EXTRA) or any(x["seeds"] < 3 for x in learners):
+        return None  # published only once every learner has all 3 seeds
+    return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners}
+
+
+def rock_paper_scissors(rounds: int = 60) -> dict:
+    """Best-response dynamics against fictitious play on rock-paper-scissors: the share of
+    rock in the current play (cycles) against in the average of all play so far (settles)."""
+    import numpy as np
+
+    sys.path.insert(0, str(ROOT))
+    from soccer_nash.fictitious_play import best_response_dynamics, fp_step
+
+    rps = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
+    path = best_response_dynamics(rps, rounds - 1)
+    cr, cc = np.zeros((1, 3)), np.zeros((1, 3))
+    cr[0, 0] = cc[0, 0] = 1.0
+    average = [1.0]
+    for _ in range(rounds - 1):
+        fp_step(rps[None], cr, cc)
+        average.append(float(cr[0, 0] / cr[0].sum()))
+    return {"rounds": rounds,
+            "best_response": [1.0 if a == 0 else 0.0 for a, _ in path[:rounds]],
+            "average": [round(v, 6) for v in average]}
 
 
 def mixed_states() -> dict | None:
