@@ -13,6 +13,8 @@ from __future__ import annotations
 import numpy as np
 
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
+from soccer_nash.matrix_games import pure_bounds
+from soccer_nash.numerics import epsilon_equilibrium
 from soccer_nash.symmetry import flip_distribution, mirror_state
 
 
@@ -94,10 +96,13 @@ def uniform(t, states):
 
 def play(
     game: SoccerGame, row, col, n_games: int, horizon: int, seed: int = 0,
+    starts: list[State] | None = None,
 ) -> dict[str, float]:
-    """Repeated play from the kickoff; player 0's win / tie / loss rates."""
+    """Repeated play from the kickoff, or cycling through ``starts``; player 0's
+    win / tie / loss rates."""
     rng = np.random.default_rng(seed)
-    states: list[State] = [game.initial_state()] * n_games
+    first = starts or [game.initial_state()]
+    states: list[State] = [first[k % len(first)] for k in range(n_games)]
     live = list(range(n_games))
     wins = losses = 0
     for t in range(horizon):
@@ -155,3 +160,34 @@ def evaluate(game, solver, exact, row, col, gamma, horizon, n_games, seed) -> di
                     f"col_loss_vs_{name}": r["win"]})
     out["mirror_gap_mean"], out["mirror_gap_max"] = mirror_gap(game, row, col)
     return {k: round(v, 3) for k, v in out.items()}
+
+
+def mixed_states(solver, values, gamma: float, tol: float = 1e-9) -> list[State]:
+    """States whose stage game at the first step has no pure saddle, i.e. where the
+    exact equilibrium has to mix."""
+    out = []
+    for st in solver._states:
+        lo, hi = pure_bounds(solver._matrix(st, values[1], gamma=gamma))
+        if hi - lo > tol:
+            out.append(st)
+    return out
+
+
+def mixed_state_metrics(solver, values, gamma, mixed, row0, col0, exact_row0, exact_col0) -> dict:
+    """How close a learner's first-step policy is to the exact equilibrium at the mixed
+    states: total-variation distance to the exact mix, equilibrium regret against the exact
+    stage game (0 at any equilibrium, whichever one), and how often it actually mixes.
+
+    Each of ``row0``, ``col0``, ``exact_row0`` and ``exact_col0`` maps a state to action
+    probabilities."""
+    tv_r, tv_c, regret, mixes_r = [], [], [], []
+    for st in mixed:
+        m = solver._matrix(st, values[1], gamma=gamma)
+        tv_r.append(0.5 * np.abs(row0[st] - exact_row0[st]).sum())
+        tv_c.append(0.5 * np.abs(col0[st] - exact_col0[st]).sum())
+        regret.append(epsilon_equilibrium(m, row0[st], col0[st]))
+        mixes_r.append(float(row0[st].max() < 0.9))
+    return {"mixed_states": len(mixed), "tv_row": float(np.mean(tv_r)),
+            "tv_col": float(np.mean(tv_c)),
+            "regret_mean": float(np.mean(regret)), "regret_max": float(np.max(regret)),
+            "share_mixing_row": float(np.mean(mixes_r))}
