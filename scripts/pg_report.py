@@ -157,6 +157,12 @@ def policy_html() -> str:
     return "".join(out)
 
 
+def win_cell(t) -> str:
+    """The share of games the player wins (scores while the opponent does not), with the
+    ties (no goal in 100 steps) and losses beneath it."""
+    return f'<b>{t[0]:.0%}</b><span class="sub">tie {t[1]:.0%} &middot; loss {t[2]:.0%}</span>'
+
+
 def f(v, d=2):
     return f"{v:.{d}f}"
 
@@ -174,8 +180,7 @@ def main() -> None:
         w_r, w_n, w_b = (wtl(rs, "row", o) for o in ("random", "nash", "br"))
         result_rows.append([
             lbl, f"{mean(rs, 'exploitability'):.3f} &plusmn; {sd(rs, 'exploitability'):.3f}",
-            "/".join(f(v) for v in w_r), "/".join(f(v) for v in w_n),
-            "/".join(f(v) for v in w_b), f(mean(rs, "mirror_gap_mean"))])
+            win_cell(w_r), win_cell(w_n), win_cell(w_b), f(mean(rs, "mirror_gap_mean"))])
     learners = [x for x in LEARNERS if x[1] != "exact"]
     means = [mean(data[(a, m)], "exploitability") for _, a, m in learners]
     lo, hi = min(means), max(means)
@@ -191,8 +196,8 @@ def main() -> None:
                 per_seed = [float(r["exploitability"]) for r in rs]
                 ends += [(short, v) for v in per_seed]
                 lrows.append([lbl, f"{short:.3f}", " / ".join(f"{v:.2f}" for v in per_seed),
-                              "/".join(f(v) for v in wtl(rs, "row", "random")),
-                              "/".join(f(v) for v in wtl(rs, "row", "nash"))])
+                              win_cell(wtl(rs, "row", "random")),
+                              win_cell(wtl(rs, "row", "nash"))])
         names = {"reinforce": "REINFORCE", "a2c": "A2C", "ppo": "PPO"}
         parts = []
         for algo in ("reinforce", "a2c", "ppo"):
@@ -208,7 +213,7 @@ def main() -> None:
 <p>Self-play with <b>8,000</b> iterations instead of 2,000 (2 seeds per learner; every other
 setting unchanged). The fictitious-play runs were too slow to repeat at this length.</p>
 {table(["learner", "exploitability, 2,000 it. (3-seed mean)", "exploitability, 8,000 it. (each seed)",
-        "W/T/L vs. random (8,000 it.)", "W/T/L vs. exact Nash (8,000 it.)"], lrows)}
+        "wins vs. random (8,000 it.)", "wins vs. exact Nash (8,000 it.)"], lrows)}
 <p class="muted">{verdict}; the best single run reaches {best:.2f}, still far from 0. With two
 seeds per learner this is a trend, not a result.</p></section>"""
 
@@ -247,6 +252,40 @@ deterministic play; the exact solution is deterministic at these positions.</p><
 
     summary_end = (
         "The action probabilities the trained policies output are in section 6." if pol else "")
+    rand_rows = [r for p in sorted(glob.glob(str(EXP / "pg_finite_random_*.csv"))) for r in read(p)]
+    rand_section = ""
+    rand_bullet = ""
+    if rand_rows:
+        rand = {(a, m): pick(rand_rows, a, m) for _, a, m in LEARNERS}
+        rand_table = []
+        for lbl, a, m in LEARNERS:
+            rs = rand[(a, m)]
+            rand_table.append([
+                lbl, f"{mean(rs, 'exploitability'):.3f} &plusmn; {sd(rs, 'exploitability'):.3f}",
+                win_cell(wtl(rs, "row", "random")), win_cell(wtl(rs, "row", "nash")),
+                win_cell(wtl(rs, "row", "br")), f(mean(rs, "mirror_gap_mean"))])
+        rlearn = [x for x in LEARNERS if x[1] != "exact"]
+        rmeans = [mean(rand[(a, m)], "exploitability") for _, a, m in rlearn]
+        rwins = [mean(rand[(a, m)], "row_win_vs_nash") for _, a, m in rlearn]
+        rgaps = [mean(rand[(a, m)], "mirror_gap_mean") for _, a, m in rlearn]
+        rchart = bar_chart([(lbl, [float(r["exploitability"]) for r in rand[(a, m)]])
+                            for lbl, a, m in LEARNERS])
+        rand_bullet = (f"<li>On the random move-order board their exploitability is {min(rmeans):.2f} to "
+                       f"{max(rmeans):.2f}; the learners win {min(rwins):.0%} to {max(rwins):.0%} of games against "
+                       f"the exact Nash policy.</li>")
+        rand_section = f"""<section><h2>The random move-order board</h2>
+<p>The same six learners, objective and settings on the board where the two moves are applied in a
+random order each step. The dynamics are stochastic and the exact solution mixes at 94 stage games.
+Exploitability is {min(rmeans):.2f} to {max(rmeans):.2f}, lower than on the deterministic board
+({lo:.2f} to {hi:.2f}), though each board is scored on its own scale. The learners win
+{min(rwins):.0%} to {max(rwins):.0%} of games against the exact Nash policy; the exact solver wins
+{mean(rand[("exact", "-")], "row_win_vs_nash"):.0%}, helped by starting with the ball. The two
+players' policies are not mirror images (mirror gap {min(rgaps):.2f} to {max(rgaps):.2f}).</p>
+{table(["learner", "exploitability (mean &plusmn; sd)", "wins vs. random", "wins vs. exact Nash",
+        "wins vs. best response", "mirror gap"], rand_table)}
+<div class="charts" style="grid-template-columns:1fr"><div>{rchart}</div></div>
+<p class="muted">Exploitability on the random board: bar = mean over 3 seeds, dots = individual seeds.</p></section>"""
+
     chart1 = bar_chart(expl)
     chart2 = stacked_chart(
         [(n, [wtl(data[(a, m)], "row", "random"), wtl(data[(a, m)], "row", "nash")])
@@ -269,6 +308,7 @@ table,svg,.callout{{break-inside:avoid}}
 table.qa{{break-inside:auto}} tr{{break-inside:avoid}}
 table.qa td{{text-align:left;vertical-align:top}}
 table.probs td,table.probs th{{padding:4px 6px}}
+.sub{{display:block;font-size:10px;color:var(--muted);font-weight:400}}
 h3{{font-size:13px;margin:16px 0 4px;color:var(--ink)}}
 h2{{break-after:avoid}}
 .callout{{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
@@ -296,6 +336,7 @@ read from the experiment files in the repository.</p>
 <li>Six learners, REINFORCE, A2C and PPO each trained by self-play and by fictitious play,
 on the discounted 100-step soccer game, scored against the exact solution.</li>
 <li>Their exploitability ranges from {lo:.2f} to {hi:.2f}; the exact solution is 0.</li>
+{rand_bullet}
 <li>Fictitious-play training wins more often against a random player; self-play training
 ties the exact equilibrium more often.</li>
 <li>The two players' policies are not mirror images (mirror gap {min(gaps):.2f} to
@@ -345,17 +386,20 @@ against a random player, the exact Nash policy and the exact best response.</li>
 </ul></section>
 
 <section><h2>5. Results</h2>
-{table(["learner", "exploitability (mean &plusmn; sd)", "W/T/L vs. random", "vs. exact Nash",
-        "vs. best response", "mirror gap"], result_rows)}
+<p>Wins are the share of the 1,000 games in which the player wins (scores while the opponent does
+not); the ties (no goal in 100 steps) and losses are shown beneath.</p>
+{table(["learner", "exploitability (mean &plusmn; sd)", "wins vs. random", "wins vs. exact Nash",
+        "wins vs. best response", "mirror gap"], result_rows)}
 <div class="charts" style="grid-template-columns:1fr"><div>{chart1}</div></div>
 <p class="muted">Exploitability by learner: bar = mean, dots = individual seeds.</p>
 <div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
 <div>{chart2}</div>
 <p>Two patterns repeat. Fictitious-play training beats a random player more often
-(0.88 to 0.96) but loses almost every game to the exact equilibrium. Self-play training
+(88% to 96% of games) but loses almost every game to the exact equilibrium. Self-play training
 wins less often against random and ties the equilibrium more often: it plays more
 cautiously. Neither is close to equilibrium play, and every learner loses almost every
 game to the exact best response.</p></section>
+{rand_section}
 {long_html}
 <section><h2>Fictitious play with best-response phases</h2>
 <p>A stricter version of fictitious play: in each round each player runs 100 (or 300)

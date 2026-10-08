@@ -20,6 +20,22 @@ The *mirror gap* is how far the two players' policies are from being mirror imag
 
 **None of the six gets near the equilibrium**: exploitability is 0.76-0.95 against 0, and every one loses almost every game to the best response. Fictitious-play training wins more against a random player (0.88-0.96) but loses to the exact equilibrium, while self-play ties it more often (0.67-0.85 for REINFORCE, A2C and PPO) without winning: it plays more cautiously. Three seeds, a single budget and untuned settings cannot rank the algorithms, and the result says these settings did not converge, not that policy gradient cannot. No learner is symmetric: the mirror gap is 0.44-0.81 against 0, so the two networks play clearly different strategies; the fictitious-play runs (0.44-0.49) are somewhat more symmetric than self-play (0.53-0.81), though three seeds cannot make much of that. The per-seed rows, including the column player's counts, are in `experiments/pg_finite_a10.csv`.
 
+### The random move-order board
+
+The same six learners, objective and settings on the board where the two moves are applied in a random order each step (stochastic dynamics; the exact solution mixes at 94 stage games). Wins are the share of 1,000 games the player wins (scores while the opponent does not); ties are games with no goal in 100 steps. 3 seeds each (`experiments/pg_finite_random_*.csv`):
+
+| learner | training | exploitability | wins vs. random | wins vs. exact Nash | wins vs. best response | mirror gap |
+|---|---|---|---|---|---|---|
+| Exact solver | -- | 0 | 100% (tie 0%, loss 0%) | 67% (tie 0%, loss 33%) | 67% (tie 0%, loss 33%) | 0 |
+| REINFORCE | self-play | 0.64 | 89% (tie 7%, loss 4%) | 29% (tie 0%, loss 71%) | 13% (tie 0%, loss 87%) | 0.56 |
+| REINFORCE | fictitious play | 0.74 | 95% (tie 2%, loss 4%) | 28% (tie 0%, loss 72%) | 8% (tie 0%, loss 92%) | 0.29 |
+| A2C | self-play | 0.61 | 92% (tie 5%, loss 3%) | 33% (tie 0%, loss 67%) | 14% (tie 0%, loss 86%) | 0.60 |
+| A2C | fictitious play | 0.64 | 94% (tie 3%, loss 3%) | 29% (tie 0%, loss 71%) | 12% (tie 0%, loss 88%) | 0.36 |
+| PPO | self-play | 0.75 | 92% (tie 4%, loss 4%) | 25% (tie 0%, loss 75%) | 9% (tie 4%, loss 86%) | 0.70 |
+| PPO | fictitious play | 0.71 | 94% (tie 2%, loss 4%) | 30% (tie 0%, loss 70%) | 5% (tie 0%, loss 95%) | 0.59 |
+
+Exploitability is lower than on the deterministic board for every learner, though each board is scored on its own scale. The learners win 25-33% of games against the exact Nash policy, where the exact solver wins 67% (it starts with the ball), and the two players' policies are not mirror images.
+
 **Does more training help?** Self-play at 8,000 iterations instead of 2,000, two seeds per learner, everything else unchanged (the fictitious-play runs were too slow to repeat):
 
 | learner | exploitability at 2,000 iterations (3-seed mean) | at 8,000 iterations, each seed | W / T / L vs. random | vs. exact Nash |

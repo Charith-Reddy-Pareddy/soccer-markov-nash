@@ -90,3 +90,4 @@ td.lo { color: var(--ember); font-weight: 600; }
 .stat-list b { color: var(--ink); }
 svg.pg-bars { width: 100%; height: auto; margin: 1.4rem 0 .2rem; }
 .text-table th, .text-table td { text-align: left; white-space: normal; vertical-align: top; }
+.tbl-wrap td .sub { display: block; font-size: .72rem; color: var(--ink-faint); font-weight: 400; white-space: nowrap; }

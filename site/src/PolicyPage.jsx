@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import PolicyOutputs from "./PolicyOutputs.jsx";
@@ -6,7 +7,7 @@ import results from "./pgResults.json";
 import "./landing.css";
 
 const f2 = (v) => v.toFixed(2);
-const triple = (v) => v.map(f2).join(" / ");
+const pct = (v) => `${Math.round(v * 100)}%`;
 const name = (l) => `${l.label}, ${l.training}`;
 
 // Exploitability of every learner: bar = mean, dots = individual seeds.
@@ -37,10 +38,29 @@ function ExploitBars({ rows }) {
   );
 }
 
+// Share of the 1,000 games the player wins (scores while the opponent does not),
+// with the ties (no goal in 100 steps) and losses beside it.
+function WinCell({ t }) {
+  return (
+    <td>
+      <b>{pct(t[0])}</b>
+      <span className="sub">tie {pct(t[1])} &middot; loss {pct(t[2])}</span>
+    </td>
+  );
+}
+
 export default function PolicyPage() {
-  const { learners, longer, fp_br: fpBr, exact } = results;
-  const means = learners.map((l) => l.exploitability.mean);
-  const lo = Math.min(...means), hi = Math.max(...means);
+  const [which, setWhich] = useState("deterministic");
+  const { longer, fp_br: fpBr } = results;
+  const board = which === "random" ? results.random : results;
+  const { learners, exact } = board;
+  const range = (ls) => {
+    const m = ls.map((l) => l.exploitability.mean);
+    return [Math.min(...m), Math.max(...m)];
+  };
+  const [lo, hi] = range(results.learners);
+  const [rlo, rhi] = range(results.random.learners);
+  const winsVsNash = learners.map((l) => l.vs_nash[0]);
   const bars = [
     { name: "Exact solver", mean: 0, runs: [0] },
     ...learners.map((l) => ({ name: name(l), mean: l.exploitability.mean, runs: l.exploitability.runs })),
@@ -71,6 +91,7 @@ export default function PolicyPage() {
             <div className="stat-list">
               <div><b>6</b> learners: REINFORCE, A2C and PPO, each by self-play and by fictitious play</div>
               <div>Exploitability <b>{f2(lo)} to {f2(hi)}</b> (the exact solution is 0)</div>
+              <div>On the random move-order board: <b>{f2(rlo)} to {f2(rhi)}</b></div>
               <div>Best single run at four times the training: <b>{f2(best)}</b></div>
               <div>Scored over <b>1,000</b> repeated games per opponent</div>
             </div>
@@ -125,18 +146,29 @@ export default function PolicyPage() {
         <div className="wrap">
           <div className="eyebrow"><span className="badge p0">03</span>Results</div>
           <h2>Scored against the exact solution</h2>
+          <div className="state-pick" role="group" aria-label="board">
+            <button className={which === "deterministic" ? "on" : ""} onClick={() => setWhich("deterministic")}>Deterministic board (A10)</button>
+            <button className={which === "random" ? "on" : ""} onClick={() => setWhich("random")}>Random move-order board</button>
+          </div>
+          <p className="state-note">
+            {which === "random"
+              ? "Players' moves are applied in a random order each step, so the exact solution mixes at 94 stage games and the dynamics are stochastic."
+              : "Players move simultaneously and the carrier wins every contested square, so the exact solution is pure everywhere."}
+            {" "}Each cell shows the share of 1,000 games the player wins (scores while the opponent does not); the ties
+            (no goal in 100 steps) and losses are beneath it.
+          </p>
           <div className="tbl-wrap">
             <table>
               <thead>
-                <tr><th>Learner</th><th>Training</th><th>Exploitability</th><th>Win / tie / loss vs. random</th><th>vs. exact Nash</th><th>vs. best response</th><th>Mirror gap</th></tr>
+                <tr><th>Learner</th><th>Training</th><th>Exploitability</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th><th>Mirror gap</th></tr>
               </thead>
               <tbody>
-                <tr><td>Exact solver</td><td>&mdash;</td><td className="hi">0</td><td>{triple(exact.vs_random)}</td><td>{triple(exact.vs_nash)}</td><td>{triple(exact.vs_best_response)}</td><td>0</td></tr>
+                <tr><td>Exact solver</td><td>&mdash;</td><td className="hi">0</td><WinCell t={exact.vs_random} /><WinCell t={exact.vs_nash} /><WinCell t={exact.vs_best_response} /><td>0</td></tr>
                 {learners.map((l) => (
                   <tr key={name(l)}>
                     <td>{l.label}</td><td>{l.training}</td>
                     <td>{f2(l.exploitability.mean)} &plusmn; {f2(l.exploitability.sd)}</td>
-                    <td>{triple(l.vs_random)}</td><td>{triple(l.vs_nash)}</td><td>{triple(l.vs_best_response)}</td>
+                    <WinCell t={l.vs_random} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
                     <td>{f2(l.mirror_gap)}</td>
                   </tr>
                 ))}
@@ -145,10 +177,18 @@ export default function PolicyPage() {
           </div>
           <ExploitBars rows={bars} />
           <p className="fig-cap">Exploitability by learner: bar = mean over {learners[0].seeds} seeds, dots = individual seeds.</p>
-          <p>Fictitious-play training wins more often against a random player; self-play training ties
-            the exact equilibrium more often. The two players&rsquo; policies are not mirror images
-            (mirror gap {f2(Math.min(...learners.map((l) => l.mirror_gap)))} to {f2(Math.max(...learners.map((l) => l.mirror_gap)))},
-            against 0 for the exact solution). These are {learners[0].seeds} seeds at one untuned budget.</p>
+          {which === "random" ? (
+            <p>Exploitability is {f2(rlo)} to {f2(rhi)}, lower than on the deterministic board ({f2(lo)} to {f2(hi)}),
+              though the two boards are scored on their own scales. The learners win {pct(Math.min(...winsVsNash))} to {pct(Math.max(...winsVsNash))} of
+              games against the exact Nash policy; the exact solver wins {pct(exact.vs_nash[0])}, helped by starting with the ball.
+              The two players&rsquo; policies are not mirror images (mirror gap {f2(Math.min(...learners.map((l) => l.mirror_gap)))} to {f2(Math.max(...learners.map((l) => l.mirror_gap)))}).</p>
+          ) : (
+            <p>Fictitious-play training wins more often against a random player; self-play training ties
+              the exact equilibrium more often. No learner wins a game against the exact Nash policy, because the
+              exact solution ties itself every game. The two players&rsquo; policies are not mirror images
+              (mirror gap {f2(Math.min(...learners.map((l) => l.mirror_gap)))} to {f2(Math.max(...learners.map((l) => l.mirror_gap)))},
+              against 0 for the exact solution). These are {learners[0].seeds} seeds at one untuned budget.</p>
+          )}
         </div>
       </section>
 
@@ -171,13 +211,13 @@ export default function PolicyPage() {
           <div className="tbl-wrap">
             <table>
               <thead>
-                <tr><th>Learner</th><th>Exploitability at 2,000 iterations (mean)</th><th>At 8,000 iterations (each seed)</th><th>Win / tie / loss vs. random</th><th>vs. exact Nash</th></tr>
+                <tr><th>Learner</th><th>Exploitability at 2,000 iterations (mean)</th><th>At 8,000 iterations (each seed)</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th></tr>
               </thead>
               <tbody>
                 {longer.map((l) => (
                   <tr key={l.label}>
                     <td>{l.label}, {l.training}</td><td>{f2(l.short_mean)}</td>
-                    <td>{l.runs.map(f2).join(" and ")}</td><td>{triple(l.vs_random)}</td><td>{triple(l.vs_nash)}</td>
+                    <td>{l.runs.map(f2).join(" and ")}</td><WinCell t={l.vs_random} /><WinCell t={l.vs_nash} />
                   </tr>
                 ))}
               </tbody>
