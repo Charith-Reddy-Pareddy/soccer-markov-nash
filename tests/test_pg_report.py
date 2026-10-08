@@ -29,3 +29,21 @@ def test_the_committed_results_cover_every_learner_in_the_report():
         pg_report.EXP / "dqn_finite_a10.csv")
     for _, algo, mode in pg_report.LEARNERS:
         assert pg_report.pick(rows, algo, mode), (algo, mode)
+
+
+def test_fp_br_table_reports_every_saved_run_with_a_verdict_that_matches_the_data():
+    html = pg_report.fp_br_html()
+    assert html.count("<tr>") == 1 + len(pg_report.glob.glob(str(pg_report.EXP / "pg_fp_br_*.csv")))
+    for run in pg_report.glob.glob(str(pg_report.EXP / "pg_fp_br_*.csv")):
+        rows = pg_report.read(run)
+        by_round = {int(r["round"]): float(r["exploitability"]) for r in rows}
+        rose = by_round[max(by_round)] > by_round[min(by_round)]
+        if not rose:
+            assert "higher than at the first" not in html
+
+
+def test_policy_table_has_one_row_per_learner_for_each_state():
+    html = pg_report.policy_html()
+    assert html.count("<table") == 4
+    assert html.count("Exact solver") == 4
+    assert html.count("REINFORCE, self-play") == 4
