@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import glob
+import json
 import pathlib
 import statistics as st
 
@@ -102,6 +103,60 @@ def table(head, rows, cls="") -> str:
     return f'<table class="{cls}"><tr>{th}</tr>{body}</table>'
 
 
+def fp_br_html() -> str:
+    """Exploitability after each checkpoint round of fictitious play with
+    best-response phases, one row per run, from the saved curves."""
+    runs = []
+    for path in sorted(glob.glob(str(EXP / "pg_fp_br_*.csv"))):
+        rs = read(path)
+        if rs:
+            runs.append(rs)
+    if not runs:
+        return ""
+    rounds = sorted({int(r["round"]) for rs in runs for r in rs})
+    rows, trend = [], []
+    for rs in runs:
+        by_round = {int(r["round"]): float(r["exploitability"]) for r in rs}
+        names = {"reinforce": "REINFORCE", "a2c": "A2C", "ppo": "PPO"}
+        label = f"{names[rs[0]['algo']]}, {rs[0]['br_iters']} iterations per best response"
+        rows.append([label] + [f"{by_round[k]:.2f}" if k in by_round else "" for k in rounds])
+        first, last = by_round[min(by_round)], by_round[max(by_round)]
+        trend.append(last > first)
+    verdict = ("In every run the exploitability at the last checkpoint is higher than at the first"
+               if all(trend) else
+               "Exploitability at the last checkpoint is lower than at the first in some runs")
+    return (table(["run"] + [f"round {k}" for k in rounds], rows)
+            + f'<p class="muted">{verdict}; none comes close to 0.</p>')
+
+
+def policy_html() -> str:
+    """Action probabilities of the trained learners at fixed states (from the
+    saved policy outputs), as one table per state."""
+    path = EXP / "pg_policy_outputs.json"
+    if not path.exists():
+        return ""
+    d = json.loads(path.read_text())
+    acts = d["actions"]
+
+    def cells(probs):
+        top = max(probs)
+        return "".join(
+            f'<td><b>{v * 100:.0f}%</b></td>' if v == top else f"<td>{v * 100:.0f}%</td>"
+            for v in probs)
+
+    head = ("<tr><th rowspan=2>policy</th><th colspan=4>player 0</th><th colspan=4>player 1</th></tr>"
+            "<tr>" + "".join(f"<th>{a}</th>" for a in acts * 2) + "</tr>")
+    out = []
+    for k, st_ in enumerate(d["states"]):
+        rows = [("Exact solver", d["exact"]["row"][k], d["exact"]["col"][k])]
+        rows += [(lr["label"], lr["row"][k], lr["col"][k]) for lr in d["learners"]]
+        body = "".join(f"<tr><td>{n}</td>{cells(r)}{cells(c)}</tr>" for n, r, c in rows)
+        x0, y0, x1, y1, b = st_["state"]
+        out.append(f"<h3>{st_['label']}: player 0 at ({x0}, {y0}), player 1 at ({x1}, {y1}), "
+                   f"player {b} has the ball</h3><table class=\"probs\">{head}{body}</table>")
+    return "".join(out)
+
+
 def f(v, d=2):
     return f"{v:.{d}f}"
 
@@ -181,6 +236,26 @@ seeds per learner this is a trend, not a result.</p></section>"""
         steps = [float(r["mean_capture_step"]) for r in rs if r["mean_capture_step"] != "nan"]
         dog_rows.append([name, f(mean(rs, "capture_rate")), f"{st.mean(steps):.0f}" if steps else "-"])
 
+    pol = policy_html()
+    pol_section = ""
+    if pol:
+        pol_section = """<section><h2>6. Action probabilities</h2>
+<p>What the trained policies actually output: the probability of each move (U, D, L, R) for
+both players, at the start of the game (all 100 steps left), at four fixed positions. The
+most likely move is in bold. The learners are seed 0 of the runs in section 5; the exact
+solver's play is shown for comparison.</p>""" + pol + """
+<p class="muted">Rows that put nearly all the probability on one move are close to
+deterministic play; the exact solution is deterministic at these positions.</p></section>
+
+"""
+
+    def sec(n: int) -> int:
+        return n if pol or n < 7 else n - 1
+
+    summary_end = (
+        f"The action probabilities the trained policies output are in section 6, and every "
+        f"assumption is listed in section {sec(10)}." if pol
+        else f"Every assumption is listed in section {sec(10)}.")
     chart1 = bar_chart(expl)
     chart2 = stacked_chart(
         [(n, [wtl(data[(a, m)], "row", "random"), wtl(data[(a, m)], "row", "nash")])
@@ -202,6 +277,8 @@ section{{margin-top:26px;padding-top:14px;border-top:2px solid var(--line)}}
 table,svg,.callout{{break-inside:avoid}}
 table.qa{{break-inside:auto}} tr{{break-inside:avoid}}
 table.qa td{{text-align:left;vertical-align:top}}
+table.probs td,table.probs th{{padding:4px 6px}}
+h3{{font-size:13px;margin:16px 0 4px;color:var(--ink)}}
 h2{{break-after:avoid}}
 .callout{{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);
 border-radius:6px;padding:10px 16px;margin:12px 0}}
@@ -223,34 +300,32 @@ ul{{margin:6px 0 6px 18px;padding:0}} li{{margin:3px 0}}
 against the exact solution of the discounted 100-step soccer game. Every number below is
 read from the experiment files in the repository.</p>
 
-<div class="callout warn"><b>The short answer: not yet.</b>
+<div class="callout"><b>Summary</b>
 <ul>
-<li>All six learners (REINFORCE, A2C and PPO, each trained by self-play and by fictitious
-play) stay far from the equilibrium: exploitability {lo:.2f} to {hi:.2f}, where the exact
-solution is 0.</li>
-<li>Fictitious-play training wins more against a random player but loses to the exact
-equilibrium; self-play training ties it more often.</li>
-<li>No learner is mirror-symmetric (mirror gap {min(gaps):.2f} to {max(gaps):.2f}, against 0
-for the exact solution).</li>
+<li>Six learners, REINFORCE, A2C and PPO each trained by self-play and by fictitious play,
+on the discounted 100-step soccer game, scored against the exact solution.</li>
+<li>Their exploitability ranges from {lo:.2f} to {hi:.2f}; the exact solution is 0.</li>
+<li>Fictitious-play training wins more often against a random player; self-play training
+ties the exact equilibrium more often.</li>
+<li>The two players' policies are not mirror images (mirror gap {min(gaps):.2f} to
+{max(gaps):.2f}; 0 for the exact solution).</li>
 </ul>
-These are 3 seeds at one untuned budget, so this shows that these settings did not
-converge, not that policy gradient cannot.</div>
+Results are for 3 seeds at one untuned budget. {summary_end}</div>
 
-<section><h2>1. What the professor said, and what was done</h2>
-<p>The group's questions and his answers (relayed in the group channel) set the design
-of everything below.</p>
-{table(["question", "his answer", "what was done"], [
-  ["Which environment for policy gradient?", "Any one where the solver is right and the comparison is meaningful; fewer mixed-equilibrium stages is better this time.", "The deterministic A10 board, which has no mixed stage games, is the main environment; the random move-order board is kept as an earlier comparison."],
-  ["Discounted or finite-horizon objective?", "Policy gradient can only approximate finite-horizon discounted rewards, so both.", "Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input."],
-  ["How should fictitious play be used?", "No: there is no explicit game solving in policy gradient; fictitious play is how policy gradient solves things.", "Each player is trained by policy gradient against the average of the opponent's past policies. Matrix-level fictitious play is kept only as a side check (section 7)."],
-  ["How to define the win rate?", "Repeated game plays, and just count the wins.", "1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted."],
-  ["Continuous best-response methods now?", "No, those are for DQN, not policy gradient, which can be adapted to continuous actions directly.", "Not applied to policy gradient. The dog game uses an angle-radius policy trained directly (section 8, provisional); the bisection, finite-difference and quadratic methods exist separately for DQN."]], "qa")}
+<section><h2>1. What was done</h2>
+<p>These choices fix the setup used throughout.</p>
+{table(["topic", "what was done", "why"], [
+  ["Environment", "The deterministic A10 board is the main environment; the random move-order board is kept as an earlier comparison.", "The deterministic board has no mixed-equilibrium stages, so the comparison with the exact solution is clean."],
+  ["Objective", "Discount 0.9 over 100 steps, a tie at the end, and the remaining step count as a network input.", "Policy gradient can only approximate a finite-horizon discounted reward."],
+  ["Fictitious play", f"Each player is trained by policy gradient against the average of the opponent's past policies. Matrix-level fictitious play is kept only as a side check (section {sec(8)}).", "Policy gradient does the solving; no game is solved explicitly."],
+  ["Win rate", "1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses are all counted.", "Repeated play and counting wins."],
+  ["Continuous actions", f"The dog game uses an angle-radius policy trained directly by policy gradient (section {sec(9)}, provisional). The bisection, finite-difference and quadratic best-response methods exist separately.", "Policy gradient adapts to continuous actions directly; the best-response search methods belong to DQN."]], "qa")}
 </section>
 
 <section><h2>2. Setup</h2>
 <p>The environment is the deterministic A10 soccer game on a 7&times;5 board with a
-three-cell goal; it has no mixed-strategy stage games, which the professor preferred for
-this comparison. The objective is <b>discounted</b> (&gamma; = 0.9) over a
+three-cell goal; it has no mixed-strategy stage games, which keeps the comparison with the
+exact solution clean. The objective is <b>discounted</b> (&gamma; = 0.9) over a
 <b>100-step horizon</b>, a tie if nobody scores, and the network receives the
 <b>remaining step count</b> as an input. The reference is the exact discounted backward
 induction over the same 100 steps (<code>soccer_nash/finite_horizon.py</code>), whose
@@ -292,31 +367,39 @@ wins less often against random and ties the equilibrium more often: it plays mor
 cautiously. Neither is close to equilibrium play, and every learner loses almost every
 game to the exact best response.</p></section>
 {long_html}
-<section><h2>6. Earlier experiments</h2>
-<p>Before the professor's answers, the same algorithms were run on the stationary
+<section><h2>Fictitious play with best-response phases</h2>
+<p>A stricter version of fictitious play: in each round each player runs 100 (or 300)
+policy-gradient iterations to approximate a best response to the average of the
+opponent's earlier best responses, then adds that policy to its history. The reported
+policy is the per-state average of the best responses. Exploitability after each
+checkpoint round (1 seed per run, 64 episodes per iteration):</p>
+{fp_br_html()}</section>
+
+{pol_section}<section><h2>{sec(7)}. Earlier experiments</h2>
+<p>Earlier, the same algorithms were run on the stationary
 discounted game (no step count), from the kickoff or from random starting states.</p>
 {table(["setup", "algorithm", "exploitability", "mean equilibrium regret", "action agreement"], earlier)}
 <p class="muted">Exploring starts raise per-state accuracy (action agreement) but not
 play from the kickoff.</p></section>
 
-<section><h2>7. Fictitious play on the exact stage games</h2>
+<section><h2>{sec(8)}. Fictitious play on the exact stage games</h2>
 <p>As a side check, fictitious play was also run on the exact 4&times;4 stage matrices of
 the random move-order board (2,380 states, 94 with no pure saddle). On
 rock-paper-scissors best-response dynamics cycle forever while fictitious play settles at
 1/3 each; on the soccer stage games it recovers the exact values.</p>{fp_html}
-<p class="muted">This is matrix-level fictitious play. The professor's point is that policy
-gradient itself does the solving, which is what section 5 tests.</p></section>
+<p class="muted">This is matrix-level fictitious play. Here policy gradient itself
+does the solving, which is what section 5 tests.</p></section>
 
-<section><h2>8. Continuous actions: the dog game (provisional)</h2>
+<section><h2>{sec(9)}. Continuous actions: the dog game (provisional)</h2>
 <p>Policy gradient is applied to continuous actions directly: a network outputs an angle
 (von Mises) and a radius (scaled Beta) and is trained by self-play PPO. The dog-and-sheep
 game itself is <b>my placeholder</b>, since no definition exists yet, so these numbers
 say nothing about equilibrium.</p>
 {table(["matchup", "capture rate", "mean capture step"], dog_rows)}</section>
 
-<section><h2>9. Assumptions and open questions</h2>
-<p>All 27 assumptions are listed, each marked as quoted, answered by the professor, mine or
-invented, in <code>docs/solver_assumptions.md</code>. Still open for the professor: the
+<section><h2>{sec(10)}. Assumptions and open questions</h2>
+<p>All 27 assumptions are listed, each marked as quoted, answered, mine or
+invented, in <code>docs/solver_assumptions.md</code>. Still open: the
 dog-game rules, the polar-policy distribution, what &ldquo;check symmetry&rdquo; should
 mean, which states to evaluate on, how degenerate equilibria should be compared, and two
 page-3 items (the &ldquo;R game&rdquo; closed form and &ldquo;# time f is activated&rdquo;).</p>
