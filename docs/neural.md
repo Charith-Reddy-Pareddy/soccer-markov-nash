@@ -197,8 +197,7 @@ further.
 
 Everything in this page is discrete: a 4x4 (or 5x5) action grid, a
 network that outputs a matrix over it. The actual eventual challenge is a
-**continuous-action** version of this game -- a continuous dog-and-sheep /
-continuous soccer pursuit problem -- and the point of that future work is
+**continuous-action** version of this game -- a continuous soccer pursuit problem -- and the point of that future work is
 *not* to discretize a continuous action space back down to a grid and reuse
 everything above unchanged. The intended path:
 

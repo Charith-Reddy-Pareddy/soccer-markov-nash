@@ -86,3 +86,26 @@ def test_no_published_pdf_mentions_the_professor():
         if "professor" in text:
             offenders.append(pdf.name)
     assert offenders == []
+
+
+def test_no_published_page_or_pdf_mentions_the_dog_game():
+    pages = [*(ROOT / "docs").glob("*.md"), *(ROOT / "docs").glob("*.html"), ROOT / "README.md"]
+    offenders = [p.name for p in pages if re.search(r"\b(dog|sheep)\b", p.read_text().lower())]
+    if shutil.which("pdftotext"):
+        for pdf in (ROOT / "docs").glob("*.pdf"):
+            text = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True,
+                                  text=True, check=True).stdout.lower()
+            if re.search(r"\b(dog|sheep)\b", text):
+                offenders.append(pdf.name)
+    assert offenders == []
+
+
+def test_the_dog_game_code_and_data_are_gone():
+    for rel in ("soccer_nash/dog_game.py", "scripts/dog_game.py", "tests/test_dog_game.py",
+                "experiments/dog_game.csv", "experiments/dog_game_dqn.csv", "docs/dog_game.md"):
+        assert not (ROOT / rel).exists(), rel
+
+
+def test_the_landing_page_has_no_star_button():
+    assert "Star on GitHub" not in LANDING
+    assert "View the code on GitHub" in LANDING
