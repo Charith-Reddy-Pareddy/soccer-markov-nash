@@ -69,3 +69,20 @@ def test_the_published_pdf_never_mentions_the_professor():
                           capture_output=True, text=True, check=True).stdout.lower()
     assert "professor" not in text
     assert "action probabilities" in text
+
+
+def test_no_published_page_mentions_the_professor():
+    pages = [*(ROOT / "docs").glob("*.md"), *(ROOT / "docs").glob("*.html"), ROOT / "README.md"]
+    offenders = [p.name for p in pages if "professor" in p.read_text().lower()]
+    assert offenders == []
+
+
+@pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
+def test_no_published_pdf_mentions_the_professor():
+    offenders = []
+    for pdf in (ROOT / "docs").glob("*.pdf"):
+        text = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True,
+                              text=True, check=True).stdout.lower()
+        if "professor" in text:
+            offenders.append(pdf.name)
+    assert offenders == []

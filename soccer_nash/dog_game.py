@@ -1,8 +1,8 @@
 """A provisional continuous dog-and-sheep game with an angle-radius policy.
 
 Nothing about this game has been specified yet; every choice below is a
-placeholder (see ``docs/solver_assumptions.md``, S14-S16, and the questions
-for the professor). A dog and a sheep move in the unit square. Each step both
+placeholder (see ``docs/solver_assumptions.md``, S14-S16, and its open
+questions). A dog and a sheep move in the unit square. Each step both
 pick an angle ``t`` and a radius ``r <= speed`` and step by ``r (cos t, sin t)``.
 The dog wins (+1) by getting within ``CAPTURE`` of the sheep, and loses (-1) if
 the sheep lasts ``HORIZON`` steps. Zero-sum.

@@ -1,7 +1,7 @@
 """REINFORCE, A2C and PPO for the discounted finite-horizon soccer game, trained
-either by plain self-play or by fictitious play -- the setup the professor
-asked for: policy gradient solves the game by itself, with no exact stage-game
-solving, and sees the remaining step count as an input.
+either by plain self-play or by fictitious play: policy gradient solves the game
+by itself, with no exact stage-game solving, and sees the remaining step count as
+an input.
 
 Fictitious play here is the training scheme, not a matrix solver: each player
 keeps improving its network by policy gradient against the *empirical average*

@@ -328,7 +328,7 @@ export default function ExplorerApp() {
 
   // Jump straight to a typed state, e.g. "3,4,4,4,0" -- the ball index is
   // optional and defaults to 0, since most of the states named in
-  // conversation (screenshots, docs, a professor's own notes) are already
+  // conversation (screenshots, docs, hand-written notes) are already
   // given as "(x0, y0, x1, y1)" or the full 5-tuple interchangeably. Rejects
   // anything that isn't a legal state on the *current* board rather than
   // silently clamping or guessing, since a board switch changes which
