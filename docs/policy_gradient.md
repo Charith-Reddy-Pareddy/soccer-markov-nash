@@ -36,6 +36,22 @@ The same six learners, objective and settings on the board where the two moves a
 
 Exploitability is lower than on the deterministic board for every learner, though each board is scored on its own scale. The learners win 25-33% of games against the exact Nash policy, where the exact solver wins 67% (it starts with the ball), and the two players' policies are not mirror images.
 
+### Mixed states of the random board
+
+At 94 states of the random move-order board the exact equilibrium has to randomize (player 0 mixes two moves at 79, three at 8, and plays a single move at 7, where player 1 does the mixing). Each learner plays 20 games from every one of these states with the full 100 steps left; 3 seeds each (`experiments/pg_mixed_states.json`, from `scripts/pg_mixed_states.py`). Distance is the total-variation distance between the learner's first-step probabilities and the exact mix (0 = identical, 1 = no overlap); regret is how much either player could gain by deviating from the learner's pair of policies (0 at any equilibrium); "mixes" is the share of states where player 0 puts under 90% on its top move.
+
+| learner | training | wins vs. random | wins vs. exact Nash | wins vs. best response | distance (player 0 / 1) | regret, mean (max) | player 0 mixes |
+|---|---|---|---|---|---|---|---|
+| Exact solver | -- | 99% (tie 0%, loss 1%) | 50% (tie 0%, loss 50%) | 50% (tie 0%, loss 50%) | 0 | 0 | -- |
+| REINFORCE | self-play | 52% (tie 24%, loss 23%) | 12% (tie 0%, loss 88%) | 16% (tie 0%, loss 84%) | 0.64 / 0.62 | 0.17 (0.66) | 72% |
+| REINFORCE | fictitious play | 73% (tie 6%, loss 20%) | 11% (tie 0%, loss 89%) | 23% (tie 0%, loss 77%) | 0.65 / 0.63 | 0.17 (0.55) | 98% |
+| A2C | self-play | 69% (tie 15%, loss 15%) | 14% (tie 0%, loss 86%) | 18% (tie 0%, loss 82%) | 0.59 / 0.57 | 0.17 (0.67) | 71% |
+| A2C | fictitious play | 67% (tie 13%, loss 21%) | 11% (tie 0%, loss 89%) | 20% (tie 0%, loss 80%) | 0.65 / 0.63 | 0.18 (0.60) | 100% |
+| PPO | self-play | 63% (tie 15%, loss 22%) | 15% (tie 0%, loss 85%) | 25% (tie 0%, loss 75%) | 0.67 / 0.65 | 0.23 (0.67) | 29% |
+| PPO | fictitious play | 69% (tie 8%, loss 23%) | 14% (tie 0%, loss 86%) | 40% (tie 0%, loss 60%) | 0.64 / 0.71 | 0.21 (0.68) | 72% |
+
+Started from the mixed states, every learner wins far fewer games against the exact Nash policy than the exact solver does, and none is close to the exact mix.
+
 **Does more training help?** Self-play at 8,000 iterations instead of 2,000, two seeds per learner, everything else unchanged (the fictitious-play runs were too slow to repeat):
 
 | learner | exploitability at 2,000 iterations (3-seed mean) | at 8,000 iterations, each seed | W / T / L vs. random | vs. exact Nash |

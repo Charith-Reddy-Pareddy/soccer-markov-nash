@@ -10,6 +10,37 @@ const f2 = (v) => v.toFixed(2);
 const pct = (v) => `${Math.round(v * 100)}%`;
 const name = (l) => `${l.label}, ${l.training}`;
 
+// Wins, ties and losses of every learner against a random player and against the exact
+// Nash policy (green = the player wins, grey = no goal in 100 steps, orange = the opponent wins).
+function WinBars({ rows }) {
+  const W = 660, left = 200, gap = 26, rowH = 26, panel = (W - left - gap - 8) / 2;
+  const H = rowH * rows.length + 34;
+  const cols = ["var(--pitch)", "var(--rule-strong)", "var(--ember)"];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="wins, ties and losses of each learner" className="pg-bars">
+      {["Against a random player", "Against the exact Nash policy"].map((t, k) => (
+        <text key={t} x={left + k * (panel + gap)} y="12" fontSize="11" fontWeight="700" fill="var(--ink-faint)">{t}</text>
+      ))}
+      {rows.map((r, i) => {
+        const y = 22 + i * rowH;
+        return (
+          <g key={r.name}>
+            <text x={left - 8} y={y + 12} textAnchor="end" fontSize="12" fill="var(--ink)">{r.name}</text>
+            {[r.random, r.nash].map((t, k) => {
+              let x = left + k * (panel + gap);
+              return t.map((v, j) => {
+                const rect = <rect key={`${k}-${j}`} x={x} y={y} width={v * panel} height="16" fill={cols[j]} />;
+                x += v * panel;
+                return rect;
+              });
+            })}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // Exploitability of every learner: bar = mean, dots = individual seeds.
 function ExploitBars({ rows }) {
   const W = 660, left = 200, right = 48, rowH = 26;
@@ -51,7 +82,7 @@ function WinCell({ t }) {
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr } = results;
+  const { longer, fp_br: fpBr, mixed } = results;
   const board = which === "random" ? results.random : results;
   const { learners, exact } = board;
   const range = (ls) => {
@@ -61,6 +92,13 @@ export default function PolicyPage() {
   const [lo, hi] = range(results.learners);
   const [rlo, rhi] = range(results.random.learners);
   const winsVsNash = learners.map((l) => l.vs_nash[0]);
+  const winRows = [
+    { name: "Exact solver", random: exact.vs_random, nash: exact.vs_nash },
+    ...learners.map((l) => ({ name: name(l), random: l.vs_random, nash: l.vs_nash })),
+  ];
+  const winsRandom = results.learners.map((l) => l.vs_random[0]);
+  const winsRandomRnd = results.random.learners.map((l) => l.vs_random[0]);
+  const winsNashRnd = results.random.learners.map((l) => l.vs_nash[0]);
   const bars = [
     { name: "Exact solver", mean: 0, runs: [0] },
     ...learners.map((l) => ({ name: name(l), mean: l.exploitability.mean, runs: l.exploitability.runs })),
@@ -89,11 +127,11 @@ export default function PolicyPage() {
           </div>
           <div className="hero-card">
             <div className="stat-list">
-              <div><b>6</b> learners: REINFORCE, A2C and PPO, each by self-play and by fictitious play</div>
-              <div>Exploitability <b>{f2(lo)} to {f2(hi)}</b> (the exact solution is 0)</div>
-              <div>On the random move-order board: <b>{f2(rlo)} to {f2(rhi)}</b></div>
+              <div>Against a random player the six learners win <b>{pct(Math.min(...winsRandom, ...winsRandomRnd))} to {pct(Math.max(...winsRandom, ...winsRandomRnd))}</b> of games</div>
+              <div>Against the exact Nash policy they win <b>0%</b> on the deterministic board (it ties itself) and <b>{pct(Math.min(...winsNashRnd))} to {pct(Math.max(...winsNashRnd))}</b> on the random board, where the exact solver wins {pct(results.random.exact.vs_nash[0])}</div>
+              <div>Exploitability <b>{f2(lo)} to {f2(hi)}</b> deterministic, <b>{f2(rlo)} to {f2(rhi)}</b> random (the exact solution is 0)</div>
               <div>Best single run at four times the training: <b>{f2(best)}</b></div>
-              <div>Scored over <b>1,000</b> repeated games per opponent</div>
+              <div><b>6</b> learners (REINFORCE, A2C, PPO; self-play and fictitious play), <b>1,000</b> repeated games per opponent</div>
             </div>
           </div>
         </div>
@@ -160,21 +198,23 @@ export default function PolicyPage() {
           <div className="tbl-wrap">
             <table>
               <thead>
-                <tr><th>Learner</th><th>Training</th><th>Exploitability</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th><th>Mirror gap</th></tr>
+                <tr><th>Learner</th><th>Training</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th><th>Exploitability</th><th>Mirror gap</th></tr>
               </thead>
               <tbody>
-                <tr><td>Exact solver</td><td>&mdash;</td><td className="hi">0</td><WinCell t={exact.vs_random} /><WinCell t={exact.vs_nash} /><WinCell t={exact.vs_best_response} /><td>0</td></tr>
+                <tr><td>Exact solver</td><td>&mdash;</td><WinCell t={exact.vs_random} /><WinCell t={exact.vs_nash} /><WinCell t={exact.vs_best_response} /><td className="hi">0</td><td>0</td></tr>
                 {learners.map((l) => (
                   <tr key={name(l)}>
                     <td>{l.label}</td><td>{l.training}</td>
-                    <td>{f2(l.exploitability.mean)} &plusmn; {f2(l.exploitability.sd)}</td>
                     <WinCell t={l.vs_random} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
+                    <td>{f2(l.exploitability.mean)} &plusmn; {f2(l.exploitability.sd)}</td>
                     <td>{f2(l.mirror_gap)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <WinBars rows={winRows} />
+          <p className="fig-cap">Share of games won (green), tied (grey) and lost (orange) by each learner, over {learners[0].seeds} seeds.</p>
           <ExploitBars rows={bars} />
           <p className="fig-cap">Exploitability by learner: bar = mean over {learners[0].seeds} seeds, dots = individual seeds.</p>
           {which === "random" ? (
@@ -192,9 +232,63 @@ export default function PolicyPage() {
         </div>
       </section>
 
-      <section className="band-tint" id="probabilities">
+      {mixed && (
+        <section className="band-tint" id="mixed">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">04</span>Mixed states</div>
+            <h2>Where the exact answer has to mix</h2>
+            <p className="lede">At {mixed.mixed_states} states of the random move-order board the exact equilibrium
+              has to randomize: the row player mixes two moves at {mixed.support_sizes["2"]}, three moves at {mixed.support_sizes["3"]},
+              and plays a single move at {mixed.support_sizes["1"]}, where the column player does the mixing. Each learner
+              starts {mixed.games_per_start} games from every one of these states with the full 100 steps left.</p>
+            <div className="tbl-wrap">
+              <table>
+                <thead>
+                  <tr><th>Learner</th><th>Training</th><th>Wins vs. random</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Exact solver</td><td>&mdash;</td><WinCell t={mixed.exact.vs_random} /><WinCell t={mixed.exact.vs_nash} /><WinCell t={mixed.exact.vs_best_response} /></tr>
+                  {mixed.learners.map((l) => (
+                    <tr key={name(l)}>
+                      <td>{l.label}</td><td>{l.training}</td>
+                      <WinCell t={l.vs_random} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="fig-cap">Share of games won, with ties and losses beneath, over {mixed.learners[0].seeds} seeds.</p>
+            <h3>How close are their probabilities to the exact mix?</h3>
+            <div className="tbl-wrap">
+              <table>
+                <thead>
+                  <tr><th>Learner</th><th>Training</th><th>Distance from the exact mix, player 0</th><th>Distance, player 1</th><th>Equilibrium regret, mean (max)</th><th>Player 0 mixes</th></tr>
+                </thead>
+                <tbody>
+                  {mixed.learners.map((l) => (
+                    <tr key={name(l)}>
+                      <td>{l.label}</td><td>{l.training}</td>
+                      <td>{f2(l.tv_row)}</td><td>{f2(l.tv_col)}</td>
+                      <td>{f2(l.regret_mean)} ({f2(l.regret_max)})</td><td>{pct(l.share_mixing_row)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="fig-cap">Distance is the total-variation distance between the learner&rsquo;s probabilities and the exact
+              equilibrium mix at the first step (0 = identical, 1 = no overlap), averaged over the {mixed.mixed_states} states.
+              Equilibrium regret is how much either player could gain by deviating from the learner&rsquo;s pair of policies
+              at that state (0 at any equilibrium). &ldquo;Player 0 mixes&rdquo; is the share of states where it puts
+              less than 90% on its most likely move.</p>
+            <h3>Three of these states in full</h3>
+            <PolicyOutputs data={mixed.policy_outputs} />
+          </div>
+        </section>
+      )}
+
+      <section id="probabilities">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p1">04</span>Action probabilities</div>
+          <div className="eyebrow"><span className="badge p0">05</span>Action probabilities</div>
           <h2>What the trained policies output</h2>
           <p className="lede">The probability each trained network gives to every move, at four fixed
             positions, next to the exact solver&rsquo;s move. The networks are seed 0 of the runs above.</p>
@@ -202,9 +296,9 @@ export default function PolicyPage() {
         </div>
       </section>
 
-      <section id="more">
+      <section className="band-tint" id="more">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p0">05</span>More training</div>
+          <div className="eyebrow"><span className="badge p1">06</span>More training</div>
           <h2>Self-play at four times the training</h2>
           <p className="lede">The same self-play learners with 8,000 iterations instead of 2,000
             (two seeds each; every other setting unchanged).</p>
@@ -227,9 +321,9 @@ export default function PolicyPage() {
         </div>
       </section>
 
-      <section className="band-tint" id="best-response">
+      <section id="best-response">
         <div className="wrap">
-          <div className="eyebrow"><span className="badge p1">06</span>Fictitious play with best responses</div>
+          <div className="eyebrow"><span className="badge p0">07</span>Fictitious play with best responses</div>
           <h2>A stricter fictitious play</h2>
           <p className="lede">In each round every player runs 100 (or 300) policy-gradient iterations to
             approximate a best response to the average of the opponent&rsquo;s earlier best responses, then adds it

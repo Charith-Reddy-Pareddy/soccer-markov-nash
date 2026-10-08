@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import glob
+import importlib.util
 import json
 import pathlib
 import statistics as st
@@ -133,9 +134,10 @@ def policy_html() -> str:
     """Action probabilities of the trained learners at fixed states (from the
     saved policy outputs), as one table per state."""
     path = EXP / "pg_policy_outputs.json"
-    if not path.exists():
-        return ""
-    d = json.loads(path.read_text())
+    return policy_tables(json.loads(path.read_text())) if path.exists() else ""
+
+
+def policy_tables(d: dict) -> str:
     acts = d["actions"]
 
     def cells(probs):
@@ -155,6 +157,14 @@ def policy_html() -> str:
         out.append(f"<h3>{st_['label']}: player 0 at ({x0}, {y0}), player 1 at ({x1}, {y1}), "
                    f"player {b} has the ball</h3><table class=\"probs\">{head}{body}</table>")
     return "".join(out)
+
+
+def load_mixed() -> dict | None:
+    spec = importlib.util.spec_from_file_location(
+        "pg_site_data", pathlib.Path(__file__).with_name("pg_site_data.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.mixed_states()
 
 
 def win_cell(t) -> str:
@@ -179,8 +189,9 @@ def main() -> None:
         rs = data[(a, m)]
         w_r, w_n, w_b = (wtl(rs, "row", o) for o in ("random", "nash", "br"))
         result_rows.append([
-            lbl, f"{mean(rs, 'exploitability'):.3f} &plusmn; {sd(rs, 'exploitability'):.3f}",
-            win_cell(w_r), win_cell(w_n), win_cell(w_b), f(mean(rs, "mirror_gap_mean"))])
+            lbl, win_cell(w_r), win_cell(w_n), win_cell(w_b),
+            f"{mean(rs, 'exploitability'):.3f} &plusmn; {sd(rs, 'exploitability'):.3f}",
+            f(mean(rs, "mirror_gap_mean"))])
     learners = [x for x in LEARNERS if x[1] != "exact"]
     means = [mean(data[(a, m)], "exploitability") for _, a, m in learners]
     lo, hi = min(means), max(means)
@@ -261,18 +272,21 @@ deterministic play; the exact solution is deterministic at these positions.</p><
         for lbl, a, m in LEARNERS:
             rs = rand[(a, m)]
             rand_table.append([
-                lbl, f"{mean(rs, 'exploitability'):.3f} &plusmn; {sd(rs, 'exploitability'):.3f}",
-                win_cell(wtl(rs, "row", "random")), win_cell(wtl(rs, "row", "nash")),
-                win_cell(wtl(rs, "row", "br")), f(mean(rs, "mirror_gap_mean"))])
+                lbl, win_cell(wtl(rs, "row", "random")), win_cell(wtl(rs, "row", "nash")),
+                win_cell(wtl(rs, "row", "br")),
+                f"{mean(rs, 'exploitability'):.3f} &plusmn; {sd(rs, 'exploitability'):.3f}",
+                f(mean(rs, "mirror_gap_mean"))])
         rlearn = [x for x in LEARNERS if x[1] != "exact"]
         rmeans = [mean(rand[(a, m)], "exploitability") for _, a, m in rlearn]
         rwins = [mean(rand[(a, m)], "row_win_vs_nash") for _, a, m in rlearn]
         rgaps = [mean(rand[(a, m)], "mirror_gap_mean") for _, a, m in rlearn]
         rchart = bar_chart([(lbl, [float(r["exploitability"]) for r in rand[(a, m)]])
                             for lbl, a, m in LEARNERS])
-        rand_bullet = (f"<li>On the random move-order board their exploitability is {min(rmeans):.2f} to "
-                       f"{max(rmeans):.2f}; the learners win {min(rwins):.0%} to {max(rwins):.0%} of games against "
-                       f"the exact Nash policy.</li>")
+        rwinchart = stacked_chart(
+            [(n, [wtl(rand[(a, m)], "row", "random"), wtl(rand[(a, m)], "row", "nash")])
+             for n, a, m in LEARNERS], ["vs. a random player", "vs. the exact Nash policy"])
+        rand_bullet = (f"<li>On the random move-order board their exploitability is "
+                       f"{min(rmeans):.2f} to {max(rmeans):.2f}.</li>")
         rand_section = f"""<section><h2>The random move-order board</h2>
 <p>The same six learners, objective and settings on the board where the two moves are applied in a
 random order each step. The dynamics are stochastic and the exact solution mixes at 94 stage games.
@@ -281,11 +295,55 @@ Exploitability is {min(rmeans):.2f} to {max(rmeans):.2f}, lower than on the dete
 {min(rwins):.0%} to {max(rwins):.0%} of games against the exact Nash policy; the exact solver wins
 {mean(rand[("exact", "-")], "row_win_vs_nash"):.0%}, helped by starting with the ball. The two
 players' policies are not mirror images (mirror gap {min(rgaps):.2f} to {max(rgaps):.2f}).</p>
-{table(["learner", "exploitability (mean &plusmn; sd)", "wins vs. random", "wins vs. exact Nash",
-        "wins vs. best response", "mirror gap"], rand_table)}
+{table(["learner", "wins vs. random", "wins vs. exact Nash", "wins vs. best response",
+        "exploitability (mean &plusmn; sd)", "mirror gap"], rand_table)}
+<div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
+<div>{rwinchart}</div>
 <div class="charts" style="grid-template-columns:1fr"><div>{rchart}</div></div>
 <p class="muted">Exploitability on the random board: bar = mean over 3 seeds, dots = individual seeds.</p></section>"""
 
+    mixed = load_mixed()
+    mixed_section, mixed_bullet = "", ""
+    if mixed:
+        m_rows = [["Exact solver", win_cell(mixed["exact"]["vs_random"]),
+                   win_cell(mixed["exact"]["vs_nash"]), win_cell(mixed["exact"]["vs_best_response"])]]
+        q_rows = []
+        for ml in mixed["learners"]:
+            nm = f"{ml['label']}, {ml['training']}"
+            m_rows.append([nm, win_cell(ml["vs_random"]), win_cell(ml["vs_nash"]),
+                           win_cell(ml["vs_best_response"])])
+            q_rows.append([nm, f(ml["tv_row"]), f(ml["tv_col"]),
+                           f"{f(ml['regret_mean'])} ({f(ml['regret_max'])})",
+                           f"{ml['share_mixing_row']:.0%}"])
+        sz = mixed["support_sizes"]
+        nash_wins = [ml["vs_nash"][0] for ml in mixed["learners"]]
+        mixed_bullet = (f"<li>Starting from the {mixed['mixed_states']} states where the exact equilibrium "
+                        f"mixes, the learners win {min(nash_wins):.0%} to {max(nash_wins):.0%} of games "
+                        f"against the exact Nash policy; the exact solver wins "
+                        f"{mixed['exact']['vs_nash'][0]:.0%}.</li>")
+        mixed_section = f"""<section><h2>Mixed states of the random board</h2>
+<p>At {mixed['mixed_states']} states of the random move-order board the exact equilibrium has to randomize:
+player 0 mixes two moves at {sz['2']}, three moves at {sz['3']}, and plays a single move at {sz['1']}, where
+player 1 does the mixing. Each learner starts {mixed['games_per_start']} games from every one of these
+states with the full 100 steps left (seed means over {mixed['learners'][0]['seeds']} seeds).</p>
+{table(["learner", "wins vs. random", "wins vs. exact Nash", "wins vs. best response"], m_rows)}
+<p>How close are the learners' probabilities to the exact mix at those states? Distance is the
+total-variation distance between the learner's probabilities and the exact equilibrium mix at the first
+step (0 = identical, 1 = no overlap); equilibrium regret is how much either player could gain by
+deviating from the learner's pair of policies (0 at any equilibrium); "player 0 mixes" is the share of
+states where it puts less than 90% on its most likely move.</p>
+{table(["learner", "distance, player 0", "distance, player 1", "equilibrium regret, mean (max)",
+        "player 0 mixes"], q_rows)}
+<h3>Three of these states in full</h3>
+{policy_tables(mixed["policy_outputs"])}</section>"""
+
+    vs_random = [mean(data[(a, m)], "row_win_vs_random") for _, a, m in learners]
+    win_bullet = (f"<li>Against a random player the learners win {min(vs_random):.0%} to "
+                  f"{max(vs_random):.0%} of games. Against the exact Nash policy they win 0% on the "
+                  f"deterministic board (the exact solution ties itself)"
+                  + (f" and {min(rwins):.0%} to {max(rwins):.0%} on the random board, where the exact "
+                     f"solver wins {mean(rand[('exact', '-')], 'row_win_vs_nash'):.0%}" if rand_rows else "")
+                  + ".</li>")
     chart1 = bar_chart(expl)
     chart2 = stacked_chart(
         [(n, [wtl(data[(a, m)], "row", "random"), wtl(data[(a, m)], "row", "nash")])
@@ -335,6 +393,8 @@ read from the experiment files in the repository.</p>
 <ul>
 <li>Six learners, REINFORCE, A2C and PPO each trained by self-play and by fictitious play,
 on the discounted 100-step soccer game, scored against the exact solution.</li>
+{win_bullet}
+{mixed_bullet}
 <li>Their exploitability ranges from {lo:.2f} to {hi:.2f}; the exact solution is 0.</li>
 {rand_bullet}
 <li>Fictitious-play training wins more often against a random player; self-play training
@@ -388,18 +448,19 @@ against a random player, the exact Nash policy and the exact best response.</li>
 <section><h2>5. Results</h2>
 <p>Wins are the share of the 1,000 games in which the player wins (scores while the opponent does
 not); the ties (no goal in 100 steps) and losses are shown beneath.</p>
-{table(["learner", "exploitability (mean &plusmn; sd)", "wins vs. random", "wins vs. exact Nash",
-        "wins vs. best response", "mirror gap"], result_rows)}
-<div class="charts" style="grid-template-columns:1fr"><div>{chart1}</div></div>
-<p class="muted">Exploitability by learner: bar = mean, dots = individual seeds.</p>
+{table(["learner", "wins vs. random", "wins vs. exact Nash", "wins vs. best response",
+        "exploitability (mean &plusmn; sd)", "mirror gap"], result_rows)}
 <div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
 <div>{chart2}</div>
+<div class="charts" style="grid-template-columns:1fr"><div>{chart1}</div></div>
+<p class="muted">Exploitability by learner: bar = mean, dots = individual seeds.</p>
 <p>Two patterns repeat. Fictitious-play training beats a random player more often
 (88% to 96% of games) but loses almost every game to the exact equilibrium. Self-play training
 wins less often against random and ties the equilibrium more often: it plays more
 cautiously. Neither is close to equilibrium play, and every learner loses almost every
 game to the exact best response.</p></section>
 {rand_section}
+{mixed_section}
 {long_html}
 <section><h2>Fictitious play with best-response phases</h2>
 <p>A stricter version of fictitious play: in each round each player runs 100 (or 300)

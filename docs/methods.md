@@ -98,6 +98,7 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `pure_vs_mixed_exploit.csv` | `pure_vs_mixed_exploit.py` | greedy-pure vs. Nash-mixed value against a best response, at each positions.md case | instant |
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | `pg_finite_a10.csv` | `pg_finite.py --seeds 3` | discounted 100-step game: REINFORCE / A2C / PPO by self-play and by fictitious play vs. the exact finite-horizon solution, **3 seeds** | ~40 min |
+| `pg_mixed_states.json` | `pg_mixed_states.py --algo <algo> --mode <mode>` for each of the six learners, then `--merge` | the learners at the random board's 94 mixed states: win rates from games started there, distance from the exact mix, equilibrium regret, three states in full; **3 seeds** | ~25 min each |
 | `pg_finite_random_{reinforce,a2c,ppo}.csv` | `pg_finite.py --board random --algos <algo> --tag _<algo>` | the same six learners on the random move-order board (94 mixed stage games), discounted 100-step objective, **3 seeds** | ~30 min each |
 | `pg_finite_a10_long_*.csv` | `pg_finite.py --iterations 8000 --modes selfplay --seeds 2` | the same self-play learners at 4x the training, **2 seeds** | ~15-35 min each |
 | `pg_fp_br_*.csv` | `pg_fp_br.py --algo a2c` | fictitious play with best-response phases (100 or 300 policy-gradient iterations per best response), exploitability every 5 rounds | ~8 min |
@@ -125,7 +126,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 444 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 455 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34
