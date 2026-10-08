@@ -193,3 +193,29 @@ def test_the_pdf_has_the_random_board_and_shows_wins_as_percentages():
     assert "The random move-order board" in text
     assert "wins vs. random" in text
     assert "W/T/L" not in text
+
+
+def test_the_mixed_state_claims_on_the_page_hold_for_the_data():
+    mixed = RESULTS["mixed"]
+    assert mixed["mixed_states"] == 94 and sum(mixed["support_sizes"].values()) == 94
+    assert len(mixed["learners"]) == 6 and all(x["seeds"] == 3 for x in mixed["learners"])
+    # the exact solver wins more than any learner, against a random player and the exact Nash policy
+    assert mixed["exact"]["vs_random"][0] > max(x["vs_random"][0] for x in mixed["learners"])
+    assert mixed["exact"]["vs_nash"][0] > max(x["vs_nash"][0] for x in mixed["learners"])
+    # nobody is close to the exact mix
+    assert min(x["tv_row"] for x in mixed["learners"]) > 0.3
+    for x in mixed["learners"]:
+        for key in ("vs_random", "vs_nash", "vs_best_response"):
+            assert sum(x[key]) == pytest.approx(1.0, abs=1e-4)
+    assert "Where the exact answer has to mix" in PAGE
+    assert "PolicyOutputs data={mixed.policy_outputs}" in PAGE
+
+
+def test_the_win_rates_come_first_on_the_tab_and_in_the_pdf():
+    head = PAGE[PAGE.index("<thead>", PAGE.index('id="results"')):]
+    assert head.index("Wins vs. random") < head.index("Exploitability")
+    if shutil.which("pdftotext"):
+        pdf = str(ROOT / "docs" / "policy_gradient.pdf")
+        out = subprocess.run(["pdftotext", pdf, "-"], capture_output=True, text=True, check=True)
+        text = " ".join(out.stdout.split())
+        assert text.index("wins vs. random") < text.index("exploitability (mean")

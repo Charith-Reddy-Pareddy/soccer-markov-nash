@@ -81,7 +81,8 @@ def build() -> dict:
                              "exploitability": round(float(r["exploitability"]), 6)} for r in rs],
         })
     return {"exact": summary([r for r in main if r["algo"] == "exact"]),
-            "learners": learners, "longer": longer, "fp_br": fp_br, "random": random_board()}
+            "learners": learners, "longer": longer, "fp_br": fp_br,
+            "random": random_board(), "mixed": mixed_states()}
 
 
 def random_board() -> dict:
@@ -92,6 +93,59 @@ def random_board() -> dict:
         rs = [r for r in rows if r["algo"] == algo and r["mode"] == mode]
         learners.append({"label": label, "training": training, **summary(rs)})
     return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners}
+
+
+def _avg(values) -> float:
+    return round(st.mean(values), 6)
+
+
+def _kind(row) -> str:
+    return "three-way mix" if sum(v > 1e-6 for v in row) >= 3 else "two-way mix"
+
+
+def mixed_states() -> dict | None:
+    """The learners at the random board's mixed states: wins from games started there, how
+    close their probabilities are to the exact mix, and a few states shown in full."""
+    path = EXP / "pg_mixed_states.json"
+    if not path.exists():
+        return None
+    d = json.loads(path.read_text())
+    learners, outputs = [], []
+    for label, training, algo, mode in LEARNERS:
+        rs = [r for r in d["runs"] if r["algo"] == algo and r["mode"] == mode]
+
+        def triple(key, rs=rs):
+            return [_avg(r["wins_from_mixed_starts"][key][i] for r in rs) for i in range(3)]
+
+        learners.append({
+            "label": label, "training": training, "seeds": len(rs),
+            "vs_random": triple("random"), "vs_nash": triple("nash"),
+            "vs_best_response": triple("br"),
+            "tv_row": _avg(r["tv_row"] for r in rs), "tv_col": _avg(r["tv_col"] for r in rs),
+            "regret_mean": _avg(r["regret_mean"] for r in rs),
+            "regret_max": round(max(r["regret_max"] for r in rs), 6),
+            "share_mixing_row": _avg(r["share_mixing_row"] for r in rs),
+        })
+        first = next(r for r in rs if r["seed"] == 0)
+        outputs.append({"label": f"{label}, {training}",
+                        "row": [e["row"] for e in first["examples"]],
+                        "col": [e["col"] for e in first["examples"]]})
+    ex = d["examples"]
+    exact = d["exact"]["wins_from_mixed_starts"]
+    return {
+        "mixed_states": d["mixed_states"], "games_per_start": d["games_per_start"],
+        "support_sizes": d["exact"]["support_sizes"],
+        "exact": {"vs_random": exact["random"], "vs_nash": exact["nash"],
+                  "vs_best_response": exact["br"]},
+        "learners": learners,
+        "policy_outputs": {
+            "actions": ["U", "D", "L", "R"], "step": 0,
+            "states": [{"id": f"mixed{k}", "label": f"Mixed state {k + 1} ({_kind(e['row'])})",
+                        "state": e["state"]} for k, e in enumerate(ex)],
+            "exact": {"row": [e["row"] for e in ex], "col": [e["col"] for e in ex]},
+            "learners": outputs,
+        },
+    }
 
 
 def main() -> None:
