@@ -99,7 +99,7 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `a10_competition_seeds.csv` | `a10_competition.py --seeds 5` | the two competition nets, **5 seeds** | ~15 min |
 | `pg_finite_a10.csv` | `pg_finite.py --seeds 3` | discounted 100-step game: REINFORCE / A2C / PPO by self-play and by fictitious play vs. the exact finite-horizon solution, **3 seeds** | ~40 min |
 | `pg_finite_rate_a10_*.csv` | `pg_finite.py --scoring rate --algos <algo> --modes <mode> --tag _<algo>_<mode>` | the continuing game (play restarts after a goal, fixed 100 steps; a win is more goals), including A2C with the exact solver's values as a frozen critic (`a2c_exact`); **3 seeds** | ~30 min each |
-| `pg_variant_random_{shared,trim10}.csv` | `pg_finite.py --board random --algos a2c ppo --iterations 2000 --shared --tag _shared` (and `--trim 10 --tag _trim10`) | A2C and PPO on the random board with one shared network (two output heads), and with the last 10 steps of each episode left out of the loss; **3 seeds** | ~1 h each |
+| `pg_variant_{random,a10}_{shared,trim10}.csv` | `pg_finite.py --board <random\|a10> --algos a2c ppo --iterations 2000 --shared --tag _shared` (and `--trim 10 --tag _trim10`) | A2C and PPO with one shared network (two output heads), and with the last 10 steps of each episode left out of the loss, on both boards; **3 seeds** | ~1 h each |
 | `pg_mixed_states.json` | `pg_mixed_states.py --algo <algo> --mode <mode>` for each of the six learners, then `--merge` | the learners at the random board's 94 mixed states: win rates from games started there, distance from the exact mix, equilibrium regret, three states in full; **3 seeds** | ~25 min each |
 | `pg_finite_random_{reinforce,a2c,ppo}.csv` | `pg_finite.py --board random --algos <algo> --tag _<algo>` | the same six learners on the random move-order board (94 mixed stage games), discounted 100-step objective, **3 seeds** | ~30 min each |
 | `pg_finite_a10_long_*.csv` | `pg_finite.py --iterations 8000 --modes selfplay --seeds 2` | the same self-play learners at 4x the training, **2 seeds** | ~15-35 min each |
@@ -128,7 +128,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 469 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 470 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34

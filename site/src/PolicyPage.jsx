@@ -86,7 +86,9 @@ function WinBars({ rows }) {
 // episodes: a bar per variant (mean of the seeds) and a dot per seed.
 const VARIANT_KEYS = [["baseline", "Separate networks", "var(--pitch)"],
   ["shared", "One shared network", "var(--ink-faint)"], ["trimmed", "Last 10 steps left out", "var(--ember)"]];
-function VariantBars({ rows, reference }) {
+function VariantBars({ rows, reference, field = "" }) {
+  const mean = (v) => v[`${field}mean`];
+  const runs = (v) => v[`${field}runs`];
   const W = 660, left = 170, right = 20, group = 70, bar = 16;
   const H = group * rows.length + 48;
   const x = (v) => left + v * (W - left - right);
@@ -105,9 +107,9 @@ function VariantBars({ rows, reference }) {
             <text x={left - 8} y={y0 + 24} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}, {r.training}</text>
             {VARIANT_KEYS.map(([k, , col], n) => (
               <g key={k}>
-                <rect x={left} y={y0 + n * (bar + 2)} width={Math.max(x(r[k].mean) - left, 0)} height={bar} fill={col} opacity=".85" />
-                {r[k].runs.map((v, m) => <circle key={m} cx={x(v)} cy={y0 + n * (bar + 2) + bar / 2} r="2.5" fill="var(--ink)" />)}
-                <text x={x(Math.max(...r[k].runs)) + 8} y={y0 + n * (bar + 2) + 12} fontSize="11" fontWeight="700" fill="var(--ink)">{pct(r[k].mean)}</text>
+                <rect x={left} y={y0 + n * (bar + 2)} width={Math.max(x(mean(r[k])) - left, 0)} height={bar} fill={col} opacity=".85" />
+                {runs(r[k]).map((v, m) => <circle key={m} cx={x(v)} cy={y0 + n * (bar + 2) + bar / 2} r="2.5" fill="var(--ink)" />)}
+                <text x={x(Math.min(Math.max(...runs(r[k])), 0.93)) + 8} y={y0 + n * (bar + 2) + 12} fontSize="11" fontWeight="700" fill="var(--ink)">{pct(mean(r[k]))}</text>
               </g>
             ))}
           </g>
@@ -153,6 +155,7 @@ const BOARDS = [
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
   const { longer, fp_br: fpBr, mixed, rps, variants } = results;
+  const vr = variants && variants.random, vd = variants && variants.deterministic;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
   const board = boards[which];
@@ -177,14 +180,25 @@ export default function PolicyPage() {
     ? ` A2C with the exact critic ties the exact Nash policy in ${pct(critic.vs_nash[1])} of games, against ${pct(plain.vs_nash[1])} for A2C with a learned critic.`
     : "");
   const rnd = results.random;
-  const pick = (label, training) => variants.find((v) => v.label === label && v.training === training);
+  const pick = (rows, label, training) => rows.find((v) => v.label === label && v.training === training);
   const pts = (v) => `${v >= 0 ? "+" : "\u2212"}${Math.abs(Math.round(v * 100))}`;
-  const variantText = variants
-    ? `Against separate networks, a shared network changes the win rate by ${variants.map((v) => pts(v.shared.mean - v.baseline.mean)).join(", ")} points ` +
-      `(A2C standard, A2C fictitious play, PPO standard, PPO fictitious play); single seeds of the same setup differ by up to ${Math.round(100 * Math.max(...variants.flatMap((v) => [v.baseline, v.shared].map((x) => Math.max(...x.runs) - Math.min(...x.runs)))))} points. ` +
-      `Leaving out the last 10 steps changes A2C by ${pts(pick("A2C", "standard").trimmed.mean - pick("A2C", "standard").baseline.mean)} and ${pts(pick("A2C", "fictitious play").trimmed.mean - pick("A2C", "fictitious play").baseline.mean)} points, ` +
-      `but PPO with standard training stops scoring: it wins ${pct(pick("PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick("PPO", "standard").baseline.vs_random[0])} before. ` +
+  const spread = (rows, f) => Math.round(100 * Math.max(...rows.flatMap((v) => [v.baseline, v.shared].map((x) => {
+    const r = x[f]; return Math.max(...r) - Math.min(...r);
+  }))));
+  const change = (rows, key, f) => rows.map((v) => pts(v[key][f] - v.baseline[f])).join(", ");
+  const order = "(A2C standard, A2C fictitious play, PPO standard, PPO fictitious play)";
+  const variantText = vr
+    ? `Random board: against separate networks, a shared network changes the win rate by ${change(vr, "shared", "mean")} points ${order}; ` +
+      `single seeds of the same setup differ by up to ${spread(vr, "runs")} points. ` +
+      `Leaving out the last 10 steps changes A2C by ${pts(pick(vr, "A2C", "standard").trimmed.mean - pick(vr, "A2C", "standard").baseline.mean)} and ${pts(pick(vr, "A2C", "fictitious play").trimmed.mean - pick(vr, "A2C", "fictitious play").baseline.mean)} points, ` +
+      `but PPO with standard training stops scoring: it wins ${pct(pick(vr, "PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick(vr, "PPO", "standard").baseline.vs_random[0])} before. ` +
       `No variant gets close to the exact solver.`
+    : "";
+  const detText = vd
+    ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
+      `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
+      `single seeds of the same setup differ by up to ${spread(vd, "tie_nash_runs")} points. ` +
+      `A tie does not mean equilibrium play: PPO with standard training ties all games once the last 10 steps are left out, but wins only ${pct(pick(vd, "PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick(vd, "PPO", "standard").baseline.vs_random[0])} before.`
     : "";
   const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
 
@@ -363,18 +377,22 @@ export default function PolicyPage() {
         </div>
       </section>
 
-      {variants && (
+      {vr && vd && (
         <section id="variants">
           <div className="wrap">
             <div className="eyebrow"><span className="badge p0">09</span>Network sharing and trimming</div>
             <h2>One shared network, and leaving out the last steps</h2>
-            <p className="lede">Random move-order board, A2C and PPO, three seeds each. <b>Shared network</b>: both players&rsquo; policies are
+            <p className="lede">A2C and PPO, three seeds each, on both boards. <b>Shared network</b>: both players&rsquo; policies are
               two output slices of one network, so each player&rsquo;s update also moves the other. <b>Leaving out the last 10 steps</b>:
               the final 10 of the 100 steps of every episode are not used in the loss, though they still count in the returns of earlier steps.
-              Bars are the mean win rate against the best response; dots are single seeds.</p>
-            <VariantBars rows={variants} reference={rnd.exact.vs_best_response[0]} />
+              Bars are the mean over seeds; dots are single seeds.</p>
+            <h3>Random move-order board: win rate against the best response</h3>
+            <VariantBars rows={vr} reference={rnd.exact.vs_best_response[0]} />
+            <h3>Deterministic board: games tied with the exact Nash policy</h3>
+            <VariantBars rows={vd} reference={results.exact.vs_nash[1]} field="tie_nash_" />
             <p className="fig-cap">{VARIANT_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
             <p>{variantText}</p>
+            <p>{detText}</p>
           </div>
         </section>
       )}
