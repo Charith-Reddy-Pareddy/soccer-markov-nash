@@ -82,6 +82,43 @@ function WinBars({ rows }) {
   );
 }
 
+// Win rate against the best response with separate networks, one shared network, and trimmed
+// episodes: a bar per variant (mean of the seeds) and a dot per seed.
+const VARIANT_KEYS = [["baseline", "Separate networks", "var(--pitch)"],
+  ["shared", "One shared network", "var(--ink-faint)"], ["trimmed", "Last 10 steps left out", "var(--ember)"]];
+function VariantBars({ rows, reference }) {
+  const W = 660, left = 170, right = 20, group = 70, bar = 16;
+  const H = group * rows.length + 48;
+  const x = (v) => left + v * (W - left - right);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="win rate against the best response by variant" className="pg-bars">
+      {[0, 0.25, 0.5, 0.75, 1].map((g) => (
+        <g key={g}>
+          <line x1={x(g)} y1="22" x2={x(g)} y2={H - 22} stroke="var(--rule)" />
+          <text x={x(g)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{pct(g)}</text>
+        </g>
+      ))}
+      {rows.map((r, i) => {
+        const y0 = 28 + i * group;
+        return (
+          <g key={`${r.label}-${r.training}`}>
+            <text x={left - 8} y={y0 + 24} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}, {r.training}</text>
+            {VARIANT_KEYS.map(([k, , col], n) => (
+              <g key={k}>
+                <rect x={left} y={y0 + n * (bar + 2)} width={Math.max(x(r[k].mean) - left, 0)} height={bar} fill={col} opacity=".85" />
+                {r[k].runs.map((v, m) => <circle key={m} cx={x(v)} cy={y0 + n * (bar + 2) + bar / 2} r="2.5" fill="var(--ink)" />)}
+                <text x={x(Math.max(...r[k].runs)) + 8} y={y0 + n * (bar + 2) + 12} fontSize="11" fontWeight="700" fill="var(--ink)">{pct(r[k].mean)}</text>
+              </g>
+            ))}
+          </g>
+        );
+      })}
+      <line x1={x(reference)} y1="18" x2={x(reference)} y2={H - 22} stroke="var(--ember)" strokeWidth="2" strokeDasharray="5 4" />
+      <text x={x(reference)} y="12" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--ember)">exact solver {pct(reference)}</text>
+    </svg>
+  );
+}
+
 // Rock-paper-scissors: the share of rock in the current play of best-response dynamics (it
 // cycles for ever) against in the average of all play so far (it settles at one third).
 function RpsPlot({ data }) {
@@ -115,7 +152,7 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants } = results;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
   const board = boards[which];
@@ -140,6 +177,15 @@ export default function PolicyPage() {
     ? ` A2C with the exact critic ties the exact Nash policy in ${pct(critic.vs_nash[1])} of games, against ${pct(plain.vs_nash[1])} for A2C with a learned critic.`
     : "");
   const rnd = results.random;
+  const pick = (label, training) => variants.find((v) => v.label === label && v.training === training);
+  const pts = (v) => `${v >= 0 ? "+" : "\u2212"}${Math.abs(Math.round(v * 100))}`;
+  const variantText = variants
+    ? `Against separate networks, a shared network changes the win rate by ${variants.map((v) => pts(v.shared.mean - v.baseline.mean)).join(", ")} points ` +
+      `(A2C standard, A2C fictitious play, PPO standard, PPO fictitious play); single seeds of the same setup differ by up to ${Math.round(100 * Math.max(...variants.flatMap((v) => [v.baseline, v.shared].map((x) => Math.max(...x.runs) - Math.min(...x.runs)))))} points. ` +
+      `Leaving out the last 10 steps changes A2C by ${pts(pick("A2C", "standard").trimmed.mean - pick("A2C", "standard").baseline.mean)} and ${pts(pick("A2C", "fictitious play").trimmed.mean - pick("A2C", "fictitious play").baseline.mean)} points, ` +
+      `but PPO with standard training stops scoring: it wins ${pct(pick("PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick("PPO", "standard").baseline.vs_random[0])} before. ` +
+      `No variant gets close to the exact solver.`
+    : "";
   const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
 
   return (
@@ -316,6 +362,22 @@ export default function PolicyPage() {
           </div>
         </div>
       </section>
+
+      {variants && (
+        <section id="variants">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p0">09</span>Network sharing and trimming</div>
+            <h2>One shared network, and leaving out the last steps</h2>
+            <p className="lede">Random move-order board, A2C and PPO, three seeds each. <b>Shared network</b>: both players&rsquo; policies are
+              two output slices of one network, so each player&rsquo;s update also moves the other. <b>Leaving out the last 10 steps</b>:
+              the final 10 of the 100 steps of every episode are not used in the loss, though they still count in the returns of earlier steps.
+              Bars are the mean win rate against the best response; dots are single seeds.</p>
+            <VariantBars rows={variants} reference={rnd.exact.vs_best_response[0]} />
+            <p className="fig-cap">{VARIANT_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
+            <p>{variantText}</p>
+          </div>
+        </section>
+      )}
 
       <section className="band-tint" id="best-response">
         <div className="wrap">
