@@ -53,23 +53,24 @@ function BestResponseBars({ rows, reference }) {
 // Wins (green), ties (grey) and losses (orange) of every learner against a random player and
 // against the exact Nash policy.
 function WinBars({ rows }) {
-  const W = 660, left = 210, gap = 26, rowH = 26, panel = (W - left - gap - 8) / 2;
+  const titles = ["Against a random player", "Against the exact Nash policy", "Against the best response"];
+  const W = 660, left = 210, gap = 24, rowH = 26, panel = (W - left - gap * 2 - 8) / 3;
   const H = rowH * rows.length + 34;
   const cols = ["var(--pitch)", "var(--rule-strong)", "var(--ember)"];
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="wins, ties and losses of each learner" className="pg-bars">
-      {["Against a random player", "Against the exact Nash policy"].map((t, k) => (
-        <text key={t} x={left + k * (panel + gap)} y="12" fontSize="11" fontWeight="700" fill="var(--ink-faint)">{t}</text>
+      {titles.map((title, k) => (
+        <text key={title} x={left + k * (panel + gap)} y="12" fontSize="11" fontWeight="700" fill="var(--ink-faint)">{title}</text>
       ))}
       {rows.map((r, i) => {
         const y = 22 + i * rowH;
         return (
           <g key={r.name}>
             <text x={left - 8} y={y + 12} textAnchor="end" fontSize="12" fill="var(--ink)">{r.name}</text>
-            {[r.random, r.nash].map((t, k) => {
+            {[r.random, r.nash, r.best].map((tr, k) => {
               let x = left + k * (panel + gap);
-              return t.map((v, j) => {
-                const rect = <rect key={`${k}-${j}`} x={x} y={y} width={v * panel} height="16" fill={cols[j]} />;
+              return tr.map((v, jx) => {
+                const rect = <rect key={`${k}-${jx}`} x={x} y={y} width={v * panel} height="16" fill={cols[jx]} />;
                 x += v * panel;
                 return rect;
               });
@@ -121,10 +122,23 @@ export default function PolicyPage() {
   const { learners, exact } = board;
   const bestRow = (l) => ({ name: name(l), win: l.vs_best_response[0] });
   const winRows = [
-    { name: "Exact solver", random: exact.vs_random, nash: exact.vs_nash },
-    ...learners.map((l) => ({ name: name(l), random: l.vs_random, nash: l.vs_nash })),
+    { name: "Exact solver", random: exact.vs_random, nash: exact.vs_nash, best: exact.vs_best_response },
+    ...learners.map((l) => ({ name: name(l), random: l.vs_random, nash: l.vs_nash, best: l.vs_best_response })),
   ];
   const brWins = learners.map((l) => l.vs_best_response[0]);
+  const tieRange = (training) => {
+    const v = learners.filter((l) => l.training === training).map((l) => l.vs_nash[1]);
+    return [Math.min(...v), Math.max(...v)];
+  };
+  const [sLo, sHi] = tieRange("standard");
+  const [fLo, fHi] = tieRange("fictitious play");
+  const critic = learners.find((l) => l.label === "A2C, exact critic" && l.training === "standard");
+  const plain = learners.find((l) => l.label === "A2C" && l.training === "standard");
+  const tieText = (sHi >= 0.01
+    ? `Against the exact Nash policy the standard learners tie ${pct(sLo)} to ${pct(sHi)} of games and the fictitious-play learners ${pct(fLo)} to ${pct(fHi)}.`
+    : "") + (critic && plain
+    ? ` A2C with the exact critic ties the exact Nash policy in ${pct(critic.vs_nash[1])} of games, against ${pct(plain.vs_nash[1])} for A2C with a learned critic.`
+    : "");
   const rnd = results.random;
   const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
 
@@ -226,11 +240,12 @@ export default function PolicyPage() {
           <h3>Win rate against the best response</h3>
           <BestResponseBars rows={[{ name: "Exact solver", win: exact.vs_best_response[0] }, ...learners.map(bestRow)]} reference={exact.vs_best_response[0]} />
           <p className="fig-cap">Share of 1,000 games won against the best response, mean of {learners[0].seeds} seeds. Dashed line: the exact solver.</p>
-          <h3>Against the exact Nash policy and a random player</h3>
+          <h3>Wins, ties and losses against each opponent</h3>
           <WinBars rows={winRows} />
           <p className="fig-cap">Wins (green), ties (grey) and losses (orange).</p>
+          {tieText && <p>{tieText}</p>}
           <p>
-            {which === "deterministic"
+            {exact.vs_best_response[0] === 0
               ? `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])}, because it ties itself every game, and the learners win ${pct(Math.min(...brWins))} to ${pct(Math.max(...brWins))}. `
               : `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])} and the learners ${pct(Math.min(...brWins))} to ${pct(Math.max(...brWins))}. `}
             Fictitious-play training wins more often against a random player; no learner reaches the exact solver&rsquo;s rate against the best response or the exact Nash policy.

@@ -1179,7 +1179,283 @@
    ]
   }
  },
- "continuing": null,
+ "continuing": {
+  "exact": {
+   "seeds": 8,
+   "exploitability": {
+    "mean": 0.0,
+    "sd": 0.0,
+    "runs": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "vs_random": [
+    0.914,
+    0.086,
+    0.0
+   ],
+   "vs_nash": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "vs_best_response": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "mirror_gap": 0.0
+  },
+  "learners": [
+   {
+    "label": "REINFORCE",
+    "training": "standard",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.139333,
+     "sd": 0.200291,
+     "runs": [
+      1.055,
+      1.368,
+      0.995
+     ]
+    },
+    "vs_random": [
+     0.790667,
+     0.204,
+     0.005333
+    ],
+    "vs_nash": [
+     0.0,
+     0.341333,
+     0.658667
+    ],
+    "vs_best_response": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "mirror_gap": 0.327333
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.453333,
+     "sd": 0.131341,
+     "runs": [
+      1.604,
+      1.393,
+      1.363
+     ]
+    },
+    "vs_random": [
+     0.997,
+     0.003,
+     0.0
+    ],
+    "vs_nash": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "vs_best_response": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "mirror_gap": 0.390333
+   },
+   {
+    "label": "A2C",
+    "training": "standard",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.066333,
+     "sd": 0.441151,
+     "runs": [
+      0.612,
+      1.094,
+      1.493
+     ]
+    },
+    "vs_random": [
+     0.637667,
+     0.346,
+     0.016333
+    ],
+    "vs_nash": [
+     0.0,
+     0.447,
+     0.553
+    ],
+    "vs_best_response": [
+     0.000333,
+     0.002667,
+     0.997
+    ],
+    "mirror_gap": 0.394
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.468667,
+     "sd": 0.205023,
+     "runs": [
+      1.567,
+      1.606,
+      1.233
+     ]
+    },
+    "vs_random": [
+     0.999667,
+     0.000333,
+     0.0
+    ],
+    "vs_nash": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "vs_best_response": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "mirror_gap": 0.408667
+   },
+   {
+    "label": "PPO",
+    "training": "standard",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.490667,
+     "sd": 0.137085,
+     "runs": [
+      1.434,
+      1.391,
+      1.647
+     ]
+    },
+    "vs_random": [
+     0.525667,
+     0.427667,
+     0.046667
+    ],
+    "vs_nash": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "vs_best_response": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "mirror_gap": 0.668
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.482667,
+     "sd": 0.047374,
+     "runs": [
+      1.537,
+      1.45,
+      1.461
+     ]
+    },
+    "vs_random": [
+     0.950333,
+     0.044667,
+     0.005
+    ],
+    "vs_nash": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "vs_best_response": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "mirror_gap": 0.438
+   },
+   {
+    "label": "A2C, exact critic",
+    "training": "standard",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 0.866667,
+     "sd": 0.07001,
+     "runs": [
+      0.936,
+      0.796,
+      0.868
+     ]
+    },
+    "vs_random": [
+     0.726667,
+     0.27,
+     0.003333
+    ],
+    "vs_nash": [
+     0.0,
+     0.802333,
+     0.197667
+    ],
+    "vs_best_response": [
+     0.000333,
+     0.002667,
+     0.997
+    ],
+    "mirror_gap": 0.381333
+   },
+   {
+    "label": "A2C, exact critic",
+    "training": "fictitious play",
+    "seeds": 3,
+    "exploitability": {
+     "mean": 1.435333,
+     "sd": 0.231141,
+     "runs": [
+      1.209,
+      1.426,
+      1.671
+     ]
+    },
+    "vs_random": [
+     0.974,
+     0.023667,
+     0.002333
+    ],
+    "vs_nash": [
+     0.0,
+     0.011,
+     0.989
+    ],
+    "vs_best_response": [
+     0.0,
+     0.0,
+     1.0
+    ],
+    "mirror_gap": 0.145333
+   }
+  ]
+ },
  "rps": {
   "rounds": 60,
   "best_response": [

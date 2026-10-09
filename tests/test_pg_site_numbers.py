@@ -185,7 +185,7 @@ def test_the_tab_leads_with_the_win_rate_against_the_best_response():
         assert part in PAGE
     assert "Win rate against the best response" in PAGE
     assert "Exploitability</th>" not in PAGE and "Mirror gap" not in PAGE
-    assert PAGE.index("Win rate against the best response") < PAGE.index("and a random player")
+    assert PAGE.index("Win rate against the best response") < PAGE.index("against each opponent")
     for k in ("Deterministic board (A10)", "Random move-order board", "Continuing game"):
         assert k in PAGE
 
@@ -222,7 +222,7 @@ def test_the_mixed_state_claims_on_the_page_hold_for_the_data():
 
 
 def test_the_win_rates_come_first_on_the_tab_and_in_the_pdf():
-    assert PAGE.index("Win rate against the best response") < PAGE.index("and a random player")
+    assert PAGE.index("Win rate against the best response") < PAGE.index("against each opponent")
     if shutil.which("pdftotext"):
         pdf = str(ROOT / "docs" / "policy_gradient.pdf")
         out = subprocess.run(["pdftotext", pdf, "-"], capture_output=True, text=True, check=True)

@@ -66,8 +66,10 @@ def br_bars(rows, reference, width=660) -> str:
 
 
 def stacked_chart(items, titles, width=660) -> str:
+    """Win / tie / loss bars, one panel per opponent, sharing a label column."""
     row_h, left, gap = 26, 210, 24
-    panel = (width - left - gap - 10) / 2
+    n = len(titles)
+    panel = (width - left - gap * (n - 1) - 10) / n
     h = row_h * len(items) + 30
     out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
            'font-family="Helvetica,Arial,sans-serif" font-size="11">']
@@ -137,16 +139,26 @@ def policy_html() -> str:
 def board_section(title: str, note: str, board: dict) -> str:
     exact, learners = board["exact"], board["learners"]
     br = [("Exact solver", exact["vs_best_response"][0])] + [(name(x), x["vs_best_response"][0]) for x in learners]
-    stack = [("Exact solver", [exact["vs_random"], exact["vs_nash"]])] + [
-        (name(x), [x["vs_random"], x["vs_nash"]]) for x in learners]
+    stack = [("Exact solver", [exact["vs_random"], exact["vs_nash"], exact["vs_best_response"]])] + [
+        (name(x), [x["vs_random"], x["vs_nash"], x["vs_best_response"]]) for x in learners]
+    ties = {t: [x["vs_nash"][1] for x in learners if x["training"] == t] for t in ("standard", "fictitious play")}
+    tie_sentence = (f" Against the exact Nash policy the standard learners tie {pct(min(ties['standard']))} to "
+                    f"{pct(max(ties['standard']))} of games and the fictitious-play learners "
+                    f"{pct(min(ties['fictitious play']))} to {pct(max(ties['fictitious play']))}."
+                    if max(ties["standard"]) >= 0.01 else "")
+    exact_critic = {x["training"]: x["vs_nash"][1] for x in learners if x["label"] == "A2C, exact critic"}
+    plain = {x["training"]: x["vs_nash"][1] for x in learners if x["label"] == "A2C"}
+    critic_sentence = (f" A2C with the exact critic ties the exact Nash policy in {pct(exact_critic['standard'])} of "
+                       f"games, against {pct(plain['standard'])} for A2C with a learned critic."
+                       if exact_critic else "")
     wins = [x["vs_best_response"][0] for x in learners]
     return f"""<h3>{title}</h3><p class="muted">{note}</p>
 <p><b>Win rate against the best response</b> (mean of {learners[0]['seeds']} seeds; dashed line: the exact
 solver). The exact solver wins {pct(exact['vs_best_response'][0])}; the learners win {pct(min(wins))} to {pct(max(wins))}.</p>
 <div>{br_bars(br, exact['vs_best_response'][0])}</div>
-<p><b>Against a random player and against the exact Nash policy</b>:</p>
+<p><b>Wins, ties and losses against each opponent</b>.{tie_sentence}{critic_sentence}</p>
 <div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
-<div>{stacked_chart(stack, ["vs. a random player", "vs. the exact Nash policy"])}</div>"""
+<div>{stacked_chart(stack, ["vs. a random player", "vs. the exact Nash policy", "vs. the best response"])}</div>"""
 
 
 def build_html(res: dict) -> str:
