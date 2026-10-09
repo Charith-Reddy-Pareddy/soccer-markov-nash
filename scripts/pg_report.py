@@ -88,6 +88,62 @@ def stacked_chart(items, titles, width=660) -> str:
     return "".join(out)
 
 
+VARIANT_COLOURS = {"baseline": GREEN, "shared": GREY, "trimmed": ORANGE}
+
+
+def variant_bars(rows, reference, width=660) -> str:
+    """Win rate against the best response per variant: a bar for the mean, a dot per seed."""
+    left, right, group, bar = 170, 20, 70, 16
+    h = group * len(rows) + 48
+    x = lambda v: left + v * (width - left - right)  # noqa: E731
+    out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
+           'font-family="Helvetica,Arial,sans-serif" font-size="11">']
+    for g in (0, 0.25, 0.5, 0.75, 1.0):
+        out.append(f'<line x1="{x(g):.1f}" y1="22" x2="{x(g):.1f}" y2="{h - 22}" stroke="#dbe5df"/>'
+                   f'<text x="{x(g):.1f}" y="{h - 8}" text-anchor="middle" fill="#5b6b63">{g:.0%}</text>')
+    for i, r in enumerate(rows):
+        y0 = 28 + i * group
+        out.append(f'<text x="{left - 8}" y="{y0 + 24}" text-anchor="end" fill="#1c2e26">'
+                   f'{r["label"]}, {r["training"]}</text>')
+        for n, key in enumerate(VARIANT_COLOURS):
+            v, y = r[key], y0 + n * (bar + 2)
+            out.append(f'<rect x="{left}" y="{y}" width="{max(x(v["mean"]) - left, 0):.1f}" height="{bar}" '
+                       f'fill="{VARIANT_COLOURS[key]}" opacity=".85"/>')
+            out += [f'<circle cx="{x(w):.1f}" cy="{y + bar / 2}" r="2.5" fill="#1c2e26"/>' for w in v["runs"]]
+            out.append(f'<text x="{x(max(v["runs"])) + 8:.1f}" y="{y + 12}" fill="#1c2e26" '
+                       f'font-weight="700">{v["mean"]:.0%}</text>')
+    out.append(f'<line x1="{x(reference):.1f}" y1="18" x2="{x(reference):.1f}" y2="{h - 22}" stroke="{ORANGE}" '
+               f'stroke-width="2" stroke-dasharray="5 4"/><text x="{x(reference):.1f}" y="12" text-anchor="middle" '
+               f'fill="{ORANGE}" font-weight="700">exact solver {reference:.0%}</text></svg>')
+    return "".join(out)
+
+
+def variant_section(res: dict) -> str:
+    rows = res.get("variants")
+    if not rows:
+        return ""
+    pick = {(r["label"], r["training"]): r for r in rows}
+    pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
+    shared = ", ".join(pts(r["shared"]["mean"] - r["baseline"]["mean"]) for r in rows)
+    spread = round(100 * max(max(x["runs"]) - min(x["runs"]) for r in rows for x in (r["baseline"], r["shared"])))
+    a2c_s, a2c_f = pick[("A2C", "standard")], pick[("A2C", "fictitious play")]
+    ppo = pick[("PPO", "standard")]
+    ref = res["random"]["exact"]["vs_best_response"][0]
+    return f"""<section><h2>9. Network sharing and trimming</h2>
+<p>Random move-order board, A2C and PPO, three seeds each. <b>Shared network</b>: both players' policies are two output
+slices of one network, so each player's update also moves the other. <b>Last 10 steps left out</b>: the final 10 of the 100
+steps of every episode are not used in the loss, though they still count in the returns of earlier steps. Bars are the mean win
+rate against the best response; dots are single seeds. <span style="color:{GREEN}">■</span> separate networks,
+<span style="color:{GREY}">■</span> one shared network, <span style="color:{ORANGE}">■</span> last 10 steps left out.</p>
+<div>{variant_bars(rows, ref)}</div>
+<p>Against separate networks, a shared network changes the win rate by {shared} points (A2C standard, A2C fictitious play, PPO
+standard, PPO fictitious play); single seeds of the same setup differ by up to {spread} points. Leaving out the last 10 steps
+changes A2C by {pts(a2c_s["trimmed"]["mean"] - a2c_s["baseline"]["mean"])} and
+{pts(a2c_f["trimmed"]["mean"] - a2c_f["baseline"]["mean"])} points, but PPO with standard training stops scoring: it wins
+{pct(ppo["trimmed"]["vs_random"][0])} of games against a random player, against {pct(ppo["baseline"]["vs_random"][0])} before.
+No variant gets close to the exact solver.</p></section>"""
+
+
 def rps_plot(d: dict, width=660, height=250) -> str:
     lm, rm, tm, bm = 56, 20, 50, 40
     x = lambda k: lm + k / (d["rounds"] - 1) * (width - lm - rm)  # noqa: E731
@@ -284,6 +340,8 @@ is the share of states where it puts less than 90% on its top move.</p>
 <p>Each round a player trains for 100 (or 300) iterations against the average of its opponent's earlier best
 responses, then adds the result to its history. Win rate against the best response at each checkpoint round (one seed per run).</p>
 {table(["run"] + [f"round {k}" for k in rounds], fp_rows)}</section>
+
+{variant_section(res)}
 </body></html>"""
 
 

@@ -37,6 +37,9 @@ def main() -> None:
     ap.add_argument("--scoring", choices=["win", "rate"], default="win",
                     help="win: the first goal ends the game; rate: play continues after a goal")
     ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"])
+    ap.add_argument("--shared", action="store_true", help="one network, one output head per player")
+    ap.add_argument("--trim", type=int, default=0,
+                    help="drop the last N steps of each episode from the loss")
     ap.add_argument("--tag", default="", help="suffix for the output file")
     a = ap.parse_args()
 
@@ -67,7 +70,8 @@ def main() -> None:
             for seed in range(a.seed_start, a.seed_start + a.seeds):
                 t = time.perf_counter()
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
-                              a.episodes, seed=seed, exact=critic)
+                              a.episodes, seed=seed, exact=critic,
+                              shared=a.shared, trim=a.trim)
                 dt = round(time.perf_counter() - t, 1)
                 rows.append({"algo": algo, "mode": mode, "seed": seed, "train_s": dt,
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,

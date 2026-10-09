@@ -230,3 +230,31 @@ def test_the_win_rates_come_first_on_the_tab_and_in_the_pdf():
         first = text.index("Against the best response, the exact solver wins")
         assert first < text.index("How to read the numbers")
         assert "exploitability (mean" not in text.lower()
+
+
+def test_the_variants_cover_a2c_and_ppo_in_both_schemes_with_three_seeds_each():
+    rows = RESULTS["variants"]
+    assert [(r["label"], r["training"]) for r in rows] == [
+        ("A2C", "standard"), ("A2C", "fictitious play"),
+        ("PPO", "standard"), ("PPO", "fictitious play")]
+    for r in rows:
+        for key in ("baseline", "shared", "trimmed"):
+            assert len(r[key]["runs"]) == 3
+            assert r[key]["mean"] == pytest.approx(sum(r[key]["runs"]) / 3, abs=1e-5)
+            assert sum(r[key]["vs_random"]) == pytest.approx(1.0, abs=1e-4)
+
+
+def test_the_baseline_variant_is_the_random_board_run_and_none_beats_the_exact_solver():
+    exact = RESULTS["random"]["exact"]["vs_best_response"][0]
+    by = {(x["label"], x["training"]): x for x in RESULTS["random"]["learners"]}
+    for r in RESULTS["variants"]:
+        same = by[(r["label"], r["training"])]["vs_best_response"][0]
+        assert r["baseline"]["mean"] == pytest.approx(same, abs=1e-5)
+        assert all(r[k]["mean"] < exact for k in ("baseline", "shared", "trimmed"))
+
+
+def test_the_trimmed_ppo_claim_in_the_text_is_true():
+    ppo = next(r for r in RESULTS["variants"]
+               if r["label"] == "PPO" and r["training"] == "standard")
+    assert ppo["trimmed"]["vs_random"][0] < ppo["baseline"]["vs_random"][0] - 0.3
+    assert "stops scoring" in PAGE

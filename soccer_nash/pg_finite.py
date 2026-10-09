@@ -42,6 +42,18 @@ class Net(nn.Module):
         return self.body(x * self.scale)
 
 
+class Head(nn.Module):
+    """One player's slice of a network shared by both players: the hidden layers are
+    common, the output layer holds 4 logits per player."""
+
+    def __init__(self, base: Net, player: int):
+        super().__init__()
+        self.base, self.player = base, player
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.base(x)[..., 4 * self.player:4 * self.player + 4]
+
+
 def _frozen(net: Net) -> Net:
     return copy.deepcopy(net).requires_grad_(False)
 
@@ -130,6 +142,7 @@ def _returns(r, alive, value, algo, gamma, n_step=10, lam=0.95):
 
 def update(
     net, critic, opts, batch, player, algo, gamma, entropy, clip=0.2, epochs=4, exact=None,
+    trim=0,
 ):
     sign = 1.0 if player == 0 else -1.0
     X, alive = batch["X"], batch["alive"]
@@ -141,12 +154,15 @@ def update(
         with torch.no_grad():
             value = critic(X).squeeze(-1) if critic is not None else None
         adv, target = _returns(r, alive, value, algo, gamma)
-    x, a = X[alive], batch["A"][player][alive]
-    old, adv_f = batch["LP"][player][alive], adv[alive]
+    use = alive.clone()
+    if trim:
+        use[X.shape[0] - trim:] = False   # earlier returns still use them; the loss does not
+    x, a = X[use], batch["A"][player][use]
+    old, adv_f = batch["LP"][player][use], adv[use]
     if algo == "ppo":
         adv_f = (adv_f - adv_f.mean()) / (adv_f.std() + 1e-8)
     elif algo == "a2c":
-        adv_f = adv_f - value[alive]
+        adv_f = adv_f - value[use]
     for _ in range(epochs if algo == "ppo" else 1):
         logp_all = torch.log_softmax(net(x), dim=-1)
         logp = logp_all.gather(1, a[:, None]).squeeze(1)
@@ -159,7 +175,7 @@ def update(
         loss = pl - entropy * ent
         if critic is not None:
             loss = loss + 0.5 * nn.functional.mse_loss(
-                critic(x).squeeze(-1), target[alive])
+                critic(x).squeeze(-1), target[use])
         opts[player].zero_grad()
         loss.backward()
         opts[player].step()
@@ -184,31 +200,46 @@ def train(
     game: SoccerGame, algo: str, mode: str = "selfplay", gamma: float = 0.9,
     horizon: int = 100, iterations: int = 300, episodes: int = 64, lr: float = 1e-3,
     entropy: float = 0.01, snap_every: int = 5, seed: int = 0, exact=None,
+    shared: bool = False, trim: int = 0,
 ) -> Trained:
+    """``shared``: both players' policies are two output heads of one network.
+    ``trim``: drop the last ``trim`` steps of every episode from the policy and critic
+    losses (they still enter the returns of earlier steps)."""
     if (algo not in ALGOS and algo != "a2c_exact") or mode not in ("selfplay", "fictitious"):
         raise ValueError("algo: one of ALGOS or 'a2c_exact'; mode: 'selfplay' or 'fictitious'")
     if algo == "a2c_exact" and exact is None:
         raise ValueError("a2c_exact needs the exact critic")
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
-    nets = [Net(game, 4), Net(game, 4)]
+    if shared:
+        base = Net(game, 8)
+        nets = [Head(base, 0), Head(base, 1)]
+    else:
+        nets = [Net(game, 4), Net(game, 4)]
     critics = [Net(game, 1) if algo not in ("reinforce", "a2c_exact") else None for _ in nets]
-    opts = [torch.optim.Adam(
-        [*n.parameters(), *(c.parameters() if c is not None else [])], lr=lr)
-        for n, c in zip(nets, critics)]
+    if shared:
+        params = [*base.parameters(),
+                  *(q for c in critics if c is not None for q in c.parameters())]
+        opts = [torch.optim.Adam(params, lr=lr)] * 2
+    else:
+        opts = [torch.optim.Adam(
+            [*n.parameters(), *(c.parameters() if c is not None else [])], lr=lr)
+            for n, c in zip(nets, critics)]
     snaps = [[_frozen(n)] for n in nets]
     for it in range(iterations):
         if mode == "selfplay":
             batch = collect(game, _Current(nets[0]), _Current(nets[1]), episodes, horizon, rng)
             for i in (0, 1):
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact)
+                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact,
+                       trim=trim)
         else:
             for i in (0, 1):
                 mine = _Current(nets[i])
                 theirs = _Mixture(snaps[1 - i], episodes, rng)
                 players = (mine, theirs) if i == 0 else (theirs, mine)
                 batch = collect(game, *players, episodes, horizon, rng)
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact)
+                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact,
+                       trim=trim)
             if (it + 1) % snap_every == 0:
                 for i in (0, 1):
                     snaps[i].append(_frozen(nets[i]))

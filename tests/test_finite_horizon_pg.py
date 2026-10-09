@@ -157,3 +157,42 @@ def test_a2c_with_the_exact_critic_trains_in_both_schemes_and_needs_the_critic(c
         assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0, abs=1e-5)
     with pytest.raises(ValueError):
         pf.train(game, "a2c_exact", "selfplay", GAMMA, HORIZON, iterations=1, episodes=2)
+
+
+def test_shared_network_players_use_one_trunk_and_separate_output_slices(small):
+    game = small[0]
+    base = pf.Net(game, 8)
+    h0, h1 = pf.Head(base, 0), pf.Head(base, 1)
+    x = pf.features([game.initial_state()], 0, HORIZON)
+    assert h0.base is h1.base
+    assert np.allclose(torch_cat(h0(x), h1(x)), base(x).detach().numpy())
+    for algo in pf.ALGOS:
+        for mode in ("selfplay", "fictitious"):
+            tr = pf.train(game, algo, mode, GAMMA, HORIZON, iterations=2, episodes=4,
+                          snap_every=1, shared=True)
+            p = tr.pol1(0, [game.initial_state()])
+            assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def torch_cat(a, b):
+    import torch
+    return torch.cat([a, b], dim=-1).detach().numpy()
+
+
+def test_trimming_every_step_gives_no_update_and_trimming_some_changes_it(small):
+    import torch
+    game = small[0]
+
+    def run(trim):
+        torch.manual_seed(0)
+        net, critic = pf.Net(game, 4), pf.Net(game, 1)
+        opts = [torch.optim.SGD([*net.parameters(), *critic.parameters()], lr=1.0)] * 2
+        batch = pf.collect(game, pf._Current(net), pf._Current(pf.Net(game, 4)), 8, HORIZON,
+                           np.random.default_rng(1))
+        before = [q.detach().clone() for q in net.parameters()]
+        pf.update(net, critic, opts, batch, 0, "a2c", GAMMA, 0.0, trim=trim)
+        return max(float((q.detach() - b).abs().max())
+                   for q, b in zip(net.parameters(), before))
+
+    assert run(HORIZON) == 0.0
+    assert run(0) > 0.0 and run(0) != run(2)

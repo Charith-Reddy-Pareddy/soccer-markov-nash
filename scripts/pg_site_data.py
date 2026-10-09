@@ -92,7 +92,8 @@ def build() -> dict:
     return {"exact": summary([r for r in main if r["algo"] == "exact"]),
             "learners": learners, "longer": longer, "fp_br": fp_br,
             "random": random_board(), "mixed": mixed_states(),
-            "continuing": continuing_game(), "rps": rock_paper_scissors()}
+            "continuing": continuing_game(), "rps": rock_paper_scissors(),
+            "variants": variants()}
 
 
 def random_board() -> dict:
@@ -103,6 +104,30 @@ def random_board() -> dict:
         rs = [r for r in rows if r["algo"] == algo and r["mode"] == mode]
         learners.append({"label": label, "training": training, **summary(rs)})
     return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners}
+
+
+VARIANTS = [("baseline", "pg_finite_random_{}.csv"), ("shared", "pg_variant_random_shared.csv"),
+            ("trimmed", "pg_variant_random_trim10.csv")]
+
+
+def variants() -> list[dict] | None:
+    """A2C and PPO on the random board with separate networks (baseline), one shared network,
+    and the last 10 steps of each episode left out of the loss: win rate against the best
+    response, mean and per seed."""
+    out = []
+    for algo in ("a2c", "ppo"):
+        for training, mode in (("standard", "selfplay"), ("fictitious play", "fictitious")):
+            entry = {"label": NAMES[algo], "training": training}
+            for key, pattern in VARIANTS:
+                path = EXP / pattern.format(algo)
+                if not path.exists():
+                    return None
+                rs = [r for r in read(path) if r["algo"] == algo and r["mode"] == mode]
+                entry[key] = {"mean": _avg([float(r["row_win_vs_br"]) for r in rs]),
+                              "runs": [float(r["row_win_vs_br"]) for r in rs],
+                              "vs_random": wtl(rs, "random")}
+            out.append(entry)
+    return out
 
 
 def _avg(values) -> float:

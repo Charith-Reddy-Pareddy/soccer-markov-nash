@@ -60,7 +60,7 @@ def test_the_report_has_a_section_per_board_and_the_plots():
     assert "The deterministic board (A10)" in TEXT and "The random move-order board" in TEXT
     assert ("The continuing game" in TEXT) == (RES.get("continuing") is not None)
     boards = 3 if RES.get("continuing") is not None else 2
-    assert HTML.count("<svg") == 1 + 2 * boards  # the rock-paper-scissors plot + two charts a board
+    assert HTML.count("<svg") == 2 + 2 * boards  # rps, two charts a board, variants
     assert "best-response dynamics" in TEXT
 
 
@@ -70,3 +70,15 @@ def test_every_percentage_in_the_summary_comes_from_the_data():
     assert f"the exact solver wins {exact} of games on the random board" in TEXT
     lo = min(x["vs_best_response"][0] for x in rnd["learners"])
     assert f"the six learners win {lo:.0%}" in TEXT
+
+
+def test_variant_bars_draw_a_bar_per_variant_and_a_dot_per_seed():
+    run = {"mean": 0.2, "runs": [0.1, 0.2, 0.3], "vs_random": [0.9, 0.05, 0.05]}
+    row = {"label": "A2C", "training": "standard", "baseline": run, "shared": run, "trimmed": run}
+    svg = pg_report.variant_bars([row], 0.67)
+    assert svg.count("<rect") == 3 and svg.count("<circle") == 9
+    assert "exact solver 67%" in svg
+
+
+def test_the_report_has_the_network_sharing_and_trimming_section():
+    assert "Network sharing and trimming" in HTML and "Last 10 steps left out" in HTML
