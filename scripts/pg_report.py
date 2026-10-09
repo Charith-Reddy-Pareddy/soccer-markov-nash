@@ -91,7 +91,7 @@ def stacked_chart(items, titles, width=660) -> str:
 VARIANT_COLOURS = {"baseline": GREEN, "shared": GREY, "trimmed": ORANGE}
 
 
-def variant_bars(rows, reference, width=660) -> str:
+def variant_bars(rows, reference, width=660, field="") -> str:
     """Win rate against the best response per variant: a bar for the mean, a dot per seed."""
     left, right, group, bar = 170, 20, 70, 16
     h = group * len(rows) + 48
@@ -107,11 +107,12 @@ def variant_bars(rows, reference, width=660) -> str:
                    f'{r["label"]}, {r["training"]}</text>')
         for n, key in enumerate(VARIANT_COLOURS):
             v, y = r[key], y0 + n * (bar + 2)
-            out.append(f'<rect x="{left}" y="{y}" width="{max(x(v["mean"]) - left, 0):.1f}" height="{bar}" '
+            mean, runs = v[f"{field}mean"], v[f"{field}runs"]
+            out.append(f'<rect x="{left}" y="{y}" width="{max(x(mean) - left, 0):.1f}" height="{bar}" '
                        f'fill="{VARIANT_COLOURS[key]}" opacity=".85"/>')
-            out += [f'<circle cx="{x(w):.1f}" cy="{y + bar / 2}" r="2.5" fill="#1c2e26"/>' for w in v["runs"]]
-            out.append(f'<text x="{x(max(v["runs"])) + 8:.1f}" y="{y + 12}" fill="#1c2e26" '
-                       f'font-weight="700">{v["mean"]:.0%}</text>')
+            out += [f'<circle cx="{x(w):.1f}" cy="{y + bar / 2}" r="2.5" fill="#1c2e26"/>' for w in runs]
+            out.append(f'<text x="{x(min(max(runs), 0.93)) + 8:.1f}" y="{y + 12}" fill="#1c2e26" '
+                       f'font-weight="700">{mean:.0%}</text>')
     out.append(f'<line x1="{x(reference):.1f}" y1="18" x2="{x(reference):.1f}" y2="{h - 22}" stroke="{ORANGE}" '
                f'stroke-width="2" stroke-dasharray="5 4"/><text x="{x(reference):.1f}" y="12" text-anchor="middle" '
                f'fill="{ORANGE}" font-weight="700">exact solver {reference:.0%}</text></svg>')
@@ -119,29 +120,43 @@ def variant_bars(rows, reference, width=660) -> str:
 
 
 def variant_section(res: dict) -> str:
-    rows = res.get("variants")
-    if not rows:
+    both = res.get("variants")
+    if not both or not both.get("random") or not both.get("deterministic"):
         return ""
-    pick = {(r["label"], r["training"]): r for r in rows}
+    rnd, det = both["random"], both["deterministic"]
     pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
-    shared = ", ".join(pts(r["shared"]["mean"] - r["baseline"]["mean"]) for r in rows)
-    spread = round(100 * max(max(x["runs"]) - min(x["runs"]) for r in rows for x in (r["baseline"], r["shared"])))
-    a2c_s, a2c_f = pick[("A2C", "standard")], pick[("A2C", "fictitious play")]
-    ppo = pick[("PPO", "standard")]
-    ref = res["random"]["exact"]["vs_best_response"][0]
+    change = lambda rows, key, f: ", ".join(pts(r[key][f] - r["baseline"][f]) for r in rows)  # noqa: E731
+    spread = lambda rows, f: round(100 * max(  # noqa: E731
+        max(x[f]) - min(x[f]) for r in rows for x in (r["baseline"], r["shared"])))
+    pick = {(r["label"], r["training"]): r for r in rnd}
+    a2c_s, a2c_f, ppo = (pick[("A2C", "standard")], pick[("A2C", "fictitious play")],
+                         pick[("PPO", "standard")])
+    dpp = next(r for r in det if (r["label"], r["training"]) == ("PPO", "standard"))
+    best = max(x["mean"] for r in det for x in (r["baseline"], r["shared"], r["trimmed"]))
+    order = "(A2C standard, A2C fictitious play, PPO standard, PPO fictitious play)"
     return f"""<section><h2>9. Network sharing and trimming</h2>
-<p>Random move-order board, A2C and PPO, three seeds each. <b>Shared network</b>: both players' policies are two output
+<p>A2C and PPO, three seeds each, on both boards. <b>Shared network</b>: both players' policies are two output
 slices of one network, so each player's update also moves the other. <b>Last 10 steps left out</b>: the final 10 of the 100
-steps of every episode are not used in the loss, though they still count in the returns of earlier steps. Bars are the mean win
-rate against the best response; dots are single seeds. <span style="color:{GREEN}">■</span> separate networks,
+steps of every episode are not used in the loss, though they still count in the returns of earlier steps. Bars are the mean over
+seeds; dots are single seeds. <span style="color:{GREEN}">■</span> separate networks,
 <span style="color:{GREY}">■</span> one shared network, <span style="color:{ORANGE}">■</span> last 10 steps left out.</p>
-<div>{variant_bars(rows, ref)}</div>
-<p>Against separate networks, a shared network changes the win rate by {shared} points (A2C standard, A2C fictitious play, PPO
-standard, PPO fictitious play); single seeds of the same setup differ by up to {spread} points. Leaving out the last 10 steps
+<h3>Random move-order board: win rate against the best response</h3>
+<div>{variant_bars(rnd, res["random"]["exact"]["vs_best_response"][0])}</div>
+<h3>Deterministic board: games tied with the exact Nash policy</h3>
+<div>{variant_bars(det, res["exact"]["vs_nash"][1], field="tie_nash_")}</div>
+<p>Random board: against separate networks, a shared network changes the win rate by {change(rnd, "shared", "mean")} points
+{order}; single seeds of the same setup differ by up to {spread(rnd, "runs")} points. Leaving out the last 10 steps
 changes A2C by {pts(a2c_s["trimmed"]["mean"] - a2c_s["baseline"]["mean"])} and
 {pts(a2c_f["trimmed"]["mean"] - a2c_f["baseline"]["mean"])} points, but PPO with standard training stops scoring: it wins
 {pct(ppo["trimmed"]["vs_random"][0])} of games against a random player, against {pct(ppo["baseline"]["vs_random"][0])} before.
-No variant gets close to the exact solver.</p></section>"""
+No variant gets close to the exact solver.</p>
+<p>Deterministic board: no variant wins more than {pct(best)} of games against the best response, as for the baseline (the exact
+solver wins 0%, since it ties itself). The share of games tied with the exact Nash policy changes by
+{change(det, "shared", "tie_nash_mean")} points with a shared network and by {change(det, "trimmed", "tie_nash_mean")} points
+with the last 10 steps left out {order}; single seeds of the same setup differ by up to {spread(det, "tie_nash_runs")} points. A tie does not mean equilibrium
+play: PPO with standard training ties all games once the last 10 steps are left out, but wins only
+{pct(dpp["trimmed"]["vs_random"][0])} of games against a random player, against {pct(dpp["baseline"]["vs_random"][0])}
+before.</p></section>"""
 
 
 def rps_plot(d: dict, width=660, height=250) -> str:

@@ -60,7 +60,7 @@ def test_the_report_has_a_section_per_board_and_the_plots():
     assert "The deterministic board (A10)" in TEXT and "The random move-order board" in TEXT
     assert ("The continuing game" in TEXT) == (RES.get("continuing") is not None)
     boards = 3 if RES.get("continuing") is not None else 2
-    assert HTML.count("<svg") == 2 + 2 * boards  # rps, two charts a board, variants
+    assert HTML.count("<svg") == 3 + 2 * boards  # rps, two charts a board, two variants
     assert "best-response dynamics" in TEXT
 
 
@@ -78,6 +78,9 @@ def test_variant_bars_draw_a_bar_per_variant_and_a_dot_per_seed():
     svg = pg_report.variant_bars([row], 0.67)
     assert svg.count("<rect") == 3 and svg.count("<circle") == 9
     assert "exact solver 67%" in svg
+    tie = {**run, "tie_nash_mean": 0.5, "tie_nash_runs": [0.4, 0.6]}
+    row = {"label": "A2C", "training": "standard", "baseline": tie, "shared": tie, "trimmed": tie}
+    assert pg_report.variant_bars([row], 1.0, field="tie_nash_").count("<circle") == 6
 
 
 def test_the_report_has_the_network_sharing_and_trimming_section():

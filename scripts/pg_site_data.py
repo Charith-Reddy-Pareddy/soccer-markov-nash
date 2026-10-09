@@ -93,7 +93,7 @@ def build() -> dict:
             "learners": learners, "longer": longer, "fp_br": fp_br,
             "random": random_board(), "mixed": mixed_states(),
             "continuing": continuing_game(), "rps": rock_paper_scissors(),
-            "variants": variants()}
+            "variants": {b: variants(b) for b in VARIANT_FILES}}
 
 
 def random_board() -> dict:
@@ -106,26 +106,31 @@ def random_board() -> dict:
     return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners}
 
 
-VARIANTS = [("baseline", "pg_finite_random_{}.csv"), ("shared", "pg_variant_random_shared.csv"),
-            ("trimmed", "pg_variant_random_trim10.csv")]
+VARIANT_FILES = {
+    "random": ("pg_finite_random_{}.csv", "pg_variant_random_shared.csv",
+               "pg_variant_random_trim10.csv"),
+    "deterministic": ("pg_finite_a10.csv", "pg_variant_a10_shared.csv",
+                      "pg_variant_a10_trim10.csv"),
+}
 
 
-def variants() -> list[dict] | None:
-    """A2C and PPO on the random board with separate networks (baseline), one shared network,
-    and the last 10 steps of each episode left out of the loss: win rate against the best
-    response, mean and per seed."""
+def variants(board: str) -> list[dict] | None:
+    """A2C and PPO with separate networks (baseline), one shared network, and the last 10 steps
+    of each episode left out of the loss: win rate against the best response and share of ties
+    with the exact Nash policy, mean and per seed."""
     out = []
     for algo in ("a2c", "ppo"):
         for training, mode in (("standard", "selfplay"), ("fictitious play", "fictitious")):
             entry = {"label": NAMES[algo], "training": training}
-            for key, pattern in VARIANTS:
+            for key, pattern in zip(("baseline", "shared", "trimmed"), VARIANT_FILES[board]):
                 path = EXP / pattern.format(algo)
                 if not path.exists():
                     return None
                 rs = [r for r in read(path) if r["algo"] == algo and r["mode"] == mode]
-                entry[key] = {"mean": _avg([float(r["row_win_vs_br"]) for r in rs]),
-                              "runs": [float(r["row_win_vs_br"]) for r in rs],
-                              "vs_random": wtl(rs, "random")}
+                br = [float(r["row_win_vs_br"]) for r in rs]
+                tie = [float(r["row_tie_vs_nash"]) for r in rs]
+                entry[key] = {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie),
+                              "tie_nash_runs": tie, "vs_random": wtl(rs, "random")}
             out.append(entry)
     return out
 
