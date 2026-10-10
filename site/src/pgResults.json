@@ -2075,6 +2075,252 @@
      ]
     }
    }
+  ],
+  "continuing": [
+   {
+    "label": "A2C",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.000333,
+     "runs": [
+      0.001,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.447,
+     "tie_nash_runs": [
+      0.223,
+      0.118,
+      1.0
+     ],
+     "vs_random": [
+      0.637667,
+      0.346,
+      0.016333
+     ]
+    },
+    "shared": {
+     "mean": 0.000333,
+     "runs": [
+      0.0,
+      0.0,
+      0.001
+     ],
+     "tie_nash_mean": 0.474667,
+     "tie_nash_runs": [
+      0.106,
+      0.881,
+      0.437
+     ],
+     "vs_random": [
+      0.728,
+      0.269333,
+      0.002667
+     ]
+    },
+    "trimmed": {
+     "mean": 0.001,
+     "runs": [
+      0.003,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.292667,
+     "tie_nash_runs": [
+      0.709,
+      0.169,
+      0.0
+     ],
+     "vs_random": [
+      0.922667,
+      0.074667,
+      0.002667
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.999667,
+      0.000333,
+      0.0
+     ]
+    },
+    "shared": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.999333,
+      0.000667,
+      0.0
+     ]
+    },
+    "trimmed": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.999333,
+      0.000667,
+      0.0
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 1.0,
+     "tie_nash_runs": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "vs_random": [
+      0.525667,
+      0.427667,
+      0.046667
+     ]
+    },
+    "shared": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.666667,
+     "tie_nash_runs": [
+      1.0,
+      0.0,
+      1.0
+     ],
+     "vs_random": [
+      0.23,
+      0.692,
+      0.078
+     ]
+    },
+    "trimmed": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.333333,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_random": [
+      0.637,
+      0.325333,
+      0.037667
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.950333,
+      0.044667,
+      0.005
+     ]
+    },
+    "shared": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.929667,
+      0.065333,
+      0.005
+     ]
+    },
+    "trimmed": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.941333,
+      0.052667,
+      0.006
+     ]
+    }
+   }
   ]
  }
 }

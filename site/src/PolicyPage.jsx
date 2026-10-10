@@ -155,7 +155,7 @@ const BOARDS = [
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
   const { longer, fp_br: fpBr, mixed, rps, variants } = results;
-  const vr = variants && variants.random, vd = variants && variants.deterministic;
+  const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
   const board = boards[which];
@@ -199,6 +199,11 @@ export default function PolicyPage() {
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
       `single seeds of the same setup differ by up to ${spread(vd, "tie_nash_runs")} points. ` +
       `A tie does not mean equilibrium play: PPO with standard training ties all games once the last 10 steps are left out, but wins only ${pct(pick(vd, "PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick(vd, "PPO", "standard").baseline.vs_random[0])} before.`
+    : "";
+  const contText = vc
+    ? `Continuing game: no variant wins more than ${pct(Math.max(...vc.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline. ` +
+      `The share of games tied with the exact Nash policy changes by ${change(vc, "shared", "tie_nash_mean")} points with a shared network and by ${change(vc, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
+      `single seeds of the same setup differ by up to ${spread(vc, "tie_nash_runs")} points, so three seeds cannot settle changes of this size.`
     : "";
   const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
 
@@ -382,7 +387,7 @@ export default function PolicyPage() {
           <div className="wrap">
             <div className="eyebrow"><span className="badge p0">09</span>Network sharing and trimming</div>
             <h2>One shared network, and leaving out the last steps</h2>
-            <p className="lede">A2C and PPO, three seeds each, on both boards. <b>Shared network</b>: both players&rsquo; policies are
+            <p className="lede">A2C and PPO, three seeds each, on all three boards. <b>Shared network</b>: both players&rsquo; policies are
               two output slices of one network, so each player&rsquo;s update also moves the other. <b>Leaving out the last 10 steps</b>:
               the final 10 of the 100 steps of every episode are not used in the loss, though they still count in the returns of earlier steps.
               Bars are the mean over seeds; dots are single seeds.</p>
@@ -390,9 +395,16 @@ export default function PolicyPage() {
             <VariantBars rows={vr} reference={rnd.exact.vs_best_response[0]} />
             <h3>Deterministic board: games tied with the exact Nash policy</h3>
             <VariantBars rows={vd} reference={results.exact.vs_nash[1]} field="tie_nash_" />
+            {vc && (
+              <>
+                <h3>Continuing game: games tied with the exact Nash policy</h3>
+                <VariantBars rows={vc} reference={results.continuing.exact.vs_nash[1]} field="tie_nash_" />
+              </>
+            )}
             <p className="fig-cap">{VARIANT_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
             <p>{variantText}</p>
             <p>{detText}</p>
+            <p>{contText}</p>
           </div>
         </section>
       )}
