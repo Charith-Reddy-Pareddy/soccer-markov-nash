@@ -336,6 +336,12 @@ export default function PolicyPage() {
   const enBoards = entropy ? [["random", "Random move-order board: win rate against the best response", "", rnd.exact.vs_best_response[0], "mean"],
     ["deterministic", "Deterministic board: games tied with the exact Nash policy", "tie_nash_", results.exact.vs_nash[1], "tie_nash_mean"],
     ["continuing", "Continuing game: games tied with the exact Nash policy", "tie_nash_", results.continuing && results.continuing.exact.vs_nash[1], "tie_nash_mean"]].filter(([k]) => entropy[k]) : [];
+  const enByAlgo = entropy && entropy.random
+    ? ["REINFORCE", "A2C", "PPO"].map((a) => {
+      const rows = entropy.random.filter((v) => v.label === a);
+      return `${a} ${pts(rows.reduce((s, v) => s + v.larger.mean - v.baseline.mean, 0) / rows.length)}`;
+    }).join(", ")
+    : "";
   const detText = vd
     ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
@@ -611,7 +617,8 @@ export default function PolicyPage() {
               </div>
             ))}
             <p className="fig-cap">{EN_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
-            <p>{enBoards.map(([k, , , , f]) => `${k === "random" ? "Random board" : k === "deterministic" ? "Deterministic board" : "Continuing game"}: the larger bonus changes the ${k === "random" ? "win rate against the best response" : "share tied with the exact Nash policy"} by ${enChange(entropy[k], f)} points; against a random player the win rate changes by ${enRandom(entropy[k])} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).`).join(" ")}</p>
+            {enByAlgo && <p>{`On the random board, averaged over the three ways of training, the larger bonus moves the win rate against the best response by ${enByAlgo} points; the exact solver wins ${pct(rnd.exact.vs_best_response[0])} from the ball seat. This is an ablation and does not show convergence to the unregularized equilibrium.`}</p>}
+          <p>{enBoards.map(([k, , , , f]) => `${k === "random" ? "Random board" : k === "deterministic" ? "Deterministic board" : "Continuing game"}: the larger bonus changes the ${k === "random" ? "win rate against the best response" : "share tied with the exact Nash policy"} by ${enChange(entropy[k], f)} points; against a random player the win rate changes by ${enRandom(entropy[k])} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).`).join(" ")}</p>
           </div>
         </section>
       )}

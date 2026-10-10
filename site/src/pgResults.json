@@ -2815,6 +2815,194 @@
      ]
     }
    }
+  ],
+  "continuing": [
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play",
+    "softmax": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.997,
+      0.003,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "argmax": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.909667,
+      0.076333,
+      0.014
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "softmax": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.999667,
+      0.000333,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "argmax": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.929333,
+      0.058333,
+      0.012333
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "softmax": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.950333,
+      0.044667,
+      0.005
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "argmax": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.020333,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.061
+     ],
+     "vs_random": [
+      0.887667,
+      0.096,
+      0.016333
+     ],
+     "vs_nash": [
+      0.0,
+      0.020333,
+      0.979667
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   }
   ]
  },
  "rps_nn": {
@@ -38935,5 +39123,1686 @@
    }
   }
  },
- "entropy": null
+ "entropy": {
+  "random": [
+   {
+    "label": "REINFORCE",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.131667,
+     "runs": [
+      0.084,
+      0.171,
+      0.14
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.886,
+      0.074333,
+      0.039667
+     ],
+     "vs_nash": [
+      0.291,
+      0.0,
+      0.709
+     ],
+     "vs_best_response": [
+      0.131667,
+      0.0,
+      0.868333
+     ]
+    },
+    "larger": {
+     "mean": 0.047333,
+     "runs": [
+      0.052,
+      0.047,
+      0.043
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.894667,
+      0.051,
+      0.054333
+     ],
+     "vs_nash": [
+      0.079667,
+      0.0,
+      0.920333
+     ],
+     "vs_best_response": [
+      0.047333,
+      0.0,
+      0.952667
+     ]
+    }
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.078,
+     "runs": [
+      0.069,
+      0.066,
+      0.099
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.946,
+      0.017667,
+      0.036333
+     ],
+     "vs_nash": [
+      0.281333,
+      0.0,
+      0.718667
+     ],
+     "vs_best_response": [
+      0.078,
+      0.0,
+      0.922
+     ]
+    },
+    "larger": {
+     "mean": 0.051333,
+     "runs": [
+      0.064,
+      0.036,
+      0.054
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.864,
+      0.066667,
+      0.069333
+     ],
+     "vs_nash": [
+      0.067333,
+      0.0,
+      0.932667
+     ],
+     "vs_best_response": [
+      0.051333,
+      0.0,
+      0.948667
+     ]
+    }
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.036,
+     "runs": [
+      0.029,
+      0.031,
+      0.048
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.900333,
+      0.039,
+      0.060667
+     ],
+     "vs_nash": [
+      0.245,
+      0.0,
+      0.755
+     ],
+     "vs_best_response": [
+      0.036,
+      0.0,
+      0.964
+     ]
+    },
+    "larger": {
+     "mean": 0.029,
+     "runs": [
+      0.029,
+      0.024,
+      0.034
+     ],
+     "tie_nash_mean": 0.000667,
+     "tie_nash_runs": [
+      0.0,
+      0.002,
+      0.0
+     ],
+     "vs_random": [
+      0.952,
+      0.014333,
+      0.033667
+     ],
+     "vs_nash": [
+      0.219,
+      0.000667,
+      0.780333
+     ],
+     "vs_best_response": [
+      0.029,
+      0.0,
+      0.971
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.144667,
+     "runs": [
+      0.189,
+      0.134,
+      0.111
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.924,
+      0.047333,
+      0.028667
+     ],
+     "vs_nash": [
+      0.327667,
+      0.0,
+      0.672333
+     ],
+     "vs_best_response": [
+      0.144667,
+      0.0,
+      0.855333
+     ]
+    },
+    "larger": {
+     "mean": 0.07,
+     "runs": [
+      0.077,
+      0.068,
+      0.065
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.904667,
+      0.045,
+      0.050333
+     ],
+     "vs_nash": [
+      0.094333,
+      0.0,
+      0.905667
+     ],
+     "vs_best_response": [
+      0.07,
+      0.0,
+      0.93
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.123,
+     "runs": [
+      0.145,
+      0.079,
+      0.145
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.937333,
+      0.030667,
+      0.032
+     ],
+     "vs_nash": [
+      0.291333,
+      0.0,
+      0.708667
+     ],
+     "vs_best_response": [
+      0.123,
+      0.0,
+      0.877
+     ]
+    },
+    "larger": {
+     "mean": 0.054333,
+     "runs": [
+      0.058,
+      0.042,
+      0.063
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.873333,
+      0.059333,
+      0.067333
+     ],
+     "vs_nash": [
+      0.079333,
+      0.0,
+      0.920667
+     ],
+     "vs_best_response": [
+      0.054333,
+      0.0,
+      0.945667
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.063,
+     "runs": [
+      0.031,
+      0.058,
+      0.1
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.929667,
+      0.026667,
+      0.043667
+     ],
+     "vs_nash": [
+      0.226,
+      0.0,
+      0.774
+     ],
+     "vs_best_response": [
+      0.063,
+      0.0,
+      0.937
+     ]
+    },
+    "larger": {
+     "mean": 0.037,
+     "runs": [
+      0.08,
+      0.024,
+      0.007
+     ],
+     "tie_nash_mean": 0.000333,
+     "tie_nash_runs": [
+      0.0,
+      0.001,
+      0.0
+     ],
+     "vs_random": [
+      0.968667,
+      0.009667,
+      0.021667
+     ],
+     "vs_nash": [
+      0.241667,
+      0.000333,
+      0.758
+     ],
+     "vs_best_response": [
+      0.037,
+      0.0,
+      0.963
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.093,
+     "runs": [
+      0.088,
+      0.187,
+      0.004
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.922,
+      0.036,
+      0.042
+     ],
+     "vs_nash": [
+      0.246667,
+      0.0,
+      0.753333
+     ],
+     "vs_best_response": [
+      0.093,
+      0.043667,
+      0.863333
+     ]
+    },
+    "larger": {
+     "mean": 0.368333,
+     "runs": [
+      0.338,
+      0.363,
+      0.404
+     ],
+     "tie_nash_mean": 0.001,
+     "tie_nash_runs": [
+      0.0,
+      0.001,
+      0.002
+     ],
+     "vs_random": [
+      0.984667,
+      0.010667,
+      0.004667
+     ],
+     "vs_nash": [
+      0.455667,
+      0.001,
+      0.543333
+     ],
+     "vs_best_response": [
+      0.368333,
+      0.000333,
+      0.631333
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.049667,
+     "runs": [
+      0.014,
+      0.113,
+      0.022
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.936333,
+      0.022333,
+      0.041333
+     ],
+     "vs_nash": [
+      0.299,
+      0.0,
+      0.701
+     ],
+     "vs_best_response": [
+      0.049667,
+      0.0,
+      0.950333
+     ]
+    },
+    "larger": {
+     "mean": 0.226,
+     "runs": [
+      0.213,
+      0.221,
+      0.244
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.975,
+      0.015667,
+      0.009333
+     ],
+     "vs_nash": [
+      0.328,
+      0.0,
+      0.672
+     ],
+     "vs_best_response": [
+      0.226,
+      0.0,
+      0.774
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.013667,
+     "runs": [
+      0.002,
+      0.02,
+      0.019
+     ],
+     "tie_nash_mean": 0.235667,
+     "tie_nash_runs": [
+      0.0,
+      0.707,
+      0.0
+     ],
+     "vs_random": [
+      0.946667,
+      0.022333,
+      0.031
+     ],
+     "vs_nash": [
+      0.170667,
+      0.235667,
+      0.593667
+     ],
+     "vs_best_response": [
+      0.013667,
+      0.008,
+      0.978333
+     ]
+    },
+    "larger": {
+     "mean": 0.280667,
+     "runs": [
+      0.281,
+      0.301,
+      0.26
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.972667,
+      0.02,
+      0.007333
+     ],
+     "vs_nash": [
+      0.426333,
+      0.0,
+      0.573667
+     ],
+     "vs_best_response": [
+      0.280667,
+      0.0,
+      0.719333
+     ]
+    }
+   }
+  ],
+  "deterministic": [
+   {
+    "label": "REINFORCE",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.004333,
+     "runs": [
+      0.0,
+      0.0,
+      0.013
+     ],
+     "tie_nash_mean": 0.713,
+     "tie_nash_runs": [
+      1.0,
+      0.139,
+      1.0
+     ],
+     "vs_random": [
+      0.678667,
+      0.290667,
+      0.030667
+     ],
+     "vs_nash": [
+      0.0,
+      0.713,
+      0.287
+     ],
+     "vs_best_response": [
+      0.004333,
+      0.0,
+      0.995667
+     ]
+    },
+    "larger": {
+     "mean": 0.017333,
+     "runs": [
+      0.025,
+      0.011,
+      0.016
+     ],
+     "tie_nash_mean": 0.010333,
+     "tie_nash_runs": [
+      0.011,
+      0.011,
+      0.009
+     ],
+     "vs_random": [
+      0.894667,
+      0.047667,
+      0.057667
+     ],
+     "vs_nash": [
+      0.0,
+      0.010333,
+      0.989667
+     ],
+     "vs_best_response": [
+      0.017333,
+      0.0,
+      0.982667
+     ]
+    }
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.020333,
+     "runs": [
+      0.025,
+      0.015,
+      0.021
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.918,
+      0.016333,
+      0.065667
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.020333,
+      0.0,
+      0.979667
+     ]
+    },
+    "larger": {
+     "mean": 0.016,
+     "runs": [
+      0.016,
+      0.021,
+      0.011
+     ],
+     "tie_nash_mean": 0.006,
+     "tie_nash_runs": [
+      0.007,
+      0.004,
+      0.007
+     ],
+     "vs_random": [
+      0.897333,
+      0.038333,
+      0.064333
+     ],
+     "vs_nash": [
+      0.0,
+      0.006,
+      0.994
+     ],
+     "vs_best_response": [
+      0.016,
+      0.0,
+      0.984
+     ]
+    }
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.001333,
+     "runs": [
+      0.001,
+      0.003,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.908667,
+      0.027667,
+      0.063667
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.001333,
+      0.0,
+      0.998667
+     ]
+    },
+    "larger": {
+     "mean": 0.000667,
+     "runs": [
+      0.0,
+      0.002,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.956,
+      0.007333,
+      0.036667
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.000667,
+      0.0,
+      0.999333
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.023,
+     "runs": [
+      0.035,
+      0.005,
+      0.029
+     ],
+     "tie_nash_mean": 0.854667,
+     "tie_nash_runs": [
+      0.807,
+      0.757,
+      1.0
+     ],
+     "vs_random": [
+      0.733333,
+      0.239,
+      0.027667
+     ],
+     "vs_nash": [
+      0.0,
+      0.854667,
+      0.145333
+     ],
+     "vs_best_response": [
+      0.023,
+      0.0,
+      0.977
+     ]
+    },
+    "larger": {
+     "mean": 0.031,
+     "runs": [
+      0.029,
+      0.027,
+      0.037
+     ],
+     "tie_nash_mean": 0.006,
+     "tie_nash_runs": [
+      0.003,
+      0.012,
+      0.003
+     ],
+     "vs_random": [
+      0.928,
+      0.023667,
+      0.048333
+     ],
+     "vs_nash": [
+      0.0,
+      0.006,
+      0.994
+     ],
+     "vs_best_response": [
+      0.031,
+      0.0,
+      0.969
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.006333,
+     "runs": [
+      0.011,
+      0.002,
+      0.006
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.963333,
+      0.003333,
+      0.033333
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.006333,
+      0.0,
+      0.993667
+     ]
+    },
+    "larger": {
+     "mean": 0.015667,
+     "runs": [
+      0.018,
+      0.016,
+      0.013
+     ],
+     "tie_nash_mean": 0.008667,
+     "tie_nash_runs": [
+      0.014,
+      0.003,
+      0.009
+     ],
+     "vs_random": [
+      0.904667,
+      0.037333,
+      0.058
+     ],
+     "vs_nash": [
+      0.0,
+      0.008667,
+      0.991333
+     ],
+     "vs_best_response": [
+      0.015667,
+      0.0,
+      0.984333
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.000333,
+     "runs": [
+      0.0,
+      0.0,
+      0.001
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.920667,
+      0.017,
+      0.062333
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.000333,
+      0.0,
+      0.999667
+     ]
+    },
+    "larger": {
+     "mean": 0.003,
+     "runs": [
+      0.009,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.963667,
+      0.006333,
+      0.03
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.003,
+      0.0,
+      0.997
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.666667,
+     "tie_nash_runs": [
+      1.0,
+      1.0,
+      0.0
+     ],
+     "vs_random": [
+      0.609,
+      0.298333,
+      0.092667
+     ],
+     "vs_nash": [
+      0.0,
+      0.666667,
+      0.333333
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.031667,
+     "runs": [
+      0.069,
+      0.009,
+      0.017
+     ],
+     "tie_nash_mean": 0.960333,
+     "tie_nash_runs": [
+      0.963,
+      0.97,
+      0.948
+     ],
+     "vs_random": [
+      0.930667,
+      0.067333,
+      0.002
+     ],
+     "vs_nash": [
+      0.0,
+      0.960333,
+      0.039667
+     ],
+     "vs_best_response": [
+      0.031667,
+      0.117,
+      0.851333
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.003,
+     "runs": [
+      0.0,
+      0.009,
+      0.0
+     ],
+     "tie_nash_mean": 0.189667,
+     "tie_nash_runs": [
+      0.027,
+      0.542,
+      0.0
+     ],
+     "vs_random": [
+      0.881,
+      0.046,
+      0.073
+     ],
+     "vs_nash": [
+      0.0,
+      0.189667,
+      0.810333
+     ],
+     "vs_best_response": [
+      0.003,
+      0.0,
+      0.997
+     ]
+    },
+    "larger": {
+     "mean": 0.002,
+     "runs": [
+      0.0,
+      0.001,
+      0.005
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.992,
+      0.001333,
+      0.006667
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.002,
+      0.0,
+      0.998
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.003667,
+     "runs": [
+      0.004,
+      0.006,
+      0.001
+     ],
+     "tie_nash_mean": 0.003,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.009
+     ],
+     "vs_random": [
+      0.864333,
+      0.084333,
+      0.051333
+     ],
+     "vs_nash": [
+      0.0,
+      0.003,
+      0.997
+     ],
+     "vs_best_response": [
+      0.003667,
+      0.0,
+      0.996333
+     ]
+    },
+    "larger": {
+     "mean": 0.009,
+     "runs": [
+      0.026,
+      0.001,
+      0.0
+     ],
+     "tie_nash_mean": 0.064,
+     "tie_nash_runs": [
+      0.0,
+      0.01,
+      0.182
+     ],
+     "vs_random": [
+      0.995333,
+      0.001667,
+      0.003
+     ],
+     "vs_nash": [
+      0.0,
+      0.064,
+      0.936
+     ],
+     "vs_best_response": [
+      0.009,
+      0.0,
+      0.991
+     ]
+    }
+   }
+  ],
+  "continuing": [
+   {
+    "label": "REINFORCE",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.341333,
+     "tie_nash_runs": [
+      1.0,
+      0.0,
+      0.024
+     ],
+     "vs_random": [
+      0.790667,
+      0.204,
+      0.005333
+     ],
+     "vs_nash": [
+      0.0,
+      0.341333,
+      0.658667
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.009,
+     "tie_nash_runs": [
+      0.004,
+      0.01,
+      0.013
+     ],
+     "vs_random": [
+      0.848333,
+      0.133,
+      0.018667
+     ],
+     "vs_nash": [
+      0.0,
+      0.009,
+      0.991
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.997,
+      0.003,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.007333,
+     "tie_nash_runs": [
+      0.006,
+      0.006,
+      0.01
+     ],
+     "vs_random": [
+      0.823,
+      0.151333,
+      0.025667
+     ],
+     "vs_nash": [
+      0.0,
+      0.007333,
+      0.992667
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "REINFORCE",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.909667,
+      0.076333,
+      0.014
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.974,
+      0.024,
+      0.002
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.000333,
+     "runs": [
+      0.001,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.447,
+     "tie_nash_runs": [
+      0.223,
+      0.118,
+      1.0
+     ],
+     "vs_random": [
+      0.637667,
+      0.346,
+      0.016333
+     ],
+     "vs_nash": [
+      0.0,
+      0.447,
+      0.553
+     ],
+     "vs_best_response": [
+      0.000333,
+      0.002667,
+      0.997
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.006667,
+     "tie_nash_runs": [
+      0.01,
+      0.001,
+      0.009
+     ],
+     "vs_random": [
+      0.875,
+      0.111333,
+      0.013667
+     ],
+     "vs_nash": [
+      0.0,
+      0.006667,
+      0.993333
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.999667,
+      0.000333,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.007333,
+     "tie_nash_runs": [
+      0.008,
+      0.003,
+      0.011
+     ],
+     "vs_random": [
+      0.840667,
+      0.137667,
+      0.021667
+     ],
+     "vs_nash": [
+      0.0,
+      0.007333,
+      0.992667
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "A2C",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.929333,
+      0.058333,
+      0.012333
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.989,
+      0.011,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "standard",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 1.0,
+     "tie_nash_runs": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "vs_random": [
+      0.525667,
+      0.427667,
+      0.046667
+     ],
+     "vs_nash": [
+      0.0,
+      1.0,
+      0.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.005667,
+     "runs": [
+      0.013,
+      0.001,
+      0.003
+     ],
+     "tie_nash_mean": 0.964667,
+     "tie_nash_runs": [
+      0.979,
+      0.975,
+      0.94
+     ],
+     "vs_random": [
+      0.955667,
+      0.044333,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.964667,
+      0.035333
+     ],
+     "vs_best_response": [
+      0.005667,
+      0.037,
+      0.957333
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.0,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "vs_random": [
+      0.950333,
+      0.044667,
+      0.005
+     ],
+     "vs_nash": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.002333,
+     "tie_nash_runs": [
+      0.002,
+      0.001,
+      0.004
+     ],
+     "vs_random": [
+      0.998333,
+      0.001667,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.002333,
+      0.997667
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    }
+   },
+   {
+    "label": "PPO",
+    "training": "fictitious play, argmax",
+    "baseline": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.020333,
+     "tie_nash_runs": [
+      0.0,
+      0.0,
+      0.061
+     ],
+     "vs_random": [
+      0.887667,
+      0.096,
+      0.016333
+     ],
+     "vs_nash": [
+      0.0,
+      0.020333,
+      0.979667
+     ],
+     "vs_best_response": [
+      0.0,
+      0.0,
+      1.0
+     ]
+    },
+    "larger": {
+     "mean": 0.0,
+     "runs": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "tie_nash_mean": 0.000667,
+     "tie_nash_runs": [
+      0.001,
+      0.001,
+      0.0
+     ],
+     "vs_random": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "vs_nash": [
+      0.0,
+      0.000667,
+      0.999333
+     ],
+     "vs_best_response": [
+      0.0,
+      0.000333,
+      0.999667
+     ]
+    }
+   }
+  ]
+ }
 }
