@@ -270,3 +270,21 @@ def test_the_deterministic_tie_caveat_in_the_text_is_true():
     assert ppo["trimmed"]["tie_nash_mean"] > 0.99
     assert ppo["trimmed"]["vs_random"][0] < ppo["baseline"]["vs_random"][0]
     assert "A tie does not mean equilibrium play" in PAGE
+
+
+def test_the_continuing_variants_have_three_seeds_and_the_text_claims_hold():
+    rows = RESULTS["variants"]["continuing"]
+    assert len(rows) == 4
+    ref = RESULTS["continuing"]["exact"]["vs_best_response"][0]
+    for r in rows:
+        for key in ("baseline", "shared", "trimmed"):
+            assert len(r[key]["runs"]) == len(r[key]["tie_nash_runs"]) == 3
+            assert r[key]["mean"] <= ref + 0.01  # nobody wins against the best response
+    by = {(x["label"], x["training"]): x for x in RESULTS["continuing"]["learners"]}
+    for r in rows:
+        base = by[(r["label"], r["training"])]
+        assert r["baseline"]["tie_nash_mean"] == pytest.approx(base["vs_nash"][1], abs=1e-5)
+    spread = max(max(x["tie_nash_runs"]) - min(x["tie_nash_runs"])
+                 for r in rows for x in (r["baseline"], r["shared"]))
+    assert spread > 0.5  # single seeds of one setup differ by half the scale or more
+    assert "three seeds cannot settle changes of this size" in PAGE

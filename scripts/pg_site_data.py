@@ -111,6 +111,8 @@ VARIANT_FILES = {
                "pg_variant_random_trim10.csv"),
     "deterministic": ("pg_finite_a10.csv", "pg_variant_a10_shared.csv",
                       "pg_variant_a10_trim10.csv"),
+    "continuing": ("pg_finite_rate_a10_{}_*.csv", "pg_variant_rate_a10_shared.csv",
+                   "pg_variant_rate_a10_trim10.csv"),
 }
 
 
@@ -123,10 +125,11 @@ def variants(board: str) -> list[dict] | None:
         for training, mode in (("standard", "selfplay"), ("fictitious play", "fictitious")):
             entry = {"label": NAMES[algo], "training": training}
             for key, pattern in zip(("baseline", "shared", "trimmed"), VARIANT_FILES[board]):
-                path = EXP / pattern.format(algo)
-                if not path.exists():
+                paths = sorted(glob.glob(str(EXP / pattern.format(algo))))
+                if not paths:
                     return None
-                rs = [r for r in read(path) if r["algo"] == algo and r["mode"] == mode]
+                rs = [r for path in paths for r in read(path)
+                      if r["algo"] == algo and r["mode"] == mode]
                 br = [float(r["row_win_vs_br"]) for r in rs]
                 tie = [float(r["row_tie_vs_nash"]) for r in rs]
                 entry[key] = {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie),
@@ -146,7 +149,8 @@ def _kind(row) -> str:
 def continuing_game() -> dict | None:
     """The deterministic board as a fixed-length game that restarts after every goal; a
     player wins a game by scoring more goals than the opponent in 100 steps."""
-    paths = sorted(glob.glob(str(EXP / "pg_finite_rate_a10_*.csv")))
+    paths = [q for q in sorted(glob.glob(str(EXP / "pg_finite_rate_a10_*.csv")))
+             if "_shared" not in q and "_trim" not in q]
     if not paths:
         return None
     rows = [r for p in paths for r in read(p)]

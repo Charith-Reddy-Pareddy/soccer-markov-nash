@@ -131,11 +131,25 @@ def variant_section(res: dict) -> str:
     pick = {(r["label"], r["training"]): r for r in rnd}
     a2c_s, a2c_f, ppo = (pick[("A2C", "standard")], pick[("A2C", "fictitious play")],
                          pick[("PPO", "standard")])
+    order = "(A2C standard, A2C fictitious play, PPO standard, PPO fictitious play)"
+    cont = both.get("continuing")
+    cont_html = ""
+    if cont:
+        cbest = max(x["mean"] for r in cont for x in (r["baseline"], r["shared"], r["trimmed"]))
+        cont_html = f"""
+<h3>Continuing game: games tied with the exact Nash policy</h3>
+<div>{variant_bars(cont, res["continuing"]["exact"]["vs_nash"][1], field="tie_nash_")}</div>"""
+        cont_text = f"""<p>Continuing game: no variant wins more than {pct(cbest)} of games against the best response, as for the
+baseline. The share of games tied with the exact Nash policy changes by
+{change(cont, "shared", "tie_nash_mean")} points with a shared network and by
+{change(cont, "trimmed", "tie_nash_mean")} points with the last 10 steps left out {order}; single seeds of the same setup
+differ by up to {spread(cont, "tie_nash_runs")} points, so three seeds cannot settle changes of this size.</p>"""
+    else:
+        cont_text = ""
     dpp = next(r for r in det if (r["label"], r["training"]) == ("PPO", "standard"))
     best = max(x["mean"] for r in det for x in (r["baseline"], r["shared"], r["trimmed"]))
-    order = "(A2C standard, A2C fictitious play, PPO standard, PPO fictitious play)"
     return f"""<section><h2>9. Network sharing and trimming</h2>
-<p>A2C and PPO, three seeds each, on both boards. <b>Shared network</b>: both players' policies are two output
+<p>A2C and PPO, three seeds each, on all three boards. <b>Shared network</b>: both players' policies are two output
 slices of one network, so each player's update also moves the other. <b>Last 10 steps left out</b>: the final 10 of the 100
 steps of every episode are not used in the loss, though they still count in the returns of earlier steps. Bars are the mean over
 seeds; dots are single seeds. <span style="color:{GREEN}">■</span> separate networks,
@@ -143,7 +157,7 @@ seeds; dots are single seeds. <span style="color:{GREEN}">■</span> separate ne
 <h3>Random move-order board: win rate against the best response</h3>
 <div>{variant_bars(rnd, res["random"]["exact"]["vs_best_response"][0])}</div>
 <h3>Deterministic board: games tied with the exact Nash policy</h3>
-<div>{variant_bars(det, res["exact"]["vs_nash"][1], field="tie_nash_")}</div>
+<div>{variant_bars(det, res["exact"]["vs_nash"][1], field="tie_nash_")}</div>{cont_html}
 <p>Random board: against separate networks, a shared network changes the win rate by {change(rnd, "shared", "mean")} points
 {order}; single seeds of the same setup differ by up to {spread(rnd, "runs")} points. Leaving out the last 10 steps
 changes A2C by {pts(a2c_s["trimmed"]["mean"] - a2c_s["baseline"]["mean"])} and
@@ -156,7 +170,8 @@ solver wins 0%, since it ties itself). The share of games tied with the exact Na
 with the last 10 steps left out {order}; single seeds of the same setup differ by up to {spread(det, "tie_nash_runs")} points. A tie does not mean equilibrium
 play: PPO with standard training ties all games once the last 10 steps are left out, but wins only
 {pct(dpp["trimmed"]["vs_random"][0])} of games against a random player, against {pct(dpp["baseline"]["vs_random"][0])}
-before.</p></section>"""
+before.</p>
+{cont_text}</section>"""
 
 
 def rps_plot(d: dict, width=660, height=250) -> str:

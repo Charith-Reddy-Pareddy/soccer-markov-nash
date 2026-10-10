@@ -60,7 +60,7 @@ def test_the_report_has_a_section_per_board_and_the_plots():
     assert "The deterministic board (A10)" in TEXT and "The random move-order board" in TEXT
     assert ("The continuing game" in TEXT) == (RES.get("continuing") is not None)
     boards = 3 if RES.get("continuing") is not None else 2
-    assert HTML.count("<svg") == 3 + 2 * boards  # rps, two charts a board, two variants
+    assert HTML.count("<svg") == 4 + 2 * boards  # rps, two charts a board, three variants
     assert "best-response dynamics" in TEXT
 
 
