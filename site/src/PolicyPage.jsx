@@ -50,6 +50,46 @@ function BestResponseBars({ rows, reference }) {
   );
 }
 
+// Every win rate against the best response in one table, for both kickoff seats and their 50/50
+// average, on every board that has results.
+const SEATS = [["ball", "Ball seat"], ["other", "Other seat"], ["balanced", "Balanced"]];
+const seatRates = (x) => {
+  const ball = x.vs_best_response[0], other = x.vs_best_response_column[0];
+  return { ball, other, balanced: (ball + other) / 2 };
+};
+function WinRateTable({ boards }) {
+  const names = [];
+  boards.forEach(([, , b]) => b.learners.forEach((l) => { if (!names.includes(name(l))) names.push(name(l)); }));
+  return (
+    <div className="tbl-wrap">
+      <table className="win-table">
+        <thead>
+          <tr>
+            <th rowSpan={2}>Learner</th>
+            {boards.map(([k, title]) => <th key={k} colSpan={SEATS.length}>{title}</th>)}
+          </tr>
+          <tr>{boards.flatMap(([k]) => SEATS.map(([f, s]) => <th key={`${k}-${f}`}>{s}</th>))}</tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Exact solver</td>
+            {boards.flatMap(([k, , b]) => SEATS.map(([f]) => <td key={`${k}-${f}`}>{pct(seatRates(b.exact)[f])}</td>))}
+          </tr>
+          {names.map((n) => (
+            <tr key={n}>
+              <td>{n}</td>
+              {boards.flatMap(([k, , b]) => {
+                const l = b.learners.find((x) => name(x) === n);
+                return SEATS.map(([f]) => <td key={`${k}-${f}`}>{l ? pct(seatRates(l)[f]) : "\u2014"}</td>);
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // Wins (green), ties (grey) and losses (orange): one stacked bar per learner and one panel per
 // opponent or setting, all sharing the label column.
 function StackBars({ rows, titles }) {
@@ -156,7 +196,7 @@ const VARIANT_KEYS = [["baseline", "Separate networks", "var(--pitch)"],
 function VariantBars({ rows, reference, field = "", keys = VARIANT_KEYS }) {
   const mean = (v) => v[`${field}mean`];
   const runs = (v) => v[`${field}runs`];
-  const W = 660, left = 170, right = 20, group = 70, bar = 16;
+  const W = 660, left = 170, right = 20, bar = 16, group = keys.length * (bar + 2) + 16;
   const H = group * rows.length + 48;
   const x = (v) => left + v * (W - left - right);
   return (
@@ -171,7 +211,7 @@ function VariantBars({ rows, reference, field = "", keys = VARIANT_KEYS }) {
         const y0 = 28 + i * group;
         return (
           <g key={`${r.label}-${r.training}`}>
-            <text x={left - 8} y={y0 + 24} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}, {r.training}</text>
+            <text x={left - 8} y={y0 + group / 2 - 6} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}, {r.training}</text>
             {keys.map(([k, , col], n) => (
               <g key={k}>
                 <rect x={left} y={y0 + n * (bar + 2)} width={Math.max(x(mean(r[k])) - left, 0)} height={bar} fill={col} opacity=".85" />
@@ -221,7 +261,7 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy } = results;
   const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
@@ -280,15 +320,22 @@ export default function PolicyPage() {
   const rpsSecond = rpsNn && rpsNn.configs && Object.values(rpsNn.configs)[1];
   const rpsText = rpsFirst
     ? `With the ${Object.keys(rpsNn.configs)[0]} the standard networks cycle (exploitability ${meanOf(rpsFirst.modes.standard.final_exploitability).toFixed(2)}), and neither form of fictitious play reaches one third (softmax ${meanOf(rpsFirst.modes.fictitious.final_exploitability).toFixed(2)}, argmax ${meanOf(rpsFirst.modes.fictitious_argmax.final_exploitability).toFixed(2)}). ` +
-      (rpsSecond ? `With the ${Object.keys(rpsNn.configs)[1]} all three settle close to the equilibrium (standard ${meanOf(rpsSecond.modes.standard.final_exploitability).toFixed(2)}, softmax ${meanOf(rpsSecond.modes.fictitious.final_exploitability).toFixed(2)}, argmax ${meanOf(rpsSecond.modes.fictitious_argmax.final_exploitability).toFixed(2)}): this setting damps the cycling, so the standard networks settle too.` : "")
+      (rpsSecond ? `With the ${Object.keys(rpsNn.configs)[1]} all three settle close to the equilibrium (standard ${meanOf(rpsSecond.modes.standard.final_exploitability).toFixed(2)}, softmax ${meanOf(rpsSecond.modes.fictitious.final_exploitability).toFixed(2)}, argmax ${meanOf(rpsSecond.modes.fictitious_argmax.final_exploitability).toFixed(2)}): this setting damps the cycling, so the standard networks settle too (a stabilization effect, not evidence of convergence to the unregularized equilibrium).` : "")
     : "";
   const AM_KEYS = [["softmax", "Average of softmax snapshots", "var(--pitch)"], ["argmax", "Average of argmax snapshots", "var(--ember)"]];
   const amChange = (rows, f) => rows.map((v) => pts(v.argmax[f] - v.softmax[f])).join(", ");
   const amSpread = (rows, f) => Math.round(100 * Math.max(...rows.flatMap((v) => [v.softmax, v.argmax].map((x) => Math.max(...x[f]) - Math.min(...x[f])))));
   const amText = argmax
     ? `Random board: averaging argmax instead of softmax snapshots changes the win rate against the best response by ${amChange(argmax.random, "mean")} points (REINFORCE, A2C, PPO); single seeds differ by up to ${amSpread(argmax.random, "runs")} points. ` +
-      `Deterministic board: it changes the share of games tied with the exact Nash policy by ${amChange(argmax.deterministic, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.deterministic, "tie_nash_runs")} points.`
+      `Deterministic board: it changes the share of games tied with the exact Nash policy by ${amChange(argmax.deterministic, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.deterministic, "tie_nash_runs")} points.` +
+      (argmax.continuing ? ` Continuing game: the share tied with the exact Nash policy changes by ${amChange(argmax.continuing, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.continuing, "tie_nash_runs")} points, and no argmax learner wins more than ${pct(Math.max(...argmax.continuing.map((v) => v.argmax.mean)))} of games against the best response.` : "")
     : "";
+  const EN_KEYS = [["baseline", "Entropy bonus 0.01 (used elsewhere)", "var(--pitch)"], ["larger", "Entropy bonus 0.2", "var(--ember)"]];
+  const enChange = (rows, f) => rows.map((v) => pts(v.larger[f] - v.baseline[f])).join(", ");
+  const enRandom = (rows) => rows.map((v) => pts(v.larger.vs_random[0] - v.baseline.vs_random[0])).join(", ");
+  const enBoards = entropy ? [["random", "Random move-order board: win rate against the best response", "", rnd.exact.vs_best_response[0], "mean"],
+    ["deterministic", "Deterministic board: games tied with the exact Nash policy", "tie_nash_", results.exact.vs_nash[1], "tie_nash_mean"],
+    ["continuing", "Continuing game: games tied with the exact Nash policy", "tie_nash_", results.continuing && results.continuing.exact.vs_nash[1], "tie_nash_mean"]].filter(([k]) => entropy[k]) : [];
   const detText = vd
     ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
@@ -370,7 +417,7 @@ export default function PolicyPage() {
                 <tr><td>Returns</td><td>REINFORCE: the discounted return from each step to the end of the episode, no baseline. A2C: 10-step bootstrapped advantage from a learned critic. A2C with the exact critic: the critic is the exact solver&rsquo;s value, frozen, so the advantage is the exact Q(s, a<sub>0</sub>, a<sub>1</sub>) minus V(s). PPO: GAE (&lambda; 0.95), ratio clipped at 0.2, 4 epochs.</td></tr>
                 <tr><td>Updates</td><td>Every iteration: 64 episodes of 100 steps, then one gradient step per player on all of that data (four for PPO). 2,000 iterations. Learning rate 10<sup>&minus;3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. No mini-batches, no replay.</td></tr>
                 <tr><td>Standard</td><td>Both players&rsquo; current networks play each other and keep updating: real-time best responses.</td></tr>
-                <tr><td>Fictitious play</td><td>Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations); the policy it reports is the average of its own snapshots.</td></tr>
+                <tr><td>Fictitious play</td><td>Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations); the policy it reports is the average of its own snapshots. Every snapshot follows a fixed budget of 5 policy-gradient iterations, and what is averaged is policies (action probabilities), never network weights.</td></tr>
               </tbody>
             </table>
           </div>
@@ -411,6 +458,15 @@ export default function PolicyPage() {
         <div className="wrap">
           <div className="eyebrow"><span className="badge p1">04</span>Results</div>
           <h2>How often the trained player wins</h2>
+          <h3>Win rates against the best response, by kickoff seat</h3>
+          <p className="lede">The share of 1,000 games each learner wins when the opponent plays the exact best response to it (the
+            move that minimizes its expected discounted score difference). <b>Ball seat</b>: the player that holds the ball at kickoff.
+            <b> Other seat</b>: the same learner as the other player. <b>Balanced</b>: the 50/50 average of the two, one number that
+            does not depend on who starts with the ball. Mean of 3 seeds; the exact solver is the top row, as context rather than a target.</p>
+          <WinRateTable boards={available.map(([k, label]) => [k, label, boards[k]])} />
+          <p className="fig-cap">The deterministic board is the A10 board: the exact solver ties itself there, so it wins 0% from both seats.
+            A dash means the learner was not run on that board. Wins against the exact Nash policy and a random player are in the charts below.</p>
+          <h3>One board in detail</h3>
           <div className="state-pick" role="group" aria-label="board">
             {available.map(([k, label]) => (
               <button key={k} className={which === k ? "on" : ""} onClick={() => setWhich(k)}>{label}</button>
@@ -528,8 +584,34 @@ export default function PolicyPage() {
             <VariantBars rows={argmax.random} reference={rnd.exact.vs_best_response[0]} keys={AM_KEYS} />
             <h3>Deterministic board: games tied with the exact Nash policy</h3>
             <VariantBars rows={argmax.deterministic} reference={results.exact.vs_nash[1]} field="tie_nash_" keys={AM_KEYS} />
+            {argmax.continuing && (
+              <>
+                <h3>Continuing game: games tied with the exact Nash policy</h3>
+                <VariantBars rows={argmax.continuing} reference={results.continuing.exact.vs_nash[1]} field="tie_nash_" keys={AM_KEYS} />
+              </>
+            )}
             <p className="fig-cap">{AM_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
             <p>{amText}</p>
+          </div>
+        </section>
+      )}
+
+      {entropy && (
+        <section className="band-tint" id="entropy">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">11</span>A larger entropy bonus</div>
+            <h2>An ablation: the entropy bonus raised to 0.2</h2>
+            <p className="lede">On rock-paper-scissors a larger entropy bonus made the networks settle, but entropy regularization changes the optimization problem, so this is a stabilization heuristic reported next to the original setting, not a way to recover the unregularized equilibrium. Here every learner (REINFORCE, A2C, PPO),
+              every way of training (standard, fictitious play, fictitious play with argmax snapshots) and every board is trained again with
+              the entropy bonus raised from 0.01 to 0.2; nothing else changes. Bars are the mean over 3 seeds; dots are single seeds.</p>
+            {enBoards.map(([k, title, f, ref]) => (
+              <div key={k}>
+                <h3>{title}</h3>
+                <VariantBars rows={entropy[k]} reference={ref} field={f} keys={EN_KEYS} />
+              </div>
+            ))}
+            <p className="fig-cap">{EN_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
+            <p>{enBoards.map(([k, , , , f]) => `${k === "random" ? "Random board" : k === "deterministic" ? "Deterministic board" : "Continuing game"}: the larger bonus changes the ${k === "random" ? "win rate against the best response" : "share tied with the exact Nash policy"} by ${enChange(entropy[k], f)} points; against a random player the win rate changes by ${enRandom(entropy[k])} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).`).join(" ")}</p>
           </div>
         </section>
       )}

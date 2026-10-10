@@ -91,3 +91,9 @@ td.lo { color: var(--ember); font-weight: 600; }
 svg.pg-bars { width: 100%; height: auto; margin: 1.4rem 0 .2rem; }
 .text-table th, .text-table td { text-align: left; white-space: normal; vertical-align: top; }
 .tbl-wrap td .sub { display: block; font-size: .72rem; color: var(--ink-faint); font-weight: 400; white-space: nowrap; }
+
+.win-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.win-table th, .win-table td { padding: 6px 9px; text-align: center; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.win-table th { font-weight: 700; color: var(--ink-faint); }
+.win-table tbody td:first-child, .win-table thead th:first-child { text-align: left; font-weight: 600; color: var(--ink); }
+.win-table tbody tr:first-child td { background: var(--tint, rgba(0,0,0,.03)); font-weight: 700; }
