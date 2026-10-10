@@ -24,6 +24,18 @@ from soccer_nash.nash_q import NashQIteration
 EXP = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 
 
+def load_runs(path: pathlib.Path) -> list[dict]:
+    """The finished learner runs of an earlier output file, numbers converted back from text."""
+    def number(v):
+        try:
+            return float(v) if "." in v or "e" in v.lower() else int(v)
+        except ValueError:
+            return v
+    with path.open() as f:
+        return [{k: number(v) for k, v in r.items()}
+                for r in csv.DictReader(f) if r["algo"] != "exact"]
+
+
 def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--board", choices=["a10", "random"], default="a10")
@@ -69,8 +81,7 @@ def main() -> None:
 
     done = set()
     if a.resume and path.exists():
-        with path.open() as f:
-            old_rows = [r for r in csv.DictReader(f) if r["algo"] != "exact"]
+        old_rows = load_runs(path)
         rows.extend(old_rows)
         done = {(r["algo"], r["mode"], int(r["seed"])) for r in old_rows}
 

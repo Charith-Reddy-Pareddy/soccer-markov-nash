@@ -236,13 +236,22 @@ def entropy_section(res: dict) -> str:
         d_rand = ", ".join(pts(r["larger"]["vs_random"][0] - r["baseline"]["vs_random"][0]) for r in rows)
         sentences.append(f"{short}: the larger bonus changes the {what} by {d_main} points; against a random player the win rate changes by "
                          f"{d_rand} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).")
+    by_algo = ""
+    if "random" in data:
+        parts = []
+        for algo in ("REINFORCE", "A2C", "PPO"):
+            rows = [v for v in data["random"] if v["label"] == algo]
+            parts.append(f"{algo} {pts(sum(v['larger']['mean'] - v['baseline']['mean'] for v in rows) / len(rows))}")
+        by_algo = (f"<p>On the random board, averaged over the three ways of training, the larger bonus moves the win rate against the "
+                   f"best response by {', '.join(parts)} points; the exact solver wins {pct(res['random']['exact']['vs_best_response'][0])} "
+                   "from the ball seat. This is an ablation and does not show convergence to the unregularized equilibrium.</p>")
     return f"""<section><h2>11. A larger entropy bonus</h2>
 <p>On rock-paper-scissors a larger entropy bonus made the networks settle, but entropy regularization changes the optimization problem, so this is a stabilization heuristic reported next to the original setting, not a way to recover the unregularized equilibrium. Here every learner (REINFORCE, A2C, PPO), every way of
 training (standard, fictitious play, fictitious play with argmax snapshots) and every board is trained again with the entropy bonus raised
 from 0.01 to 0.2; nothing else changes. Bars are the mean over 3 seeds and dots single seeds;
 <span style="color:{GREEN}">■</span> entropy bonus 0.01 (used elsewhere), <span style="color:{ORANGE}">■</span> entropy bonus 0.2.</p>
 {"".join(charts)}
-<p>{" ".join(sentences)}</p></section>"""
+{by_algo}<p>{" ".join(sentences)}</p></section>"""
 
 
 def variant_section(res: dict) -> str:

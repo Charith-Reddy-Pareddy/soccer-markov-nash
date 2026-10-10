@@ -1,0 +1,5 @@
+algo,mode,seed,train_s,iterations,exploitability,row_win_vs_random,row_tie_vs_random,row_loss_vs_random,row_win_vs_nash,row_tie_vs_nash,row_loss_vs_nash,row_win_vs_br,row_tie_vs_br,row_loss_vs_br,col_win_vs_random,col_tie_vs_random,col_loss_vs_random,col_win_vs_nash,col_tie_vs_nash,col_loss_vs_nash,col_win_vs_br,col_tie_vs_br,col_loss_vs_br,mirror_gap_mean,mirror_gap_max
+exact,-,0,0.0,0,0.0,0.914,0.086,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.657,0.343,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0
+reinforce,fictitious_argmax,0,3712.7,,1.586,0.981,0.016,0.003,0.0,0.0,1.0,0.0,0.0,1.0,0.812,0.152,0.036,0.0,0.0,1.0,0.0,0.0,1.0,0.242,0.908
+reinforce,fictitious_argmax,1,3245.9,2000,1.629,0.903,0.086,0.011,0.0,0.0,1.0,0.0,0.0,1.0,0.575,0.288,0.137,0.0,0.549,0.451,0.0,0.0,1.0,0.306,0.94
+reinforce,fictitious_argmax,2,3316.2,2000,1.57,0.845,0.127,0.028,0.0,0.0,1.0,0.0,0.0,1.0,0.535,0.315,0.15,0.0,0.0,1.0,0.0,0.0,1.0,0.281,0.925

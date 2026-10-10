@@ -337,14 +337,42 @@ def test_the_seat_explanation_matches_the_data():
     assert "Why the exact solver does not win 0% against the best response" in PAGE
 
 
-def test_the_argmax_averages_cover_three_algorithms_on_two_boards_with_three_seeds():
+def test_the_argmax_averages_cover_three_algorithms_on_three_boards_with_three_seeds():
     data = RESULTS["argmax"]
-    for board in ("random", "deterministic"):
+    assert set(data) == {"random", "deterministic", "continuing"}
+    for board in data:
         assert [r["label"] for r in data[board]] == ["REINFORCE", "A2C", "PPO"]
         for r in data[board]:
             for key in ("softmax", "argmax"):
                 assert len(r[key]["runs"]) == len(r[key]["tie_nash_runs"]) == 3
     assert "Averaging pure policies" in PAGE
+    top = max(r["argmax"]["mean"] for r in data["continuing"])
+    assert top < 0.05  # "no argmax learner wins more than ..." in the text
+
+
+def test_the_larger_entropy_runs_cover_nine_learners_on_three_boards_and_the_text_says_ablation():
+    data = RESULTS["entropy"]
+    assert set(data) == {"random", "deterministic", "continuing"}
+    for board, rows in data.items():
+        assert [(r["label"], r["training"]) for r in rows] == [
+            (a, m) for a in ("REINFORCE", "A2C", "PPO")
+            for m in ("standard", "fictitious play", "fictitious play, argmax")]
+        for r in rows:
+            for key in ("baseline", "larger"):
+                assert len(r[key]["runs"]) == len(r[key]["tie_nash_runs"]) == 3
+                assert sum(r[key]["vs_random"]) == pytest.approx(1.0, abs=1e-4)
+    html = (ROOT / "docs" / "policy_gradient.html").read_text()
+    for text in (PAGE, html):
+        assert "does not show convergence to the unregularized equilibrium" in text
+        assert "not a way to recover the unregularized equilibrium" in text
+
+
+def test_the_baseline_of_the_entropy_comparison_is_the_published_run():
+    by = {(x["label"], x["training"]): x for x in RESULTS["random"]["learners"]}
+    for r in RESULTS["entropy"]["random"]:
+        if r["training"] in ("standard", "fictitious play"):
+            published = by[(r["label"], r["training"])]["vs_best_response"][0]
+            assert r["baseline"]["mean"] == pytest.approx(published, abs=1e-5)
 
 
 def test_the_neural_network_rock_paper_scissors_runs_cover_both_settings_and_all_modes():

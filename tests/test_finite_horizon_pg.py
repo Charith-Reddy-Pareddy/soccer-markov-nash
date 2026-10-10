@@ -238,3 +238,20 @@ def test_the_runner_trains_for_the_documented_2000_iterations_by_default():
     args = mod.parser().parse_args([])
     assert args.iterations == 2000 and args.episodes == 64 and args.games == 1000
     assert args.seeds == 3 and args.entropy == 0.01
+
+
+def test_resumed_runs_are_read_back_as_numbers_so_the_final_summary_can_average_them(tmp_path):
+    import importlib.util
+    import pathlib
+    import statistics
+
+    path = pathlib.Path(__file__).resolve().parent.parent / "scripts" / "pg_finite.py"
+    spec = importlib.util.spec_from_file_location("pg_finite_script2", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    f = tmp_path / "out.csv"
+    f.write_text("algo,mode,seed,train_s,row_win_vs_br\n"
+                 "exact,-,0,0.0,0.5\na2c,fictitious,1,3020.4,0.25\na2c,fictitious,2,3183.3,0.75\n")
+    rows = mod.load_runs(f)
+    assert [r["seed"] for r in rows] == [1, 2] and rows[0]["mode"] == "fictitious"
+    assert statistics.mean(r["row_win_vs_br"] for r in rows) == 0.5
