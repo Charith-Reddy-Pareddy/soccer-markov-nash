@@ -2,9 +2,44 @@ import { useState } from "react";
 
 const pct = (v) => `${Math.round(v * 100)}%`;
 
-function Cells({ probs }) {
-  const top = Math.max(...probs);
-  return probs.map((v, i) => <td key={i} className={v === top ? "top" : ""}>{pct(v)}</td>);
+const MOVE_COLOURS = ["var(--pitch)", "#8fd3a8", "var(--rule-strong)", "var(--ember)"];
+
+// One stacked bar of move probabilities per policy and player; the likeliest move is labelled.
+function MoveBars({ rows, actions }) {
+  const W = 660, left = 190, gap = 30, rowH = 24, panel = (W - left - gap - 10) / 2;
+  const H = rowH * rows.length + 30;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="probability of each move" className="pg-bars">
+      {["Player 0", "Player 1"].map((title, k) => (
+        <text key={title} x={left + k * (panel + gap)} y="12" fontSize="11" fontWeight="700" fill="var(--ink-faint)">{title}</text>
+      ))}
+      {rows.map((r, i) => {
+        const y = 20 + i * rowH;
+        return (
+          <g key={r.name}>
+            <text x={left - 8} y={y + 12} textAnchor="end" fontSize="12" fill="var(--ink)">{r.name}</text>
+            {[r.row, r.col].map((probs, k) => {
+              const top = probs.indexOf(Math.max(...probs));
+              let x = left + k * (panel + gap);
+              return probs.map((v, jx) => {
+                const x0 = x;
+                x += v * panel;
+                return (
+                  <g key={`${k}-${jx}`}>
+                    <rect x={x0} y={y} width={v * panel} height="16" fill={MOVE_COLOURS[jx]} />
+                    {jx === top && v >= 0.12 && (
+                      <text x={x0 + (v * panel) / 2} y={y + 12} textAnchor="middle" fontSize="10.5" fontWeight="700"
+                        fill={jx === 0 || jx === 3 ? "#fff" : "var(--ink)"}>{actions[jx]} {pct(v)}</text>
+                    )}
+                  </g>
+                );
+              });
+            })}
+          </g>
+        );
+      })}
+    </svg>
+  );
 }
 
 // The action probabilities the trained policy-gradient networks output at a few
@@ -26,21 +61,9 @@ export default function PolicyOutputs({ data }) {
       </div>
       <p className="state-note">
         Player 0 at ({x0}, {y0}), player 1 at ({x1}, {y1}), player {ball} has the ball.
-        Probability of each move at the start of the game; the most likely move is in bold.
+        Probability of each move at the start of the game: {data.actions.map((a, i) => <span key={a} style={{ marginRight: 10 }}><span style={{ color: MOVE_COLOURS[i] }}>&#9632;</span> {a}</span>)}.
       </p>
-      <div className="tbl-wrap">
-        <table className="probs">
-          <thead>
-            <tr><th rowSpan={2}>Policy</th><th colSpan={4}>Player 0</th><th colSpan={4}>Player 1</th></tr>
-            <tr>{[...data.actions, ...data.actions].map((a, i) => <th key={i}>{a}</th>)}</tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.name}><td>{r.name}</td><Cells probs={r.row} /><Cells probs={r.col} /></tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <MoveBars rows={rows} actions={data.actions} />
     </div>
   );
 }

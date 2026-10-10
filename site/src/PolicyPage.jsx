@@ -50,11 +50,11 @@ function BestResponseBars({ rows, reference }) {
   );
 }
 
-// Wins (green), ties (grey) and losses (orange) of every learner against a random player and
-// against the exact Nash policy.
-function WinBars({ rows }) {
-  const titles = ["Against a random player", "Against the exact Nash policy", "Against the best response"];
-  const W = 660, left = 210, gap = 24, rowH = 26, panel = (W - left - gap * 2 - 8) / 3;
+// Wins (green), ties (grey) and losses (orange): one stacked bar per learner and one panel per
+// opponent or setting, all sharing the label column.
+function StackBars({ rows, titles }) {
+  const W = 660, left = 210, gap = 24, rowH = 26, n = titles.length;
+  const panel = (W - left - gap * (n - 1) - 8) / n;
   const H = rowH * rows.length + 34;
   const cols = ["var(--pitch)", "var(--rule-strong)", "var(--ember)"];
   return (
@@ -67,7 +67,7 @@ function WinBars({ rows }) {
         return (
           <g key={r.name}>
             <text x={left - 8} y={y + 12} textAnchor="end" fontSize="12" fill="var(--ink)">{r.name}</text>
-            {[r.random, r.nash, r.best].map((tr, k) => {
+            {r.panels.map((tr, k) => {
               let x = left + k * (panel + gap);
               return tr.map((v, jx) => {
                 const rect = <rect key={`${k}-${jx}`} x={x} y={y} width={v * panel} height="16" fill={cols[jx]} />;
@@ -82,11 +82,78 @@ function WinBars({ rows }) {
   );
 }
 
+// Win rate against the best response after each round of long best-response phases, one line per run.
+function LineChart({ series, rounds }) {
+  const W = 660, H = 260, lm = 48, rm = 170, tm = 20, bm = 34;
+  const top = Math.min(1, Math.round((Math.max(0.1, ...series.flatMap((s) => s.values.filter((v) => v != null))) * 1.15 + 0.02) * 100) / 100);
+  const x = (k) => lm + (k / Math.max(rounds.length - 1, 1)) * (W - lm - rm);
+  const y = (v) => tm + (1 - v / top) * (H - tm - bm);
+  const cols = ["var(--pitch)", "var(--pitch-dark, #178A42)", "var(--rule-strong)", "var(--ink-faint)", "var(--ember)", "var(--ember-soft, #d08a5c)"];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="win rate against the best response by round" className="pg-bars">
+      {[0, top / 2, top].map((g) => (
+        <g key={g}>
+          <line x1={lm} y1={y(g)} x2={W - rm} y2={y(g)} stroke="var(--rule)" />
+          <text x={lm - 6} y={y(g) + 4} textAnchor="end" fontSize="11" fill="var(--ink-faint)">{pct(g)}</text>
+        </g>
+      ))}
+      {rounds.map((k, i) => <text key={k} x={x(i)} y={H - 10} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{k}</text>)}
+      <text x={lm} y={H} fontSize="11" fill="var(--ink-faint)">round</text>
+      {series.map((s, n) => {
+        const pts = s.values.map((v, i) => (v == null ? null : [x(i), y(v)])).filter(Boolean);
+        return (
+          <g key={s.name}>
+            <path d={pts.map(([px, py], i) => `${i ? "L" : "M"}${px},${py}`).join(" ")} fill="none" stroke={cols[n % 6]} strokeWidth="2.2" />
+            <text x={W - rm + 8} y={pts[pts.length - 1][1] + 4} fontSize="11" fontWeight="700" fill={cols[n % 6]}>{s.name}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// Rock-paper-scissors with neural-network players: the share of rock over training for the current
+// network (orange) and the aggregate policy (green); the dashed line is the equilibrium, 1/3.
+const RPS_MODES = { standard: "Standard: both current networks play each other",
+  fictitious: "Fictitious play: average of softmax snapshots",
+  fictitious_argmax: "Fictitious play: average of argmax snapshots" };
+function RpsNetPlot({ config, iterations }) {
+  const W = 660, ph = 104, lm = 48, rm = 150, tm = 16;
+  const modes = Object.keys(config.modes);
+  const H = (ph + 22) * modes.length;
+  const x = (k) => lm + (k / (iterations - 1)) * (W - lm - rm);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="share of rock over training" className="pg-bars">
+      {modes.map((mode, n) => {
+        const d = config.modes[mode], top = n * (ph + 22) + tm;
+        const y = (v) => top + (1 - v) * (ph - tm);
+        const path = (vals) => vals.map((v, k) => `${k ? "L" : "M"}${x(k).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+        const final = d.final_exploitability.reduce((a, b) => a + b, 0) / d.final_exploitability.length;
+        return (
+          <g key={mode}>
+            <text x={lm} y={top - 4} fontSize="12" fontWeight="700" fill="var(--ink)">{RPS_MODES[mode]}</text>
+            {[[0, "0"], [1 / 3, "1/3"], [1, "1"]].map(([g, lab]) => (
+              <g key={lab}>
+                <line x1={lm} y1={y(g)} x2={W - rm} y2={y(g)} stroke="var(--rule)" strokeDasharray={lab === "1/3" ? "4 3" : undefined} />
+                <text x={lm - 6} y={y(g) + 4} textAnchor="end" fontSize="11" fill="var(--ink-faint)">{lab}</text>
+              </g>
+            ))}
+            <path d={path(d.current)} fill="none" stroke="var(--ember)" strokeWidth="1" opacity=".8" />
+            {mode !== "standard" && <path d={path(d.aggregate)} fill="none" stroke="var(--pitch)" strokeWidth="2.4" />}
+            <text x={W - rm + 8} y={top + 14} fontSize="11" fill="var(--ink-faint)">exploitability</text>
+            <text x={W - rm + 8} y={top + 30} fontSize="12" fontWeight="700" fill="var(--ink)">{final.toFixed(2)}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // Win rate against the best response with separate networks, one shared network, and trimmed
 // episodes: a bar per variant (mean of the seeds) and a dot per seed.
 const VARIANT_KEYS = [["baseline", "Separate networks", "var(--pitch)"],
   ["shared", "One shared network", "var(--ink-faint)"], ["trimmed", "Last 10 steps left out", "var(--ember)"]];
-function VariantBars({ rows, reference, field = "" }) {
+function VariantBars({ rows, reference, field = "", keys = VARIANT_KEYS }) {
   const mean = (v) => v[`${field}mean`];
   const runs = (v) => v[`${field}runs`];
   const W = 660, left = 170, right = 20, group = 70, bar = 16;
@@ -105,7 +172,7 @@ function VariantBars({ rows, reference, field = "" }) {
         return (
           <g key={`${r.label}-${r.training}`}>
             <text x={left - 8} y={y0 + 24} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}, {r.training}</text>
-            {VARIANT_KEYS.map(([k, , col], n) => (
+            {keys.map(([k, , col], n) => (
               <g key={k}>
                 <rect x={left} y={y0 + n * (bar + 2)} width={Math.max(x(mean(r[k])) - left, 0)} height={bar} fill={col} opacity=".85" />
                 {runs(r[k]).map((v, m) => <circle key={m} cx={x(v)} cy={y0 + n * (bar + 2) + bar / 2} r="2.5" fill="var(--ink)" />)}
@@ -154,16 +221,31 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps, variants } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn } = results;
   const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
   const board = boards[which];
   const { learners, exact } = board;
+  const rnd = results.random;
   const bestRow = (l) => ({ name: name(l), win: l.vs_best_response[0] });
   const winRows = [
-    { name: "Exact solver", random: exact.vs_random, nash: exact.vs_nash, best: exact.vs_best_response },
-    ...learners.map((l) => ({ name: name(l), random: l.vs_random, nash: l.vs_nash, best: l.vs_best_response })),
+    { name: "Exact solver", panels: [exact.vs_random, exact.vs_nash, exact.vs_best_response] },
+    ...learners.map((l) => ({ name: name(l), panels: [l.vs_random, l.vs_nash, l.vs_best_response] })),
+  ];
+  const mixedRows = mixed && [
+    { name: "Exact solver", panels: [mixed.exact.vs_nash, mixed.exact.vs_best_response] },
+    ...mixed.learners.map((l) => ({ name: name(l), panels: [l.vs_nash, l.vs_best_response] })),
+  ];
+  const longRows = longer.map((l) => ({ name: name(l), panels: [l.short_vs_nash, l.vs_nash, l.vs_random] }));
+  const fpRounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
+  const fpSeries = fpBr.map((r) => ({
+    name: `${r.label}, ${r.best_response_iterations} iterations`,
+    values: fpRounds.map((k) => { const c = r.checkpoints.find((x) => x.round === k); return c ? c.win_vs_best_response : null; }),
+  }));
+  const seatRows = [
+    { name: "Exact solver", panels: [rnd.exact.vs_best_response, rnd.exact.vs_best_response_column] },
+    ...rnd.learners.map((l) => ({ name: name(l), panels: [l.vs_best_response, l.vs_best_response_column] })),
   ];
   const brWins = learners.map((l) => l.vs_best_response[0]);
   const tieRange = (training) => {
@@ -179,7 +261,6 @@ export default function PolicyPage() {
     : "") + (critic && plain
     ? ` A2C with the exact critic ties the exact Nash policy in ${pct(critic.vs_nash[1])} of games, against ${pct(plain.vs_nash[1])} for A2C with a learned critic.`
     : "");
-  const rnd = results.random;
   const pick = (rows, label, training) => rows.find((v) => v.label === label && v.training === training);
   const pts = (v) => `${v >= 0 ? "+" : "\u2212"}${Math.abs(Math.round(v * 100))}`;
   const spread = (rows, f) => Math.round(100 * Math.max(...rows.flatMap((v) => [v.baseline, v.shared].map((x) => {
@@ -194,6 +275,20 @@ export default function PolicyPage() {
       `but PPO with standard training stops scoring: it wins ${pct(pick(vr, "PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick(vr, "PPO", "standard").baseline.vs_random[0])} before. ` +
       `No variant gets close to the exact solver.`
     : "";
+  const meanOf = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+  const rpsFirst = rpsNn && rpsNn.configs && Object.values(rpsNn.configs)[0];
+  const rpsSecond = rpsNn && rpsNn.configs && Object.values(rpsNn.configs)[1];
+  const rpsText = rpsFirst
+    ? `With the ${Object.keys(rpsNn.configs)[0]} the standard networks cycle (exploitability ${meanOf(rpsFirst.modes.standard.final_exploitability).toFixed(2)}), and neither form of fictitious play reaches one third (softmax ${meanOf(rpsFirst.modes.fictitious.final_exploitability).toFixed(2)}, argmax ${meanOf(rpsFirst.modes.fictitious_argmax.final_exploitability).toFixed(2)}). ` +
+      (rpsSecond ? `With the ${Object.keys(rpsNn.configs)[1]} all three settle close to the equilibrium (standard ${meanOf(rpsSecond.modes.standard.final_exploitability).toFixed(2)}, softmax ${meanOf(rpsSecond.modes.fictitious.final_exploitability).toFixed(2)}, argmax ${meanOf(rpsSecond.modes.fictitious_argmax.final_exploitability).toFixed(2)}): this setting damps the cycling, so the standard networks settle too.` : "")
+    : "";
+  const AM_KEYS = [["softmax", "Average of softmax snapshots", "var(--pitch)"], ["argmax", "Average of argmax snapshots", "var(--ember)"]];
+  const amChange = (rows, f) => rows.map((v) => pts(v.argmax[f] - v.softmax[f])).join(", ");
+  const amSpread = (rows, f) => Math.round(100 * Math.max(...rows.flatMap((v) => [v.softmax, v.argmax].map((x) => Math.max(...x[f]) - Math.min(...x[f])))));
+  const amText = argmax
+    ? `Random board: averaging argmax instead of softmax snapshots changes the win rate against the best response by ${amChange(argmax.random, "mean")} points (REINFORCE, A2C, PPO); single seeds differ by up to ${amSpread(argmax.random, "runs")} points. ` +
+      `Deterministic board: it changes the share of games tied with the exact Nash policy by ${amChange(argmax.deterministic, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.deterministic, "tie_nash_runs")} points.`
+    : "";
   const detText = vd
     ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
@@ -205,7 +300,6 @@ export default function PolicyPage() {
       `The share of games tied with the exact Nash policy changes by ${change(vc, "shared", "tie_nash_mean")} points with a shared network and by ${change(vc, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
       `single seeds of the same setup differ by up to ${spread(vc, "tie_nash_runs")} points, so three seeds cannot settle changes of this size.`
     : "";
-  const rounds = [...new Set(fpBr.flatMap((r) => r.checkpoints.map((c) => c.round)))].sort((a, b) => a - b);
 
   return (
     <>
@@ -253,6 +347,14 @@ export default function PolicyPage() {
             </table>
           </div>
           <p className="fig-cap">Exploitability, the best-response player&rsquo;s gain, is not reported: it measures the attacker, and it is the player we train that we want to judge.</p>
+          <h3>Why the exact solver does not win 0% against the best response</h3>
+          <p>The best response is the move that minimizes our player&rsquo;s <em>expected discounted score difference</em>, not the one that
+            minimizes its chance of winning. At the random board&rsquo;s kickoff the player holding the ball is ahead: the exact solution is worth
+            {" "}{rnd.kickoff_value >= 0 ? "+" : "\u2212"}{Math.abs(rnd.kickoff_value).toFixed(2)} to it even against a perfect best response. So the exact solver wins {pct(rnd.exact.vs_best_response[0])} of
+            games and loses {pct(1 - rnd.exact.vs_best_response[0])} from that seat, and wins {pct(rnd.exact.vs_best_response_column[0])} from the other seat. The first number
+            is the one reported on this page (our learners always sit in the ball-holding seat). On the deterministic board both seats tie every game.</p>
+          <StackBars rows={seatRows} titles={["Random board, ball-holding seat", "Random board, other seat"]} />
+          <p className="fig-cap">Win rate against the best response from each seat. Wins (green), ties (grey) and losses (orange).</p>
         </div>
       </section>
 
@@ -283,6 +385,25 @@ export default function PolicyPage() {
             rock, paper and scissors for ever. Answering the average of everything it has played converges to the equilibrium,
             one third each.</p>
           <RpsPlot data={rps} />
+          {rpsNn && rpsNn.configs && (
+            <>
+              <h3>The same test with neural networks</h3>
+              <p>Each player is a small network with a softmax output, trained by REINFORCE on sampled games
+                ({rpsNn.iterations.toLocaleString()} iterations, {rpsNn.batch} games each, {rpsNn.seeds} seeds; the plots show seed 0).
+                <b> Standard</b> trains the two current networks against each other. <b>Fictitious play</b> trains each player
+                against a snapshot of the other drawn from all its past snapshots and reports the average of a player&rsquo;s
+                snapshots; <b>argmax</b> first turns each snapshot into the pure policy that plays its most likely move, so the
+                average is how often the snapshots play each move. Orange: the current network&rsquo;s share of rock; green: the
+                aggregate. Exploitability, on the right, is the mean over seeds and over the last 300 iterations; it is 0 at one third each.</p>
+              {rpsText && <p>{rpsText}</p>}
+              {Object.entries(rpsNn.configs).map(([cname, cfg]) => (
+                <div key={cname}>
+                  <h3>{cname.charAt(0).toUpperCase() + cname.slice(1)}: {cfg.sgd ? `plain gradient steps at ${cfg.lr}` : `Adam at ${cfg.lr}`}, entropy bonus {cfg.entropy}</h3>
+                  <RpsNetPlot config={cfg} iterations={rpsNn.iterations} />
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </section>
 
@@ -306,7 +427,7 @@ export default function PolicyPage() {
           <BestResponseBars rows={[{ name: "Exact solver", win: exact.vs_best_response[0] }, ...learners.map(bestRow)]} reference={exact.vs_best_response[0]} />
           <p className="fig-cap">Share of 1,000 games won against the best response, mean of {learners[0].seeds} seeds. Dashed line: the exact solver.</p>
           <h3>Wins, ties and losses against each opponent</h3>
-          <WinBars rows={winRows} />
+          <StackBars rows={winRows} titles={["Against a random player", "Against the exact Nash policy", "Against the best response"]} />
           <p className="fig-cap">Wins (green), ties (grey) and losses (orange).</p>
           {tieText && <p>{tieText}</p>}
           <p>
@@ -325,24 +446,12 @@ export default function PolicyPage() {
             <h2>Where the exact answer has to mix</h2>
             <p className="lede">At {mixed.mixed_states} states of the random move-order board the exact equilibrium
               has to randomize. Each learner starts {mixed.games_per_start} games from every one of them.</p>
-            <div className="tbl-wrap">
-              <table>
-                <thead>
-                  <tr><th>Learner</th><th>Training</th><th>Wins vs. exact Nash</th><th>Wins vs. best response</th><th>Distance from the exact mix</th><th>Player 0 mixes</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Exact solver</td><td>&mdash;</td><WinCell t={mixed.exact.vs_nash} /><WinCell t={mixed.exact.vs_best_response} /><td>0</td><td>&mdash;</td></tr>
-                  {mixed.learners.map((l) => (
-                    <tr key={name(l)}>
-                      <td>{l.label}</td><td>{l.training}</td>
-                      <WinCell t={l.vs_nash} /><WinCell t={l.vs_best_response} />
-                      <td>{(l.tv_row).toFixed(2)}</td><td>{pct(l.share_mixing_row)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="fig-cap">Distance: total-variation distance between the learner&rsquo;s probabilities and the exact mix at the first step (0 = identical, 1 = no overlap). &ldquo;Player 0 mixes&rdquo;: the share of states where it puts less than 90% on its top move.</p>
+            <StackBars rows={mixedRows} titles={["Against the exact Nash policy", "Against the best response"]} />
+            <p className="fig-cap">Wins (green), ties (grey) and losses (orange).</p>
+            <p>Every learner is {Math.min(...mixed.learners.map((l) => l.tv_row)).toFixed(2)} to {Math.max(...mixed.learners.map((l) => l.tv_row)).toFixed(2)} away
+              from the exact mix (total-variation distance at the first step: 0 = identical, 1 = no overlap). Player 0 mixes
+              (puts under 90% on its top move) at {pct(Math.min(...mixed.learners.map((l) => l.share_mixing_row)))} to {pct(Math.max(...mixed.learners.map((l) => l.share_mixing_row)))} of
+              these states, though not at the states or in the proportions the exact solution does.</p>
             <h3>Three of these states in full</h3>
             <PolicyOutputs data={mixed.policy_outputs} />
           </div>
@@ -364,21 +473,18 @@ export default function PolicyPage() {
           <div className="eyebrow"><span className="badge p0">07</span>More training</div>
           <h2>Standard training at four times the iterations</h2>
           <p className="lede">8,000 instead of 2,000 iterations (two seeds each), deterministic board.</p>
-          <div className="tbl-wrap">
-            <table>
-              <thead>
-                <tr><th>Learner</th><th>Wins vs. exact Nash, 2,000 iterations</th><th>Wins vs. exact Nash, 8,000 iterations</th><th>Wins vs. random, 8,000 iterations</th></tr>
-              </thead>
-              <tbody>
-                {longer.map((l) => (
-                  <tr key={l.label}>
-                    <td>{l.label}, {l.training}</td>
-                    <WinCell t={l.short_vs_nash} /><WinCell t={l.vs_nash} /><WinCell t={l.vs_random} />
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <StackBars rows={longRows} titles={["Exact Nash, 2,000 iterations", "Exact Nash, 8,000 iterations", "Random, 8,000 iterations"]} />
+          <p className="fig-cap">Wins (green), ties (grey) and losses (orange).</p>
+        </div>
+      </section>
+
+      <section className="band-tint" id="best-response">
+        <div className="wrap">
+          <div className="eyebrow"><span className="badge p1">08</span>Fictitious play with long best responses</div>
+          <h2>Train each best response for 100 or 300 iterations</h2>
+          <p className="lede">Each round a player trains for many iterations against the average of its opponent&rsquo;s earlier
+            best responses, then adds the result to its history. Win rate against the best response after each checkpoint round (one seed per run).</p>
+          <LineChart series={fpSeries} rounds={fpRounds} />
         </div>
       </section>
 
@@ -409,30 +515,27 @@ export default function PolicyPage() {
         </section>
       )}
 
-      <section className="band-tint" id="best-response">
-        <div className="wrap">
-          <div className="eyebrow"><span className="badge p1">08</span>Fictitious play with long best responses</div>
-          <h2>Train each best response for 100 or 300 iterations</h2>
-          <p className="lede">Each round a player trains for many iterations against the average of its opponent&rsquo;s earlier
-            best responses, then adds the result to its history. Win rate against the best response after each checkpoint round (one seed per run).</p>
-          <div className="tbl-wrap">
-            <table>
-              <thead>
-                <tr><th>Run</th>{rounds.map((k) => <th key={k}>Round {k}</th>)}</tr>
-              </thead>
-              <tbody>
-                {fpBr.map((r) => (
-                  <tr key={`${r.label}-${r.best_response_iterations}`}>
-                    <td>{r.label}, {r.best_response_iterations} iterations per best response</td>
-                    {rounds.map((k) => {
-                      const c = r.checkpoints.find((x) => x.round === k);
-                      return <td key={k}>{c ? pct(c.win_vs_best_response) : ""}</td>;
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {argmax && (
+        <section className="band-tint" id="argmax">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">10</span>Averaging pure policies</div>
+            <h2>Argmax snapshots, then best-respond to their average</h2>
+            <p className="lede">A network can only mix through its softmax, so every snapshot is turned into a pure policy (the move with the
+              highest probability), those are averaged, and each player best-responds to that average. This is fictitious play in its
+              original form: each snapshot is a pure best response and the mix is how often each move was played. Both the opponent a player
+              trains against and the policy it reports are averages of pure snapshots. Bars are the mean over 3 seeds; dots are single seeds.</p>
+            <h3>Random move-order board: win rate against the best response</h3>
+            <VariantBars rows={argmax.random} reference={rnd.exact.vs_best_response[0]} keys={AM_KEYS} />
+            <h3>Deterministic board: games tied with the exact Nash policy</h3>
+            <VariantBars rows={argmax.deterministic} reference={results.exact.vs_nash[1]} field="tie_nash_" keys={AM_KEYS} />
+            <p className="fig-cap">{AM_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
+            <p>{amText}</p>
           </div>
+        </section>
+      )}
+
+      <section id="end">
+        <div className="wrap">
           <div className="cta-row">
             <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>
             <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">View the code on GitHub &rarr;</a>
