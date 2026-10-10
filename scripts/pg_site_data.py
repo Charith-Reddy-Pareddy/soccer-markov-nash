@@ -44,6 +44,12 @@ def wtl(rows, opp) -> list[float]:
     return [round(mean(rows, f"row_{k}_vs_{opp}"), 6) for k in ("win", "tie", "loss")]
 
 
+def wtl_column(rows, opp) -> list[float]:
+    """Win / tie / loss of the same learners playing the column seat, against the best response
+    to the column policy."""
+    return [round(mean(rows, f"col_{k}_vs_{opp}"), 6) for k in ("win", "tie", "loss")]
+
+
 def summary(rows) -> dict:
     seeds = [float(r["exploitability"]) for r in rows]
     return {
@@ -56,6 +62,7 @@ def summary(rows) -> dict:
         "vs_random": wtl(rows, "random"),
         "vs_nash": wtl(rows, "nash"),
         "vs_best_response": wtl(rows, "br"),
+        "vs_best_response_column": wtl_column(rows, "br"),
         "mirror_gap": round(mean(rows, "mirror_gap_mean"), 6),
     }
 
@@ -93,7 +100,8 @@ def build() -> dict:
             "learners": learners, "longer": longer, "fp_br": fp_br,
             "random": random_board(), "mixed": mixed_states(),
             "continuing": continuing_game(), "rps": rock_paper_scissors(),
-            "variants": {b: variants(b) for b in VARIANT_FILES}}
+            "variants": {b: variants(b) for b in VARIANT_FILES},
+            "argmax": argmax_average(), "rps_nn": rps_networks()}
 
 
 def random_board() -> dict:
@@ -103,7 +111,9 @@ def random_board() -> dict:
     for label, training, algo, mode in LEARNERS:
         rs = [r for r in rows if r["algo"] == algo and r["mode"] == mode]
         learners.append({"label": label, "training": training, **summary(rs)})
-    return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners}
+    kick = json.loads((EXP / "pg_random_kickoff_value.json").read_text())
+    return {"exact": summary([r for r in rows if r["algo"] == "exact"]), "learners": learners,
+            "kickoff_value": kick["value"]}
 
 
 VARIANT_FILES = {
@@ -135,6 +145,45 @@ def variants(board: str) -> list[dict] | None:
                 entry[key] = {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie),
                               "tie_nash_runs": tie, "vs_random": wtl(rs, "random")}
             out.append(entry)
+    return out
+
+
+def rps_networks() -> dict | None:
+    """Rock-paper-scissors with neural-network players (experiments/rps_nn.json)."""
+    path = EXP / "rps_nn.json"
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+ARGMAX_FILES = {"random": ("pg_finite_random_{}.csv", "pg_variant_random_argmax_{}.csv"),
+                "deterministic": ("pg_finite_a10.csv", "pg_variant_a10_argmax_{}.csv")}
+
+
+def argmax_average() -> dict | None:
+    """Fictitious play whose snapshots are pure (argmax) policies, against the usual
+    fictitious play that averages softmax policies; REINFORCE, A2C and PPO on the two boards,
+    three seeds each. Win rate against the best response and share of ties with the exact Nash
+    policy."""
+    out = {}
+    for board, (base, argm) in ARGMAX_FILES.items():
+        rows_out = []
+        for algo in ("reinforce", "a2c", "ppo"):
+            entry = {"label": NAMES[algo], "training": "fictitious play"}
+            for key, pattern, mode in (("softmax", base, "fictitious"),
+                                       ("argmax", argm, "fictitious_argmax")):
+                paths = sorted(glob.glob(str(EXP / pattern.format(algo))))
+                if not paths:
+                    return None
+                rs = [r for path in paths for r in read(path)
+                      if r["algo"] == algo and r["mode"] == mode]
+                if len(rs) < 3:
+                    return None
+                br = [float(r["row_win_vs_br"]) for r in rs]
+                tie = [float(r["row_tie_vs_nash"]) for r in rs]
+                entry[key] = {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie),
+                              "tie_nash_runs": tie, "vs_random": wtl(rs, "random"),
+                              "vs_nash": wtl(rs, "nash"), "vs_best_response": wtl(rs, "br")}
+            rows_out.append(entry)
+        out[board] = rows_out
     return out
 
 

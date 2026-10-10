@@ -36,7 +36,7 @@ def main() -> None:
     ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS), choices=[*pf.ALGOS, "a2c_exact"])
     ap.add_argument("--scoring", choices=["win", "rate"], default="win",
                     help="win: the first goal ends the game; rate: play continues after a goal")
-    ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"])
+    ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"], choices=pf.MODES)
     ap.add_argument("--shared", action="store_true", help="one network, one output head per player")
     ap.add_argument("--trim", type=int, default=0,
                     help="drop the last N steps of each episode from the loss")

@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import pathlib
 import re
 
@@ -32,12 +33,22 @@ def test_win_cell_shows_the_win_percentage_with_ties_and_losses_beneath():
     assert "<b>29%</b>" in cell and "tie 0%" in cell and "loss 71%" in cell
 
 
-def test_policy_tables_have_one_table_per_state_and_one_row_per_learner():
+def test_policy_charts_have_one_chart_per_state_and_one_row_per_learner():
     d = RES["mixed"]["policy_outputs"]
-    html = pg_report.policy_tables(d)
-    assert html.count("<table") == len(d["states"])
+    html = pg_report.policy_charts(d)
+    assert html.count("<svg") == len(d["states"]) and "<table" not in html
     assert html.count("Exact solver") == len(d["states"])
     assert html.count(d["learners"][0]["label"]) == len(d["states"])
+
+
+def test_a_move_chart_has_a_segment_per_move_and_labels_the_likeliest_one():
+    svg = pg_report.move_chart([("a", ([0.7, 0.1, 0.1, 0.1], [0.0, 0.0, 0.0, 1.0]))], list("UDLR"))
+    assert svg.count("<rect") == 8 and "U 70%" in svg and "R 100%" in svg
+
+
+def test_the_line_chart_has_a_line_per_run():
+    svg = pg_report.line_chart([("a", [0.0, 0.1]), ("b", [0.05, None])], [1, 2])
+    assert svg.count("<path") == 2
 
 
 def test_the_report_leads_with_win_rates_and_defines_every_number():
@@ -60,7 +71,14 @@ def test_the_report_has_a_section_per_board_and_the_plots():
     assert "The deterministic board (A10)" in TEXT and "The random move-order board" in TEXT
     assert ("The continuing game" in TEXT) == (RES.get("continuing") is not None)
     boards = 3 if RES.get("continuing") is not None else 2
-    assert HTML.count("<svg") == 4 + 2 * boards  # rps, two charts a board, three variants
+    states = len(RES["mixed"]["policy_outputs"]["states"]) + len(
+        json.loads((pg_report.EXP / "pg_policy_outputs.json").read_text())["states"])
+    expected = (1 + len(RES["rps_nn"]["configs"])  # the matrix plot and the network plots
+                + 2 * boards + 1  # two charts a board and the two-seat chart
+                + 1 + states  # mixed-state results and every state's move probabilities
+                + 2  # more training, long best responses
+                + 3 + 2)  # sharing and trimming; argmax averages
+    assert HTML.count("<svg") == expected and "<table" not in HTML.split("<section><h2>3.")[1]
     assert "best-response dynamics" in TEXT
 
 

@@ -21,6 +21,7 @@ from torch import nn
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
 
 ALGOS = ("reinforce", "a2c", "ppo")
+MODES = ("selfplay", "fictitious", "fictitious_argmax")
 
 
 def features(states: list[State], t: int, horizon: int) -> torch.Tensor:
@@ -66,10 +67,21 @@ class _Current:
         return torch.softmax(self.net(x), dim=-1)
 
 
+def _probs(net: Net, x: torch.Tensor, pure: bool) -> torch.Tensor:
+    """The softmax policy; with ``pure``, the deterministic policy on its most likely move."""
+    logits = net(x)
+    if pure:
+        return nn.functional.one_hot(logits.argmax(-1), logits.shape[-1]).float()
+    return torch.softmax(logits, dim=-1)
+
+
 class _Mixture:
-    """Each episode plays one snapshot, drawn uniformly -- the empirical average."""
-    def __init__(self, snaps: list[Net], n_episodes: int, rng: np.random.Generator):
+    """Each episode plays one snapshot, drawn uniformly -- the empirical average. With ``pure``
+    every snapshot plays its most likely move, so the mixture is an average of pure policies."""
+    def __init__(self, snaps: list[Net], n_episodes: int, rng: np.random.Generator,
+                 pure: bool = False):
         self.snaps = snaps
+        self.pure = pure
         self.pick = rng.integers(len(snaps), size=n_episodes)
 
     def probs(self, x: torch.Tensor, ep: np.ndarray) -> torch.Tensor:
@@ -77,7 +89,7 @@ class _Mixture:
         which = self.pick[ep]
         for k in np.unique(which):
             m = torch.from_numpy(which == k)
-            out[m] = torch.softmax(self.snaps[int(k)](x[m]), dim=-1)
+            out[m] = _probs(self.snaps[int(k)], x[m], self.pure)
         return out
 
 
@@ -188,11 +200,11 @@ class Trained:
     pol1: object
 
 
-def _policy(nets: list[Net], horizon: int):
+def _policy(nets: list[Net], horizon: int, pure: bool = False):
     def pol(t, states):
         with torch.no_grad():
             x = features(list(states), t, horizon)
-            return torch.stack([torch.softmax(n(x), dim=-1) for n in nets]).mean(0).numpy()
+            return torch.stack([_probs(n, x, pure) for n in nets]).mean(0).numpy()
     return pol
 
 
@@ -202,11 +214,15 @@ def train(
     entropy: float = 0.01, snap_every: int = 5, seed: int = 0, exact=None,
     shared: bool = False, trim: int = 0,
 ) -> Trained:
-    """``shared``: both players' policies are two output heads of one network.
+    """``mode``: ``selfplay`` (standard), ``fictitious`` (train against the average of the
+    opponent's past snapshots, report the average of one's own), or ``fictitious_argmax``
+    (the same, but every snapshot is first turned into the pure policy that takes its most
+    likely move, so both the opponent mixture and the reported policy average pure policies).
+    ``shared``: both players' policies are two output heads of one network.
     ``trim``: drop the last ``trim`` steps of every episode from the policy and critic
     losses (they still enter the returns of earlier steps)."""
-    if (algo not in ALGOS and algo != "a2c_exact") or mode not in ("selfplay", "fictitious"):
-        raise ValueError("algo: one of ALGOS or 'a2c_exact'; mode: 'selfplay' or 'fictitious'")
+    if (algo not in ALGOS and algo != "a2c_exact") or mode not in MODES:
+        raise ValueError(f"algo: one of ALGOS or 'a2c_exact'; mode: one of {MODES}")
     if algo == "a2c_exact" and exact is None:
         raise ValueError("a2c_exact needs the exact critic")
     torch.manual_seed(seed)
@@ -226,6 +242,7 @@ def train(
             [*n.parameters(), *(c.parameters() if c is not None else [])], lr=lr)
             for n, c in zip(nets, critics)]
     snaps = [[_frozen(n)] for n in nets]
+    pure = mode == "fictitious_argmax"
     for it in range(iterations):
         if mode == "selfplay":
             batch = collect(game, _Current(nets[0]), _Current(nets[1]), episodes, horizon, rng)
@@ -235,7 +252,7 @@ def train(
         else:
             for i in (0, 1):
                 mine = _Current(nets[i])
-                theirs = _Mixture(snaps[1 - i], episodes, rng)
+                theirs = _Mixture(snaps[1 - i], episodes, rng, pure)
                 players = (mine, theirs) if i == 0 else (theirs, mine)
                 batch = collect(game, *players, episodes, horizon, rng)
                 update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact,
@@ -245,7 +262,7 @@ def train(
                     snaps[i].append(_frozen(nets[i]))
     if mode == "selfplay":
         return Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon))
-    return Trained(_policy(snaps[0], horizon), _policy(snaps[1], horizon))
+    return Trained(_policy(snaps[0], horizon, pure), _policy(snaps[1], horizon, pure))
 
 
 def train_fp_br(

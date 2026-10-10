@@ -196,3 +196,32 @@ def test_trimming_every_step_gives_no_update_and_trimming_some_changes_it(small)
 
     assert run(HORIZON) == 0.0
     assert run(0) > 0.0 and run(0) != run(2)
+
+
+def test_pure_snapshots_play_their_most_likely_move_and_average_to_frequencies(small):
+    import torch
+    game = small[0]
+    x = pf.features([game.initial_state()] * 5, 0, HORIZON)
+    nets = [pf.Net(game, 4) for _ in range(3)]
+    for n in nets:
+        probs = pf._probs(n, x, True)
+        assert torch.equal(probs.sum(-1), torch.ones(5))
+        assert torch.equal(probs.argmax(-1), n(x).argmax(-1))
+    avg = pf._policy(nets, HORIZON, True)(0, [game.initial_state()])
+    top = [int(n(x[:1]).argmax()) for n in nets]
+    expect = np.bincount(top, minlength=4) / 3
+    assert np.allclose(avg[0], expect, atol=1e-6)
+    mix = pf._Mixture(nets, 6, np.random.default_rng(0), pure=True)
+    out = mix.probs(x[:1].repeat(6, 1), np.arange(6))
+    assert set(out.unique().tolist()) <= {0.0, 1.0}
+
+
+def test_the_argmax_fictitious_mode_trains_with_every_algorithm_and_rejects_unknown_modes(small):
+    game = small[0]
+    for algo in pf.ALGOS:
+        tr = pf.train(game, algo, "fictitious_argmax", GAMMA, HORIZON, iterations=3, episodes=4,
+                      snap_every=1)
+        p = tr.pol0(0, [game.initial_state()])
+        assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0, abs=1e-5)
+    with pytest.raises(ValueError):
+        pf.train(game, "ppo", "argmax", GAMMA, HORIZON, iterations=1, episodes=2)

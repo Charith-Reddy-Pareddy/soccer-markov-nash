@@ -288,3 +288,41 @@ def test_the_continuing_variants_have_three_seeds_and_the_text_claims_hold():
                  for r in rows for x in (r["baseline"], r["shared"]))
     assert spread > 0.5  # single seeds of one setup differ by half the scale or more
     assert "three seeds cannot settle changes of this size" in PAGE
+
+
+def test_only_the_two_explanatory_tables_remain_on_the_tab_and_in_the_report():
+    assert PAGE.count("<table") == 2
+    html = (ROOT / "docs" / "policy_gradient.html").read_text()
+    assert html.count("<table") == 2
+    assert "<table" not in (SITE / "src" / "PolicyOutputs.jsx").read_text()
+
+
+def test_the_seat_explanation_matches_the_data():
+    rnd = RESULTS["random"]
+    assert rnd["kickoff_value"] > 0.1  # the ball-holding seat is ahead at the kickoff
+    row, col = rnd["exact"]["vs_best_response"], rnd["exact"]["vs_best_response_column"]
+    assert row[0] > 0.5 > col[0]  # more than half of games from one seat, fewer from the other
+    assert row[1] == 0.0 and col[1] == 0.0
+    assert RESULTS["exact"]["vs_best_response"][1] == 1.0  # the deterministic board ties
+    assert RESULTS["exact"]["vs_best_response_column"][1] == 1.0
+    assert "Why the exact solver does not win 0% against the best response" in PAGE
+
+
+def test_the_argmax_averages_cover_three_algorithms_on_two_boards_with_three_seeds():
+    data = RESULTS["argmax"]
+    for board in ("random", "deterministic"):
+        assert [r["label"] for r in data[board]] == ["REINFORCE", "A2C", "PPO"]
+        for r in data[board]:
+            for key in ("softmax", "argmax"):
+                assert len(r[key]["runs"]) == len(r[key]["tie_nash_runs"]) == 3
+    assert "Averaging pure policies" in PAGE
+
+
+def test_the_neural_network_rock_paper_scissors_runs_cover_both_settings_and_all_modes():
+    data = RESULTS["rps_nn"]
+    assert set(data["configs"]) == {"soccer settings", "larger entropy bonus"}
+    for cfg in data["configs"].values():
+        assert set(cfg["modes"]) == {"standard", "fictitious", "fictitious_argmax"}
+        for m in cfg["modes"].values():
+            assert len(m["current"]) == len(m["aggregate"]) == data["iterations"]
+            assert len(m["final_exploitability"]) == data["seeds"]

@@ -91,7 +91,7 @@ def stacked_chart(items, titles, width=660) -> str:
 VARIANT_COLOURS = {"baseline": GREEN, "shared": GREY, "trimmed": ORANGE}
 
 
-def variant_bars(rows, reference, width=660, field="") -> str:
+def variant_bars(rows, reference, width=660, field="", keys=None) -> str:
     """Win rate against the best response per variant: a bar for the mean, a dot per seed."""
     left, right, group, bar = 170, 20, 70, 16
     h = group * len(rows) + 48
@@ -105,11 +105,11 @@ def variant_bars(rows, reference, width=660, field="") -> str:
         y0 = 28 + i * group
         out.append(f'<text x="{left - 8}" y="{y0 + 24}" text-anchor="end" fill="#1c2e26">'
                    f'{r["label"]}, {r["training"]}</text>')
-        for n, key in enumerate(VARIANT_COLOURS):
+        for n, (key, colour) in enumerate((keys or VARIANT_COLOURS).items()):
             v, y = r[key], y0 + n * (bar + 2)
             mean, runs = v[f"{field}mean"], v[f"{field}runs"]
             out.append(f'<rect x="{left}" y="{y}" width="{max(x(mean) - left, 0):.1f}" height="{bar}" '
-                       f'fill="{VARIANT_COLOURS[key]}" opacity=".85"/>')
+                       f'fill="{colour}" opacity=".85"/>')
             out += [f'<circle cx="{x(w):.1f}" cy="{y + bar / 2}" r="2.5" fill="#1c2e26"/>' for w in runs]
             out.append(f'<text x="{x(min(max(runs), 0.93)) + 8:.1f}" y="{y + 12}" fill="#1c2e26" '
                        f'font-weight="700">{mean:.0%}</text>')
@@ -117,6 +117,95 @@ def variant_bars(rows, reference, width=660, field="") -> str:
                f'stroke-width="2" stroke-dasharray="5 4"/><text x="{x(reference):.1f}" y="12" text-anchor="middle" '
                f'fill="{ORANGE}" font-weight="700">exact solver {reference:.0%}</text></svg>')
     return "".join(out)
+
+
+MODE_TITLES = {"standard": "Standard: both current networks play each other",
+               "fictitious": "Fictitious play: average of softmax snapshots",
+               "fictitious_argmax": "Fictitious play: average of argmax snapshots"}
+
+
+def rps_nn_panels(config: dict, iterations: int, width=660, panel_h=104) -> str:
+    """Share of rock over training for each mode: the current network (orange) and the
+    aggregate policy (green); the dashed line is the equilibrium, 1/3."""
+    lm, rm, tm = 48, 150, 16
+    modes = list(config["modes"])
+    h = (panel_h + 22) * len(modes)
+    out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
+           'font-family="Helvetica,Arial,sans-serif" font-size="11">']
+    for n, mode in enumerate(modes):
+        d = config["modes"][mode]
+        top = n * (panel_h + 22) + tm
+        x = lambda k: lm + k / (iterations - 1) * (width - lm - rm)  # noqa: E731
+        y = lambda v, top=top: top + (1 - v) * (panel_h - tm)  # noqa: E731
+        path = lambda vals, x=x, y=y: " ".join(  # noqa: E731
+            f"{'L' if k else 'M'}{x(k):.1f},{y(v):.1f}" for k, v in enumerate(vals))
+        out.append(f'<text x="{lm}" y="{top - 4}" fill="#1c2e26" font-weight="700">{MODE_TITLES[mode]}</text>')
+        for g, lab in ((0, "0"), (1 / 3, "1/3"), (1, "1")):
+            dash = ' stroke-dasharray="4 3"' if lab == "1/3" else ""
+            out.append(f'<line x1="{lm}" y1="{y(g):.1f}" x2="{width - rm}" y2="{y(g):.1f}" stroke="#dbe5df"{dash}/>'
+                       f'<text x="{lm - 6}" y="{y(g) + 4:.1f}" text-anchor="end" fill="#5b6b63">{lab}</text>')
+        out.append(f'<path d="{path(d["current"])}" fill="none" stroke="{ORANGE}" stroke-width="1" opacity=".8"/>')
+        if mode != "standard":
+            out.append(f'<path d="{path(d["aggregate"])}" fill="none" stroke="{GREEN}" stroke-width="2.4"/>')
+        final = sum(d["final_exploitability"]) / len(d["final_exploitability"])
+        out.append(f'<text x="{width - rm + 8}" y="{top + 14}" fill="#5b6b63">exploitability</text>'
+                   f'<text x="{width - rm + 8}" y="{top + 30}" fill="#1c2e26" font-weight="700">{final:.2f}</text>')
+    out.append("</svg>")
+    return "".join(out)
+
+
+def rps_nn_section(res: dict) -> str:
+    data = res.get("rps_nn")
+    if not data or "configs" not in data:
+        return ""
+    parts = []
+    for name_, cfg in data["configs"].items():
+        opt = f"plain gradient steps at {cfg['lr']}" if cfg["sgd"] else f"Adam at {cfg['lr']}"
+        parts.append(f"<h3>{name_[0].upper() + name_[1:]}: {opt}, entropy bonus {cfg['entropy']}</h3>"
+                     f"<div>{rps_nn_panels(cfg, data['iterations'])}</div>")
+    ex = {n: {m: sum(v["final_exploitability"]) / len(v["final_exploitability"]) for m, v in c["modes"].items()}
+          for n, c in data["configs"].items()}
+    first = next(iter(ex))
+    second_text = ""
+    if len(ex) > 1:
+        sec = list(ex)[1]
+        second_text = (f"With the {sec} all three settle close to the equilibrium (standard {ex[sec]['standard']:.2f}, "
+                       f"softmax {ex[sec]['fictitious']:.2f}, argmax {ex[sec]['fictitious_argmax']:.2f}): this setting damps the cycling, "
+                       "so the standard networks settle too.")
+    return f"""<h3>The same test with neural networks</h3>
+<p>Each player is a small network with a softmax output, trained by REINFORCE on sampled games ({data['iterations']:,} iterations,
+{data['batch']} games each, 3 seeds; the plots show seed 0). <b>Standard</b> trains the two current networks against each other.
+<b>Fictitious play</b> trains each player against a snapshot of the other drawn from all its past snapshots and reports the average of
+a player's snapshots; <b>argmax</b> first turns each snapshot into the pure policy that plays its most likely move, so the average is
+how often the snapshots play each move. Orange: the current network's share of rock; green: the aggregate. Exploitability, on the right,
+is the mean over seeds and the last 300 iterations, and is 0 at one third each.
+With the soccer settings the standard networks cycle (exploitability {ex[first]['standard']:.2f}), and neither form of fictitious play reaches
+one third (softmax {ex[first]['fictitious']:.2f}, argmax {ex[first]['fictitious_argmax']:.2f}). {second_text}</p>{''.join(parts)}"""
+
+
+def argmax_section(res: dict) -> str:
+    data = res.get("argmax")
+    if not data:
+        return ""
+    keys = {"softmax": GREEN, "argmax": ORANGE}
+    rnd, det = data["random"], data["deterministic"]
+    pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
+    change = lambda rows, f: ", ".join(pts(r["argmax"][f] - r["softmax"][f]) for r in rows)  # noqa: E731
+    spread = lambda rows, f: round(100 * max(max(x[f]) - min(x[f]) for r in rows for x in (r["softmax"], r["argmax"])))  # noqa: E731
+    return f"""<section><h2>10. Averaging pure policies</h2>
+<p>Neural networks cannot output a mixed strategy except through their softmax, so each snapshot is made
+a pure policy (the move with the highest probability), those are averaged, and each player best-responds to that average. This is fictitious play in its
+original form: each snapshot is a pure best response, and the mix is how often each move was played. Both the opponent that a player trains
+against and the policy it reports are averages of pure snapshots. Bars are the mean over 3 seeds and dots single seeds;
+<span style="color:{GREEN}">■</span> average of softmax snapshots (the fictitious play used elsewhere),
+<span style="color:{ORANGE}">■</span> average of argmax snapshots.</p>
+<h3>Random move-order board: win rate against the best response</h3>
+<div>{variant_bars(rnd, res["random"]["exact"]["vs_best_response"][0], keys=keys)}</div>
+<h3>Deterministic board: games tied with the exact Nash policy</h3>
+<div>{variant_bars(det, res["exact"]["vs_nash"][1], field="tie_nash_", keys=keys)}</div>
+<p>Random board: averaging argmax instead of softmax snapshots changes the win rate against the best response by {change(rnd, "mean")} points
+(REINFORCE, A2C, PPO); single seeds differ by up to {spread(rnd, "runs")} points. Deterministic board: it changes the share of games tied with the
+exact Nash policy by {change(det, "tie_nash_mean")} points; single seeds differ by up to {spread(det, "tie_nash_runs")} points.</p></section>"""
 
 
 def variant_section(res: dict) -> str:
@@ -194,31 +283,79 @@ def rps_plot(d: dict, width=660, height=250) -> str:
     return "".join(out)
 
 
-# --------------------------------------------------------------------------- policy tables
-def policy_tables(d: dict) -> str:
+# --------------------------------------------------------------------------- policy charts
+MOVE_COLOURS = ["#1DB954", "#8fd3a8", "#c3cec8", "#a8501c"]
+
+
+def move_chart(rows, actions, width=660) -> str:
+    """Probability of each move per policy, one stacked bar for each player; the most likely
+    move of each bar is labelled."""
+    row_h, left, gap = 24, 190, 30
+    panel = (width - left - gap - 10) / 2
+    h = row_h * len(rows) + 30
+    out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
+           'font-family="Helvetica,Arial,sans-serif" font-size="10.5">']
+    for k, title in enumerate(("player 0", "player 1")):
+        out.append(f'<text x="{left + k * (panel + gap)}" y="12" fill="#5b6b63" font-weight="700">{title}</text>')
+    for i, (label, pair) in enumerate(rows):
+        y = 20 + i * row_h
+        out.append(f'<text x="{left - 8}" y="{y + 12}" text-anchor="end" fill="#1c2e26">{label}</text>')
+        for k, probs in enumerate(pair):
+            pos, top = 0.0, max(range(len(probs)), key=lambda j: probs[j])
+            for j, v in enumerate(probs):
+                x0 = left + k * (panel + gap) + pos * panel
+                out.append(f'<rect x="{x0:.1f}" y="{y}" width="{v * panel:.1f}" height="16" fill="{MOVE_COLOURS[j]}"/>')
+                if j == top and v >= 0.12:
+                    out.append(f'<text x="{x0 + v * panel / 2:.1f}" y="{y + 12}" text-anchor="middle" '
+                               f'fill="{"#fff" if j in (0, 3) else "#1c2e26"}" font-weight="700">{actions[j]} {v:.0%}</text>')
+                pos += v
+    out.append("</svg>")
+    return "".join(out)
+
+
+def policy_charts(d: dict) -> str:
     acts = d["actions"]
-
-    def cells(probs):
-        top = max(probs)
-        return "".join(f"<td><b>{v * 100:.0f}%</b></td>" if v == top else f"<td>{v * 100:.0f}%</td>"
-                       for v in probs)
-
-    head = ("<tr><th rowspan=2>policy</th><th colspan=4>player 0</th><th colspan=4>player 1</th></tr>"
-            "<tr>" + "".join(f"<th>{a}</th>" for a in acts * 2) + "</tr>")
-    out = []
+    legend = '<div class="legend">' + "".join(
+        f'<span style="background:{MOVE_COLOURS[j]}"></span>{a}' for j, a in enumerate(acts)) + "</div>"
+    out = [legend]
     for k, st_ in enumerate(d["states"]):
-        rows = [("Exact solver", d["exact"]["row"][k], d["exact"]["col"][k])]
-        rows += [(lr["label"], lr["row"][k], lr["col"][k]) for lr in d["learners"]]
-        body = "".join(f"<tr><td>{n}</td>{cells(r)}{cells(c)}</tr>" for n, r, c in rows)
+        rows = [("Exact solver", (d["exact"]["row"][k], d["exact"]["col"][k]))]
+        rows += [(lr["label"], (lr["row"][k], lr["col"][k])) for lr in d["learners"]]
         x0, y0, x1, y1, b = st_["state"]
         out.append(f"<h3>{st_['label']}: player 0 at ({x0}, {y0}), player 1 at ({x1}, {y1}), "
-                   f"player {b} has the ball</h3><table class=\"probs\">{head}{body}</table>")
+                   f"player {b} has the ball</h3><div>{move_chart(rows, acts)}</div>")
     return "".join(out)
 
 
 def policy_html() -> str:
     path = EXP / "pg_policy_outputs.json"
-    return policy_tables(json.loads(path.read_text())) if path.exists() else ""
+    return policy_charts(json.loads(path.read_text())) if path.exists() else ""
+
+
+def line_chart(series, rounds, width=660, height=260) -> str:
+    """Win rate against the best response after each round of fictitious play with long best
+    responses; one line per run."""
+    lm, rm, tm, bm = 48, 170, 20, 34
+    top = max(0.1, max(v for _, vals in series for v in vals if v is not None))
+    top = min(1.0, round(top * 1.15 + 0.02, 2))
+    x = lambda k: lm + (k / max(len(rounds) - 1, 1)) * (width - lm - rm)  # noqa: E731
+    y = lambda v: tm + (1 - v / top) * (height - tm - bm)  # noqa: E731
+    cols = [GREEN, "#178A42", GREY, "#6f7f77", ORANGE, "#d08a5c"]
+    out = [f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" '
+           'font-family="Helvetica,Arial,sans-serif" font-size="11">']
+    for g in (0, top / 2, top):
+        out.append(f'<line x1="{lm}" y1="{y(g):.1f}" x2="{width - rm}" y2="{y(g):.1f}" stroke="#dbe5df"/>'
+                   f'<text x="{lm - 6}" y="{y(g) + 4:.1f}" text-anchor="end" fill="#5b6b63">{g:.0%}</text>')
+    for k, lab in enumerate(rounds):
+        out.append(f'<text x="{x(k):.1f}" y="{height - 10}" text-anchor="middle" fill="#5b6b63">{lab}</text>')
+    out.append(f'<text x="{lm}" y="{height}" fill="#5b6b63">round</text>')
+    for n, (label, vals) in enumerate(series):
+        pts = [(x(k), y(v)) for k, v in enumerate(vals) if v is not None]
+        d = " ".join(f"{'L' if i else 'M'}{px:.1f},{py:.1f}" for i, (px, py) in enumerate(pts))
+        out.append(f'<path d="{d}" fill="none" stroke="{cols[n % 6]}" stroke-width="2.2"/>'
+                   f'<text x="{width - rm + 8}" y="{pts[-1][1] + 4:.1f}" fill="{cols[n % 6]}" font-weight="700">{label}</text>')
+    out.append("</svg>")
+    return "".join(out)
 
 
 # --------------------------------------------------------------------------------- sections
@@ -257,27 +394,27 @@ def build_html(res: dict) -> str:
     if cont:
         boards.append(("The continuing game", "Play restarts after every goal and runs for exactly 100 steps; a win is "
                        "more goals than the opponent. Also shows A2C with the exact solver's values as a frozen critic.", cont))
-    summary_rows = []
-    labels = [name(x) for x in det["learners"]]
-    for k, lab in enumerate(labels):
-        row = [lab, win_cell(det["learners"][k]["vs_best_response"]), win_cell(rnd["learners"][k]["vs_best_response"])]
-        if cont:
-            hit = next((x for x in cont["learners"] if name(x) == lab), None)
-            row.append(win_cell(hit["vs_best_response"]) if hit else "")
-        summary_rows.append(row)
-    ref = ["Exact solver", win_cell(det["exact"]["vs_best_response"]), win_cell(rnd["exact"]["vs_best_response"])]
-    if cont:
-        ref.append(win_cell(cont["exact"]["vs_best_response"]))
-    head = ["learner", "deterministic board", "random board"] + (["continuing game"] if cont else [])
-    long_rows = [[f"{x['label']}, {x['training']}", win_cell(x["short_vs_nash"]), win_cell(x["vs_nash"]),
-                  win_cell(x["vs_random"])] for x in res["longer"]]
+    long_chart = stacked_chart(
+        [(f"{x['label']}, {x['training']}", [x["short_vs_nash"], x["vs_nash"], x["vs_random"]]) for x in res["longer"]],
+        ["vs. exact Nash, 2,000 iterations", "vs. exact Nash, 8,000 iterations", "vs. random, 8,000 iterations"])
     rounds = sorted({c["round"] for r in res["fp_br"] for c in r["checkpoints"]})
-    fp_rows = [[f"{r['label']}, {r['best_response_iterations']} iterations per best response"] + [
-        next((pct(c["win_vs_best_response"]) for c in r["checkpoints"] if c["round"] == k), "") for k in rounds]
+    fp_series = [(f"{r['label']}, {r['best_response_iterations']} iterations", [
+        next((c["win_vs_best_response"] for c in r["checkpoints"] if c["round"] == k), None) for k in rounds])
         for r in res["fp_br"]]
-    mixed_rows = [["Exact solver", win_cell(mixed["exact"]["vs_nash"]), win_cell(mixed["exact"]["vs_best_response"]), "0", ""]]
-    mixed_rows += [[name(x), win_cell(x["vs_nash"]), win_cell(x["vs_best_response"]), f"{x['tv_row']:.2f}",
-                    pct(x["share_mixing_row"])] for x in mixed["learners"]]
+    fp_chart = line_chart(fp_series, rounds)
+    mixed_chart = stacked_chart(
+        [("Exact solver", [mixed["exact"]["vs_nash"], mixed["exact"]["vs_best_response"]])]
+        + [(name(x), [x["vs_nash"], x["vs_best_response"]]) for x in mixed["learners"]],
+        ["vs. the exact Nash policy", "vs. the best response"])
+    tv = [x["tv_row"] for x in mixed["learners"]]
+    mixing = [x["share_mixing_row"] for x in mixed["learners"]]
+    seat_row = rnd["exact"]["vs_best_response"][0]
+    seat_col = rnd["exact"]["vs_best_response_column"][0]
+    seat_value = rnd.get("kickoff_value", 0.0)
+    seat_chart = stacked_chart(
+        [("Exact solver", [rnd["exact"]["vs_best_response"], rnd["exact"]["vs_best_response_column"]])]
+        + [(name(x), [x["vs_best_response"], x["vs_best_response_column"]]) for x in rnd["learners"]],
+        ["Random board, ball-holding seat", "Random board, other seat"])
     pg_br = [x["vs_best_response"][0] for x in rnd["learners"]]
     pg_rand = [x["vs_random"][0] for x in det["learners"]]
     mx = [x["vs_nash"][0] for x in mixed["learners"]]
@@ -328,7 +465,16 @@ solver's rate against the best response.</li>
  ["Win rate against the exact Nash policy", "The same, against the exact equilibrium player."],
  ["Win rate against a random player", "A sanity check: every learner should beat a player who moves at random."],
  ["A win", "The player scores while the opponent does not. On the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal, or equal goals, are ties."]], "text")}
-<p class="muted">Exploitability, the best-response player's gain, is not reported: it measures the attacker, and it is the player we train that we want to judge.</p></section>
+<p class="muted">Exploitability, the best-response player's gain, is not reported: it measures the attacker, and it is the player we train that we want to judge.</p>
+<h3>Why the exact solver does not win 0% against the best response</h3>
+<p>The best response is the move that minimizes our player's <em>expected discounted score difference</em>, not the one that
+minimizes its chance of winning. At the random board's kickoff the player holding the ball is ahead: the exact solution is worth
+{seat_value:+.2f} to it even against a perfect best response. So the exact solver wins {pct(seat_row)} of games and loses
+{pct(1 - seat_row)} from that seat, and wins {pct(seat_col)} from the other seat. The first number is the one reported above (our learners
+always sit in the ball-holding seat); the second is what it gets from the seat without the ball. On the deterministic board
+both seats tie every game.</p>
+<div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
+<div>{seat_chart}</div></section>
 
 <section><h2>2. How it is implemented</h2>
 {table(["setting", "value"], [
@@ -341,37 +487,44 @@ solver's rate against the best response.</li>
 <section><h2>3. Why fictitious play</h2>
 <p>On rock-paper-scissors, answering the opponent's latest move makes the play flip between rock, paper and
 scissors for ever. Answering the average of everything it has played converges to one third each.</p>
-<div>{rps_plot(res['rps'])}</div></section>
+<div>{rps_plot(res['rps'])}</div>
+{rps_nn_section(res)}</section>
 
 <section><h2>4. Results</h2>
 {''.join(board_section(t, n, b) for t, n, b in boards)}
-<h3>Win rate against the best response, all boards</h3>
-{table(head, [ref, *summary_rows])}</section>
+</section>
 
 <section><h2>5. Mixed states of the random board</h2>
 <p>At {mixed['mixed_states']} states the exact equilibrium has to randomize. Each learner starts
 {mixed['games_per_start']} games from every one of them. Distance is the total-variation distance between the
 learner's probabilities and the exact mix at the first step (0 = identical, 1 = no overlap); "player 0 mixes"
 is the share of states where it puts less than 90% on its top move.</p>
-{table(["learner", "wins vs. exact Nash", "wins vs. best response", "distance from the exact mix", "player 0 mixes"], mixed_rows)}
+<div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
+<div>{mixed_chart}</div>
+<p>The distance from the exact mix is {min(tv):.2f} to {max(tv):.2f} for every learner. Player 0 mixes
+(puts under 90% on its top move) at {pct(min(mixing))} to {pct(max(mixing))} of these states, though not at the
+states or in the proportions the exact solution does.</p>
 <h3>Three of these states in full</h3>
-{policy_tables(mixed['policy_outputs'])}</section>
+{policy_charts(mixed['policy_outputs'])}</section>
 
 <section><h2>6. Action probabilities</h2>
 <p>The probability each trained network gives to every move, at four fixed positions of the deterministic board
-(seed 0), next to the exact solver's move. The most likely move is in bold.</p>
+(seed 0), next to the exact solver's move.</p>
 {policy_html()}</section>
 
 <section><h2>7. More training</h2>
 <p>Standard training at 8,000 instead of 2,000 iterations (two seeds each), deterministic board.</p>
-{table(["learner", "wins vs. exact Nash, 2,000 iterations", "wins vs. exact Nash, 8,000 iterations", "wins vs. random, 8,000 iterations"], long_rows)}</section>
+<div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
+<div>{long_chart}</div></section>
 
 <section><h2>8. Fictitious play with long best responses</h2>
 <p>Each round a player trains for 100 (or 300) iterations against the average of its opponent's earlier best
-responses, then adds the result to its history. Win rate against the best response at each checkpoint round (one seed per run).</p>
-{table(["run"] + [f"round {k}" for k in rounds], fp_rows)}</section>
+responses, then adds the result to its history. Win rate against the best response at each checkpoint round (one seed per run); every line ends below {pct(max(c['win_vs_best_response'] for r in res['fp_br'] for c in r['checkpoints']))}.</p>
+<div>{fp_chart}</div></section>
 
 {variant_section(res)}
+
+{argmax_section(res)}
 </body></html>"""
 
 
