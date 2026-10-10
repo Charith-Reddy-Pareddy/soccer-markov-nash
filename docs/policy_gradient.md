@@ -475,7 +475,7 @@ python scripts/policy_gradient_batch.py --seeds 5 --match updates  # same, updat
 python scripts/policy_gradient_architectures.py --seeds 5 # separate vs. shared vs. partial-share nets
 python scripts/policy_gradient_ablation.py --seeds 3       # learned baseline vs. entropy bonus, separately
 python scripts/pg_algos_and_fp.py pg --seeds 3             # REINFORCE vs. A2C vs. PPO
-python scripts/pg_finite.py --seeds 3                       # finite-horizon PG, self-play and fictitious play
+python scripts/pg_finite.py --seeds 3                       # finite-horizon PG, self-play and fictitious play (2,000 iterations by default)
 python scripts/pg_algos_and_fp.py pg --board random --seeds 3   # same, on the random move-order board
 python scripts/pg_algos_and_fp.py pg --board random --explore --seeds 3   # exploring starts
 python scripts/pg_algos_and_fp.py fp                       # best-response dynamics vs. fictitious play

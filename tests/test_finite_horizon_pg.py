@@ -225,3 +225,16 @@ def test_the_argmax_fictitious_mode_trains_with_every_algorithm_and_rejects_unkn
         assert p.shape == (1, 4) and p.sum() == pytest.approx(1.0, abs=1e-5)
     with pytest.raises(ValueError):
         pf.train(game, "ppo", "argmax", GAMMA, HORIZON, iterations=1, episodes=2)
+
+
+def test_the_runner_trains_for_the_documented_2000_iterations_by_default():
+    import importlib.util
+    import pathlib
+
+    path = pathlib.Path(__file__).resolve().parent.parent / "scripts" / "pg_finite.py"
+    spec = importlib.util.spec_from_file_location("pg_finite_script", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    args = mod.parser().parse_args([])
+    assert args.iterations == 2000 and args.episodes == 64 and args.games == 1000
+    assert args.seeds == 3 and args.entropy == 0.01

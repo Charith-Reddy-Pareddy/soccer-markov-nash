@@ -24,12 +24,12 @@ from soccer_nash.nash_q import NashQIteration
 EXP = pathlib.Path(__file__).resolve().parent.parent / "experiments"
 
 
-def main() -> None:
+def parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--board", choices=["a10", "random"], default="a10")
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--seed-start", type=int, default=0, help="first seed to run")
-    ap.add_argument("--iterations", type=int, default=1000)
+    ap.add_argument("--iterations", type=int, default=2000)
     ap.add_argument("--episodes", type=int, default=64)
     ap.add_argument("--games", type=int, default=1000)
     ap.add_argument("--gamma", type=float, default=0.9)
@@ -37,11 +37,19 @@ def main() -> None:
     ap.add_argument("--scoring", choices=["win", "rate"], default="win",
                     help="win: the first goal ends the game; rate: play continues after a goal")
     ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"], choices=pf.MODES)
+    ap.add_argument("--entropy", type=float, default=0.01, help="entropy bonus")
     ap.add_argument("--shared", action="store_true", help="one network, one output head per player")
     ap.add_argument("--trim", type=int, default=0,
                     help="drop the last N steps of each episode from the loss")
+    ap.add_argument("--resume", action="store_true",
+                    help="keep the runs already in the output file and skip them")
+    ap.add_argument("--prefix", default="pg_finite", help="start of the output file name")
     ap.add_argument("--tag", default="", help="suffix for the output file")
-    a = ap.parse_args()
+    return ap
+
+
+def main() -> None:
+    a = parser().parse_args()
 
     order = "deterministic" if a.board == "a10" else "random"
     if a.scoring == "rate":
@@ -53,11 +61,18 @@ def main() -> None:
     _, row_t, col_t = fh.solve_finite_horizon(solver, a.gamma, horizon)
     exact = (fh.tables_to_policy(row_t), fh.tables_to_policy(col_t))
     critic = fh.ExactCritic(game, solver, a.gamma, horizon) if "a2c_exact" in a.algos else None
-    rows = [{"algo": "exact", "mode": "-", "seed": 0, "train_s": 0.0,
+    rows = [{"algo": "exact", "mode": "-", "seed": 0, "train_s": 0.0, "iterations": 0,
              **fh.evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
     print(rows[0], flush=True)
     name = a.board if a.scoring == "win" else f"rate_{a.board}"
-    path = EXP / f"pg_finite_{name}{a.tag}.csv"
+    path = EXP / f"{a.prefix}_{name}{a.tag}.csv"
+
+    done = set()
+    if a.resume and path.exists():
+        with path.open() as f:
+            old_rows = [r for r in csv.DictReader(f) if r["algo"] != "exact"]
+        rows.extend(old_rows)
+        done = {(r["algo"], r["mode"], int(r["seed"])) for r in old_rows}
 
     def save() -> None:
         with path.open("w", newline="") as f:
@@ -68,12 +83,15 @@ def main() -> None:
     for algo in a.algos:
         for mode in a.modes:
             for seed in range(a.seed_start, a.seed_start + a.seeds):
+                if (algo, mode, seed) in done:
+                    continue
                 t = time.perf_counter()
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
                               a.episodes, seed=seed, exact=critic,
-                              shared=a.shared, trim=a.trim)
+                              shared=a.shared, trim=a.trim, entropy=a.entropy)
                 dt = round(time.perf_counter() - t, 1)
                 rows.append({"algo": algo, "mode": mode, "seed": seed, "train_s": dt,
+                             "iterations": a.iterations,
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
                                         a.gamma, horizon, a.games, seed)})
                 print(rows[-1], flush=True)

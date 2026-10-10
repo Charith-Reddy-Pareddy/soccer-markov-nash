@@ -118,6 +118,8 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | self-play | `selfplay.py --seeds 5` | Nash-vs-Nash return, **5 seeds × 3000 games** | ~5 min |
 | `board_sweep.csv` | `experiments.py board` | larger board sweep (legacy) | ~10 min |
 
+`pg_finite.py` trains for 2,000 iterations of 64 episodes unless `--iterations` is given (the default, so `pg_finite.py --seeds 3` is the 2,000-iteration run); new output files record the count in an `iterations` column.
+
 **Seeds.** Every measurement that depends on randomness -- neural-network
 fitting, self-play rollouts -- is run over seeds `0 … 4` and reported as
 `mean ± sd`. Exact dynamic-programming results (value iteration, backward
@@ -131,7 +133,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 483 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 484 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34
