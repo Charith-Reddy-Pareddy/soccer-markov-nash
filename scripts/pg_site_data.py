@@ -101,7 +101,8 @@ def build() -> dict:
             "random": random_board(), "mixed": mixed_states(),
             "continuing": continuing_game(), "rps": rock_paper_scissors(),
             "variants": {b: variants(b) for b in VARIANT_FILES},
-            "argmax": argmax_average(), "rps_nn": rps_networks()}
+            "argmax": argmax_average(), "rps_nn": rps_networks(),
+            "entropy": larger_entropy()}
 
 
 def random_board() -> dict:
@@ -154,37 +155,73 @@ def rps_networks() -> dict | None:
     return json.loads(path.read_text()) if path.exists() else None
 
 
-ARGMAX_FILES = {"random": ("pg_finite_random_{}.csv", "pg_variant_random_argmax_{}.csv"),
-                "deterministic": ("pg_finite_a10.csv", "pg_variant_a10_argmax_{}.csv")}
+# board -> (name in output files, baseline file for standard / fictitious, argmax file)
+BOARD_FILES = {
+    "random": ("random", "pg_finite_random_{algo}.csv", "pg_variant_random_argmax_{algo}.csv"),
+    "deterministic": ("a10", "pg_finite_a10.csv", "pg_variant_a10_argmax_{algo}.csv"),
+    "continuing": ("rate_a10", "pg_finite_rate_a10_{algo}_{mode}.csv",
+                   "pg_variant_rate_a10_argmax_{algo}.csv"),
+}
+
+
+def _runs(board: str, algo: str, mode: str, entropy: float = 0.01) -> list[dict]:
+    """The result rows of one learner (3 seeds) on a board, at the usual or the larger entropy
+    bonus; ``mode`` is selfplay, fictitious or fictitious_argmax."""
+    name, base, argm = BOARD_FILES[board]
+    if entropy == 0.01:
+        pattern = argm if mode == "fictitious_argmax" else base
+    else:
+        pattern = f"pg_entropy_{name}_{mode}_{{algo}}.csv"
+    paths = sorted(glob.glob(str(EXP / pattern.format(algo=algo, mode=mode))))
+    return [r for path in paths for r in read(path) if r["algo"] == algo and r["mode"] == mode]
+
+
+def _stats(rs: list[dict]) -> dict:
+    br = [float(r["row_win_vs_br"]) for r in rs]
+    tie = [float(r["row_tie_vs_nash"]) for r in rs]
+    return {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie), "tie_nash_runs": tie,
+            "vs_random": wtl(rs, "random"), "vs_nash": wtl(rs, "nash"),
+            "vs_best_response": wtl(rs, "br")}
 
 
 def argmax_average() -> dict | None:
     """Fictitious play whose snapshots are pure (argmax) policies, against the usual
-    fictitious play that averages softmax policies; REINFORCE, A2C and PPO on the two boards,
-    three seeds each. Win rate against the best response and share of ties with the exact Nash
-    policy."""
+    fictitious play that averages softmax policies; REINFORCE, A2C and PPO on the three boards,
+    three seeds each."""
     out = {}
-    for board, (base, argm) in ARGMAX_FILES.items():
+    for board in BOARD_FILES:
         rows_out = []
         for algo in ("reinforce", "a2c", "ppo"):
             entry = {"label": NAMES[algo], "training": "fictitious play"}
-            for key, pattern, mode in (("softmax", base, "fictitious"),
-                                       ("argmax", argm, "fictitious_argmax")):
-                paths = sorted(glob.glob(str(EXP / pattern.format(algo))))
-                if not paths:
-                    return None
-                rs = [r for path in paths for r in read(path)
-                      if r["algo"] == algo and r["mode"] == mode]
+            for key, mode in (("softmax", "fictitious"), ("argmax", "fictitious_argmax")):
+                rs = _runs(board, algo, mode)
                 if len(rs) < 3:
-                    return None
-                br = [float(r["row_win_vs_br"]) for r in rs]
-                tie = [float(r["row_tie_vs_nash"]) for r in rs]
-                entry[key] = {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie),
-                              "tie_nash_runs": tie, "vs_random": wtl(rs, "random"),
-                              "vs_nash": wtl(rs, "nash"), "vs_best_response": wtl(rs, "br")}
+                    return out or None
+                entry[key] = _stats(rs)
             rows_out.append(entry)
         out[board] = rows_out
     return out
+
+
+MODE_NAMES = {"selfplay": "standard", "fictitious": "fictitious play",
+              "fictitious_argmax": "fictitious play, argmax"}
+
+
+def larger_entropy() -> dict | None:
+    """The usual entropy bonus (0.01) against a larger one (0.2) for every learner, training
+    scheme and board."""
+    out = {}
+    for board in BOARD_FILES:
+        rows_out = []
+        for algo in ("reinforce", "a2c", "ppo"):
+            for mode in ("selfplay", "fictitious", "fictitious_argmax"):
+                small, large = _runs(board, algo, mode), _runs(board, algo, mode, 0.2)
+                if len(small) == 3 and len(large) == 3:
+                    rows_out.append({"label": NAMES[algo], "training": MODE_NAMES[mode],
+                                     "baseline": _stats(small), "larger": _stats(large)})
+        if len(rows_out) == 9:
+            out[board] = rows_out
+    return out or None
 
 
 def _avg(values) -> float:

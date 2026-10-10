@@ -93,7 +93,8 @@ VARIANT_COLOURS = {"baseline": GREEN, "shared": GREY, "trimmed": ORANGE}
 
 def variant_bars(rows, reference, width=660, field="", keys=None) -> str:
     """Win rate against the best response per variant: a bar for the mean, a dot per seed."""
-    left, right, group, bar = 170, 20, 70, 16
+    left, right, bar = 170, 20, 16
+    group = len(keys or VARIANT_COLOURS) * (bar + 2) + 16
     h = group * len(rows) + 48
     x = lambda v: left + v * (width - left - right)  # noqa: E731
     out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
@@ -103,7 +104,7 @@ def variant_bars(rows, reference, width=660, field="", keys=None) -> str:
                    f'<text x="{x(g):.1f}" y="{h - 8}" text-anchor="middle" fill="#5b6b63">{g:.0%}</text>')
     for i, r in enumerate(rows):
         y0 = 28 + i * group
-        out.append(f'<text x="{left - 8}" y="{y0 + 24}" text-anchor="end" fill="#1c2e26">'
+        out.append(f'<text x="{left - 8}" y="{y0 + group / 2 - 6}" text-anchor="end" fill="#1c2e26">'
                    f'{r["label"]}, {r["training"]}</text>')
         for n, (key, colour) in enumerate((keys or VARIANT_COLOURS).items()):
             v, y = r[key], y0 + n * (bar + 2)
@@ -171,7 +172,7 @@ def rps_nn_section(res: dict) -> str:
         sec = list(ex)[1]
         second_text = (f"With the {sec} all three settle close to the equilibrium (standard {ex[sec]['standard']:.2f}, "
                        f"softmax {ex[sec]['fictitious']:.2f}, argmax {ex[sec]['fictitious_argmax']:.2f}): this setting damps the cycling, "
-                       "so the standard networks settle too.")
+                       "so the standard networks settle too (a stabilization effect, not evidence of convergence to the unregularized equilibrium).")
     return f"""<h3>The same test with neural networks</h3>
 <p>Each player is a small network with a softmax output, trained by REINFORCE on sampled games ({data['iterations']:,} iterations,
 {data['batch']} games each, 3 seeds; the plots show seed 0). <b>Standard</b> trains the two current networks against each other.
@@ -188,10 +189,18 @@ def argmax_section(res: dict) -> str:
     if not data:
         return ""
     keys = {"softmax": GREEN, "argmax": ORANGE}
-    rnd, det = data["random"], data["deterministic"]
+    rnd, det, cont = data["random"], data["deterministic"], data.get("continuing")
     pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
     change = lambda rows, f: ", ".join(pts(r["argmax"][f] - r["softmax"][f]) for r in rows)  # noqa: E731
     spread = lambda rows, f: round(100 * max(max(x[f]) - min(x[f]) for r in rows for x in (r["softmax"], r["argmax"])))  # noqa: E731
+    cont_chart = cont_text = ""
+    if cont:
+        cont_chart = ("<h3>Continuing game: games tied with the exact Nash policy</h3><div>"
+                      + variant_bars(cont, res["continuing"]["exact"]["vs_nash"][1], field="tie_nash_", keys=keys) + "</div>")
+        top = pct(max(r["argmax"]["mean"] for r in cont))
+        cont_text = (f" Continuing game: the share tied with the exact Nash policy changes by {change(cont, 'tie_nash_mean')} points; "
+                     f"single seeds differ by up to {spread(cont, 'tie_nash_runs')} points, and no argmax learner wins more than {top} "
+                     "of games against the best response.")
     return f"""<section><h2>10. Averaging pure policies</h2>
 <p>Neural networks cannot output a mixed strategy except through their softmax, so each snapshot is made
 a pure policy (the move with the highest probability), those are averaged, and each player best-responds to that average. This is fictitious play in its
@@ -202,10 +211,38 @@ against and the policy it reports are averages of pure snapshots. Bars are the m
 <h3>Random move-order board: win rate against the best response</h3>
 <div>{variant_bars(rnd, res["random"]["exact"]["vs_best_response"][0], keys=keys)}</div>
 <h3>Deterministic board: games tied with the exact Nash policy</h3>
-<div>{variant_bars(det, res["exact"]["vs_nash"][1], field="tie_nash_", keys=keys)}</div>
+<div>{variant_bars(det, res["exact"]["vs_nash"][1], field="tie_nash_", keys=keys)}</div>{cont_chart}
 <p>Random board: averaging argmax instead of softmax snapshots changes the win rate against the best response by {change(rnd, "mean")} points
 (REINFORCE, A2C, PPO); single seeds differ by up to {spread(rnd, "runs")} points. Deterministic board: it changes the share of games tied with the
-exact Nash policy by {change(det, "tie_nash_mean")} points; single seeds differ by up to {spread(det, "tie_nash_runs")} points.</p></section>"""
+exact Nash policy by {change(det, "tie_nash_mean")} points; single seeds differ by up to {spread(det, "tie_nash_runs")} points.{cont_text}</p></section>"""
+
+
+def entropy_section(res: dict) -> str:
+    data = res.get("entropy")
+    if not data:
+        return ""
+    keys = {"baseline": GREEN, "larger": ORANGE}
+    pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
+    boards = [("random", "Random move-order board: win rate against the best response", "", res["random"]["exact"]["vs_best_response"][0], "mean", "Random board", "win rate against the best response"),
+              ("deterministic", "Deterministic board: games tied with the exact Nash policy", "tie_nash_", res["exact"]["vs_nash"][1], "tie_nash_mean", "Deterministic board", "share tied with the exact Nash policy"),
+              ("continuing", "Continuing game: games tied with the exact Nash policy", "tie_nash_", (res.get("continuing") or {}).get("exact", {}).get("vs_nash", [0, 1])[1], "tie_nash_mean", "Continuing game", "share tied with the exact Nash policy")]
+    charts, sentences = [], []
+    for key, title, field, ref, f, short, what in boards:
+        if key not in data:
+            continue
+        rows = data[key]
+        charts.append(f"<h3>{title}</h3><div>{variant_bars(rows, ref, field=field, keys=keys)}</div>")
+        d_main = ", ".join(pts(r["larger"][f] - r["baseline"][f]) for r in rows)
+        d_rand = ", ".join(pts(r["larger"]["vs_random"][0] - r["baseline"]["vs_random"][0]) for r in rows)
+        sentences.append(f"{short}: the larger bonus changes the {what} by {d_main} points; against a random player the win rate changes by "
+                         f"{d_rand} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).")
+    return f"""<section><h2>11. A larger entropy bonus</h2>
+<p>On rock-paper-scissors a larger entropy bonus made the networks settle, but entropy regularization changes the optimization problem, so this is a stabilization heuristic reported next to the original setting, not a way to recover the unregularized equilibrium. Here every learner (REINFORCE, A2C, PPO), every way of
+training (standard, fictitious play, fictitious play with argmax snapshots) and every board is trained again with the entropy bonus raised
+from 0.01 to 0.2; nothing else changes. Bars are the mean over 3 seeds and dots single seeds;
+<span style="color:{GREEN}">■</span> entropy bonus 0.01 (used elsewhere), <span style="color:{ORANGE}">■</span> entropy bonus 0.2.</p>
+{"".join(charts)}
+<p>{" ".join(sentences)}</p></section>"""
 
 
 def variant_section(res: dict) -> str:
@@ -358,6 +395,34 @@ def line_chart(series, rounds, width=660, height=260) -> str:
     return "".join(out)
 
 
+def seat_rates(entry: dict) -> list[float]:
+    """Win rate against the best response from the ball-holding seat, from the other seat, and
+    their 50/50 average."""
+    ball, other = entry["vs_best_response"][0], entry["vs_best_response_column"][0]
+    return [ball, other, (ball + other) / 2]
+
+
+def win_rate_table(boards) -> str:
+    """Every win rate against the best response in one table, for both kickoff seats and their
+    average, on every board (``boards``: (title, board) pairs)."""
+    seats = ("ball seat", "other seat", "balanced")
+    names = []
+    for _, b in boards:
+        names += [name(x) for x in b["learners"] if name(x) not in names]
+    head1 = "<th rowspan=2>learner</th>" + "".join(f"<th colspan={len(seats)}>{t}</th>" for t, _ in boards)
+    head2 = "".join(f"<th>{s}</th>" for _ in boards for s in seats)
+    exact = "<td><b>Exact solver</b></td>" + "".join(
+        f"<td><b>{v:.0%}</b></td>" for _, b in boards for v in seat_rates(b["exact"]))
+    rows = []
+    for n in names:
+        cells = []
+        for _, b in boards:
+            hit = next((x for x in b["learners"] if name(x) == n), None)
+            cells += [f"<td>{v:.0%}</td>" for v in seat_rates(hit)] if hit else ["<td>&mdash;</td>"] * len(seats)
+        rows.append(f"<tr><td>{n}</td>{''.join(cells)}</tr>")
+    return f'<table class="wins"><tr>{head1}</tr><tr>{head2}</tr><tr>{exact}</tr>{"".join(rows)}</table>'
+
+
 # --------------------------------------------------------------------------------- sections
 def board_section(title: str, note: str, board: dict) -> str:
     exact, learners = board["exact"], board["learners"]
@@ -437,6 +502,7 @@ td:first-child{{text-align:left}} th{{background:var(--card);color:var(--accent-
 table,svg,.callout{{break-inside:avoid}} tr{{break-inside:avoid}}
 table.text td{{text-align:left;vertical-align:top}}
 table.probs td,table.probs th{{padding:4px 6px}}
+table.wins td,table.wins th{{padding:4px 5px;font-size:10.5px}} table.wins td:first-child{{white-space:nowrap}}
 .sub{{display:block;font-size:10px;color:var(--muted);font-weight:400}}
 svg{{width:100%;height:auto}}
 .legend span{{display:inline-block;width:10px;height:10px;margin:0 4px 0 12px;vertical-align:-1px}}
@@ -482,7 +548,7 @@ both seats tie every game.</p>
  ["Returns", "REINFORCE: the discounted return from each step to the end of the episode, no baseline. A2C: 10-step bootstrapped advantage from a learned critic. A2C with the exact critic: the critic is the exact solver's value, frozen, so the advantage is the exact Q(s, a<sub>0</sub>, a<sub>1</sub>) minus V(s). PPO: GAE (&lambda; 0.95), ratio clipped at 0.2, 4 epochs."],
  ["Updates", "Every iteration: 64 episodes of 100 steps, then one gradient step per player on all of that data (four for PPO). 2,000 iterations. Learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. No mini-batches, no replay."],
  ["Standard", "Both players' current networks play each other and keep updating: real-time best responses."],
- ["Fictitious play", "Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations); the policy it reports is the average of its own snapshots."]], "text")}</section>
+ ["Fictitious play", "Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations); the policy it reports is the average of its own snapshots. Every snapshot follows a fixed budget of 5 policy-gradient iterations, and what is averaged is policies (action probabilities), never network weights."]], "text")}</section>
 
 <section><h2>3. Why fictitious play</h2>
 <p>On rock-paper-scissors, answering the opponent's latest move makes the play flip between rock, paper and
@@ -491,6 +557,14 @@ scissors for ever. Answering the average of everything it has played converges t
 {rps_nn_section(res)}</section>
 
 <section><h2>4. Results</h2>
+<h3>Win rates against the best response, by kickoff seat</h3>
+<p>The share of 1,000 games each learner wins when the opponent plays the exact best response to it (the move that minimizes its
+expected discounted score difference). <b>Ball seat</b>: the player that holds the ball at kickoff. <b>Other seat</b>: the same learner
+as the other player. <b>Balanced</b>: the 50/50 average of the two, one number that does not depend on who starts with the ball. Mean of
+3 seeds; the exact solver is the top row, as context rather than a target. The deterministic board is the A10 board: the exact solver ties
+itself there, so it wins 0% from both seats. A dash means the learner was not run on that board. Wins against the exact Nash policy and a
+random player are in the charts below.</p>
+{win_rate_table([(t, b) for t, _, b in boards])}
 {''.join(board_section(t, n, b) for t, n, b in boards)}
 </section>
 
@@ -525,6 +599,8 @@ responses, then adds the result to its history. Win rate against the best respon
 {variant_section(res)}
 
 {argmax_section(res)}
+
+{entropy_section(res)}
 </body></html>"""
 
 

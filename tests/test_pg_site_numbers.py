@@ -290,11 +290,40 @@ def test_the_continuing_variants_have_three_seeds_and_the_text_claims_hold():
     assert "three seeds cannot settle changes of this size" in PAGE
 
 
-def test_only_the_two_explanatory_tables_remain_on_the_tab_and_in_the_report():
-    assert PAGE.count("<table") == 2
+def test_only_the_explanatory_tables_and_the_win_rate_table_remain():
+    assert PAGE.count("<table") == 3 and "function WinRateTable" in PAGE and "<WinRateTable" in PAGE
     html = (ROOT / "docs" / "policy_gradient.html").read_text()
-    assert html.count("<table") == 2
+    assert html.count("<table") == 3 and html.count('<table class="wins">') == 1
     assert "<table" not in (SITE / "src" / "PolicyOutputs.jsx").read_text()
+
+
+def test_the_win_rate_table_in_the_report_matches_the_data():
+    import re
+
+    html = (ROOT / "docs" / "policy_gradient.html").read_text()
+    i = html.index('<table class="wins">')
+    block = html[i:html.index("</table>", i)]
+    rows = [re.sub(r"<[^>]+>", " ", r).split() for r in block.split("<tr>")[1:]]
+    exact = next(r for r in rows if r[:2] == ["Exact", "solver"])
+    boards = {"deterministic": RESULTS["exact"], "random": RESULTS["random"]["exact"]}
+    want = []
+    for e in boards.values():
+        ball, other = e["vs_best_response"][0], e["vs_best_response_column"][0]
+        want += [f"{ball * 100:.0f}%", f"{other * 100:.0f}%", f"{(ball + other) * 50:.0f}%"]
+    assert exact[2:8] == want
+    a2c = next(r for r in rows if r[0] == "A2C," and r[1] == "standard")
+    learner = RESULTS["learners"][2]
+    ball, other = learner["vs_best_response"][0], learner["vs_best_response_column"][0]
+    assert a2c[2:5] == [f"{round(v * 100)}%" for v in (ball, other, (ball + other) / 2)]
+    assert "Balanced" in PAGE and "ball seat" in html
+
+
+def test_the_entropy_bonus_is_described_as_an_ablation_not_a_fix():
+    html = (ROOT / "docs" / "policy_gradient.html").read_text()
+    for text in (PAGE, html):
+        assert "stabilization" in text or "entropy" not in text
+    assert "An ablation: the entropy bonus raised to 0.2" in PAGE
+    assert "never network weights" in PAGE and "never network weights" in html
 
 
 def test_the_seat_explanation_matches_the_data():

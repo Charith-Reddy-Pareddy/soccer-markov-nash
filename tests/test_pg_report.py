@@ -78,7 +78,7 @@ def test_the_report_has_a_section_per_board_and_the_plots():
                 + 1 + states  # mixed-state results and every state's move probabilities
                 + 2  # more training, long best responses
                 + 3 + 2)  # sharing and trimming; argmax averages
-    assert HTML.count("<svg") == expected and "<table" not in HTML.split("<section><h2>3.")[1]
+    assert HTML.count("<svg") == expected and HTML.split("<section><h2>3.")[1].count("<table") == 1
     assert "best-response dynamics" in TEXT
 
 
@@ -103,3 +103,20 @@ def test_variant_bars_draw_a_bar_per_variant_and_a_dot_per_seed():
 
 def test_the_report_has_the_network_sharing_and_trimming_section():
     assert "Network sharing and trimming" in HTML and "Last 10 steps left out" in HTML
+
+
+def test_the_win_rate_table_has_seat_columns_a_balanced_average_and_dashes_for_missing_learners():
+    def entry(label, ball, other):
+        return {"label": label, "training": "standard", "vs_best_response": [ball, 0, 1 - ball],
+                "vs_best_response_column": [other, 0, 1 - other]}
+
+    a, b = entry("A2C", 0.1, 0.3), entry("A2C, exact critic", 0.0, 0.0)
+    exact = entry("x", 0.5, 0.3)
+    html = pg_report.win_rate_table([("first", {"exact": exact, "learners": [a]}),
+                                     ("second", {"exact": exact, "learners": [a, b]})])
+    assert html.count("<tr>") == 5 and html.count("&mdash;") == 3
+    for cell in ("<b>50%</b>", "<b>30%</b>", "<b>40%</b>"):  # exact solver: ball, other, balanced
+        assert cell in html
+    for cell in ("<td>10%</td>", "<td>30%</td>", "<td>20%</td>"):  # A2C
+        assert cell in html
+    assert pg_report.seat_rates(a) == [0.1, 0.3, 0.2]
