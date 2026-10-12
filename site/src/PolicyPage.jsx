@@ -122,29 +122,32 @@ function StackBars({ rows, titles }) {
   );
 }
 
-// Win rate against the best response after each round of long best-response phases, one line per run.
-function LineChart({ series, rounds }) {
-  const W = 660, H = 260, lm = 48, rm = 170, tm = 20, bm = 34;
-  const top = Math.min(1, Math.round((Math.max(0.1, ...series.flatMap((s) => s.values.filter((v) => v != null))) * 1.15 + 0.02) * 100) / 100);
+// Lines over a shared x axis: win rate against the best response after each round of long
+// best-response phases, win rate or a move probability during training. Series may carry their own
+// colour and width; ``top`` fixes the top of the y axis.
+const LINE_COLOURS = ["var(--pitch)", "var(--pitch-dark, #178A42)", "var(--rule-strong)", "var(--ink-faint)", "var(--ember)", "var(--ember-soft, #d08a5c)"];
+function LineChart({ series, rounds, top: fixedTop, xLabel = "round", height = 260, labelEvery = 1 }) {
+  const W = 660, H = height, lm = 48, rm = 170, tm = 20, bm = 34;
+  const top = fixedTop || Math.min(1, Math.round((Math.max(0.1, ...series.flatMap((s) => s.values.filter((v) => v != null))) * 1.15 + 0.02) * 100) / 100);
   const x = (k) => lm + (k / Math.max(rounds.length - 1, 1)) * (W - lm - rm);
   const y = (v) => tm + (1 - v / top) * (H - tm - bm);
-  const cols = ["var(--pitch)", "var(--pitch-dark, #178A42)", "var(--rule-strong)", "var(--ink-faint)", "var(--ember)", "var(--ember-soft, #d08a5c)"];
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="win rate against the best response by round" className="pg-bars">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="lines over training" className="pg-bars">
       {[0, top / 2, top].map((g) => (
         <g key={g}>
           <line x1={lm} y1={y(g)} x2={W - rm} y2={y(g)} stroke="var(--rule)" />
           <text x={lm - 6} y={y(g) + 4} textAnchor="end" fontSize="11" fill="var(--ink-faint)">{pct(g)}</text>
         </g>
       ))}
-      {rounds.map((k, i) => <text key={k} x={x(i)} y={H - 10} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{k}</text>)}
-      <text x={lm} y={H} fontSize="11" fill="var(--ink-faint)">round</text>
+      {rounds.map((k, i) => (i % labelEvery === 0 ? <text key={k} x={x(i)} y={H - 10} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{k}</text> : null))}
+      <text x={lm} y={H} fontSize="11" fill="var(--ink-faint)">{xLabel}</text>
       {series.map((s, n) => {
         const pts = s.values.map((v, i) => (v == null ? null : [x(i), y(v)])).filter(Boolean);
+        const col = s.color || LINE_COLOURS[n % 6];
         return (
           <g key={s.name}>
-            <path d={pts.map(([px, py], i) => `${i ? "L" : "M"}${px},${py}`).join(" ")} fill="none" stroke={cols[n % 6]} strokeWidth="2.2" />
-            <text x={W - rm + 8} y={pts[pts.length - 1][1] + 4} fontSize="11" fontWeight="700" fill={cols[n % 6]}>{s.name}</text>
+            <path d={pts.map(([px, py], i) => `${i ? "L" : "M"}${px},${py}`).join(" ")} fill="none" stroke={col} strokeWidth={s.width || 2.2} opacity={s.opacity || 1} />
+            {s.label !== false && <text x={W - rm + 8} y={pts[pts.length - 1][1] + 4} fontSize="11" fontWeight="700" fill={col}>{s.name}</text>}
           </g>
         );
       })}
@@ -261,7 +264,7 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related } = results;
   const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
@@ -342,6 +345,19 @@ export default function PolicyPage() {
       return `${a} ${pts(rows.reduce((s, v) => s + v.larger.mean - v.baseline.mean, 0) / rows.length)}`;
     }).join(", ")
     : "";
+  const STUDY_COLOURS = ["var(--pitch)", "var(--pitch-dark, #178A42)", "var(--rule-strong)", "var(--ink-faint)", "var(--ember)"];
+  const studyKeys = (s) => s.keys.map(([k, l], i) => [k, l, STUDY_COLOURS[i % STUDY_COLOURS.length]]);
+  const studyField = (s) => (s.metric === "tie" ? "tie_nash_" : "");
+  const studyMean = (s, row, k) => row[k][`${studyField(s)}mean`];
+  const studyText = (s) => {
+    const first = s.keys[0][0], what = s.metric === "tie" ? "share tied with the exact Nash policy" : "win rate against the best response";
+    const lines = s.keys.slice(1).map(([k, l]) => `${l}: ${s.rows.map((r) => pts(studyMean(s, r, k) - studyMean(s, r, first))).join(", ")}`);
+    const spread = Math.round(100 * Math.max(...s.rows.flatMap((r) => s.keys.map(([k]) => {
+      const v = r[k][`${studyField(s)}runs`]; return Math.max(...v) - Math.min(...v);
+    }))));
+    return `Change in the ${what}, in points, from "${s.keys[0][1]}" (rows in the order shown): ${lines.join("; ")}. Single seeds of one setting differ by up to ${spread} points.`;
+  };
+  const curveBoards = curves ? Object.entries(curves) : [];
   const detText = vd
     ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
@@ -619,6 +635,75 @@ export default function PolicyPage() {
             <p className="fig-cap">{EN_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
             {enByAlgo && <p>{`On the random board, averaged over the three ways of training, the larger bonus moves the win rate against the best response by ${enByAlgo} points; the exact solver wins ${pct(rnd.exact.vs_best_response[0])} from the ball seat. This is an ablation and does not show convergence to the unregularized equilibrium.`}</p>}
           <p>{enBoards.map(([k, , , , f]) => `${k === "random" ? "Random board" : k === "deterministic" ? "Deterministic board" : "Continuing game"}: the larger bonus changes the ${k === "random" ? "win rate against the best response" : "share tied with the exact Nash policy"} by ${enChange(entropy[k], f)} points; against a random player the win rate changes by ${enRandom(entropy[k])} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).`).join(" ")}</p>
+          </div>
+        </section>
+      )}
+
+      {curves && (
+        <section className="band-tint" id="converge">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">12</span>Does training converge?</div>
+            <h2>Win rate and kickoff policy during training</h2>
+            <p className="lede">Best-response dynamics (standard training) can cycle; fictitious play averages the past. Every 100 iterations the policy
+              each learner would report is scored against the exact best response (mean of 3 seeds), and the probability it gives to the exact
+              solver&rsquo;s kickoff move is recorded for seed 0: the current network (thin) and, for fictitious play, the average (thick).</p>
+            {curveBoards.map(([board, c]) => (
+              <div key={board}>
+                <h3>{board === "random" ? "Random move-order board" : "Deterministic board"}: win rate against the best response</h3>
+                <LineChart rounds={c.iterations} xLabel="iteration" labelEvery={4}
+                  series={c.series.map((s, n) => ({ name: `${s.label}, ${s.training}`, values: s.win_br, color: LINE_COLOURS[[4, 0, 5, 1][n]] }))} />
+                <h3>{board === "random" ? "Random board" : "Deterministic board"}: probability of the exact solver&rsquo;s kickoff move ({c.move}; exact solver {pct(c.exact_move_probability)})</h3>
+                <LineChart rounds={c.iterations} xLabel="iteration" top={1} labelEvery={4}
+                  series={c.series.flatMap((s) => (s.mode === "selfplay"
+                    ? [{ name: `${s.label}, standard`, values: s.current_move, color: "var(--ember)", width: 1.4, label: false }]
+                    : [{ name: `${s.label}, current`, values: s.current_move, color: "var(--ink-faint)", width: 1, opacity: 0.7, label: false },
+                      { name: `${s.label}, average`, values: s.aggregate_move, color: "var(--pitch)", width: 2.6, label: false }]))} />
+              </div>
+            ))}
+            <p className="fig-cap">Orange: standard training&rsquo;s current network. Grey: the current network under fictitious play. Green: fictitious play&rsquo;s average.
+              A2C and PPO are drawn together in each chart.</p>
+            {curveBoards.map(([board, c]) => (
+              <p key={board}>{`${board === "random" ? "Random board" : "Deterministic board"}, second half of training: the win rate against the best response stays within ${c.series.map((s) => {
+                const h = s.win_br.slice(Math.floor(s.win_br.length / 2));
+                return `${s.label} ${s.training} ${pct(Math.min(...h))} to ${pct(Math.max(...h))}`;
+              }).join("; ")}. The exact solver wins ${pct(board === "random" ? rnd.exact.vs_best_response[0] : results.exact.vs_best_response[0])} from the ball seat.`}</p>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {choices && (
+        <section id="choices">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p0">13</span>Training choices</div>
+            <h2>What changes when the training recipe changes</h2>
+            <p className="lede">Each comparison changes one thing from the usual setting (2,000 iterations of 64 episodes, all data used once, a snapshot every
+              5 iterations, all 100 steps in the loss) and keeps the rest. Bars are the mean over 3 seeds; dots are single seeds.</p>
+            {choices.map((s) => (
+              <div key={s.title}>
+                <h3>{s.title}</h3>
+                <p className="fig-cap">{s.note}</p>
+                <VariantBars rows={s.rows} reference={s.reference == null ? (s.metric === "tie" ? 1 : rnd.exact.vs_best_response[0]) : s.reference} field={studyField(s)} keys={studyKeys(s)} />
+                <p className="fig-cap">{studyKeys(s).map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
+                <p>{studyText(s)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {related && (
+        <section className="band-tint" id="related">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">14</span>Related work</div>
+            <h2>Has fictitious play been combined with policy gradient before?</h2>
+            <p className="lede">Yes, in several forms. In a short search I found these; the one-line summaries follow each paper&rsquo;s abstract or listing and I have not
+              checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games.</p>
+            <ul className="related-list">
+              {related.map((r) => (
+                <li key={r.title}><a href={r.url}>{r.title}</a>{r.authors ? ` (${r.authors}${r.year ? `, ${r.year}` : ""})` : r.year ? ` (${r.year})` : ""}. {r.says}</li>
+              ))}
+            </ul>
           </div>
         </section>
       )}
