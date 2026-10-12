@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Results of the policy-gradient experiments as one JSON file for the site's
 Policy gradient tab, so every number on that page comes from a run.
 
@@ -102,7 +103,8 @@ def build() -> dict:
             "continuing": continuing_game(), "rps": rock_paper_scissors(),
             "variants": {b: variants(b) for b in VARIANT_FILES},
             "argmax": argmax_average(), "rps_nn": rps_networks(),
-            "entropy": larger_entropy()}
+            "entropy": larger_entropy(), "choices": training_choices(),
+            "curves": training_curves(), "related": RELATED}
 
 
 def random_board() -> dict:
@@ -179,7 +181,9 @@ def _runs(board: str, algo: str, mode: str, entropy: float = 0.01) -> list[dict]
 def _stats(rs: list[dict]) -> dict:
     br = [float(r["row_win_vs_br"]) for r in rs]
     tie = [float(r["row_tie_vs_nash"]) for r in rs]
+    rand = [float(r["row_win_vs_random"]) for r in rs]
     return {"mean": _avg(br), "runs": br, "tie_nash_mean": _avg(tie), "tie_nash_runs": tie,
+            "rand_mean": _avg(rand), "rand_runs": rand,
             "vs_random": wtl(rs, "random"), "vs_nash": wtl(rs, "nash"),
             "vs_best_response": wtl(rs, "br")}
 
@@ -222,6 +226,205 @@ def larger_entropy() -> dict | None:
         if len(rows_out) == 9:
             out[board] = rows_out
     return out or None
+
+
+STUDY_NAMES = {"random": "random", "deterministic": "a10", "continuing": "rate_a10"}
+LEARNER_LABELS = {"a2c": "A2C", "ppo": "PPO", "reinforce": "REINFORCE", "a2c_exact": "A2C, exact critic"}
+
+
+def _file_rows(pattern: str, algo: str, mode: str) -> list[dict]:
+    paths = sorted(glob.glob(str(EXP / pattern)))
+    return [r for path in paths for r in read(path) if r["algo"] == algo and r["mode"] == mode]
+
+
+def _study(title: str, note: str, metric: str, reference, keys: list[tuple[str, str]],
+           rows: list[tuple[str, str, dict[str, list[dict]]]]) -> dict | None:
+    """One comparison: for every (label, training) row, the results of each setting in ``keys``
+    (key, label); ``None`` until every setting has all 3 seeds."""
+    out_rows = []
+    for label, training, by_key in rows:
+        entry = {"label": label, "training": training}
+        for key, _ in keys:
+            rs = by_key[key]
+            if len(rs) < 3:
+                return None
+            entry[key] = _stats(rs)
+        out_rows.append(entry)
+    return {"title": title, "note": note, "metric": metric, "reference": reference,
+            "keys": [list(k) for k in keys], "rows": out_rows}
+
+
+def _trim_rows(board: str, algo: str, mode: str, trim: int) -> list[dict]:
+    name = STUDY_NAMES[board]
+    if trim == 0:
+        return _runs(board, algo, mode)
+    if trim == 10:
+        return _file_rows(f"pg_variant_{name}_trim10.csv", algo, mode)
+    return _file_rows(f"pg_study_{name}_trim{trim}_{mode}_{algo}.csv", algo, mode)
+
+
+def training_choices() -> list[dict] | None:
+    """Training choices compared on the usual setting: how many steps to leave out of the loss,
+    how long to train per fictitious-play snapshot and in total, mini-batches and replay, the
+    exact critic on every board, and averaging weights instead of policies."""
+    rnd_ref = None
+    studies = []
+    modes = (("selfplay", "standard"), ("fictitious", "fictitious play"))
+    algos = (("a2c", "A2C"), ("ppo", "PPO"))
+    trims = [0, 5, 10, 20, 40]
+    tkeys = [(f"t{t}", "all steps" if t == 0 else f"last {t} left out") for t in trims]
+    studies.append(_study(
+        "Leaving out the last steps: how many?",
+        "Random move-order board; the last N of the 100 steps of every episode are left out of the loss.",
+        "br", rnd_ref, tkeys,
+        [(lab, tr, {f"t{t}": _trim_rows("random", a, m, t) for t in trims})
+         for a, lab in algos for m, tr in modes]))
+    studies.append(_study(
+        "Leaving out the last steps in the continuing game",
+        "Continuing game, standard training; share of games tied with the exact Nash policy.",
+        "tie", None, tkeys,
+        [(lab, "standard", {f"t{t}": _trim_rows("continuing", a, "selfplay", t) for t in trims})
+         for a, lab in algos]))
+    skeys = [("s1", "snapshot every iteration"), ("s5", "every 5 (used elsewhere)"),
+             ("s25", "every 25"), ("s100", "every 100")]
+    studies.append(_study(
+        "How long to train between snapshots",
+        "Random board, fictitious play, 2,000 iterations in total: the training budget of each best response.",
+        "br", rnd_ref, skeys,
+        [(lab, "fictitious play", {
+            "s1": _file_rows(f"pg_study_random_snap1_fictitious_{a}.csv", a, "fictitious"),
+            "s5": _runs("random", a, "fictitious"),
+            "s25": _file_rows(f"pg_study_random_snap25_fictitious_{a}.csv", a, "fictitious"),
+            "s100": _file_rows(f"pg_study_random_snap100_fictitious_{a}.csv", a, "fictitious")})
+         for a, lab in algos]))
+    studies.append(_study(
+        "Five times as many iterations",
+        "Random board: 10,000 iterations instead of 2,000.",
+        "br", rnd_ref, [("i2000", "2,000 iterations"), ("i10000", "10,000 iterations")],
+        [(lab, tr, {"i2000": _runs("random", a, m),
+                    "i10000": _file_rows(f"pg_study_random_iter10000_{m}_{a}.csv", a, m)})
+         for a, lab in algos for m, tr in modes]))
+    studies.append(_study(
+        "Mini-batches and replayed data",
+        "Random board. Mini-batch: many gradient steps per iteration, each on 256 random samples. "
+        "Replay: each update also uses the data of the 3 previous iterations.",
+        "br", rnd_ref, [("base", "all data, one step"), ("mb", "mini-batches of 256"),
+                        ("rp", "replay of 4 iterations")],
+        [(lab, tr, {"base": _runs("random", a, m),
+                    "mb": _file_rows(f"pg_study_random_mb256_{m}_{a}.csv", a, m),
+                    "rp": _file_rows(f"pg_study_random_replay4_{m}_{a}.csv", a, m)})
+         for a, lab in algos for m, tr in modes]))
+    for board, metric, title in (("random", "br", "Random board"),
+                                 ("deterministic", "tie", "Deterministic board")):
+        name = STUDY_NAMES[board]
+        studies.append(_study(
+            f"The exact solver's values as the critic: {title.lower()}",
+            "A2C with a learned critic against A2C with the exact solver's values as a frozen critic.",
+            metric, None, [("learned", "learned critic"), ("exact", "exact critic")],
+            [("A2C", tr, {"learned": _runs(board, "a2c", m),
+                          "exact": _file_rows(f"pg_study_{name}_a2cexact_{m}.csv", "a2c_exact", m)})
+             for m, tr in modes]))
+    wkeys = [("pol", "average of policies"), ("w", "average of weights"),
+             ("wl", "average of the output layer's weights")]
+    wrows = []
+    for a, lab in (("reinforce", "REINFORCE"), *algos):
+        rs = _file_rows(f"pg_study_random_weights_{a}.csv", a, "fictitious")
+        wrows.append((lab, "fictitious play", {
+            "pol": rs, "w": [_prefixed(r, "wavg_") for r in rs],
+            "wl": [_prefixed(r, "wlast_") for r in rs]}))
+    studies.append(_study(
+        "Averaging weights instead of policies",
+        "Random board, fictitious play. Fictitious play averages policies; the other two build one "
+        "network from the snapshots' weights (all layers, or only the output layer).",
+        "br", rnd_ref, wkeys, wrows))
+    studies = [s for s in studies if s]
+    return studies or None
+
+
+def _prefixed(row: dict, prefix: str) -> dict:
+    """A result row whose ``row_*`` scores are those stored under ``prefix``."""
+    out = dict(row)
+    for k in list(row):
+        if k.startswith(prefix):
+            out[k[len(prefix):]] = row[k]
+    return out
+
+
+def training_curves() -> dict | None:
+    """Win rate against the best response and the kickoff policy during training, standard
+    against fictitious play (experiments/pg_curves_*.csv)."""
+    kickoff_path = EXP / "pg_exact_kickoff.json"
+    if not kickoff_path.exists():
+        return None
+    kick = json.loads(kickoff_path.read_text())
+    out = {}
+    for board, name in (("random", "random"), ("deterministic", "a10")):
+        series = []
+        for algo in ("a2c", "ppo"):
+            for mode in ("selfplay", "fictitious"):
+                rows = _file_rows(f"pg_curves_{name}_{mode}_{algo}.csv", algo, mode)
+                seeds = sorted({int(r["seed"]) for r in rows})
+                if len(seeds) < 3:
+                    return out or None
+                iters = sorted({int(r["iteration"]) for r in rows})
+                best = int(max(range(4), key=lambda k: kick[board]["row"][k]))
+
+                def at(seed, it, col, rows=rows):
+                    return next(float(r[col]) for r in rows
+                                if int(r["seed"]) == seed and int(r["iteration"]) == it)
+
+                series.append({
+                    "label": LEARNER_LABELS[algo], "training": MODE_NAMES[mode], "mode": mode,
+                    "move": best,
+                    "win_br": [_avg([at(sd, it, "win_br") for sd in seeds]) for it in iters],
+                    "win_nash": [_avg([at(sd, it, "win_nash") for sd in seeds]) for it in iters],
+                    "tie_nash": [_avg([at(sd, it, "tie_nash") for sd in seeds]) for it in iters],
+                    "seed_win_br": [[at(sd, it, "win_br") for it in iters] for sd in seeds],
+                    "current_move": [at(0, it, f"cur_{best}") for it in iters],
+                    "aggregate_move": [at(0, it, f"agg_{best}") for it in iters]})
+        out[board] = {"iterations": iters, "series": series,
+                      "exact_move_probability": kick[board]["row"][best], "move": "UDLR"[best]}
+    return out or None
+
+
+RELATED = [
+    {"title": "Deep Reinforcement Learning from Self-Play in Imperfect-Information Games",
+     "authors": "Heinrich and Silver", "year": 2016, "url": "https://arxiv.org/abs/1603.01121",
+     "says": "Neural fictitious self-play (NFSP) learns approximate Nash equilibria of poker games "
+             "end to end by combining fictitious self-play with deep reinforcement learning; "
+             "ordinary reinforcement learning diverged on the small game (Leduc poker) where NFSP "
+             "moved toward equilibrium."},
+    {"title": "Policy Optimization in Zero-Sum Markov Games: Fictitious Self-Play Provably Attains "
+              "Nash Equilibria",
+     "authors": "", "year": None,
+     "url": "https://astro.paperswithcode.com/paper/policy-optimization-in-zero-sum-markov-games",
+     "says": "A smooth fictitious self-play whose best-response step is a PPO step with entropy "
+             "regularization reaches a neighbourhood of a Nash equilibrium at a sublinear rate in "
+             "zero-sum Markov games (a guarantee for the regularized method, not the exact "
+             "equilibrium)."},
+    {"title": "Policy Optimization for Markov Games: Unified Framework and Faster Convergence",
+     "authors": "Zhang et al.", "year": 2022,
+     "url": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/"
+            "8951f484e8242b7f74817fdc390dd954-Abstract.html",
+     "says": "Each iteration updates the policy at every state with a matrix-game algorithm and then "
+             "the values; the state-wise average policy converges to an approximate Nash "
+             "equilibrium of two-player zero-sum Markov games."},
+    {"title": "Fast Policy Extragradient Methods for Competitive Games with Entropy Regularization",
+     "authors": "Cen, Wei and Chi", "year": 2024, "url": "https://jmlr.org/papers/v25/21-1205.html",
+     "says": "Entropy regularization gives linear-rate convergence to the regularized equilibrium "
+             "(including in zero-sum Markov games), and tuning the weight approaches an approximate "
+             "Nash equilibrium of the unregularized game."},
+    {"title": "Fictitious Play in Markov Games with Single Controller",
+     "authors": "Sayin, Zhang and Ozdaglar", "year": 2022, "url": "https://arxiv.org/abs/2205.11389",
+     "says": "A variant of fictitious play converges in identical-interest Markov games where one "
+             "player controls the transitions; together with earlier results it covers both zero-sum "
+             "and identical-interest Markov games."},
+    {"title": "Fictitious play in zero-sum stochastic games",
+     "authors": "Sayin, Parise and Ozdaglar", "year": 2022,
+     "url": "https://deepai.org/publication/fictitious-play-in-zero-sum-stochastic-games",
+     "says": "A fictitious-play variant that combines classical fictitious play with Q-learning for "
+             "two-player zero-sum stochastic games."},
+]
 
 
 def _avg(values) -> float:

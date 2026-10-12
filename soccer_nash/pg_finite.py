@@ -154,7 +154,7 @@ def _returns(r, alive, value, algo, gamma, n_step=10, lam=0.95):
 
 def update(
     net, critic, opts, batch, player, algo, gamma, entropy, clip=0.2, epochs=4, exact=None,
-    trim=0,
+    trim=0, minibatch=0,
 ):
     sign = 1.0 if player == 0 else -1.0
     X, alive = batch["X"], batch["alive"]
@@ -175,22 +175,36 @@ def update(
         adv_f = (adv_f - adv_f.mean()) / (adv_f.std() + 1e-8)
     elif algo == "a2c":
         adv_f = adv_f - value[use]
+    tgt = target[use] if critic is not None else None
     for _ in range(epochs if algo == "ppo" else 1):
-        logp_all = torch.log_softmax(net(x), dim=-1)
-        logp = logp_all.gather(1, a[:, None]).squeeze(1)
-        if algo == "ppo":
-            ratio = (logp - old).exp()
-            pl = -torch.min(ratio * adv_f, ratio.clamp(1 - clip, 1 + clip) * adv_f).mean()
-        else:
-            pl = -(logp * adv_f).mean()
-        ent = -(logp_all.exp() * logp_all).sum(-1).mean()
-        loss = pl - entropy * ent
-        if critic is not None:
-            loss = loss + 0.5 * nn.functional.mse_loss(
-                critic(x).squeeze(-1), target[use])
-        opts[player].zero_grad()
-        loss.backward()
-        opts[player].step()
+        # one gradient step on all the data, or one per random mini-batch of ``minibatch`` samples
+        parts = torch.randperm(x.shape[0]).split(minibatch) if minibatch else [slice(None)]
+        for i in parts:
+            logp_all = torch.log_softmax(net(x[i]), dim=-1)
+            logp = logp_all.gather(1, a[i][:, None]).squeeze(1)
+            if algo == "ppo":
+                ratio = (logp - old[i]).exp()
+                pl = -torch.min(ratio * adv_f[i], ratio.clamp(1 - clip, 1 + clip) * adv_f[i]).mean()
+            else:
+                pl = -(logp * adv_f[i]).mean()
+            ent = -(logp_all.exp() * logp_all).sum(-1).mean()
+            loss = pl - entropy * ent
+            if critic is not None:
+                loss = loss + 0.5 * nn.functional.mse_loss(critic(x[i]).squeeze(-1), tgt[i])
+            opts[player].zero_grad()
+            loss.backward()
+            opts[player].step()
+
+
+def _concat(batches: list[dict]) -> dict:
+    """Several (T, E) batches side by side along the episode axis."""
+    if len(batches) == 1:
+        return batches[0]
+    return {"X": torch.cat([b["X"] for b in batches], 1),
+            "A": torch.cat([b["A"] for b in batches], 2),
+            "LP": torch.cat([b["LP"] for b in batches], 2),
+            "R": torch.cat([b["R"] for b in batches], 1),
+            "alive": torch.cat([b["alive"] for b in batches], 1)}
 
 
 @dataclass
@@ -198,6 +212,7 @@ class Trained:
     """Reported policies: ``pol0`` / ``pol1(t, states) -> (n, 4)``."""
     pol0: object
     pol1: object
+    snaps: tuple | None = None   # each player's snapshots, for the fictitious-play modes
 
 
 def _policy(nets: list[Net], horizon: int, pure: bool = False):
@@ -208,16 +223,39 @@ def _policy(nets: list[Net], horizon: int, pure: bool = False):
     return pol
 
 
+def weight_average(snaps: list[Net], horizon: int, last_layer_only: bool = False):
+    """The policy of a network whose weights are the mean of the snapshots' weights. With
+    ``last_layer_only`` the hidden layers are the last snapshot's and only the output layer is
+    averaged. Not the fictitious-play average (that averages policies); kept as a comparison."""
+    def linears(net):
+        return [m for m in net.body if isinstance(m, nn.Linear)]
+
+    avg = copy.deepcopy(snaps[-1]).requires_grad_(False)
+    with torch.no_grad():
+        for k, layer in enumerate(linears(avg)):
+            if last_layer_only and k < len(linears(avg)) - 1:
+                continue
+            for name in ("weight", "bias"):
+                mean = torch.stack([getattr(linears(sn)[k], name) for sn in snaps]).mean(0)
+                getattr(layer, name).copy_(mean)
+    return _policy([avg], horizon)
+
+
 def train(
     game: SoccerGame, algo: str, mode: str = "selfplay", gamma: float = 0.9,
     horizon: int = 100, iterations: int = 300, episodes: int = 64, lr: float = 1e-3,
     entropy: float = 0.01, snap_every: int = 5, seed: int = 0, exact=None,
-    shared: bool = False, trim: int = 0,
+    shared: bool = False, trim: int = 0, replay: int = 1, minibatch: int = 0,
+    checkpoint_every: int = 0, on_checkpoint=None,
 ) -> Trained:
     """``mode``: ``selfplay`` (standard), ``fictitious`` (train against the average of the
     opponent's past snapshots, report the average of one's own), or ``fictitious_argmax``
     (the same, but every snapshot is first turned into the pure policy that takes its most
     likely move, so both the opponent mixture and the reported policy average pure policies).
+    ``replay``: each update uses the last ``replay`` iterations' data; ``minibatch``: split the
+    data into random mini-batches of that many samples, one gradient step each.
+    ``on_checkpoint(iteration, reported, current)`` is called every ``checkpoint_every``
+    iterations with the reported policies and the current networks' policies.
     ``shared``: both players' policies are two output heads of one network.
     ``trim``: drop the last ``trim`` steps of every episode from the policy and critic
     losses (they still enter the returns of earlier steps)."""
@@ -243,26 +281,36 @@ def train(
             for n, c in zip(nets, critics)]
     snaps = [[_frozen(n)] for n in nets]
     pure = mode == "fictitious_argmax"
+    buffers = [[], []]   # the last ``replay`` batches of each player
     for it in range(iterations):
         if mode == "selfplay":
             batch = collect(game, _Current(nets[0]), _Current(nets[1]), episodes, horizon, rng)
             for i in (0, 1):
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact,
-                       trim=trim)
+                buffers[i] = (buffers[i] + [batch])[-replay:]
+                update(nets[i], critics[i], opts, _concat(buffers[i]), i, algo, gamma, entropy,
+                       exact=exact, trim=trim, minibatch=minibatch)
         else:
             for i in (0, 1):
                 mine = _Current(nets[i])
                 theirs = _Mixture(snaps[1 - i], episodes, rng, pure)
                 players = (mine, theirs) if i == 0 else (theirs, mine)
                 batch = collect(game, *players, episodes, horizon, rng)
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy, exact=exact,
-                       trim=trim)
+                buffers[i] = (buffers[i] + [batch])[-replay:]
+                update(nets[i], critics[i], opts, _concat(buffers[i]), i, algo, gamma, entropy,
+                       exact=exact, trim=trim, minibatch=minibatch)
             if (it + 1) % snap_every == 0:
                 for i in (0, 1):
                     snaps[i].append(_frozen(nets[i]))
+        if checkpoint_every and on_checkpoint and (it + 1) % checkpoint_every == 0:
+            reported = (Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon))
+                        if mode == "selfplay" else
+                        Trained(_policy(snaps[0], horizon, pure), _policy(snaps[1], horizon, pure)))
+            on_checkpoint(it + 1, reported,
+                          Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon)))
     if mode == "selfplay":
         return Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon))
-    return Trained(_policy(snaps[0], horizon, pure), _policy(snaps[1], horizon, pure))
+    return Trained(_policy(snaps[0], horizon, pure), _policy(snaps[1], horizon, pure),
+                   (snaps[0], snaps[1]))
 
 
 def train_fp_br(

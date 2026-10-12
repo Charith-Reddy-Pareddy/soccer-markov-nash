@@ -55,6 +55,14 @@ def parser() -> argparse.ArgumentParser:
                     help="drop the last N steps of each episode from the loss")
     ap.add_argument("--resume", action="store_true",
                     help="keep the runs already in the output file and skip them")
+    ap.add_argument("--snap-every", type=int, default=5,
+                    help="fictitious play: iterations of training per snapshot")
+    ap.add_argument("--minibatch", type=int, default=0,
+                    help="gradient steps on random mini-batches of this many samples (0: all data)")
+    ap.add_argument("--replay", type=int, default=1,
+                    help="each update uses the last N iterations of data")
+    ap.add_argument("--weights", action="store_true",
+                    help="also score the weight-averaged network (fictitious modes)")
     ap.add_argument("--prefix", default="pg_finite", help="start of the output file name")
     ap.add_argument("--tag", default="", help="suffix for the output file")
     return ap
@@ -87,7 +95,7 @@ def main() -> None:
 
     def save() -> None:
         with path.open("w", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=list(rows[0]))
+            w = csv.DictWriter(f, fieldnames=list(dict.fromkeys(k for r in rows for k in r)))
             w.writeheader()
             w.writerows(rows)
 
@@ -99,10 +107,19 @@ def main() -> None:
                 t = time.perf_counter()
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
                               a.episodes, seed=seed, exact=critic,
-                              shared=a.shared, trim=a.trim, entropy=a.entropy)
+                              shared=a.shared, trim=a.trim, entropy=a.entropy,
+                              snap_every=a.snap_every, minibatch=a.minibatch, replay=a.replay)
                 dt = round(time.perf_counter() - t, 1)
+                extra = {}
+                if a.weights and tr.snaps:
+                    for tag, last in (("wavg", False), ("wlast", True)):
+                        pols = [pf.weight_average(s, horizon, last) for s in tr.snaps]
+                        scored = fh.evaluate(game, solver, exact, pols[0], pols[1], a.gamma,
+                                             horizon, a.games, seed)
+                        extra.update({f"{tag}_{k}": v for k, v in scored.items()
+                                      if k.startswith("row_") or k == "exploitability"})
                 rows.append({"algo": algo, "mode": mode, "seed": seed, "train_s": dt,
-                             "iterations": a.iterations,
+                             "iterations": a.iterations, **extra,
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
                                         a.gamma, horizon, a.games, seed)})
                 print(rows[-1], flush=True)

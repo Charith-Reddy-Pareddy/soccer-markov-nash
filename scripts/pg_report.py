@@ -254,6 +254,84 @@ from 0.01 to 0.2; nothing else changes. Bars are the mean over 3 seeds and dots 
 {by_algo}<p>{" ".join(sentences)}</p></section>"""
 
 
+def curves_section(res: dict) -> str:
+    data = res.get("curves")
+    if not data:
+        return ""
+    parts = []
+    for board, c in data.items():
+        title = "Random move-order board" if board == "random" else "Deterministic board"
+        win = [(f"{s['label']}, {s['training']}", s["win_br"], [ORANGE, GREEN, "#d08a5c", "#178A42"][n])
+               for n, s in enumerate(c["series"])]
+        moves = []
+        for s in c["series"]:
+            if s["mode"] == "selfplay":
+                moves.append((f"{s['label']}, standard", s["current_move"], ORANGE, 1.4, 1, False))
+            else:
+                moves.append((f"{s['label']}, current", s["current_move"], "#6f7f77", 1, 0.7, False))
+                moves.append((f"{s['label']}, average", s["aggregate_move"], GREEN, 2.6, 1, False))
+        parts.append(f"<h3>{title}: win rate against the best response</h3><div>{line_chart(win, c['iterations'], x_label='iteration', label_every=4)}</div>"
+                     f"<h3>{title}: probability of the exact solver's kickoff move ({c['move']}; exact solver {pct(c['exact_move_probability'])})</h3>"
+                     f"<div>{line_chart(moves, c['iterations'], top=1, x_label='iteration', label_every=4)}</div>")
+    ranges = []
+    for board, c in data.items():
+        half = lambda v: v[len(v) // 2:]  # noqa: E731
+        parts_ = "; ".join(f"{s['label']} {s['training']} {pct(min(half(s['win_br'])))} to {pct(max(half(s['win_br'])))}" for s in c["series"])
+        exact = (res["random"]["exact"] if board == "random" else res["exact"])["vs_best_response"][0]
+        ranges.append(f"<p>{'Random board' if board == 'random' else 'Deterministic board'}, second half of training: the win rate against the best response stays within {parts_}. The exact solver wins {pct(exact)} from the ball seat.</p>")
+    return f"""<section><h2>12. Does training converge?</h2>
+<p>Best-response dynamics (standard training) can cycle; fictitious play averages the past. Every 100 iterations the policy each learner would
+report is scored against the exact best response (mean of 3 seeds), and the probability it gives to the exact solver's kickoff move is recorded
+for seed 0: the current network (thin) and, for fictitious play, the average (thick). Orange: standard training's current network. Grey: the
+current network under fictitious play. Green: fictitious play's average. A2C and PPO are drawn together in each chart.</p>
+{"".join(parts)}{"".join(ranges)}</section>"""
+
+
+STUDY_PALETTE = [GREEN, "#178A42", GREY, "#6f7f77", ORANGE]
+
+
+def choices_section(res: dict) -> str:
+    studies = res.get("choices")
+    if not studies:
+        return ""
+    pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
+    parts = []
+    for s in studies:
+        field = "tie_nash_" if s["metric"] == "tie" else ""
+        keys = {k: STUDY_PALETTE[i % len(STUDY_PALETTE)] for i, (k, _) in enumerate(s["keys"])}
+        ref = s["reference"] if s["reference"] is not None else (
+            1.0 if s["metric"] == "tie" else res["random"]["exact"]["vs_best_response"][0])
+        first = s["keys"][0][0]
+        what = "share tied with the exact Nash policy" if s["metric"] == "tie" else "win rate against the best response"
+        lines = "; ".join(
+            f"{lab}: " + ", ".join(pts(r[k][field + "mean"] - r[first][field + "mean"]) for r in s["rows"])
+            for k, lab in s["keys"][1:])
+        spread = round(100 * max(max(r[k][field + "runs"]) - min(r[k][field + "runs"]) for r in s["rows"] for k, _ in s["keys"]))
+        legend = "".join(f'<span style="color:{keys[k]}">■</span> {lab} &nbsp; ' for k, lab in s["keys"])
+        parts.append(f"<h3>{s['title']}</h3><p class=\"muted\">{s['note']}</p><div>{variant_bars(s['rows'], ref, field=field, keys=keys)}</div>"
+                     f"<p class=\"muted\">{legend}</p>"
+                     f"<p>Change in the {what}, in points, from \"{s['keys'][0][1]}\" (rows in the order shown): {lines}. "
+                     f"Single seeds of one setting differ by up to {spread} points.</p>")
+    return f"""<section><h2>13. Training choices</h2>
+<p>Each comparison changes one thing from the usual setting (2,000 iterations of 64 episodes, all data used once, a snapshot every 5 iterations,
+all 100 steps in the loss) and keeps the rest. Bars are the mean over 3 seeds and dots single seeds.</p>
+{"".join(parts)}</section>"""
+
+
+def related_section(res: dict) -> str:
+    items = res.get("related")
+    if not items:
+        return ""
+    lis = "".join(
+        f'<li><a href="{r["url"]}">{r["title"]}</a>'
+        + (f" ({r['authors']}{', ' + str(r['year']) if r['year'] else ''})" if r["authors"] else (f" ({r['year']})" if r["year"] else ""))
+        + f". {r['says']}</li>" for r in items)
+    return f"""<section><h2>14. Related work</h2>
+<p>Has fictitious play been combined with policy gradient before? Yes, in several forms. In a short search I found these; the one-line summaries
+follow each paper's abstract or listing and I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient
+with fictitious play in zero-sum Markov games.</p><ul>{lis}</ul></section>"""
+
+
 def variant_section(res: dict) -> str:
     both = res.get("variants")
     if not both or not both.get("random") or not both.get("deterministic"):
@@ -378,12 +456,13 @@ def policy_html() -> str:
     return policy_charts(json.loads(path.read_text())) if path.exists() else ""
 
 
-def line_chart(series, rounds, width=660, height=260) -> str:
-    """Win rate against the best response after each round of fictitious play with long best
-    responses; one line per run."""
+def line_chart(series, rounds, width=660, height=260, top=None, x_label="round", label_every=1) -> str:
+    """Lines over a shared x axis (win rate against the best response by round, or during training);
+    a series is ``(label, values)`` or ``(label, values, colour, width, opacity, show_label)``."""
     lm, rm, tm, bm = 48, 170, 20, 34
-    top = max(0.1, max(v for _, vals in series for v in vals if v is not None))
-    top = min(1.0, round(top * 1.15 + 0.02, 2))
+    if top is None:
+        top = max(0.1, max(v for s in series for v in s[1] if v is not None))
+        top = min(1.0, round(top * 1.15 + 0.02, 2))
     x = lambda k: lm + (k / max(len(rounds) - 1, 1)) * (width - lm - rm)  # noqa: E731
     y = lambda v: tm + (1 - v / top) * (height - tm - bm)  # noqa: E731
     cols = [GREEN, "#178A42", GREY, "#6f7f77", ORANGE, "#d08a5c"]
@@ -393,13 +472,20 @@ def line_chart(series, rounds, width=660, height=260) -> str:
         out.append(f'<line x1="{lm}" y1="{y(g):.1f}" x2="{width - rm}" y2="{y(g):.1f}" stroke="#dbe5df"/>'
                    f'<text x="{lm - 6}" y="{y(g) + 4:.1f}" text-anchor="end" fill="#5b6b63">{g:.0%}</text>')
     for k, lab in enumerate(rounds):
-        out.append(f'<text x="{x(k):.1f}" y="{height - 10}" text-anchor="middle" fill="#5b6b63">{lab}</text>')
-    out.append(f'<text x="{lm}" y="{height}" fill="#5b6b63">round</text>')
-    for n, (label, vals) in enumerate(series):
+        if k % label_every == 0:
+            out.append(f'<text x="{x(k):.1f}" y="{height - 10}" text-anchor="middle" fill="#5b6b63">{lab}</text>')
+    out.append(f'<text x="{lm}" y="{height}" fill="#5b6b63">{x_label}</text>')
+    for n, s in enumerate(series):
+        label, vals = s[0], s[1]
+        col = s[2] if len(s) > 2 else cols[n % 6]
+        wid = s[3] if len(s) > 3 else 2.2
+        op = s[4] if len(s) > 4 else 1
+        show = s[5] if len(s) > 5 else True
         pts = [(x(k), y(v)) for k, v in enumerate(vals) if v is not None]
         d = " ".join(f"{'L' if i else 'M'}{px:.1f},{py:.1f}" for i, (px, py) in enumerate(pts))
-        out.append(f'<path d="{d}" fill="none" stroke="{cols[n % 6]}" stroke-width="2.2"/>'
-                   f'<text x="{width - rm + 8}" y="{pts[-1][1] + 4:.1f}" fill="{cols[n % 6]}" font-weight="700">{label}</text>')
+        out.append(f'<path d="{d}" fill="none" stroke="{col}" stroke-width="{wid}" opacity="{op}"/>')
+        if show:
+            out.append(f'<text x="{width - rm + 8}" y="{pts[-1][1] + 4:.1f}" fill="{col}" font-weight="700">{label}</text>')
     out.append("</svg>")
     return "".join(out)
 
@@ -610,6 +696,12 @@ responses, then adds the result to its history. Win rate against the best respon
 {argmax_section(res)}
 
 {entropy_section(res)}
+
+{curves_section(res)}
+
+{choices_section(res)}
+
+{related_section(res)}
 </body></html>"""
 
 

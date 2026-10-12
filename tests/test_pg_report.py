@@ -62,7 +62,9 @@ def test_the_report_leads_with_win_rates_and_defines_every_number():
 
 def test_the_report_uses_the_agreed_terms_and_names_no_one():
     assert "standard" in TEXT and "fictitious play" in TEXT.lower()
-    assert "self-play" not in TEXT.lower()
+    # the related-work titles (e.g. "Neural Fictitious Self-Play") are quoted as published
+    ours = TEXT.split("Related work")[0]
+    assert "self-play" not in ours.lower()
     assert not re.search(r"professor|\bdog\b|sheep|not yet", TEXT, re.I)
     assert "mirror gap" not in TEXT.lower()
 
@@ -77,7 +79,9 @@ def test_the_report_has_a_section_per_board_and_the_plots():
                 + 2 * boards + 1  # two charts a board and the two-seat chart
                 + 1 + states  # mixed-state results and every state's move probabilities
                 + 2  # more training, long best responses
-                + 3 + 3 + 3)  # sharing and trimming; argmax averages; larger entropy bonus
+                + 3 + 3 + 3  # sharing and trimming; argmax averages; larger entropy bonus
+                + 2 * len(RES["curves"])  # training curves: two charts per board
+                + len(RES["choices"]))  # one chart per training-choice comparison
     assert HTML.count("<svg") == expected and HTML.split("<section><h2>3.")[1].count("<table") == 1
     assert "best-response dynamics" in TEXT
 

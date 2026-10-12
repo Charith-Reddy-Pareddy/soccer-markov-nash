@@ -383,3 +383,59 @@ def test_the_neural_network_rock_paper_scissors_runs_cover_both_settings_and_all
         for m in cfg["modes"].values():
             assert len(m["current"]) == len(m["aggregate"]) == data["iterations"]
             assert len(m["final_exploitability"]) == data["seeds"]
+
+
+def test_the_training_choices_cover_every_comparison_with_three_seeds_per_setting():
+    studies = RESULTS["choices"]
+    assert [s["title"] for s in studies][:2] == [
+        "Leaving out the last steps: how many?",
+        "Leaving out the last steps in the continuing game"]
+    assert len(studies) == 8
+    for s in studies:
+        assert s["metric"] in ("br", "tie") and len(s["keys"]) >= 2 and s["rows"]
+        for row in s["rows"]:
+            for key, _ in s["keys"]:
+                assert len(row[key]["runs"]) == len(row[key]["tie_nash_runs"]) == 3
+                assert row[key]["mean"] == pytest.approx(sum(row[key]["runs"]) / 3, abs=1e-5)
+
+
+def test_the_baseline_settings_of_the_training_choices_are_the_published_runs():
+    by = {(x["label"], x["training"]): x for x in RESULTS["random"]["learners"]}
+    trims = RESULTS["choices"][0]
+    for row in trims["rows"]:
+        published = by[(row["label"], row["training"])]["vs_best_response"][0]
+        assert row["t0"]["mean"] == pytest.approx(published, abs=1e-5)
+    choices = {s["title"]: s for s in RESULTS["choices"]}
+    snaps = choices["How long to train between snapshots"]
+    for row in snaps["rows"]:
+        published = by[(row["label"], "fictitious play")]["vs_best_response"][0]
+        assert row["s5"]["mean"] == pytest.approx(published, abs=1e-5)
+    iters = choices["Five times as many iterations"]
+    for row in iters["rows"]:
+        assert row["i2000"]["mean"] == pytest.approx(
+            by[(row["label"], row["training"])]["vs_best_response"][0], abs=1e-5)
+
+
+def test_the_training_curves_have_three_seeds_and_end_at_the_published_results():
+    curves = RESULTS["curves"]
+    assert set(curves) == {"random", "deterministic"}
+    for board, c in curves.items():
+        assert c["iterations"][0] == 100 and c["iterations"][-1] == 2000
+        assert [(s["label"], s["mode"]) for s in c["series"]] == [
+            ("A2C", "selfplay"), ("A2C", "fictitious"), ("PPO", "selfplay"), ("PPO", "fictitious")]
+        for s in c["series"]:
+            n = len(c["iterations"])
+            assert len(s["win_br"]) == len(s["current_move"]) == len(s["aggregate_move"]) == n
+            assert len(s["seed_win_br"]) == 3 and all(len(v) == n for v in s["seed_win_br"])
+            assert all(0.0 <= v <= 1.0 for v in s["win_br"] + s["aggregate_move"])
+    assert "Does training converge?" in PAGE
+
+
+def test_the_related_work_list_has_links_and_the_page_hedges_what_was_checked():
+    items = RESULTS["related"]
+    assert len(items) >= 5 and all(i["url"].startswith("https://") and i["says"] for i in items)
+    assert any("Neural Fictitious" in i["says"] or "NFSP" in i["says"] for i in items)
+    assert "have not checked the proofs" in " ".join(PAGE.split())
+    html = (ROOT / "docs" / "policy_gradient.html").read_text()
+    assert "have not checked the proofs" in " ".join(html.split())
+    assert all(i["url"] in html for i in items)

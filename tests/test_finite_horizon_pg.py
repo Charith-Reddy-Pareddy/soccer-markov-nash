@@ -255,3 +255,78 @@ def test_resumed_runs_are_read_back_as_numbers_so_the_final_summary_can_average_
     rows = mod.load_runs(f)
     assert [r["seed"] for r in rows] == [1, 2] and rows[0]["mode"] == "fictitious"
     assert statistics.mean(r["row_win_vs_br"] for r in rows) == 0.5
+
+
+def test_minibatches_take_several_gradient_steps_where_full_batch_takes_one(small):
+    import torch
+
+    game = small[0]
+    batch = pf.collect(game, pf._Current(pf.Net(game, 4)), pf._Current(pf.Net(game, 4)), 8,
+                       HORIZON, np.random.default_rng(1))
+
+    def steps(minibatch):
+        net, count = pf.Net(game, 4), [0]
+        opt = torch.optim.SGD(net.parameters(), lr=0.1)
+        real = opt.step
+        opt.step = lambda *a, **k: (count.__setitem__(0, count[0] + 1), real(*a, **k))[1]
+        pf.update(net, None, [opt, opt], batch, 0, "reinforce", GAMMA, 0.01, minibatch=minibatch)
+        return count[0]
+
+    n = int(batch["alive"].sum())
+    assert steps(0) == 1 and steps(16) == -(-n // 16)
+
+
+def test_replay_concatenates_episodes_and_every_algorithm_trains_with_it(small):
+    game = small[0]
+    one = pf.collect(game, pf._Current(pf.Net(game, 4)), pf._Current(pf.Net(game, 4)), 3,
+                     HORIZON, np.random.default_rng(0))
+    both = pf._concat([one, one])
+    assert both["X"].shape[1] == 6 and both["A"].shape[2] == 6
+    assert both["alive"].shape == (HORIZON, 6)
+    assert pf._concat([one]) is one
+    for algo in pf.ALGOS:
+        tr = pf.train(game, algo, "selfplay", GAMMA, HORIZON, iterations=3, episodes=4,
+                      replay=2, minibatch=8)
+        assert tr.pol0(0, [game.initial_state()]).sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def test_checkpoints_report_both_the_aggregate_and_the_current_policy(small):
+    game = small[0]
+    seen = []
+    pf.train(game, "reinforce", "fictitious", GAMMA, HORIZON, iterations=4, episodes=4,
+             snap_every=1, checkpoint_every=2,
+             on_checkpoint=lambda it, rep, cur: seen.append((it, rep, cur)))
+    assert [s[0] for s in seen] == [2, 4]
+    start = [game.initial_state()]
+    agg, cur = seen[-1][1].pol0(0, start), seen[-1][2].pol0(0, start)
+    assert agg.shape == cur.shape == (1, 4) and agg.sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def test_weight_averaging_of_identical_snapshots_is_the_snapshot_and_differs_otherwise(small):
+    game = small[0]
+    net = pf.Net(game, 4)
+    start = [game.initial_state()]
+    same = pf.weight_average([net, pf._frozen(net)], HORIZON)(0, start)
+    assert np.allclose(same, pf._policy([net], HORIZON)(0, start), atol=1e-6)
+    other = pf.Net(game, 4)
+    mixed = pf.weight_average([net, other], HORIZON)(0, start)
+    last = pf.weight_average([net, other], HORIZON, last_layer_only=True)(0, start)
+    assert not np.allclose(mixed, last, atol=1e-6) and mixed.sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def test_snapshots_are_returned_for_the_fictitious_modes_only(small):
+    game = small[0]
+    fic = pf.train(game, "reinforce", "fictitious", GAMMA, HORIZON, iterations=4, episodes=4,
+                   snap_every=2)
+    assert fic.snaps is not None and len(fic.snaps[0]) == 3
+    assert pf.train(game, "reinforce", "selfplay", GAMMA, HORIZON, iterations=2,
+                    episodes=4).snaps is None
+
+
+def test_the_exact_critic_also_trains_on_a_game_that_ends_at_the_first_goal(small):
+    game, solver = small[0], small[1]
+    critic = fh.ExactCritic(game, solver, GAMMA, HORIZON)
+    for mode in ("selfplay", "fictitious"):
+        tr = pf.train(game, "a2c_exact", mode, GAMMA, HORIZON, iterations=3, episodes=4,
+                      snap_every=1, exact=critic)
+        assert tr.pol0(0, [game.initial_state()]).sum() == pytest.approx(1.0, abs=1e-5)
