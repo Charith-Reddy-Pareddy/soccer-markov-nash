@@ -305,6 +305,8 @@ export default function PolicyPage() {
     ? ` A2C with the exact critic ties the exact Nash policy in ${pct(critic.vs_nash[1])} of games, against ${pct(plain.vs_nash[1])} for A2C with a learned critic.`
     : "");
   const pick = (rows, label, training) => rows.find((v) => v.label === label && v.training === training);
+  const rng = (lo, hi) => (pct(lo) === pct(hi) ? pct(lo) : `${pct(lo)} to ${pct(hi)}`);
+  const winsClause = (best) => (best < 0.005 ? "any games" : `more than ${pct(best)} of games`);
   const pts = (v) => `${v >= 0 ? "+" : "\u2212"}${Math.abs(Math.round(v * 100))}`;
   const spread = (rows, f) => Math.round(100 * Math.max(...rows.flatMap((v) => [v.baseline, v.shared].map((x) => {
     const r = x[f]; return Math.max(...r) - Math.min(...r);
@@ -331,7 +333,7 @@ export default function PolicyPage() {
   const amText = argmax
     ? `Random board: averaging argmax instead of softmax snapshots changes the win rate against the best response by ${amChange(argmax.random, "mean")} points (REINFORCE, A2C, PPO); single seeds differ by up to ${amSpread(argmax.random, "runs")} points. ` +
       `Deterministic board: it changes the share of games tied with the exact Nash policy by ${amChange(argmax.deterministic, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.deterministic, "tie_nash_runs")} points.` +
-      (argmax.continuing ? ` Continuing game: the share tied with the exact Nash policy changes by ${amChange(argmax.continuing, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.continuing, "tie_nash_runs")} points, and no argmax learner wins more than ${pct(Math.max(...argmax.continuing.map((v) => v.argmax.mean)))} of games against the best response.` : "")
+      (argmax.continuing ? ` Continuing game: the share tied with the exact Nash policy changes by ${amChange(argmax.continuing, "tie_nash_mean")} points; single seeds differ by up to ${amSpread(argmax.continuing, "tie_nash_runs")} points, and no argmax learner wins ${winsClause(Math.max(...argmax.continuing.map((v) => v.argmax.mean)))} against the best response.` : "")
     : "";
   const EN_KEYS = [["baseline", "Entropy bonus 0.01 (used elsewhere)", "var(--pitch)"], ["larger", "Entropy bonus 0.2", "var(--ember)"]];
   const enChange = (rows, f) => rows.map((v) => pts(v.larger[f] - v.baseline[f])).join(", ");
@@ -371,13 +373,13 @@ export default function PolicyPage() {
     return `${pair.label}, ${pair.variant}: ball seat ${ci(b.ball_ci)} before and ${ci(v.ball_ci)} after, a change of ${dci(pair.ball_diff)}; balanced ${ci(b.balanced_ci)} before and ${ci(v.balanced_ci)} after, a change of ${dci(pair.balanced_diff)}. The interval for the change from the ball seat ${pair.ball_diff[1] > 0 ? "excludes" : "includes"} zero; from the other seat both settings win ${pct(Math.max(...b.other, ...v.other))} or less in every run.`;
   };
   const detText = vd
-    ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
+    ? `Deterministic board: no variant wins ${winsClause(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
       `single seeds of the same setup differ by up to ${spread(vd, "tie_nash_runs")} points. ` +
       `A tie does not mean equilibrium play: PPO with standard training ties all games once the last 10 steps are left out, but wins only ${pct(pick(vd, "PPO", "standard").trimmed.vs_random[0])} of games against a random player, against ${pct(pick(vd, "PPO", "standard").baseline.vs_random[0])} before.`
     : "";
   const contText = vc
-    ? `Continuing game: no variant wins more than ${pct(Math.max(...vc.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline. ` +
+    ? `Continuing game: no variant wins ${winsClause(Math.max(...vc.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} against the best response, as for the baseline. ` +
       `The share of games tied with the exact Nash policy changes by ${change(vc, "shared", "tie_nash_mean")} points with a shared network and by ${change(vc, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
       `single seeds of the same setup differ by up to ${spread(vc, "tie_nash_runs")} points, so three seeds cannot settle changes of this size.`
     : "";
@@ -523,8 +525,8 @@ export default function PolicyPage() {
           {tieText && <p>{tieText}</p>}
           <p>
             {exact.vs_best_response[0] === 0
-              ? `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])}, because it ties itself every game, and the learners win ${pct(Math.min(...brWins))} to ${pct(Math.max(...brWins))}. `
-              : `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])} and the learners ${pct(Math.min(...brWins))} to ${pct(Math.max(...brWins))}. `}
+              ? `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])}, because it ties itself every game, and the learners win ${rng(Math.min(...brWins), Math.max(...brWins))}. `
+              : `Against the best response the exact solver wins ${pct(exact.vs_best_response[0])} and the learners ${rng(Math.min(...brWins), Math.max(...brWins))}. `}
             Fictitious-play training wins more often against a random player; no learner reaches the exact solver&rsquo;s rate against the best response or the exact Nash policy.
           </p>
         </div>
@@ -678,7 +680,7 @@ export default function PolicyPage() {
             {curveBoards.map(([board, c]) => (
               <p key={board}>{`${board === "random" ? "Random board" : "Deterministic board"}, second half of training: the win rate against the best response stays within ${c.series.map((s) => {
                 const h = s.win_br.slice(Math.floor(s.win_br.length / 2));
-                return `${s.label} ${s.training} ${pct(Math.min(...h))} to ${pct(Math.max(...h))}`;
+                return `${s.label} ${s.training} ${rng(Math.min(...h), Math.max(...h))}`;
               }).join("; ")}. The exact solver wins ${pct(board === "random" ? rnd.exact.vs_best_response[0] : results.exact.vs_best_response[0])} from the ball seat.`}</p>
             ))}
           </div>
