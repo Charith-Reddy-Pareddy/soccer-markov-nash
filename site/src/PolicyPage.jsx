@@ -214,7 +214,7 @@ function VariantBars({ rows, reference, field = "", keys = VARIANT_KEYS }) {
         const y0 = 28 + i * group;
         return (
           <g key={`${r.label}-${r.training}`}>
-            <text x={left - 8} y={y0 + group / 2 - 6} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}, {r.training}</text>
+            <text x={left - 8} y={y0 + group / 2 - 6} textAnchor="end" fontSize="12" fill="var(--ink)">{r.label}{r.training ? `, ${r.training}` : ""}</text>
             {keys.map(([k, , col], n) => (
               <g key={k}>
                 <rect x={left} y={y0 + n * (bar + 2)} width={Math.max(x(mean(r[k])) - left, 0)} height={bar} fill={col} opacity=".85" />
@@ -264,7 +264,7 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related, more_seeds: moreSeeds } = results;
   const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
@@ -358,6 +358,18 @@ export default function PolicyPage() {
     return `Change in the ${what}, in points, from "${s.keys[0][1]}" (rows in the order shown): ${lines.join("; ")}. Single seeds of one setting differ by up to ${spread} points.`;
   };
   const curveBoards = curves ? Object.entries(curves) : [];
+  const MS_KEYS = [["base", "Usual setting", "var(--pitch)"], ["variant", "Changed setting", "var(--ember)"]];
+  const msRows = (pair) => ["ball", "other", "balanced"].map((m) => ({
+    label: { ball: "Ball seat", other: "Other seat", balanced: "Balanced" }[m], training: "",
+    base: { mean: moreSeeds.conditions[pair.baseline_key][m].reduce((a, b) => a + b, 0) / moreSeeds.seeds, runs: moreSeeds.conditions[pair.baseline_key][m] },
+    variant: { mean: moreSeeds.conditions[pair.variant_key][m].reduce((a, b) => a + b, 0) / moreSeeds.seeds, runs: moreSeeds.conditions[pair.variant_key][m] },
+  }));
+  const ci = (v) => `${pct(v[0])} (95% interval ${pct(v[1])} to ${pct(v[2])})`;
+  const dci = (v) => `${pts(v[0])} points (95% interval ${pts(v[1])} to ${pts(v[2])})`;
+  const msText = (pair) => {
+    const b = moreSeeds.conditions[pair.baseline_key], v = moreSeeds.conditions[pair.variant_key];
+    return `${pair.label}, ${pair.variant}: ball seat ${ci(b.ball_ci)} before and ${ci(v.ball_ci)} after, a change of ${dci(pair.ball_diff)}; balanced ${ci(b.balanced_ci)} before and ${ci(v.balanced_ci)} after, a change of ${dci(pair.balanced_diff)}. The interval for the change from the ball seat ${pair.ball_diff[1] > 0 ? "excludes" : "includes"} zero; from the other seat both settings win ${pct(Math.max(...b.other, ...v.other))} or less in every run.`;
+  };
   const detText = vd
     ? `Deterministic board: no variant wins more than ${pct(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} of games against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
@@ -704,6 +716,27 @@ export default function PolicyPage() {
                 <li key={r.title}><a href={r.url}>{r.title}</a>{r.authors ? ` (${r.authors}${r.year ? `, ${r.year}` : ""})` : r.year ? ` (${r.year})` : ""}. {r.says}</li>
               ))}
             </ul>
+          </div>
+        </section>
+      )}
+
+      {moreSeeds && (
+        <section className="band-tint" id="more-seeds">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">15</span>More seeds</div>
+            <h2>The two best-looking settings, on {moreSeeds.seeds} seeds</h2>
+            <p className="lede">With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked
+              better with replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {moreSeeds.seeds - 1} (random move-order board).
+              Bars are means; dots are single seeds; the intervals are 95% intervals from Student&rsquo;s t. The exact solver wins {pct(rnd.exact.vs_best_response[0])} from the
+              ball seat, {pct(rnd.exact.vs_best_response_column[0])} from the other seat and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} balanced.</p>
+            {moreSeeds.pairs.map((pair) => (
+              <div key={pair.label}>
+                <h3>{pair.label}: {pair.variant}</h3>
+                <VariantBars rows={msRows(pair)} reference={rnd.exact.vs_best_response[0]} keys={MS_KEYS} />
+                <p className="fig-cap">{MS_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
+                <p>{msText(pair)}</p>
+              </div>
+            ))}
           </div>
         </section>
       )}
