@@ -45672,46 +45672,166 @@
  },
  "related": [
   {
+   "group": "older",
+   "title": "Iterative solution of games by fictitious play",
+   "authors": "Brown",
+   "year": 1951,
+   "venue": "Activity Analysis of Production and Allocation",
+   "url": "https://arxiv.org/pdf/2205.01469",
+   "says": "Introduced fictitious play as a computer method for finding equilibria of two-player zero-sum games (first proposed in 1949). Not read directly; described in the linked paper."
+  },
+  {
+   "group": "older",
+   "title": "An iterative method of solving a game",
+   "authors": "Robinson",
+   "year": 1951,
+   "venue": "Annals of Mathematics 54(2)",
+   "url": "https://arxiv.org/pdf/2205.01469",
+   "says": "Proved Brown's conjecture that fictitious play converges in two-player zero-sum games; Shapley (1964) later showed that convergence fails in general games. Not read directly; described in the linked paper."
+  },
+  {
+   "group": "older",
+   "title": "Markov games as a framework for multi-agent reinforcement learning",
+   "authors": "Littman",
+   "year": 1994,
+   "venue": "ICML, pp. 157-163",
+   "url": "https://mlanthology.org/icml/1994/littman1994icml-markov",
+   "says": "Two-player zero-sum Markov games and minimax-Q, a Q-learning variant that replaces the max with a minimax over the joint action (each update solves a linear program)."
+  },
+  {
+   "group": "older",
+   "title": "Fictitious play property for games with identical interests",
+   "authors": "Monderer and Shapley",
+   "year": 1996,
+   "venue": "Journal of Economic Theory 68",
+   "url": "https://doi.org/10.1006/jeth.1996.0014",
+   "says": "Fictitious play converges in games with identical interests (best-response equivalent to an identical-payoff game)."
+  },
+  {
+   "group": "older",
+   "title": "Multiagent learning using a variable learning rate",
+   "authors": "Bowling and Veloso",
+   "year": 2002,
+   "venue": "Artificial Intelligence 136(2)",
+   "url": "https://www.ri.cmu.edu/publications/multiagent-learning-using-a-variable-learning-rate",
+   "says": "Gradient-style learners in stochastic games: the WoLF (win or learn fast) learning-rate rule, with a convergence proof in self-play for a restricted class of matrix games."
+  },
+  {
+   "group": "older",
+   "title": "On the global convergence of stochastic fictitious play",
+   "authors": "Hofbauer and Sandholm",
+   "year": 2002,
+   "venue": "Econometrica 70(6)",
+   "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0262.2002.00440.x",
+   "says": "Global convergence of stochastic (perturbed) fictitious play for several classes of games, including zero-sum and potential games."
+  },
+  {
+   "group": "older",
+   "title": "Nash Q-learning for general-sum stochastic games",
+   "authors": "Hu and Wellman",
+   "year": 2003,
+   "venue": "Journal of Machine Learning Research 4",
+   "url": "https://jmlr.org/papers/v4/hu03a.html",
+   "says": "Q-learning toward Nash equilibria of general-sum Markov games; convergence is proved only under restrictions on the stage games that arise during learning."
+  },
+  {
+   "group": "older",
+   "title": "Generalised weakened fictitious play",
+   "authors": "Leslie and Collins",
+   "year": 2006,
+   "venue": "Games and Economic Behavior 56(2)",
+   "url": "https://ideas.repec.org/a/eee/gamebe/v56y2006i2p285-298.html",
+   "says": "A broad class of adaptive learning processes, including an actor-critic process that learns only from rewards, shown to converge in games with the fictitious-play property."
+  },
+  {
+   "group": "older",
+   "title": "Brown's original fictitious play",
+   "authors": "Berger",
+   "year": 2007,
+   "venue": "Journal of Economic Theory 135(1)",
+   "url": "https://ideas.repec.org/a/eee/jetheo/v135y2007i1p572-578.html",
+   "says": "Brown's 1951 process updates beliefs in a different order from the version used today; with that order, a short convergence proof for nondegenerate ordinal potential games."
+  },
+  {
+   "group": "recent",
+   "title": "Fictitious Self-Play in Extensive-Form Games",
+   "authors": "Heinrich, Lanctot and Silver",
+   "year": 2015,
+   "venue": "ICML, PMLR 37",
+   "url": "https://proceedings.mlr.press/v37/heinrich15.html",
+   "says": "Fictitious play in behavioural strategies of extensive-form games, and a sample-based version (fictitious self-play); approximate Nash equilibria in poker games."
+  },
+  {
+   "group": "recent",
    "title": "Deep Reinforcement Learning from Self-Play in Imperfect-Information Games",
    "authors": "Heinrich and Silver",
    "year": 2016,
+   "venue": "arXiv",
    "url": "https://arxiv.org/abs/1603.01121",
-   "says": "Neural fictitious self-play (NFSP) learns approximate Nash equilibria of poker games end to end by combining fictitious self-play with deep reinforcement learning; ordinary reinforcement learning diverged on the small game (Leduc poker) where NFSP moved toward equilibrium."
+   "says": "Neural fictitious self-play (NFSP) learns approximate Nash equilibria of poker games end to end; ordinary reinforcement learning diverged on the small game (Leduc poker) where NFSP moved toward equilibrium."
   },
   {
+   "group": "recent",
+   "title": "Independent Policy Gradient Methods for Competitive Reinforcement Learning",
+   "authors": "Daskalakis, Foster and Golowich",
+   "year": 2020,
+   "venue": "NeurIPS 33",
+   "url": "https://papers.nips.cc/paper/2020/hash/3b2acfe2e38102074656ed938abf4ac3-Abstract.html",
+   "says": "Both players running policy gradient simultaneously reach a min-max equilibrium of a two-player zero-sum stochastic game, provided the learning rates follow a two-timescale rule (which the authors show is necessary)."
+  },
+  {
+   "group": "recent",
    "title": "Policy Optimization in Zero-Sum Markov Games: Fictitious Self-Play Provably Attains Nash Equilibria",
-   "authors": "",
-   "year": null,
+   "authors": "Liu, Yang and Wang",
+   "year": 2020,
+   "venue": "OpenReview",
    "url": "https://astro.paperswithcode.com/paper/policy-optimization-in-zero-sum-markov-games",
    "says": "A smooth fictitious self-play whose best-response step is a PPO step with entropy regularization reaches a neighbourhood of a Nash equilibrium at a sublinear rate in zero-sum Markov games (a guarantee for the regularized method, not the exact equilibrium)."
   },
   {
+   "group": "recent",
+   "title": "Provably Efficient Fictitious Play Policy Optimization for Zero-Sum Markov Games with Structured Transitions",
+   "authors": "Qiu, Wei, Ye, Wang and Yang",
+   "year": 2021,
+   "venue": "ICML, PMLR 139",
+   "url": "https://proceedings.mlr.press/v139/qiu21b.html",
+   "says": "Fictitious-play policy optimization with optimism for zero-sum Markov games with structured but unknown transitions, with square-root-of-episodes regret bounds."
+  },
+  {
+   "group": "recent",
    "title": "Policy Optimization for Markov Games: Unified Framework and Faster Convergence",
-   "authors": "Zhang et al.",
+   "authors": "Zhang, Liu, Wang, Xiong, Li and Bai",
    "year": 2022,
+   "venue": "NeurIPS 35",
    "url": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/8951f484e8242b7f74817fdc390dd954-Abstract.html",
    "says": "Each iteration updates the policy at every state with a matrix-game algorithm and then the values; the state-wise average policy converges to an approximate Nash equilibrium of two-player zero-sum Markov games."
   },
   {
-   "title": "Fast Policy Extragradient Methods for Competitive Games with Entropy Regularization",
-   "authors": "Cen, Wei and Chi",
-   "year": 2024,
-   "url": "https://jmlr.org/papers/v25/21-1205.html",
-   "says": "Entropy regularization gives linear-rate convergence to the regularized equilibrium (including in zero-sum Markov games), and tuning the weight approaches an approximate Nash equilibrium of the unregularized game."
+   "group": "recent",
+   "title": "Fictitious play in zero-sum stochastic games",
+   "authors": "Sayin, Parise and Ozdaglar",
+   "year": 2022,
+   "venue": "SIAM Journal on Control and Optimization",
+   "url": "https://deepai.org/publication/fictitious-play-in-zero-sum-stochastic-games",
+   "says": "A fictitious-play variant that combines classical fictitious play with Q-learning for two-player zero-sum stochastic games."
   },
   {
+   "group": "recent",
    "title": "Fictitious Play in Markov Games with Single Controller",
    "authors": "Sayin, Zhang and Ozdaglar",
    "year": 2022,
+   "venue": "ACM EC",
    "url": "https://arxiv.org/abs/2205.11389",
    "says": "A variant of fictitious play converges in identical-interest Markov games where one player controls the transitions; together with earlier results it covers both zero-sum and identical-interest Markov games."
   },
   {
-   "title": "Fictitious play in zero-sum stochastic games",
-   "authors": "Sayin, Parise and Ozdaglar",
-   "year": 2022,
-   "url": "https://deepai.org/publication/fictitious-play-in-zero-sum-stochastic-games",
-   "says": "A fictitious-play variant that combines classical fictitious play with Q-learning for two-player zero-sum stochastic games."
+   "group": "recent",
+   "title": "Fast Policy Extragradient Methods for Competitive Games with Entropy Regularization",
+   "authors": "Cen, Wei and Chi",
+   "year": 2024,
+   "venue": "Journal of Machine Learning Research 25(4)",
+   "url": "https://jmlr.org/papers/v25/21-1205.html",
+   "says": "Entropy regularization gives linear-rate convergence to the regularized equilibrium (including in zero-sum Markov games), and tuning the weight approaches an approximate Nash equilibrium of the unregularized game."
   }
  ],
  "more_seeds": {

@@ -709,13 +709,21 @@ export default function PolicyPage() {
           <div className="wrap">
             <div className="eyebrow"><span className="badge p1">14</span>Related work</div>
             <h2>Has fictitious play been combined with policy gradient before?</h2>
-            <p className="lede">Yes, in several forms. In a short search I found these; the one-line summaries follow each paper&rsquo;s abstract or listing and I have not
-              checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games.</p>
-            <ul className="related-list">
-              {related.map((r) => (
-                <li key={r.title}><a href={r.url}>{r.title}</a>{r.authors ? ` (${r.authors}${r.year ? `, ${r.year}` : ""})` : r.year ? ` (${r.year})` : ""}. {r.says}</li>
-              ))}
-            </ul>
+            <p className="lede">Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against
+              Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang), the publishers&rsquo; and proceedings pages,
+              and arXiv. JSTOR&rsquo;s search page would not load, so the 1951 papers are cited from the linked secondary source. The one-line summaries follow each paper&rsquo;s
+              abstract or listing and I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in
+              zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>
+            {[["older", "Older work"], ["recent", "Recent work"]].map(([g, title]) => (
+              <div key={g}>
+                <h3>{title}</h3>
+                <ul className="related-list">
+                  {related.filter((r) => r.group === g).map((r) => (
+                    <li key={r.title}><a href={r.url}>{r.title}</a>{` (${r.authors}, ${r.year}; ${r.venue})`}. {r.says}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </section>
       )}
