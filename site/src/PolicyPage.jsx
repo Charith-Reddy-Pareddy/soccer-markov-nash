@@ -50,9 +50,9 @@ function BestResponseBars({ rows, reference }) {
   );
 }
 
-// Every win rate against the best response in one table, for both kickoff seats and their 50/50
+// Every win rate against the best response in one table, for both starting positions and their 50/50
 // average, on every board that has results.
-const SEATS = [["ball", "Ball seat"], ["other", "Other seat"], ["balanced", "Balanced"]];
+const SEATS = [["ball", "With ball"], ["other", "Without ball"], ["balanced", "Average of both"]];
 const seatRates = (x) => {
   const ball = x.vs_best_response[0], other = x.vs_best_response_column[0];
   return { ball, other, balanced: (ball + other) / 2 };
@@ -362,7 +362,7 @@ export default function PolicyPage() {
   const curveBoards = curves ? Object.entries(curves) : [];
   const MS_KEYS = [["base", "Usual setting", "var(--pitch)"], ["variant", "Changed setting", "var(--ember)"]];
   const msRows = (pair) => ["ball", "other", "balanced"].map((m) => ({
-    label: { ball: "Ball seat", other: "Other seat", balanced: "Balanced" }[m], training: "",
+    label: { ball: "Starts with the ball", other: "Starts without the ball", balanced: "Average of both" }[m], training: "",
     base: { mean: moreSeeds.conditions[pair.baseline_key][m].reduce((a, b) => a + b, 0) / moreSeeds.seeds, runs: moreSeeds.conditions[pair.baseline_key][m] },
     variant: { mean: moreSeeds.conditions[pair.variant_key][m].reduce((a, b) => a + b, 0) / moreSeeds.seeds, runs: moreSeeds.conditions[pair.variant_key][m] },
   }));
@@ -370,7 +370,7 @@ export default function PolicyPage() {
   const dci = (v) => `${pts(v[0])} points (95% interval ${pts(v[1])} to ${pts(v[2])})`;
   const msText = (pair) => {
     const b = moreSeeds.conditions[pair.baseline_key], v = moreSeeds.conditions[pair.variant_key];
-    return `${pair.label}, ${pair.variant}: ball seat ${ci(b.ball_ci)} before and ${ci(v.ball_ci)} after, a change of ${dci(pair.ball_diff)}; balanced ${ci(b.balanced_ci)} before and ${ci(v.balanced_ci)} after, a change of ${dci(pair.balanced_diff)}. The interval for the change from the ball seat ${pair.ball_diff[1] > 0 ? "excludes" : "includes"} zero; from the other seat both settings win ${pct(Math.max(...b.other, ...v.other))} or less in every run.`;
+    return `${pair.label}, ${pair.variant}: starts with the ball ${ci(b.ball_ci)} before and ${ci(v.ball_ci)} after, a change of ${dci(pair.ball_diff)}; averaged over both starts ${ci(b.balanced_ci)} before and ${ci(v.balanced_ci)} after, a change of ${dci(pair.balanced_diff)}. The interval for the change when it starts with the ball ${pair.ball_diff[1] > 0 ? "excludes" : "includes"} zero; when it starts without the ball both settings win ${pct(Math.max(...b.other, ...v.other))} or less in every run.`;
   };
   const detText = vd
     ? `Deterministic board: no variant wins ${winsClause(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
@@ -435,10 +435,10 @@ export default function PolicyPage() {
           <p>The best response is the move that minimizes our player&rsquo;s <em>expected discounted score difference</em>, not the one that
             minimizes its chance of winning. At the random board&rsquo;s kickoff the player holding the ball is ahead: the exact solution is worth
             {" "}{rnd.kickoff_value >= 0 ? "+" : "\u2212"}{Math.abs(rnd.kickoff_value).toFixed(2)} to it even against a perfect best response. So the exact solver wins {pct(rnd.exact.vs_best_response[0])} of
-            games and loses {pct(1 - rnd.exact.vs_best_response[0])} from that seat, and wins {pct(rnd.exact.vs_best_response_column[0])} from the other seat. The first number
-            is the one reported on this page (our learners always sit in the ball-holding seat). On the deterministic board both seats tie every game.</p>
-          <StackBars rows={seatRows} titles={["Random board, ball-holding seat", "Random board, other seat"]} />
-          <p className="fig-cap">Win rate against the best response from each seat. Wins (green), ties (grey) and losses (orange).</p>
+            games and loses {pct(1 - rnd.exact.vs_best_response[0])} when it starts with the ball, and wins {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball. The first number
+            is the one reported on this page (our learners always play the player who starts with the ball). On the deterministic board both starts tie every game.</p>
+          <StackBars rows={seatRows} titles={["Random board, starting with the ball", "Random board, starting without the ball"]} />
+          <p className="fig-cap">Win rate against the best response when starting with and without the ball. Wins (green), ties (grey) and losses (orange).</p>
         </div>
       </section>
 
@@ -495,13 +495,14 @@ export default function PolicyPage() {
         <div className="wrap">
           <div className="eyebrow"><span className="badge p1">04</span>Results</div>
           <h2>How often the trained player wins</h2>
-          <h3>Win rates against the best response, by kickoff seat</h3>
-          <p className="lede">The share of 1,000 games each learner wins when the opponent plays the exact best response to it (the
-            move that minimizes its expected discounted score difference). <b>Ball seat</b>: the player that holds the ball at kickoff.
-            <b> Other seat</b>: the same learner as the other player. <b>Balanced</b>: the 50/50 average of the two, one number that
-            does not depend on who starts with the ball. Mean of 3 seeds; the exact solver is the top row, as context rather than a target.</p>
+          <h3>Win rates against the best response, with and without the ball</h3>
+          <p className="lede">Two players face each other. At kickoff one of them has the ball and the other has to defend, and having the ball is an advantage.
+            Each learner is trained for both players, so it is measured in both positions. <b>Starts with the ball</b>: our learner is the player who has the ball at
+            kickoff. <b>Starts without the ball</b>: our learner is the other player. <b>Average of both</b>: the mean of the two, one fair number that does not depend
+            on who starts with the ball. Each cell is the share of 1,000 games the learner wins when the opponent plays the exact best response to it (the move that
+            minimizes its expected discounted score difference), mean of 3 seeds; the exact solver is the top row, as context rather than a target.</p>
           <WinRateTable boards={available.map(([k, label]) => [k, label, boards[k]])} />
-          <p className="fig-cap">The deterministic board is the A10 board: the exact solver ties itself there, so it wins 0% from both seats.
+          <p className="fig-cap">The deterministic board is the A10 board: the exact solver ties itself there, so it wins 0% either way.
             A dash means the learner was not run on that board. Wins against the exact Nash policy and a random player are in the charts below.</p>
           <h3>One board in detail</h3>
           <div className="state-pick" role="group" aria-label="board">
@@ -648,7 +649,7 @@ export default function PolicyPage() {
               </div>
             ))}
             <p className="fig-cap">{EN_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
-            {enByAlgo && <p>{`On the random board, averaged over the three ways of training, the larger bonus moves the win rate against the best response by ${enByAlgo} points; the exact solver wins ${pct(rnd.exact.vs_best_response[0])} from the ball seat. This is an ablation and does not show convergence to the unregularized equilibrium.`}</p>}
+            {enByAlgo && <p>{`On the random board, averaged over the three ways of training, the larger bonus moves the win rate against the best response by ${enByAlgo} points; the exact solver wins ${pct(rnd.exact.vs_best_response[0])} when it starts with the ball. This is an ablation and does not show convergence to the unregularized equilibrium.`}</p>}
           <p>{enBoards.map(([k, , , , f]) => `${k === "random" ? "Random board" : k === "deterministic" ? "Deterministic board" : "Continuing game"}: the larger bonus changes the ${k === "random" ? "win rate against the best response" : "share tied with the exact Nash policy"} by ${enChange(entropy[k], f)} points; against a random player the win rate changes by ${enRandom(entropy[k])} points (REINFORCE, A2C, PPO; standard, fictitious play, argmax).`).join(" ")}</p>
           </div>
         </section>
@@ -681,7 +682,7 @@ export default function PolicyPage() {
               <p key={board}>{`${board === "random" ? "Random board" : "Deterministic board"}, second half of training: the win rate against the best response stays within ${c.series.map((s) => {
                 const h = s.win_br.slice(Math.floor(s.win_br.length / 2));
                 return `${s.label} ${s.training} ${rng(Math.min(...h), Math.max(...h))}`;
-              }).join("; ")}. The exact solver wins ${pct(board === "random" ? rnd.exact.vs_best_response[0] : results.exact.vs_best_response[0])} from the ball seat.`}</p>
+              }).join("; ")}. The exact solver wins ${pct(board === "random" ? rnd.exact.vs_best_response[0] : results.exact.vs_best_response[0])} when it starts with the ball.`}</p>
             ))}
           </div>
         </section>
@@ -736,7 +737,7 @@ export default function PolicyPage() {
             <p className="lede">With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked
               better with replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {moreSeeds.seeds - 1} (random move-order board).
               Bars are means; dots are single seeds; the intervals are 95% intervals from Student&rsquo;s t. The exact solver wins {pct(rnd.exact.vs_best_response[0])} from the
-              ball seat, {pct(rnd.exact.vs_best_response_column[0])} from the other seat and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} balanced.</p>
+              starts with the ball, {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} averaged over both starts.</p>
             {moreSeeds.pairs.map((pair) => (
               <div key={pair.label}>
                 <h3>{pair.label}: {pair.variant}</h3>
