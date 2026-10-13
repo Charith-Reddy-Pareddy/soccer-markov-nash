@@ -132,7 +132,6 @@ def test_the_built_policy_page_bundle_is_clean_and_has_the_probabilities():
 def test_the_report_html_never_mentions_the_professor_and_has_the_probabilities():
     html = (ROOT / "docs" / "policy_gradient.html").read_text().lower()
     assert "professor" not in html
-    assert "action probabilities" in html
     assert "assumptions and open questions" not in html
 
 
@@ -141,7 +140,6 @@ def test_the_published_pdf_never_mentions_the_professor():
     text = subprocess.run(["pdftotext", str(ROOT / "docs" / "policy_gradient.pdf"), "-"],
                           capture_output=True, text=True, check=True).stdout.lower()
     assert "professor" not in text
-    assert "action probabilities" in text
     assert "assumptions and open questions" not in text
 
 
@@ -200,8 +198,8 @@ def test_the_pdf_has_the_random_board_and_shows_wins_as_percentages():
     text = subprocess.run(["pdftotext", str(ROOT / "docs" / "policy_gradient.pdf"), "-"],
                           capture_output=True, text=True, check=True).stdout
     text = " ".join(text.split())  # table headers wrap across lines
-    assert "The random move-order board" in text
-    assert "Win rate against the best response" in text
+    assert "Random move-order board" in text
+    assert "Win rates against the best response" in text
     assert "W/T/L" not in text
 
 
@@ -227,8 +225,7 @@ def test_the_win_rates_come_first_on_the_tab_and_in_the_pdf():
         pdf = str(ROOT / "docs" / "policy_gradient.pdf")
         out = subprocess.run(["pdftotext", pdf, "-"], capture_output=True, text=True, check=True)
         text = " ".join(out.stdout.split())
-        first = text.index("Against the best response, the exact solver wins")
-        assert first < text.index("How to read the numbers")
+        assert text.index("1. Win rates against the best response") < text.index("2. Setup")
         assert "exploitability (mean" not in text.lower()
 
 
@@ -293,7 +290,8 @@ def test_the_continuing_variants_have_three_seeds_and_the_text_claims_hold():
 def test_only_the_explanatory_tables_and_the_win_rate_table_remain():
     assert PAGE.count("<table") == 3 and "function WinRateTable" in PAGE and "<WinRateTable" in PAGE
     html = (ROOT / "docs" / "policy_gradient.html").read_text()
-    assert html.count("<table") == 3 and html.count('<table class="wins">') == 1
+    assert html.count("<table") == 2 and html.count('<table class="wins">') == 1
+    assert html.index('<table class="wins">') == html.index("<table")  # the win rates come first
     assert "<table" not in (SITE / "src" / "PolicyOutputs.jsx").read_text()
 
 
@@ -323,7 +321,7 @@ def test_the_entropy_bonus_is_described_as_an_ablation_not_a_fix():
     for text in (PAGE, html):
         assert "stabilization" in text or "entropy" not in text
     assert "An ablation: the entropy bonus raised to 0.2" in PAGE
-    assert "never network weights" in PAGE and "never network weights" in html
+    assert "never network weights" in PAGE and "never weights" in html
 
 
 def test_the_seat_explanation_matches_the_data():
@@ -364,7 +362,7 @@ def test_the_larger_entropy_runs_cover_nine_learners_on_three_boards_and_the_tex
     html = (ROOT / "docs" / "policy_gradient.html").read_text()
     for text in (PAGE, html):
         assert "does not show convergence to the unregularized equilibrium" in text
-        assert "not a way to recover the unregularized equilibrium" in text
+    assert "not a way to recover the unregularized equilibrium" in PAGE
 
 
 def test_the_baseline_of_the_entropy_comparison_is_the_published_run():

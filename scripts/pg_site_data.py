@@ -286,7 +286,7 @@ def training_choices() -> list[dict] | None:
         "tie", None, tkeys,
         [(lab, "standard", {f"t{t}": _trim_rows("continuing", a, "selfplay", t) for t in trims})
          for a, lab in algos]))
-    skeys = [("s1", "snapshot every iteration"), ("s5", "every 5 (used elsewhere)"),
+    skeys = [("s5", "snapshot every 5 iterations (used elsewhere)"), ("s1", "every iteration"),
              ("s25", "every 25"), ("s100", "every 100")]
     studies.append(_study(
         "How long to train between snapshots",

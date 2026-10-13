@@ -1,5 +1,4 @@
 import importlib.util
-import json
 import pathlib
 import re
 
@@ -12,102 +11,84 @@ HTML = pg_report.build_html(RES)
 TEXT = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", HTML))
 
 
-def test_best_response_bars_have_one_bar_per_row_and_a_reference_line():
-    svg = pg_report.br_bars([("a", 0.2), ("b", 0.9)], 0.5)
-    assert svg.count("<rect") == 2 and svg.count("stroke-dasharray") == 1
-    assert "exact solver 50%" in svg
+def test_the_win_rate_table_is_the_first_table_and_comes_before_everything_but_the_title():
+    first_table = HTML.index("<table")
+    assert HTML[first_table:first_table + 25] == '<table class="wins"><tr><'
+    assert first_table < HTML.index("2. Setup") and first_table < HTML.index("<svg")
+    assert HTML.index("1. Win rates against the best response") < first_table
 
 
-def test_stacked_chart_segments_fill_each_panel():
-    svg = pg_report.stacked_chart([("a", [[0.5, 0.25, 0.25], [1.0, 0.0, 0.0]])], ["left", "right"])
-    assert svg.count("<rect") == 6 and "left" in svg and "right" in svg
+def test_the_report_is_short_with_two_tables_and_five_charts():
+    assert HTML.count("<table") == 2
+    charts = 2 + 1 + len(RES["more_seeds"]["pairs"])  # curves, rps, ten seeds
+    assert HTML.count("<svg") == charts
+    for dropped in ("Action probabilities", "Mixed states of the random board", "More training",
+                    "Fictitious play with long best responses", "Network sharing and trimming"):
+        assert dropped not in TEXT
 
 
-def test_rock_paper_scissors_plot_draws_both_curves_and_the_one_third_line():
-    svg = pg_report.rps_plot(RES["rps"])
-    assert svg.count("<path") == 2 and ">1/3<" in svg
-
-
-def test_win_cell_shows_the_win_percentage_with_ties_and_losses_beneath():
-    cell = pg_report.win_cell([0.29, 0.0, 0.71])
-    assert "<b>29%</b>" in cell and "tie 0%" in cell and "loss 71%" in cell
-
-
-def test_policy_charts_have_one_chart_per_state_and_one_row_per_learner():
-    d = RES["mixed"]["policy_outputs"]
-    html = pg_report.policy_charts(d)
-    assert html.count("<svg") == len(d["states"]) and "<table" not in html
-    assert html.count("Exact solver") == len(d["states"])
-    assert html.count(d["learners"][0]["label"]) == len(d["states"])
-
-
-def test_a_move_chart_has_a_segment_per_move_and_labels_the_likeliest_one():
-    svg = pg_report.move_chart([("a", ([0.7, 0.1, 0.1, 0.1], [0.0, 0.0, 0.0, 1.0]))], list("UDLR"))
-    assert svg.count("<rect") == 8 and "U 70%" in svg and "R 100%" in svg
-
-
-def test_the_line_chart_has_a_line_per_run():
-    svg = pg_report.line_chart([("a", [0.0, 0.1]), ("b", [0.05, None])], [1, 2])
-    assert svg.count("<path") == 2
-
-
-def test_the_report_leads_with_win_rates_and_defines_every_number():
-    first = TEXT.index("Against the best response, the exact solver wins")
-    assert first < TEXT.index("How to read the numbers")
-    for phrase in ("Win rate against the best response", "Win rate against the exact Nash policy",
-                   "Win rate against a random player", "A win"):
+def test_the_report_defines_the_win_rate_and_the_seats_and_leaves_exploitability_out():
+    for phrase in ("Win rate", "Ball seat", "Other seat", "Balanced", "best response to it",
+                   "a win is more goals than the opponent in 100 steps"):
         assert phrase in TEXT
-    assert "Exploitability, the best-response player's gain, is not reported" in TEXT
+    before_toy_game = TEXT.lower().split("5. rock-paper")[0]
+    assert "exploitability" not in before_toy_game  # only the toy game reports it
 
 
 def test_the_report_uses_the_agreed_terms_and_names_no_one():
-    assert "standard" in TEXT and "fictitious play" in TEXT.lower()
-    # the related-work titles (e.g. "Neural Fictitious Self-Play") are quoted as published
-    ours = TEXT.split("Related work")[0]
+    assert "Standard" in TEXT and "Fictitious play" in TEXT
+    ours = TEXT.split("Related work")[0]  # related-work titles are quoted as published
     assert "self-play" not in ours.lower()
     assert not re.search(r"professor|\bdog\b|sheep|not yet", TEXT, re.I)
     assert "mirror gap" not in TEXT.lower()
 
 
-def test_the_report_has_a_section_per_board_and_the_plots():
-    assert "The deterministic board (A10)" in TEXT and "The random move-order board" in TEXT
-    assert ("The continuing game" in TEXT) == (RES.get("continuing") is not None)
-    boards = 3 if RES.get("continuing") is not None else 2
-    states = len(RES["mixed"]["policy_outputs"]["states"]) + len(
-        json.loads((pg_report.EXP / "pg_policy_outputs.json").read_text())["states"])
-    expected = (1 + len(RES["rps_nn"]["configs"])  # the matrix plot and the network plots
-                + 2 * boards + 1  # two charts a board and the two-seat chart
-                + 1 + states  # mixed-state results and every state's move probabilities
-                + 2  # more training, long best responses
-                + 3 + 3 + 3  # sharing and trimming; argmax averages; larger entropy bonus
-                + 2 * len(RES["curves"])  # training curves: two charts per board
-                + len(RES["choices"])  # one chart per training-choice comparison
-                + len(RES["more_seeds"]["pairs"]))  # the two more-seeds comparisons
-    assert HTML.count("<svg") == expected and HTML.split("<section><h2>3.")[1].count("<table") == 1
-    assert "best-response dynamics" in TEXT
+def test_the_report_has_every_section_in_order():
+    heads = ["1. Win rates against the best response", "2. Setup", "3. Findings",
+             "4. Does training converge?", "5. Rock-paper-scissors with neural networks",
+             "6. Training choices", "7. Related work"]
+    positions = [HTML.index(h) for h in heads]
+    assert positions == sorted(positions)
 
 
-def test_every_percentage_in_the_summary_comes_from_the_data():
-    rnd = RES["random"]
-    exact = f"{rnd['exact']['vs_best_response'][0]:.0%}"
-    assert f"the exact solver wins {exact} of games on the random board" in TEXT
-    lo = min(x["vs_best_response"][0] for x in rnd["learners"])
-    assert f"the six learners win {lo:.0%}" in TEXT
+def test_every_headline_number_in_the_findings_comes_from_the_data():
+    rnd = RES["random"]["exact"]
+    assert f"the exact solver wins {rnd['vs_best_response'][0]:.0%} from the ball seat" in TEXT
+    assert f"{rnd['vs_best_response_column'][0]:.0%} from the other seat" in TEXT
+    mixed = RES["mixed"]
+    assert f"the exact solver wins {mixed['exact']['vs_nash'][0]:.0%}" in TEXT
+    more = RES["more_seeds"]["conditions"]
+    assert f"{more['a2c_fp_10k']['ball_ci'][0]:.0%} from the ball seat" in TEXT
+
+
+def test_the_training_choice_lines_cover_every_comparison_and_the_ablation_is_labelled():
+    lines = pg_report.finding_lines(RES)
+    assert len(lines) >= 4 + len(RES["choices"])
+    assert "does not show convergence to the unregularized equilibrium" in TEXT
+    assert "never weights" in TEXT
+
+
+def test_change_range_reports_the_smallest_and_largest_change_in_points():
+    rows = [{"a": {"mean": 0.1}, "b": {"mean": 0.3}}, {"a": {"mean": 0.2}, "b": {"mean": 0.15}}]
+    assert pg_report.change_range(rows, "b", "a") == "−5 to +20"
+    assert pg_report.pts(0.0) == "+0" and pg_report.pts(-0.034) == "−3"
 
 
 def test_variant_bars_draw_a_bar_per_variant_and_a_dot_per_seed():
-    run = {"mean": 0.2, "runs": [0.1, 0.2, 0.3], "vs_random": [0.9, 0.05, 0.05]}
-    row = {"label": "A2C", "training": "standard", "baseline": run, "shared": run, "trimmed": run}
-    svg = pg_report.variant_bars([row], 0.67)
-    assert svg.count("<rect") == 3 and svg.count("<circle") == 9
-    assert "exact solver 67%" in svg
+    run = {"mean": 0.2, "runs": [0.1, 0.2, 0.3]}
+    row = {"label": "A2C", "training": "standard", "a": run, "b": run, "c": run}
+    svg = pg_report.variant_bars([row], 0.67, keys={"a": "#111", "b": "#222", "c": "#333"})
+    assert svg.count("<rect") == 3 and svg.count("<circle") == 9 and "exact solver 67%" in svg
     tie = {**run, "tie_nash_mean": 0.5, "tie_nash_runs": [0.4, 0.6]}
-    row = {"label": "A2C", "training": "standard", "baseline": tie, "shared": tie, "trimmed": tie}
-    assert pg_report.variant_bars([row], 1.0, field="tie_nash_").count("<circle") == 6
+    row = {"label": "A2C", "training": "", "a": tie, "b": tie}
+    svg = pg_report.variant_bars([row], 1.0, field="tie_nash_", keys={"a": "#111", "b": "#222"})
+    assert svg.count("<circle") == 4 and ">A2C<" in svg
 
 
-def test_the_report_has_the_network_sharing_and_trimming_section():
-    assert "Network sharing and trimming" in HTML and "Last 10 steps left out" in HTML
+def test_the_line_chart_has_a_line_per_run_and_honours_a_fixed_top():
+    svg = pg_report.line_chart([("a", [0.0, 0.1]), ("b", [0.05, None])], [1, 2])
+    assert svg.count("<path") == 2
+    assert ">100%<" in pg_report.line_chart([("a", [0.2, 0.3])], [1, 2], top=1.0)
 
 
 def test_the_win_rate_table_has_seat_columns_a_balanced_average_and_dashes_for_missing_learners():
