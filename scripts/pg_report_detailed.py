@@ -15,6 +15,10 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+_spec = importlib.util.spec_from_file_location("pg_report_short", pathlib.Path(__file__).with_name("pg_report.py"))
+_short = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_short)
+before_after_chart, pair_groups = _short.before_after_chart, _short.pair_groups
 EXP, DOCS = ROOT / "experiments", ROOT / "docs"
 GREEN, GREY, ORANGE = "#1DB954", "#c3cec8", "#a8501c"
 
@@ -191,8 +195,8 @@ def rps_nn_section(res: dict) -> str:
 {data['batch']} games each, 3 seeds; the plots show seed 0). <b>Standard</b> trains the two current networks against each other.
 <b>Fictitious play</b> trains each player against a snapshot of the other drawn from all its past snapshots and reports the average of
 a player's snapshots; <b>argmax</b> first turns each snapshot into the pure policy that plays its most likely move, so the average is
-how often the snapshots play each move. Orange: the current network's share of rock; green: the aggregate. Exploitability, on the right,
-is the mean over seeds and the last 300 iterations, and is 0 at one third each.
+how often the snapshots play each move. Orange: the current network's share of rock; green: the aggregate. Exploitability (right) is what a perfect attacker could gain against the two networks' policies, summed over both players:
+0 at one third each, 2 at worst; it is the mean over seeds and the last 300 iterations.
 With the soccer settings the standard networks cycle (exploitability {ex[first]['standard']:.2f}), and neither form of fictitious play reaches
 one third (softmax {ex[first]['fictitious']:.2f}, argmax {ex[first]['fictitious_argmax']:.2f}). {second_text}</p>{''.join(parts)}"""
 
@@ -534,7 +538,8 @@ solver). The exact solver wins {pct(exact['vs_best_response'][0])}; the learners
 
 
 def pts(v: float) -> str:
-    return f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"
+    points = round(v * 100)
+    return f"{'+' if points >= 0 else '−'}{abs(points)}"
 
 
 def mixed_table(mixed: dict) -> str:
@@ -615,7 +620,6 @@ def more_seeds_section(res: dict) -> str:
     data = res.get("more_seeds")
     if not data:
         return ""
-    keys = {"base": GREEN, "variant": ORANGE}
     exact = res["random"]["exact"]
     ball, other = exact["vs_best_response"][0], exact["vs_best_response_column"][0]
     ci = lambda v: rng(v[1], v[2])  # noqa: E731
@@ -630,18 +634,17 @@ def more_seeds_section(res: dict) -> str:
     parts = []
     for pair in data["pairs"]:
         b, v = data["conditions"][pair["baseline_key"]], data["conditions"][pair["variant_key"]]
-        rows = [{"label": lab, "training": "", "base": {"mean": sum(b[m]) / len(b[m]), "runs": b[m]},
-                 "variant": {"mean": sum(v[m]) / len(v[m]), "runs": v[m]}}
-                for m, lab in (("ball", "Starts with the ball"), ("other", "Starts without the ball"), ("balanced", "Average of both"))]
+        names = (pair["baseline_name"], pair["variant_name"])
         parts.append(
-            f"<h3>{pair['label']}: {pair['variant']}</h3><div>{variant_bars(rows, ball, keys=keys)}</div>"
+            f"<h3>{pair['label']}: {pair['baseline_name']} against {pair['variant_name']}</h3>"
+            f"<div>{before_after_chart(pair_groups(data, pair, exact), names)}</div>"
             f"<p>Starts with the ball {pct(b['ball_ci'][0])} ({ci(b['ball_ci'])}) → {pct(v['ball_ci'][0])} ({ci(v['ball_ci'])}), a change of {dci(pair['ball_diff'])}; "
             f"averaged over both starts {pct(b['balanced_ci'][0])} → {pct(v['balanced_ci'][0])}, {dci(pair['balanced_diff'])}; when it starts without the ball the change is "
             f"{dci(pair['other_diff'])}. The interval for the change when it starts with the ball {'excludes' if pair['ball_diff'][1] > 0 else 'includes'} zero.</p>")
     return f"""<section><h2>More seeds</h2>
 <p>With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked better with
-replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {data['seeds'] - 1} (random move-order board). Bars are means,
-dots single seeds; intervals are 95% intervals from Student's t, kept within 0% and 100%. The exact solver wins {pct(ball)} when it starts with the ball,
+replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {data['seeds'] - 1} (random move-order board). Each bar is the
+mean of the 10 seeds and the thin line is its 95% interval (Student's t, kept within 0% and 100%). The exact solver wins {pct(ball)} when it starts with the ball,
 {pct(other)} when it starts without the ball and {pct((ball + other) / 2)} averaged over both starts.</p>
 {table(["setting", "starts with the ball (95% interval)", "starts without the ball", "average of both", "single seeds, starts with the ball"], table_rows)}
 {"".join(parts)}</section>"""
@@ -746,7 +749,7 @@ def build_html(res: dict) -> str:
         ["Win rate against a random player", "A sanity check: every learner should beat a player who moves at random."],
         ["A win", "The player scores while the opponent does not. On the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal, or equal goals, are ties."],
         ["Distance from the exact mix", "Total-variation distance between a learner's probabilities and the exact solver's at the first step: 0 is identical, 1 is no overlap."],
-        ["Exploitability", "Not reported: it measures the attacker, and it is the player we train that we want to judge."]], "text")
+        ["Exploitability", "Exploitability is about attackers, not about the player who has the ball. Take the two players' policies as fixed, replace each player in turn by the exact best response to the other, and add up what the two attackers gain in expected discounted score (goals scored minus goals conceded, discounted). It is 0 exactly at an equilibrium, such as the exact solver, and grows the easier the pair of policies is to beat. It is a property of the pair, not of one player, and the kickoff advantage cancels out of the sum. It is a score, not a win rate, so it cannot be compared with the percentages in the tables. We keep it in the result files and use it in the rock-paper-scissors test, where 0 means one third each and 2 means both players are always beaten. For soccer we report the trained player's win rate against the best response instead, because that judges the player we train: how often it wins against a perfect opponent."]], "text")
 
     setup = table(["setting", "value"], [
         ["Game", "7&times;5 board, goal rows 1&ndash;3. Fixed 100 steps, discount 0.9, and the number of steps left is a network input."],

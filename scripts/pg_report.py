@@ -164,11 +164,62 @@ def win_rate_table(boards) -> str:
     return f'<table class="wins"><tr>{head1}</tr><tr>{head2}</tr><tr>{exact}</tr>{"".join(rows)}</table>'
 
 
+def before_after_chart(groups, names, width=660) -> str:
+    """Win rate before and after a change, next to the exact solver: one group per starting position,
+    two bars with their 95% intervals and a grey bar for the exact solver. ``groups`` are dicts with
+    ``label``, ``base`` and ``variant`` as (mean, low, high), and ``exact``; ``names`` the two settings."""
+    left, right, top_pad, bar, gap, maxv = 170, 24, 40, 15, 3, 0.8
+    block = 3 * (bar + gap) + 22
+    h = top_pad + block * len(groups) + 30
+    x = lambda v: left + v / maxv * (width - left - right)  # noqa: E731
+    cols = (GREEN, ORANGE, GREY)
+    out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
+           'font-family="Helvetica,Arial,sans-serif" font-size="11">']
+    lx = left
+    for colour, label in zip(cols, (names[0], names[1], "Exact solver")):
+        out.append(f'<rect x="{lx}" y="8" width="11" height="11" fill="{colour}" opacity=".9"/>'
+                   f'<text x="{lx + 16}" y="18" fill="#1c2e26">{label}</text>')
+        lx += 16 + 7 * len(label) + 18
+    for g in (0, 0.2, 0.4, 0.6, 0.8):
+        out.append(f'<line x1="{x(g):.1f}" y1="{top_pad - 6}" x2="{x(g):.1f}" y2="{h - 28}" stroke="#dbe5df"/>'
+                   f'<text x="{x(g):.1f}" y="{h - 12}" text-anchor="middle" fill="#5b6b63">{g:.0%}</text>')
+    for i, grp in enumerate(groups):
+        y0 = top_pad + i * block
+        out.append(f'<text x="{left - 10}" y="{y0 + 1.5 * (bar + gap) + 2}" text-anchor="end" font-weight="700" '
+                   f'fill="#1c2e26">{grp["label"]}</text>')
+        for k, (colour, key) in enumerate(zip(cols, ("base", "variant", "exact"))):
+            y = y0 + k * (bar + gap)
+            if key == "exact":
+                mean = grp["exact"]
+                out.append(f'<rect x="{left}" y="{y}" width="{x(mean) - left:.1f}" height="{bar}" fill="{colour}" opacity=".9"/>'
+                           f'<text x="{x(mean) + 8:.1f}" y="{y + 11}" fill="#1c2e26" font-weight="700">{mean:.0%}</text>')
+                continue
+            mean, lo, hi = grp[key]
+            mid = y + bar / 2
+            out.append(f'<rect x="{left}" y="{y}" width="{max(x(mean) - left, 0):.1f}" height="{bar}" fill="{colour}" opacity=".9"/>'
+                       f'<line x1="{x(lo):.1f}" y1="{mid}" x2="{x(hi):.1f}" y2="{mid}" stroke="#1c2e26" stroke-width="1.6"/>'
+                       f'<line x1="{x(lo):.1f}" y1="{mid - 4}" x2="{x(lo):.1f}" y2="{mid + 4}" stroke="#1c2e26" stroke-width="1.6"/>'
+                       f'<line x1="{x(hi):.1f}" y1="{mid - 4}" x2="{x(hi):.1f}" y2="{mid + 4}" stroke="#1c2e26" stroke-width="1.6"/>'
+                       f'<text x="{x(hi) + 8:.1f}" y="{y + 11}" fill="#1c2e26" font-weight="700">{mean:.0%}'
+                       + (f'<tspan font-weight="400" fill="#5b6b63"> ({lo:.0%} to {hi:.0%})</tspan>' if f"{lo:.0%}" != f"{hi:.0%}" else "")
+                       + '</text>')
+    out.append("</svg>")
+    return "".join(out)
+
+
+def pair_groups(data: dict, pair: dict, exact: dict) -> list[dict]:
+    """The three starting positions of a before/after pair, ready for ``before_after_chart``."""
+    b, v = data["conditions"][pair["baseline_key"]], data["conditions"][pair["variant_key"]]
+    e_ball, e_other = exact["vs_best_response"][0], exact["vs_best_response_column"][0]
+    return [{"label": label, "base": tuple(b[m + "_ci"]), "variant": tuple(v[m + "_ci"]), "exact": ex}
+            for m, label, ex in (("ball", "Starts with the ball", e_ball), ("other", "Starts without the ball", e_other),
+                                 ("balanced", "Average of both", (e_ball + e_other) / 2))]
+
+
 def ten_seeds_block(res: dict) -> str:
     data = res.get("more_seeds")
     if not data:
         return ""
-    keys = {"base": GREEN, "variant": ORANGE}
     exact = res["random"]["exact"]
     ball, other = exact["vs_best_response"][0], exact["vs_best_response_column"][0]
     ci = lambda v: f"{pct(v[1])} to {pct(v[2])}"  # noqa: E731
@@ -176,18 +227,16 @@ def ten_seeds_block(res: dict) -> str:
     parts = []
     for pair in data["pairs"]:
         b, v = data["conditions"][pair["baseline_key"]], data["conditions"][pair["variant_key"]]
-        rows = [{"label": lab, "training": "",
-                 "base": {"mean": sum(b[m]) / len(b[m]), "runs": b[m]},
-                 "variant": {"mean": sum(v[m]) / len(v[m]), "runs": v[m]}}
-                for m, lab in (("ball", "Starts with the ball"), ("other", "Starts without the ball"), ("balanced", "Average of both"))]
+        names = (pair["baseline_name"], pair["variant_name"])
         parts.append(
-            f"<h3>{pair['label']}: {pair['variant']}</h3><div>{variant_bars(rows, ball, keys=keys)}</div>"
+            f"<h3>{pair['label']}: {pair['baseline_name']} against {pair['variant_name']}</h3>"
+            f"<div>{before_after_chart(pair_groups(data, pair, exact), names)}</div>"
             f"<p>Starts with the ball {pct(b['ball_ci'][0])} ({ci(b['ball_ci'])}) → {pct(v['ball_ci'][0])} ({ci(v['ball_ci'])}), a change of {dci(pair['ball_diff'])}; "
             f"averaged over both starts {pct(b['balanced_ci'][0])} → {pct(v['balanced_ci'][0])}, {dci(pair['balanced_diff'])}. "
             f"The interval for the change {'excludes' if pair['ball_diff'][1] > 0 else 'includes'} zero.</p>")
     return (f"<h3>Ten seeds for the two best-looking settings</h3><p>Seeds 0 to {data['seeds'] - 1}, random board; 95% intervals (Student's t) in brackets; "
-            f"green: usual setting, orange: changed setting, dots: single seeds. The exact solver wins {pct(ball)} when it starts with the ball, {pct(other)} from the other "
-            f"seat and {pct((ball + other) / 2)} averaged over both starts.</p>{''.join(parts)}")
+            f"each bar is the mean of the 10 seeds and the thin line is its 95% interval. The exact solver wins {pct(ball)} when it starts with the ball, {pct(other)} when it starts without the ball "
+            f"and {pct((ball + other) / 2)} averaged over both starts.</p>{''.join(parts)}")
 
 
 def related_section(res: dict) -> str:
@@ -207,7 +256,8 @@ def related_section(res: dict) -> str:
 
 
 def pts(v: float) -> str:
-    return f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"
+    points = round(v * 100)
+    return f"{'+' if points >= 0 else '−'}{abs(points)}"
 
 
 def rps_section(res: dict) -> str:
@@ -226,7 +276,7 @@ def rps_section(res: dict) -> str:
     return f"""<section><h2>5. Rock-paper-scissors with neural networks</h2>
 <p>Each player is a small softmax network trained by REINFORCE ({data['iterations']:,} iterations, {data['batch']} games each, {data['seeds']} seeds; seed 0 shown).
 Orange: the current network's share of rock. Green: the average over past snapshots (fictitious play), of softmax policies or of argmax (pure) policies.
-Exploitability (right) is 0 at one third each. With the soccer settings the standard networks cycle ({ex[names[0]]['standard']:.2f}) and neither average
+Exploitability (right) is what a perfect attacker could gain against the two networks' policies, summed over both players: 0 at one third each, 2 at worst. With the soccer settings the standard networks cycle ({ex[names[0]]['standard']:.2f}) and neither average
 reaches one third (softmax {ex[names[0]]['fictitious']:.2f}, argmax {ex[names[0]]['fictitious_argmax']:.2f}).{second}</p>
 <div>{rps_nn_panels(first, data['iterations'])}</div></section>"""
 
@@ -371,6 +421,7 @@ opponent is the best response to it.</p>
 <li><b>Win rate</b>: the share of 1,000 games the trained player wins (it scores while the opponent does not; games with no goal or equal goals are ties), when the
 opponent plays the exact best response to it, the move that minimizes its expected discounted score difference. Mean of 3 seeds.</li>
 <li>The exact solver is the top row, as context rather than a target. Each cell is the mean of 3 seeds.</li>
+<li><b>Exploitability</b> is not used for soccer. It is what a perfect attacker could gain against the two players' policies together (a score, not a win rate, and it does not depend on who has the ball); it appears only in the rock-paper-scissors test, where 0 means one third each. The win rate above judges the player we train.</li>
 <li>The random board's kickoff is worth {res["random"].get("kickoff_value", 0.0):+.2f} to the ball holder even against a perfect best response, so the exact solver wins more than half its games when it starts with the ball.
 On the deterministic board the exact solver ties itself; in the continuing game a win is more goals than the opponent in 100 steps. A dash means the learner was not run on that board.</li>
 </ul></section>

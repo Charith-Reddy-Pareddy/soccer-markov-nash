@@ -413,9 +413,11 @@ def more_seeds() -> dict | None:
                       "random": [float(r["row_win_vs_random"]) for r in rows],
                       "tie_nash": [float(r["row_tie_vs_nash"]) for r in rows]}
     pairs = []
-    for label, base, var, variant in (("A2C, fictitious play", "a2c_fp_base", "a2c_fp_10k", "10,000 iterations"),
-                                      ("PPO, standard", "ppo_sp_base", "ppo_sp_replay4", "replay of 4 iterations")):
-        pairs.append({"label": label, "variant": variant, "baseline_key": base, "variant_key": var,
+    for label, base, var, variant, names in (
+            ("A2C, fictitious play", "a2c_fp_base", "a2c_fp_10k", "10,000 iterations", ("2,000 iterations", "10,000 iterations")),
+            ("PPO, standard", "ppo_sp_base", "ppo_sp_replay4", "replay of 4 iterations", ("data used once", "replay of 4 iterations"))):
+        pairs.append({"label": label, "variant": variant, "baseline_name": names[0], "variant_name": names[1],
+                      "baseline_key": base, "variant_key": var,
                       **{f"{m}_diff": difference(conds[base][m], conds[var][m]) for m in ("ball", "other", "balanced")}})
     return {"seeds": MORE_SEEDS, "conditions": conds, "pairs": pairs}
 

@@ -67,7 +67,7 @@ def test_the_ten_seed_table_lists_the_four_settings_with_intervals():
     block = HTML.split("More seeds</h2>")[1].split("<h2>")[0]
     for label in ("A2C, fictitious play, 10,000 iterations", "PPO, standard, replay of 4 iterations"):
         assert label in block
-    assert block.count("<table") == 1 and block.count("<svg") == 2 and "95% intervals" in block
+    assert block.count("<table") == 1 and block.count("<svg") == 2 and "95% interval" in block
 
 
 def test_the_experiments_table_is_escaped_and_lists_the_runner_commands():
@@ -85,7 +85,8 @@ def test_the_related_work_has_both_groups_and_says_how_it_was_checked():
 def test_the_report_names_no_one_and_leaves_exploitability_to_a_definition():
     assert not re.search(r"professor|\bdog\b|sheep|not yet", TEXT, re.I)
     assert "mirror gap" not in TEXT.lower()
-    assert "Not reported: it measures the attacker" in TEXT
+    assert "Exploitability is about attackers, not about the player who has the ball" in TEXT
+    assert "kickoff advantage cancels out of the sum" in TEXT and "not a win rate" in TEXT
 
 
 @pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")

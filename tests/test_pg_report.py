@@ -27,13 +27,13 @@ def test_the_report_is_short_with_two_tables_and_five_charts():
         assert dropped not in TEXT
 
 
-def test_the_report_defines_the_win_rate_and_the_seats_and_leaves_exploitability_out():
+def test_the_report_defines_the_win_rate_and_the_seats_and_explains_exploitability():
     for phrase in ("Win rate", "Starts with the ball", "Starts without the ball",
                    "Average of both", "best response to it",
                    "a win is more goals than the opponent in 100 steps"):
         assert phrase in TEXT
-    before_toy_game = TEXT.lower().split("5. rock-paper")[0]
-    assert "exploitability" not in before_toy_game  # only the toy game reports it
+    assert "Exploitability is not used for soccer" in TEXT
+    assert "perfect attacker could gain" in TEXT and "not a win rate" in TEXT
 
 
 def test_the_report_uses_the_agreed_terms_and_names_no_one():
@@ -74,6 +74,7 @@ def test_change_range_reports_the_smallest_and_largest_change_in_points():
     rows = [{"a": {"mean": 0.1}, "b": {"mean": 0.3}}, {"a": {"mean": 0.2}, "b": {"mean": 0.15}}]
     assert pg_report.change_range(rows, "b", "a") == "−5 to +20"
     assert pg_report.pts(0.0) == "+0" and pg_report.pts(-0.034) == "−3"
+    assert pg_report.pts(-0.003) == "+0"  # never "−0"
 
 
 def test_variant_bars_draw_a_bar_per_variant_and_a_dot_per_seed():
@@ -108,3 +109,26 @@ def test_the_win_rate_table_has_seat_columns_a_balanced_average_and_dashes_for_m
     for cell in ("<td>10%</td>", "<td>30%</td>", "<td>20%</td>"):  # A2C
         assert cell in html
     assert pg_report.seat_rates(a) == [0.1, 0.3, 0.2]
+
+
+def test_the_before_after_chart_has_a_legend_and_three_bars_per_starting_position():
+    group = {"label": "Starts with the ball", "base": (0.1, 0.05, 0.15),
+             "variant": (0.3, 0.2, 0.4), "exact": 0.67}
+    names = ("2,000 iterations", "10,000 iterations")
+    svg = pg_report.before_after_chart([group, {**group, "label": "Average of both"}], names)
+    assert svg.count("<rect") == 3 + 2 * 3  # legend squares and three bars for each of two groups
+    assert "2,000 iterations" in svg and "10,000 iterations" in svg and "Exact solver" in svg
+    assert "10%" in svg and "(5% to 15%)" in svg and "67%" in svg
+    flat = {**group, "base": (0.0, 0.0, 0.0)}
+    assert "(0% to 0%)" not in pg_report.before_after_chart([flat], ("a", "b"))
+
+
+def test_the_ten_seed_charts_are_before_after_charts_with_readable_names():
+    pair = RES["more_seeds"]["pairs"][0]
+    assert pair["baseline_name"] == "2,000 iterations"
+    assert pair["variant_name"] == "10,000 iterations"
+    groups = pg_report.pair_groups(RES["more_seeds"], pair, RES["random"]["exact"])
+    assert [g["label"] for g in groups] == [
+        "Starts with the ball", "Starts without the ball", "Average of both"]
+    assert groups[0]["exact"] == RES["random"]["exact"]["vs_best_response"][0]
+    assert "against 10,000 iterations" in TEXT
