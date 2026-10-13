@@ -46207,6 +46207,8 @@
    {
     "label": "A2C, fictitious play",
     "variant": "10,000 iterations",
+    "baseline_name": "2,000 iterations",
+    "variant_name": "10,000 iterations",
     "baseline_key": "a2c_fp_base",
     "variant_key": "a2c_fp_10k",
     "ball_diff": [
@@ -46228,6 +46230,8 @@
    {
     "label": "PPO, standard",
     "variant": "replay of 4 iterations",
+    "baseline_name": "data used once",
+    "variant_name": "replay of 4 iterations",
     "baseline_key": "ppo_sp_base",
     "variant_key": "ppo_sp_replay4",
     "ball_diff": [

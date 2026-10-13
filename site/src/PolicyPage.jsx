@@ -192,6 +192,59 @@ function RpsNetPlot({ config, iterations }) {
   );
 }
 
+// Win rate before and after a change, next to the exact solver: one group per starting position, two bars
+// with their 95% intervals and a grey bar for the exact solver.
+function BeforeAfterChart({ groups, names }) {
+  const W = 660, left = 170, right = 24, topPad = 40, bar = 15, gap = 3, maxV = 0.8;
+  const block = 3 * (bar + gap) + 22, H = topPad + block * groups.length + 30;
+  const x = (v) => left + (v / maxV) * (W - left - right);
+  const cols = ["var(--pitch)", "var(--ember)", "var(--rule-strong)"];
+  const labels = [names[0], names[1], "Exact solver"];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="win rate before and after a change" className="pg-bars">
+      {labels.map((l, k) => {
+        const lx = left + labels.slice(0, k).reduce((a, s) => a + 16 + 7 * s.length + 18, 0);
+        return (
+          <g key={l}>
+            <rect x={lx} y="8" width="11" height="11" fill={cols[k]} opacity=".9" />
+            <text x={lx + 16} y="18" fontSize="11" fill="var(--ink)">{l}</text>
+          </g>
+        );
+      })}
+      {[0, 0.2, 0.4, 0.6, 0.8].map((g) => (
+        <g key={g}>
+          <line x1={x(g)} y1={topPad - 6} x2={x(g)} y2={H - 28} stroke="var(--rule)" />
+          <text x={x(g)} y={H - 12} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{pct(g)}</text>
+        </g>
+      ))}
+      {groups.map((g, i) => {
+        const y0 = topPad + i * block;
+        return (
+          <g key={g.label}>
+            <text x={left - 10} y={y0 + 1.5 * (bar + gap) + 2} textAnchor="end" fontSize="12" fontWeight="700" fill="var(--ink)">{g.label}</text>
+            {["base", "variant"].map((key, k) => {
+              const [mean, lo, hi] = g[key], y = y0 + k * (bar + gap), mid = y + bar / 2;
+              return (
+                <g key={key}>
+                  <rect x={left} y={y} width={Math.max(x(mean) - left, 0)} height={bar} fill={cols[k]} opacity=".9" />
+                  <line x1={x(lo)} y1={mid} x2={x(hi)} y2={mid} stroke="var(--ink)" strokeWidth="1.6" />
+                  <line x1={x(lo)} y1={mid - 4} x2={x(lo)} y2={mid + 4} stroke="var(--ink)" strokeWidth="1.6" />
+                  <line x1={x(hi)} y1={mid - 4} x2={x(hi)} y2={mid + 4} stroke="var(--ink)" strokeWidth="1.6" />
+                  <text x={x(hi) + 8} y={y + 11} fontSize="11" fontWeight="700" fill="var(--ink)">
+                    {pct(mean)}{pct(lo) !== pct(hi) && <tspan fontWeight="400" fill="var(--ink-faint)"> ({pct(lo)} to {pct(hi)})</tspan>}
+                  </text>
+                </g>
+              );
+            })}
+            <rect x={left} y={y0 + 2 * (bar + gap)} width={x(g.exact) - left} height={bar} fill={cols[2]} opacity=".9" />
+            <text x={x(g.exact) + 8} y={y0 + 2 * (bar + gap) + 11} fontSize="11" fontWeight="700" fill="var(--ink)">{pct(g.exact)}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // Win rate against the best response with separate networks, one shared network, and trimmed
 // episodes: a bar per variant (mean of the seeds) and a dot per seed.
 const VARIANT_KEYS = [["baseline", "Separate networks", "var(--pitch)"],
@@ -307,7 +360,7 @@ export default function PolicyPage() {
   const pick = (rows, label, training) => rows.find((v) => v.label === label && v.training === training);
   const rng = (lo, hi) => (pct(lo) === pct(hi) ? pct(lo) : `${pct(lo)} to ${pct(hi)}`);
   const winsClause = (best) => (best < 0.005 ? "any games" : `more than ${pct(best)} of games`);
-  const pts = (v) => `${v >= 0 ? "+" : "\u2212"}${Math.abs(Math.round(v * 100))}`;
+  const pts = (v) => { const n = Math.round(v * 100); return `${n >= 0 ? "+" : "\u2212"}${Math.abs(n)}`; };
   const spread = (rows, f) => Math.round(100 * Math.max(...rows.flatMap((v) => [v.baseline, v.shared].map((x) => {
     const r = x[f]; return Math.max(...r) - Math.min(...r);
   }))));
@@ -360,12 +413,12 @@ export default function PolicyPage() {
     return `Change in the ${what}, in points, from "${s.keys[0][1]}" (rows in the order shown): ${lines.join("; ")}. Single seeds of one setting differ by up to ${spread} points.`;
   };
   const curveBoards = curves ? Object.entries(curves) : [];
-  const MS_KEYS = [["base", "Usual setting", "var(--pitch)"], ["variant", "Changed setting", "var(--ember)"]];
-  const msRows = (pair) => ["ball", "other", "balanced"].map((m) => ({
-    label: { ball: "Starts with the ball", other: "Starts without the ball", balanced: "Average of both" }[m], training: "",
-    base: { mean: moreSeeds.conditions[pair.baseline_key][m].reduce((a, b) => a + b, 0) / moreSeeds.seeds, runs: moreSeeds.conditions[pair.baseline_key][m] },
-    variant: { mean: moreSeeds.conditions[pair.variant_key][m].reduce((a, b) => a + b, 0) / moreSeeds.seeds, runs: moreSeeds.conditions[pair.variant_key][m] },
-  }));
+  const msGroups = (pair) => {
+    const b = moreSeeds.conditions[pair.baseline_key], v = moreSeeds.conditions[pair.variant_key];
+    const eb = rnd.exact.vs_best_response[0], eo = rnd.exact.vs_best_response_column[0];
+    return [["ball", "Starts with the ball", eb], ["other", "Starts without the ball", eo], ["balanced", "Average of both", (eb + eo) / 2]]
+      .map(([m, label, exact]) => ({ label, base: b[`${m}_ci`], variant: v[`${m}_ci`], exact }));
+  };
   const ci = (v) => `${pct(v[0])} (95% interval ${pct(v[1])} to ${pct(v[2])})`;
   const dci = (v) => `${pts(v[0])} points (95% interval ${pts(v[1])} to ${pts(v[2])})`;
   const msText = (pair) => {
@@ -430,7 +483,8 @@ export default function PolicyPage() {
               </tbody>
             </table>
           </div>
-          <p className="fig-cap">Exploitability, the best-response player&rsquo;s gain, is not reported: it measures the attacker, and it is the player we train that we want to judge.</p>
+          <h3>What about exploitability?</h3>
+          <p>Exploitability is about attackers, not about the player who has the ball. Take the two players&rsquo; policies as fixed, replace each player in turn by the exact best response to the other, and add up what the two attackers gain in expected discounted score (goals scored minus goals conceded, discounted). It is 0 exactly at an equilibrium, such as the exact solver, and grows the easier the pair of policies is to beat. It is a property of the pair, not of one player, and the kickoff advantage cancels out of the sum. It is a score, not a win rate, so it cannot be compared with the percentages in the tables. We keep it in the result files and use it in the rock-paper-scissors test, where 0 means one third each and 2 means both players are always beaten. For soccer we report the trained player&rsquo;s win rate against the best response instead, because that judges the player we train: how often it wins against a perfect opponent.</p>
           <h3>Why the exact solver does not win 0% against the best response</h3>
           <p>The best response is the move that minimizes our player&rsquo;s <em>expected discounted score difference</em>, not the one that
             minimizes its chance of winning. At the random board&rsquo;s kickoff the player holding the ball is ahead: the exact solution is worth
@@ -478,7 +532,7 @@ export default function PolicyPage() {
                 against a snapshot of the other drawn from all its past snapshots and reports the average of a player&rsquo;s
                 snapshots; <b>argmax</b> first turns each snapshot into the pure policy that plays its most likely move, so the
                 average is how often the snapshots play each move. Orange: the current network&rsquo;s share of rock; green: the
-                aggregate. Exploitability, on the right, is the mean over seeds and over the last 300 iterations; it is 0 at one third each.</p>
+                aggregate. Exploitability (right) is what a perfect attacker could gain against the two networks&rsquo; policies, summed over both players: 0 at one third each, 2 at worst. It is the mean over seeds and the last 300 iterations.</p>
               {rpsText && <p>{rpsText}</p>}
               {Object.entries(rpsNn.configs).map(([cname, cfg]) => (
                 <div key={cname}>
@@ -736,13 +790,11 @@ export default function PolicyPage() {
             <h2>The two best-looking settings, on {moreSeeds.seeds} seeds</h2>
             <p className="lede">With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked
               better with replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {moreSeeds.seeds - 1} (random move-order board).
-              Bars are means; dots are single seeds; the intervals are 95% intervals from Student&rsquo;s t. The exact solver wins {pct(rnd.exact.vs_best_response[0])} from the
-              starts with the ball, {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} averaged over both starts.</p>
+              Each bar is the mean of the {moreSeeds.seeds} seeds and the thin line is its 95% interval (Student&rsquo;s t). The exact solver wins {pct(rnd.exact.vs_best_response[0])} when it starts with the ball, {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} averaged over both starts.</p>
             {moreSeeds.pairs.map((pair) => (
               <div key={pair.label}>
-                <h3>{pair.label}: {pair.variant}</h3>
-                <VariantBars rows={msRows(pair)} reference={rnd.exact.vs_best_response[0]} keys={MS_KEYS} />
-                <p className="fig-cap">{MS_KEYS.map(([, l, c]) => <span key={l} style={{ marginRight: 14 }}><span style={{ color: c }}>&#9632;</span> {l}</span>)}</p>
+                <h3>{pair.label}: {pair.baseline_name} against {pair.variant_name}</h3>
+                <BeforeAfterChart groups={msGroups(pair)} names={[pair.baseline_name, pair.variant_name]} />
                 <p>{msText(pair)}</p>
               </div>
             ))}
