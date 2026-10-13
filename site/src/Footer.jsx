@@ -14,6 +14,7 @@ const BOARD_READ_DOC = {
 const READ_LINKS = [
   { href: "report.pdf", text: "Full report (PDF)" },
   { href: "policy_gradient.pdf", text: "Policy gradient report (PDF)" },
+  { href: "policy_gradient_detailed.pdf", text: "Policy gradient detailed report (PDF)" },
   { href: "result.md", text: "The goal-width switch" },
   { href: "positions.pdf", text: "Twelve positions, as a PDF" },
   { href: "tournament.md", text: "The tournament, in full" },

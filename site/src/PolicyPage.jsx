@@ -398,6 +398,7 @@ export default function PolicyPage() {
               strategies.</p>
             <div className="cta-row">
               <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>
+              <a className="btn btn-outline" href="policy_gradient_detailed.pdf">Detailed PDF &rarr;</a>
               <a className="btn btn-outline" href="policy_gradient.md">Full write-up &rarr;</a>
             </div>
           </div>
@@ -750,6 +751,7 @@ export default function PolicyPage() {
         <div className="wrap">
           <div className="cta-row">
             <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>
+            <a className="btn btn-outline" href="policy_gradient_detailed.pdf">Detailed PDF &rarr;</a>
             <a className="btn btn-outline" href="https://github.com/Charith-Reddy-Pareddy/soccer-markov-nash">View the code on GitHub &rarr;</a>
           </div>
         </div>
