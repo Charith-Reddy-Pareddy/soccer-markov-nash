@@ -200,10 +200,10 @@ def related_section(res: dict) -> str:
         return f'<li><a href="{r["url"]}">{r["title"]}</a>{who}. {r["says"]}</li>'
 
     groups = "".join(
-        f"<h3>{title}</h3><ul>{''.join(entry(r) for r in items if r['group'] == key)}</ul>"
+        f"<h3>{title}</h3><ul class=\"related\">{''.join(entry(r) for r in items if r['group'] == key)}</ul>"
         for key, title in (("older", "Older work"), ("recent", "Recent work")))
     return f"""<section><h2>7. Related work</h2>
-<p>Has fictitious play been combined with policy gradient before? Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang), the publishers' and proceedings pages, and arXiv. JSTOR's search page would not load, so the 1951 papers are cited from the linked secondary source. The one-line summaries follow each paper's abstract or listing and I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>{groups}</section>"""
+<p>Has fictitious play been combined with policy gradient before? Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang) and compared each one-line summary with the abstract on the paper's own proceedings, journal or arXiv page, or on a bibliographic mirror where the publisher's page would not load (noted in the entry). JSTOR and the publisher pages for the 1951 papers would not load, so Brown and Robinson are cited from the linked secondary source and were not read. I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>{groups}</section>"""
 
 
 def pts(v: float) -> str:
@@ -356,6 +356,7 @@ table.wins td,table.wins th{{padding:4px 5px;font-size:10.5px}} table.wins td:fi
 svg{{width:100%;height:auto}}
 .legend span{{display:inline-block;width:10px;height:10px;margin:0 4px 0 12px;vertical-align:-1px}}
 ul{{margin:6px 0 6px 18px;padding:0}} li{{margin:3px 0}}
+ul.related{{font-size:12px;line-height:1.45}} ul.related li{{margin:2px 0}}
 @page{{size:A4;margin:14mm}}
 </style></head><body>
 <div class="eyebrow">Policy gradient &middot; soccer game</div>
