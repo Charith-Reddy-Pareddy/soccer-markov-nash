@@ -105,3 +105,104 @@ def test_the_tab_the_footer_and_the_docs_index_link_the_detailed_pdf():
     assert "policy_gradient_detailed.pdf" in (site / "Footer.jsx").read_text()
     assert "policy_gradient_detailed.pdf" in (ROOT / "docs" / "README.md").read_text()
     assert "pg-detailed-pdf" in (ROOT / "Makefile").read_text()
+
+
+def _tables():
+    from html.parser import HTMLParser
+
+    class Parser(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.tables, self.row, self.cell, self.cur = [], None, None, None
+
+        def handle_starttag(self, tag, attrs):
+            if tag == "table":
+                self.cur = []
+                self.tables.append((dict(attrs).get("class", ""), self.cur))
+            elif tag == "tr":
+                self.row = []
+            elif tag in ("td", "th"):
+                self.cell = ""
+
+        def handle_endtag(self, tag):
+            if tag in ("td", "th"):
+                self.row.append(self.cell.strip())
+                self.cell = None
+            elif tag == "tr":
+                self.cur.append(self.row)
+                self.row = None
+
+        def handle_data(self, data):
+            if self.cell is not None:
+                self.cell += data
+
+    parser = Parser()
+    parser.feed(HTML)
+    return parser.tables
+
+
+def _wtl(cell):
+    m = re.match(r"(\d+)%\s*tie\s*(\d+)%\s*·\s*loss\s*(\d+)%", cell)
+    return tuple(int(x) for x in m.groups())
+
+
+def _name(x):
+    return f"{x['label']}, {x['training']}"
+
+
+def test_every_win_tie_loss_table_matches_the_data_and_each_row_sums_to_a_hundred():
+    boards = [RES, RES["random"], RES["continuing"]]
+    tables = [t for _, t in _tables() if t and t[0][:2] == ["learner", "vs. a random player"]]
+    assert len(tables) == 3
+    for board, table in zip(boards, tables):
+        rows = {r[0]: r[1:] for r in table[1:]}
+        for label, entry in [("Exact solver", board["exact"])] + [(_name(x), x) for x in board["learners"]]:
+            got = [_wtl(c) for c in rows[label]]
+            want = [tuple(int(f"{v:.0%}"[:-1]) for v in entry[k]) for k in ("vs_random", "vs_nash", "vs_best_response")]
+            assert got == want, label
+            assert all(abs(sum(g) - 100) <= 2 for g in got)
+
+
+def test_the_win_rate_and_mixed_state_tables_match_the_data():
+    tabs = _tables()
+    wins = next(t for c, t in tabs if c == "wins")
+    boards = [RES, RES["random"], RES["continuing"]]
+
+    def seat(entry):
+        ball, other = entry["vs_best_response"][0], entry["vs_best_response_column"][0]
+        return [f"{ball:.0%}", f"{other:.0%}", f"{(ball + other) / 2:.0%}"]
+
+    exact = next(r for r in wins if r and r[0] == "Exact solver")
+    assert exact[1:] == sum((seat(b["exact"]) for b in boards), [])
+    for row in wins[3:]:
+        want = []
+        for b in boards:
+            hit = next((x for x in b["learners"] if _name(x) == row[0]), None)
+            want += seat(hit) if hit else ["—"] * 3
+        assert row[1:] == want, row[0]
+    mixed = next(t for _, t in tabs if t and "distance from the exact mix" in t[0])
+    m = RES["mixed"]
+    by = {r[0]: r for r in mixed[1:]}
+    for x in m["learners"]:
+        assert by[_name(x)][3] == f"{x['tv_row']:.2f}" and by[_name(x)][4] == f"{x['share_mixing_row']:.0%}"
+
+
+def test_the_action_probability_tables_match_the_saved_policy_outputs():
+    import json
+
+    outputs = json.loads((ROOT / "experiments" / "pg_policy_outputs.json").read_text())
+    probs = [t for c, t in _tables() if c == "probs"]
+    mixed_states = len(RES["mixed"]["policy_outputs"]["states"])
+    for table, k in zip(probs[mixed_states:], range(len(outputs["states"]))):
+        for row in table[2:]:
+            if row[0] == "Exact solver":
+                want = outputs["exact"]["row"][k] + outputs["exact"]["col"][k]
+            else:
+                learner = next(x for x in outputs["learners"] if x["label"] == row[0])
+                want = learner["row"][k] + learner["col"][k]
+            assert [int(c[:-1]) for c in row[1:9]] == [int(f"{v * 100:.0f}") for v in want]
+
+
+def test_ranges_never_read_zero_to_zero_and_zero_wins_are_not_called_more_than_zero():
+    assert not re.search(r"\b(\d+)% to \1%", TEXT)
+    assert "more than 0%" not in TEXT

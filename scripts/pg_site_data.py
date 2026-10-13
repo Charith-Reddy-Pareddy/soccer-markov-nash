@@ -460,7 +460,7 @@ def training_curves() -> dict | None:
 RELATED = [
     # older work
     {"group": "older", "title": "Iterative solution of games by fictitious play", "authors": "Brown", "year": 1951,
-     "venue": "Activity Analysis of Production and Allocation (T. C. Koopmans, ed.), Wiley, pp. 374-376", "url": "https://arxiv.org/pdf/2205.01469",
+     "venue": "Activity Analysis of Production and Allocation, ed. T. C. Koopmans, Wiley, pp. 374-376", "url": "https://arxiv.org/pdf/2205.01469",
      "says": "Introduced fictitious play as a method for solving two-person zero-sum games (first proposed in 1949); generally regarded as the origin of the method. Not read directly: the publisher and JSTOR pages did not load, so the summary and pages (374-376) come from the linked paper and a university lecture reference list."},
     {"group": "older", "title": "An iterative method of solving a game", "authors": "Robinson", "year": 1951,
      "venue": "Annals of Mathematics 54(2), pp. 296-301", "url": "https://arxiv.org/pdf/2205.01469",
@@ -473,10 +473,10 @@ RELATED = [
      "says": "Defines n-person games with identical interests (best-response equivalent in mixed strategies to a game with identical payoff functions) and proves that every such game has the fictitious-play property. Abstract read on a bibliographic mirror; the publisher's page was blocked."},
     {"group": "older", "title": "Potential games", "authors": "Monderer and Shapley", "year": 1996,
      "venue": "Games and Economic Behavior 14(1)", "url": "https://doi.org/10.1006/game.1996.0044",
-     "says": "Defines several notions of potential function for games in strategic form and characterizes the games that have one (a game is potential when a single function captures every player's incentive to change strategy). Abstract read on a copy of the paper's first page."},
+     "says": "Defines several notions of potential function for games in strategic form and characterizes the games that have one (in the standard sense that a single function captures every player's incentive to change strategy). Abstract read on a copy of the paper's first page."},
     {"group": "older", "title": "Multiagent learning using a variable learning rate", "authors": "Bowling and Veloso", "year": 2002,
      "venue": "Artificial Intelligence 136(2)", "url": "https://www.ri.cmu.edu/publications/multiagent-learning-using-a-variable-learning-rate",
-     "says": "Gradient-style learners in stochastic games: the WoLF (win or learn fast) learning-rate rule, with a convergence proof in self-play for a restricted class of matrix games."},
+     "says": "Multiagent learning in stochastic games: a reinforcement-learning technique with a variable learning rate (WoLF, win or learn fast), with a convergence proof in self-play for a restricted class of iterated matrix games and experiments on more general stochastic games."},
     {"group": "older", "title": "On the global convergence of stochastic fictitious play", "authors": "Hofbauer and Sandholm", "year": 2002,
      "venue": "Econometrica 70(6)", "url": "https://ideas.repec.org/a/ecm/emetrp/v70y2002i6p2265-2294.html",
      "says": "Stochastic (perturbed) fictitious play converges globally in four classes of games: those with an interior evolutionarily stable state, zero-sum games, potential games and supermodular games."},

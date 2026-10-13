@@ -31,6 +31,16 @@ def pct(v: float) -> str:
     return f"{v:.0%}"
 
 
+def rng(lo: float, hi: float) -> str:
+    """A range of shares: "0%" when the ends match, else "2% to 5%"."""
+    return pct(lo) if pct(lo) == pct(hi) else f"{pct(lo)} to {pct(hi)}"
+
+
+def wins_clause(best: float) -> str:
+    """What follows "no variant wins": "any games" or "more than 2% of games"."""
+    return "any games" if best < 0.005 else f"more than {pct(best)} of games"
+
+
 def name(entry: dict) -> str:
     return f"{entry['label']}, {entry['training']}"
 
@@ -200,9 +210,9 @@ def argmax_section(res: dict) -> str:
     if cont:
         cont_chart = ("<h3>Continuing game: games tied with the exact Nash policy</h3><div>"
                       + variant_bars(cont, res["continuing"]["exact"]["vs_nash"][1], field="tie_nash_", keys=keys) + "</div>")
-        top = pct(max(r["argmax"]["mean"] for r in cont))
+        top_value = max(r["argmax"]["mean"] for r in cont)
         cont_text = (f" Continuing game: the share tied with the exact Nash policy changes by {change(cont, 'tie_nash_mean')} points; "
-                     f"single seeds differ by up to {spread(cont, 'tie_nash_runs')} points, and no argmax learner wins more than {top} "
+                     f"single seeds differ by up to {spread(cont, 'tie_nash_runs')} points, and no argmax learner wins {wins_clause(top_value)} "
                      "of games against the best response.")
     return f"""<section><h2>Averaging pure policies</h2>
 <p>Neural networks cannot output a mixed strategy except through their softmax, so each snapshot is made
@@ -279,7 +289,7 @@ def curves_section(res: dict) -> str:
     ranges = []
     for board, c in data.items():
         half = lambda v: v[len(v) // 2:]  # noqa: E731
-        parts_ = "; ".join(f"{s['label']} {s['training']} {pct(min(half(s['win_br'])))} to {pct(max(half(s['win_br'])))}" for s in c["series"])
+        parts_ = "; ".join(f"{s['label']} {s['training']} {rng(min(half(s['win_br'])), max(half(s['win_br'])))}" for s in c["series"])
         exact = (res["random"]["exact"] if board == "random" else res["exact"])["vs_best_response"][0]
         ranges.append(f"<p>{'Random board' if board == 'random' else 'Deterministic board'}, second half of training: the win rate against the best response stays within {parts_}. The exact solver wins {pct(exact)} from the ball seat.</p>")
     return f"""<section><h2>Does training converge?</h2>
@@ -329,7 +339,7 @@ def variant_section(res: dict) -> str:
         cont_html = f"""
 <h3>Continuing game: games tied with the exact Nash policy</h3>
 <div>{variant_bars(cont, res["continuing"]["exact"]["vs_nash"][1], field="tie_nash_")}</div>"""
-        cont_text = f"""<p>Continuing game: no variant wins more than {pct(cbest)} of games against the best response, as for the
+        cont_text = f"""<p>Continuing game: no variant wins {wins_clause(cbest)} against the best response, as for the
 baseline. The share of games tied with the exact Nash policy changes by
 {change(cont, "shared", "tie_nash_mean")} points with a shared network and by
 {change(cont, "trimmed", "tie_nash_mean")} points with the last 10 steps left out {order}; single seeds of the same setup
@@ -354,7 +364,7 @@ changes A2C by {pts(a2c_s["trimmed"]["mean"] - a2c_s["baseline"]["mean"])} and
 {pts(a2c_f["trimmed"]["mean"] - a2c_f["baseline"]["mean"])} points, but PPO with standard training stops scoring: it wins
 {pct(ppo["trimmed"]["vs_random"][0])} of games against a random player, against {pct(ppo["baseline"]["vs_random"][0])} before.
 No variant gets close to the exact solver.</p>
-<p>Deterministic board: no variant wins more than {pct(best)} of games against the best response, as for the baseline (the exact
+<p>Deterministic board: no variant wins {wins_clause(best)} against the best response, as for the baseline (the exact
 solver wins 0%, since it ties itself). The share of games tied with the exact Nash policy changes by
 {change(det, "shared", "tie_nash_mean")} points with a shared network and by {change(det, "trimmed", "tie_nash_mean")} points
 with the last 10 steps left out {order}; single seeds of the same setup differ by up to {spread(det, "tie_nash_runs")} points. A tie does not mean equilibrium
@@ -514,7 +524,7 @@ def board_section(title: str, note: str, board: dict) -> str:
     wins = [x["vs_best_response"][0] for x in learners]
     return f"""<h3>{title}</h3><p class="muted">{note}</p>
 <p><b>Win rate against the best response</b> (mean of {learners[0]['seeds']} seeds; dashed line: the exact
-solver). The exact solver wins {pct(exact['vs_best_response'][0])}; the learners win {pct(min(wins))} to {pct(max(wins))}.</p>
+solver). The exact solver wins {pct(exact['vs_best_response'][0])}; the learners win {rng(min(wins), max(wins))}.</p>
 <div>{br_bars(br, exact['vs_best_response'][0])}</div>
 <p><b>Wins, ties and losses against each opponent</b>.{tie_sentence}{critic_sentence}</p>
 <div class="legend"><span style="background:{GREEN}"></span>win<span style="background:{GREY}"></span>tie<span style="background:{ORANGE}"></span>loss</div>
@@ -568,7 +578,7 @@ def study_table(study: dict) -> str:
         cells = []
         for k, _ in study["keys"]:
             runs = r[k][field + "runs"]
-            cells.append(f"<b>{r[k][field + 'mean']:.0%}</b><span class=\"sub\">{min(runs):.0%} to {max(runs):.0%}</span>")
+            cells.append(f"<b>{r[k][field + 'mean']:.0%}</b><span class=\"sub\">{rng(min(runs), max(runs))}</span>")
         rows.append([name(r) if r["training"] else r["label"], *cells])
     return table(head, rows)
 
@@ -608,7 +618,7 @@ def more_seeds_section(res: dict) -> str:
     keys = {"base": GREEN, "variant": ORANGE}
     exact = res["random"]["exact"]
     ball, other = exact["vs_best_response"][0], exact["vs_best_response_column"][0]
-    ci = lambda v: f"{pct(v[1])} to {pct(v[2])}"  # noqa: E731
+    ci = lambda v: rng(v[1], v[2])  # noqa: E731
     dci = lambda v: f"{pts(v[0])} points ({pts(v[1])} to {pts(v[2])})"  # noqa: E731
     labels = {"a2c_fp_base": "A2C, fictitious play, 2,000 iterations", "a2c_fp_10k": "A2C, fictitious play, 10,000 iterations",
               "ppo_sp_base": "PPO, standard, 2,000 iterations", "ppo_sp_replay4": "PPO, standard, replay of 4 iterations"}
@@ -616,7 +626,7 @@ def more_seeds_section(res: dict) -> str:
     for key, lab in labels.items():
         c = data["conditions"][key]
         table_rows.append([lab] + [f"<b>{pct(c[m + '_ci'][0])}</b><span class=\"sub\">{ci(c[m + '_ci'])}</span>" for m in ("ball", "other", "balanced")]
-                          + [f"{min(c['ball']):.0%} to {max(c['ball']):.0%}"])
+                          + [rng(min(c['ball']), max(c['ball']))])
     parts = []
     for pair in data["pairs"]:
         b, v = data["conditions"][pair["baseline_key"]], data["conditions"][pair["variant_key"]]
@@ -780,7 +790,11 @@ of these states, though not at the states or in the proportions the exact soluti
 has played converges to one third each.</p><div>{rps_plot(res['rps'])}</div>{rps_nn_section(res).replace('<h2>', '<h3>', 1).replace('</h2>', '</h3>', 1).replace('<section>', '').replace('</section>', '')}</section>""",
         curves_section(res),
         f"""<section><h2>More training</h2>
-<p>Standard training at 8,000 instead of 2,000 iterations (two seeds each), deterministic board.</p>{legend}<div>{long_chart}</div>{long_table}</section>""",
+<p>Standard training at 8,000 instead of 2,000 iterations (two seeds each), deterministic board.</p>{legend}<div>{long_chart}</div>{long_table}
+<p>At 8,000 iterations the learners win {rng(min(x['vs_nash'][0] for x in res['longer']), max(x['vs_nash'][0] for x in res['longer']))} of games against the exact Nash policy
+(at 2,000 iterations {rng(min(x['short_vs_nash'][0] for x in res['longer']), max(x['short_vs_nash'][0] for x in res['longer']))}) and
+{rng(min(x['vs_random'][0] for x in res['longer']), max(x['vs_random'][0] for x in res['longer']))} against a random player; more standard training does not
+close the gap to the exact solver.</p></section>""",
         f"""<section><h2>Fictitious play with long best responses</h2>
 <p>Each round a player trains for 100 (or 300) iterations against the average of its opponent's earlier best responses, then adds the result to its history. Win rate against
 the best response at each checkpoint round (one seed per run); every line ends below {pct(max(c['win_vs_best_response'] for r in res['fp_br'] for c in r['checkpoints']))}.</p>
