@@ -45731,7 +45731,7 @@
    "authors": "Hofbauer and Sandholm",
    "year": 2002,
    "venue": "Econometrica 70(6)",
-   "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0262.2002.00440.x",
+   "url": "https://ideas.repec.org/a/ecm/emetrp/v70y2002i6p2265-2294.html",
    "says": "Stochastic (perturbed) fictitious play converges globally in four classes of games: those with an interior evolutionarily stable state, zero-sum games, potential games and supermodular games."
   },
   {
@@ -45794,8 +45794,8 @@
    "authors": "Liu, Yang and Wang",
    "year": 2020,
    "venue": "OpenReview",
-   "url": "https://astro.paperswithcode.com/paper/policy-optimization-in-zero-sum-markov-games",
-   "says": "A smooth fictitious self-play in which each player takes an entropy-regularized proximal policy optimization (PPO) step against the other; the joint policies converge to a neighbourhood of a Nash equilibrium at a sublinear rate, the first finite-time guarantee for fictitious self-play in zero-sum Markov games (for the regularized method, not the exact equilibrium). Authors and year from the Google Scholar listing; the paper's own page did not load."
+   "url": "https://www.semanticscholar.org/paper/POLICY-OPTIMIZATION-IN-ZERO-SUM-MARKOV-GAMES:-NASH/a296ea623a01278d8e4c8ef90c4cb153b909126e",
+   "says": "A smooth fictitious self-play in which each player takes an entropy-regularized proximal policy optimization (PPO) step against the other; the joint policies converge to a neighbourhood of a Nash equilibrium at a sublinear rate, the first finite-time guarantee for fictitious self-play in zero-sum Markov games (for the regularized method, not the exact equilibrium). Authors and year from the Google Scholar listing and a citation in another paper; abstract read on the Semantic Scholar listing, as the paper's own page did not load."
   },
   {
    "group": "recent",
