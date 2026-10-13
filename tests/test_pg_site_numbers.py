@@ -492,3 +492,18 @@ def test_the_first_three_seeds_of_the_more_seeds_baselines_are_the_published_run
                                  ("ppo_sp_base", "PPO", "standard")):
         published = by[(label, training)]["vs_best_response"][0]
         assert sum(data[key]["ball"][:3]) / 3 == pytest.approx(published, abs=1e-3)
+
+
+def test_the_related_work_covers_older_and_recent_papers_and_says_how_it_was_checked():
+    items = RESULTS["related"]
+    for i in items:
+        assert i["group"] in ("older", "recent") and i["venue"] and i["authors"] and i["year"]
+    older = [i for i in items if i["group"] == "older"]
+    recent = [i for i in items if i["group"] == "recent"]
+    assert len(older) >= 8 and len(recent) >= 8
+    assert min(i["year"] for i in older) == 1951 and max(i["year"] for i in recent) >= 2024
+    assert len({i["title"] for i in items}) == len(items)
+    html = (ROOT / "docs" / "policy_gradient.html").read_text()
+    for text in (" ".join(PAGE.split()), " ".join(html.split())):
+        assert "Google Scholar" in text and "JSTOR" in text and "Older work" in text
+    assert "Brown" in html and "Robinson" in html and "Littman" in html

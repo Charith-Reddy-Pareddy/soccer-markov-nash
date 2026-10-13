@@ -194,14 +194,16 @@ def related_section(res: dict) -> str:
     items = res.get("related")
     if not items:
         return ""
-    lis = "".join(
-        f'<li><a href="{r["url"]}">{r["title"]}</a>'
-        + (f" ({r['authors']}{', ' + str(r['year']) if r['year'] else ''})" if r["authors"] else (f" ({r['year']})" if r["year"] else ""))
-        + f". {r['says']}</li>" for r in items)
+
+    def entry(r):
+        who = f" ({r['authors']}, {r['year']}; {r['venue']})" if r["authors"] else ""
+        return f'<li><a href="{r["url"]}">{r["title"]}</a>{who}. {r["says"]}</li>'
+
+    groups = "".join(
+        f"<h3>{title}</h3><ul>{''.join(entry(r) for r in items if r['group'] == key)}</ul>"
+        for key, title in (("older", "Older work"), ("recent", "Recent work")))
     return f"""<section><h2>7. Related work</h2>
-<p>Has fictitious play been combined with policy gradient before? Yes, in several forms. In a short search I found these; the one-line summaries
-follow each paper's abstract or listing and I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient
-with fictitious play in zero-sum Markov games.</p><ul>{lis}</ul></section>"""
+<p>Has fictitious play been combined with policy gradient before? Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang), the publishers' and proceedings pages, and arXiv. JSTOR's search page would not load, so the 1951 papers are cited from the linked secondary source. The one-line summaries follow each paper's abstract or listing and I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>{groups}</section>"""
 
 
 def pts(v: float) -> str:
