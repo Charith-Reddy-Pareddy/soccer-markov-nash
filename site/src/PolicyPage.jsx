@@ -317,7 +317,7 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related, more_seeds: moreSeeds } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related, more_seeds: moreSeeds, symmetry, small_games: smallGames, rps_phases: rpsPhases } = results;
   const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
@@ -425,6 +425,13 @@ export default function PolicyPage() {
     const b = moreSeeds.conditions[pair.baseline_key], v = moreSeeds.conditions[pair.variant_key];
     return `${pair.label}, ${pair.variant}: starts with the ball ${ci(b.ball_ci)} before and ${ci(v.ball_ci)} after, a change of ${dci(pair.ball_diff)}; averaged over both starts ${ci(b.balanced_ci)} before and ${ci(v.balanced_ci)} after, a change of ${dci(pair.balanced_diff)}. The interval for the change when it starts with the ball ${pair.ball_diff[1] > 0 ? "excludes" : "includes"} zero; when it starts without the ball both settings win ${pct(Math.max(...b.other, ...v.other))} or less in every run.`;
   };
+  const symNames = symmetry && symmetry.length ? [...new Set(symmetry.flatMap((b) => b.rows.map((r) => r.name)))] : [];
+  const symGap = (b, n) => { const r = b.rows.find((x) => x.name === n); return r ? r.gap.toFixed(2) : "\u2014"; };
+  const symAll = symmetry ? symmetry.flatMap((b) => b.rows.filter((r) => r.name !== "Exact solver").map((r) => r.gap)) : [];
+  const symPairs = symmetry ? symmetry.flatMap((b) => ["REINFORCE", "A2C", "PPO"].map((a) => [b.rows.find((r) => r.name === `${a}, standard`).gap, b.rows.find((r) => r.name === `${a}, fictitious play`).gap])) : [];
+  const phaseText = rpsPhases
+    ? `Training each best response longer, with snapshots after ${rpsPhases.phases.join(", ")} iterations (${rpsPhases.iterations.toLocaleString()} iterations, ${rpsPhases.seeds} seeds), the exploitability of the average of softmax snapshots is ${rpsPhases.phases.map((p) => { const v = rpsPhases.runs[`${p}/fictitious`].final_exploitability; return (v.reduce((a, b) => a + b, 0) / v.length).toFixed(2); }).join(", ")} and of argmax snapshots ${rpsPhases.phases.map((p) => { const v = rpsPhases.runs[`${p}/fictitious_argmax`].final_exploitability; return (v.reduce((a, b) => a + b, 0) / v.length).toFixed(2); }).join(", ")}.`
+    : "";
   const detText = vd
     ? `Deterministic board: no variant wins ${winsClause(Math.max(...vd.flatMap((v) => [v.baseline, v.shared, v.trimmed].map((x) => x.mean))))} against the best response, as for the baseline (the exact solver wins 0%, since it ties itself). ` +
       `The share of games tied with the exact Nash policy changes by ${change(vd, "shared", "tie_nash_mean")} points with a shared network and by ${change(vd, "trimmed", "tie_nash_mean")} points with the last 10 steps left out ${order}; ` +
@@ -534,6 +541,7 @@ export default function PolicyPage() {
                 average is how often the snapshots play each move. Orange: the current network&rsquo;s share of rock; green: the
                 aggregate. Exploitability (right) is what a perfect attacker could gain against the two networks&rsquo; policies, summed over both players: 0 at one third each, 2 at worst. It is the mean over seeds and the last 300 iterations.</p>
               {rpsText && <p>{rpsText}</p>}
+              {phaseText && <p>{phaseText}</p>}
               {Object.entries(rpsNn.configs).map(([cname, cfg]) => (
                 <div key={cname}>
                   <h3>{cname.charAt(0).toUpperCase() + cname.slice(1)}: {cfg.sgd ? `plain gradient steps at ${cfg.lr}` : `Adam at ${cfg.lr}`}, entropy bonus {cfg.entropy}</h3>
@@ -762,10 +770,92 @@ export default function PolicyPage() {
         </section>
       )}
 
+
+
+
+      {moreSeeds && (
+        <section className="band-tint" id="more-seeds">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">14</span>More seeds</div>
+            <h2>The two best-looking settings, on {moreSeeds.seeds} seeds</h2>
+            <p className="lede">With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked
+              better with replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {moreSeeds.seeds - 1} (random move-order board).
+              Each bar is the mean of the {moreSeeds.seeds} seeds and the thin line is its 95% interval (Student&rsquo;s t). The exact solver wins {pct(rnd.exact.vs_best_response[0])} when it starts with the ball, {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} averaged over both starts.</p>
+            {moreSeeds.pairs.map((pair) => (
+              <div key={pair.label}>
+                <h3>{pair.label}: {pair.baseline_name} against {pair.variant_name}</h3>
+                <BeforeAfterChart groups={msGroups(pair)} names={[pair.baseline_name, pair.variant_name]} />
+                <p>{msText(pair)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {symmetry && symmetry.length > 0 && (
+        <section className="band-tint" id="symmetry">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p0">15</span>Symmetry</div>
+            <h2>Are the two players mirror images?</h2>
+            <p className="lede">The board is symmetric: swapping the two players and mirroring the pitch gives the same game. The <b>mirror gap</b> measures how far player 1&rsquo;s
+              policy is from the mirror image of player 0&rsquo;s: for every position and several steps it takes the largest difference in move probabilities between player 0&rsquo;s
+              policy and player 1&rsquo;s mirrored policy, then averages. 0 means perfectly symmetric, 1 means opposite. The exact solver is symmetric (0). The learners are not:
+              their two networks are trained separately and settle on different policies, with gaps of {Math.min(...symAll).toFixed(2)} to {Math.max(...symAll).toFixed(2)};
+              fictitious play has the smaller gap in {symPairs.filter(([s, f]) => f < s).length} of the {symPairs.length} learner-and-board pairs.</p>
+            <div className="tbl-wrap">
+              <table className="win-table">
+                <thead><tr><th>Policy</th>{symmetry.map((b) => <th key={b.board}>{b.title}</th>)}</tr></thead>
+                <tbody>
+                  {symNames.map((n) => <tr key={n}><td>{n}</td>{symmetry.map((b) => <td key={b.board}>{symGap(b, n)}</td>)}</tr>)}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {smallGames && (
+        <section id="small-games">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">16</span>Other kinds of games</div>
+            <h2>Coordination, anti-coordination and a zero-sum game</h2>
+            <p className="lede">Best-response dynamics are known to converge in zero-sum games and in potential games, such as coordination games, but only to one of the equilibria and not
+              necessarily from every start. <b>Simultaneous</b>: both players switch to the best response to the other&rsquo;s last action. <b>Alternating</b>: one player responds, then the other
+              responds to that. <b>Fictitious play</b>: each player best-responds to the average of the other&rsquo;s past play; the last column is the share of the first action played by the
+              row and by the column player after 2,000 rounds. Battle of the sexes: both prefer to be together and each prefers a different place (B,B pays 2 and 1, S,S pays 1 and 2,
+              otherwise 0). Different choices: 1 each if the players choose differently, otherwise 0. Matching pennies: the row player wants to match, the column player to differ.</p>
+            <div className="tbl-wrap">
+              <table className="win-table">
+                <thead>
+                  <tr><th>Game</th><th>Pure equilibria</th><th>Mixed equilibrium (first action)</th><th>Start</th><th>Simultaneous ends in</th><th>Alternating ends in</th><th>Fictitious play</th></tr>
+                </thead>
+                <tbody>
+                  {smallGames.flatMap((g) => g.dynamics.map((d, k) => {
+                    const fp = g.fictitious_play[d.start];
+                    return (
+                      <tr key={`${g.game}-${d.start}`}>
+                        <td>{k === 0 ? g.game : ""}</td>
+                        <td>{k === 0 ? (g.pure.join(", ") || "none") : ""}</td>
+                        <td>{k === 0 ? (g.mixed ? `${g.mixed[0].toFixed(2)} / ${g.mixed[1].toFixed(2)}` : "none") : ""}</td>
+                        <td>{d.start}</td><td>{d.simultaneous}</td><td>{d.alternating}</td><td>{fp[0].toFixed(2)} / {fp[2].toFixed(2)}</td>
+                      </tr>
+                    );
+                  }))}
+                </tbody>
+              </table>
+            </div>
+            <p>In the coordination game the dynamics end in one of the two pure equilibria, which one depending on the start; started with mismatched choices the simultaneous version
+              keeps switching. Where the only equilibrium is mixed (matching pennies) best-response dynamics never settle, but fictitious play&rsquo;s averages go to one half each, as in
+              rock-paper-scissors. In the game of different choices, started with the same choice, simultaneous best responses keep switching and fictitious play&rsquo;s averages go to one
+              half each while the players always match; started with different choices it stays there.</p>
+          </div>
+        </section>
+      )}
+
       {related && (
         <section className="band-tint" id="related">
           <div className="wrap">
-            <div className="eyebrow"><span className="badge p1">14</span>Related work</div>
+            <div className="eyebrow"><span className="badge p0">17</span>Related work</div>
             <h2>Has fictitious play been combined with policy gradient before?</h2>
             <p className="lede">Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang) and compared each one-line summary with the abstract on the paper&rsquo;s own proceedings, journal or arXiv page, or on a bibliographic mirror where the publisher&rsquo;s page would not load (noted in the entry). JSTOR and the publisher pages for the 1951 papers would not load, so Brown and Robinson are cited from the linked secondary source and were not read. I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in
               zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>
@@ -777,25 +867,6 @@ export default function PolicyPage() {
                     <li key={r.title}><a href={r.url}>{r.title}</a>{` (${r.authors}, ${r.year}; ${r.venue})`}. {r.says}</li>
                   ))}
                 </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {moreSeeds && (
-        <section className="band-tint" id="more-seeds">
-          <div className="wrap">
-            <div className="eyebrow"><span className="badge p1">15</span>More seeds</div>
-            <h2>The two best-looking settings, on {moreSeeds.seeds} seeds</h2>
-            <p className="lede">With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked
-              better with replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {moreSeeds.seeds - 1} (random move-order board).
-              Each bar is the mean of the {moreSeeds.seeds} seeds and the thin line is its 95% interval (Student&rsquo;s t). The exact solver wins {pct(rnd.exact.vs_best_response[0])} when it starts with the ball, {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball and {pct((rnd.exact.vs_best_response[0] + rnd.exact.vs_best_response_column[0]) / 2)} averaged over both starts.</p>
-            {moreSeeds.pairs.map((pair) => (
-              <div key={pair.label}>
-                <h3>{pair.label}: {pair.baseline_name} against {pair.variant_name}</h3>
-                <BeforeAfterChart groups={msGroups(pair)} names={[pair.baseline_name, pair.variant_name]} />
-                <p>{msText(pair)}</p>
               </div>
             ))}
           </div>
