@@ -257,7 +257,7 @@ def entropy_section(res: dict) -> str:
             parts.append(f"{algo} {pts(sum(v['larger']['mean'] - v['baseline']['mean'] for v in rows) / len(rows))}")
         by_algo = (f"<p>On the random board, averaged over the three ways of training, the larger bonus moves the win rate against the "
                    f"best response by {', '.join(parts)} points; the exact solver wins {pct(res['random']['exact']['vs_best_response'][0])} "
-                   "from the ball seat. This is an ablation and does not show convergence to the unregularized equilibrium.</p>")
+                   "when it starts with the ball. This is an ablation and does not show convergence to the unregularized equilibrium.</p>")
     return f"""<section><h2>A larger entropy bonus</h2>
 <p>On rock-paper-scissors a larger entropy bonus made the networks settle, but entropy regularization changes the optimization problem, so this is a stabilization heuristic reported next to the original setting, not a way to recover the unregularized equilibrium. Here every learner (REINFORCE, A2C, PPO), every way of
 training (standard, fictitious play, fictitious play with argmax snapshots) and every board is trained again with the entropy bonus raised
@@ -291,7 +291,7 @@ def curves_section(res: dict) -> str:
         half = lambda v: v[len(v) // 2:]  # noqa: E731
         parts_ = "; ".join(f"{s['label']} {s['training']} {rng(min(half(s['win_br'])), max(half(s['win_br'])))}" for s in c["series"])
         exact = (res["random"]["exact"] if board == "random" else res["exact"])["vs_best_response"][0]
-        ranges.append(f"<p>{'Random board' if board == 'random' else 'Deterministic board'}, second half of training: the win rate against the best response stays within {parts_}. The exact solver wins {pct(exact)} from the ball seat.</p>")
+        ranges.append(f"<p>{'Random board' if board == 'random' else 'Deterministic board'}, second half of training: the win rate against the best response stays within {parts_}. The exact solver wins {pct(exact)} when it starts with the ball.</p>")
     return f"""<section><h2>Does training converge?</h2>
 <p>Best-response dynamics (standard training) can cycle; fictitious play averages the past. Every 100 iterations the policy each learner would
 report is scored against the exact best response (mean of 3 seeds), and the probability it gives to the exact solver's kickoff move is recorded
@@ -478,16 +478,16 @@ def line_chart(series, rounds, width=660, height=260, top=None, x_label="round",
 
 
 def seat_rates(entry: dict) -> list[float]:
-    """Win rate against the best response from the ball-holding seat, from the other seat, and
+    """Win rate against the best response when it starts with the ball, when it starts without the ball, and
     their 50/50 average."""
     ball, other = entry["vs_best_response"][0], entry["vs_best_response_column"][0]
     return [ball, other, (ball + other) / 2]
 
 
 def win_rate_table(boards) -> str:
-    """Every win rate against the best response in one table, for both kickoff seats and their
+    """Every win rate against the best response in one table, for both starting positions and their
     average, on every board (``boards``: (title, board) pairs)."""
-    seats = ("ball seat", "other seat", "balanced")
+    seats = ("with ball", "without ball", "average of both")
     names = []
     for _, b in boards:
         names += [name(x) for x in b["learners"] if name(x) not in names]
@@ -632,18 +632,18 @@ def more_seeds_section(res: dict) -> str:
         b, v = data["conditions"][pair["baseline_key"]], data["conditions"][pair["variant_key"]]
         rows = [{"label": lab, "training": "", "base": {"mean": sum(b[m]) / len(b[m]), "runs": b[m]},
                  "variant": {"mean": sum(v[m]) / len(v[m]), "runs": v[m]}}
-                for m, lab in (("ball", "Ball seat"), ("other", "Other seat"), ("balanced", "Balanced"))]
+                for m, lab in (("ball", "Starts with the ball"), ("other", "Starts without the ball"), ("balanced", "Average of both"))]
         parts.append(
             f"<h3>{pair['label']}: {pair['variant']}</h3><div>{variant_bars(rows, ball, keys=keys)}</div>"
-            f"<p>Ball seat {pct(b['ball_ci'][0])} ({ci(b['ball_ci'])}) → {pct(v['ball_ci'][0])} ({ci(v['ball_ci'])}), a change of {dci(pair['ball_diff'])}; "
-            f"balanced {pct(b['balanced_ci'][0])} → {pct(v['balanced_ci'][0])}, {dci(pair['balanced_diff'])}; from the other seat the change is "
-            f"{dci(pair['other_diff'])}. The interval for the change from the ball seat {'excludes' if pair['ball_diff'][1] > 0 else 'includes'} zero.</p>")
+            f"<p>Starts with the ball {pct(b['ball_ci'][0])} ({ci(b['ball_ci'])}) → {pct(v['ball_ci'][0])} ({ci(v['ball_ci'])}), a change of {dci(pair['ball_diff'])}; "
+            f"averaged over both starts {pct(b['balanced_ci'][0])} → {pct(v['balanced_ci'][0])}, {dci(pair['balanced_diff'])}; when it starts without the ball the change is "
+            f"{dci(pair['other_diff'])}. The interval for the change when it starts with the ball {'excludes' if pair['ball_diff'][1] > 0 else 'includes'} zero.</p>")
     return f"""<section><h2>More seeds</h2>
 <p>With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked better with
 replayed data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {data['seeds'] - 1} (random move-order board). Bars are means,
-dots single seeds; intervals are 95% intervals from Student's t, kept within 0% and 100%. The exact solver wins {pct(ball)} from the ball seat,
-{pct(other)} from the other seat and {pct((ball + other) / 2)} balanced.</p>
-{table(["setting", "ball seat (95% interval)", "other seat", "balanced", "single seeds, ball seat"], table_rows)}
+dots single seeds; intervals are 95% intervals from Student's t, kept within 0% and 100%. The exact solver wins {pct(ball)} when it starts with the ball,
+{pct(other)} when it starts without the ball and {pct((ball + other) / 2)} averaged over both starts.</p>
+{table(["setting", "starts with the ball (95% interval)", "starts without the ball", "average of both", "single seeds, starts with the ball"], table_rows)}
 {"".join(parts)}</section>"""
 
 
@@ -679,7 +679,7 @@ default); each output row records the number of iterations. <code>make pg-report
 
 
 def whats_new(res: dict) -> str:
-    items = ["The win-rate table reports both kickoff seats and a 50/50 balanced average; the exact solver is context, not a target.",
+    items = ["The win-rate table reports both starting positions (with and without the ball) and their 50/50 average; the exact solver is context, not a target.",
              "A third board, the continuing game (fixed 100 steps, play restarts after a goal), with A2C using the exact solver's values as a frozen critic."]
     if res.get("variants"):
         items.append("Comparisons of one shared network and of leaving out the last steps of each episode, on all three boards.")
@@ -713,7 +713,7 @@ def build_html(res: dict) -> str:
     seat_chart = stacked_chart(
         [("Exact solver", [rnd["exact"]["vs_best_response"], rnd["exact"]["vs_best_response_column"]])]
         + [(name(x), [x["vs_best_response"], x["vs_best_response_column"]]) for x in rnd["learners"]],
-        ["Random board, ball-holding seat", "Random board, other seat"])
+        ["Random board, starting with the ball", "Random board, starting without the ball"])
     long_chart = stacked_chart(
         [(f"{x['label']}, {x['training']}", [x["short_vs_nash"], x["vs_nash"], x["vs_random"]]) for x in res["longer"]],
         ["vs. exact Nash, 2,000 iterations", "vs. exact Nash, 8,000 iterations", "vs. random, 8,000 iterations"])
@@ -741,7 +741,7 @@ def build_html(res: dict) -> str:
 
     definitions = table(["number", "what it is"], [
         ["Win rate against the best response", "The share of 1,000 games the trained player wins when the opponent plays the exact best response to it, the move that minimizes its expected discounted score difference."],
-        ["Ball seat / other seat / balanced", "The ball seat is the player holding the ball at kickoff; the other seat is the same learner as the other player; balanced is their 50/50 average, one number that does not depend on who starts with the ball."],
+        ["Starts with the ball / starts without the ball / average of both", "At kickoff one player has the ball and the other has to defend. Starts with the ball: our learner is the player who has the ball. Starts without the ball: our learner is the other player. Average of both: the mean of the two, one fair number that does not depend on who starts with the ball."],
         ["Win rate against the exact Nash policy", "The same, against the exact equilibrium player."],
         ["Win rate against a random player", "A sanity check: every learner should beat a player who moves at random."],
         ["A win", "The player scores while the opponent does not. On the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal, or equal goals, are ties."],
@@ -759,19 +759,20 @@ def build_html(res: dict) -> str:
 
     sections = [
         f"""<section><h2>Win rates against the best response</h2>
+<p>Two players face each other. At kickoff one of them has the ball and the other has to defend, and having the ball is an advantage. Each learner is trained for both players, so it is measured in both positions. <b>Starts with the ball</b>: our learner is the player who has the ball at kickoff. <b>Starts without the ball</b>: our learner is the other player. <b>Average of both</b>: the mean of the two, one fair number that does not depend on who starts with the ball.</p>
 {win_rate_table([(t, b) for t, _, b in boards])}
-<p>The share of 1,000 games each learner wins when the opponent plays the exact best response to it, from the ball seat, from the other seat, and balanced
+<p>The share of 1,000 games each learner wins when the opponent plays the exact best response to it, when it starts with the ball, when it starts without the ball, and averaged over both
 (mean of 3 seeds). The exact solver is the top row, as context rather than a target. A dash means the learner was not run on that board.</p>
 <h3>How to read the numbers</h3>{definitions}
 <h3>Why the exact solver does not win 0% against the best response</h3>
 <p>The best response is the move that minimizes our player's <em>expected discounted score difference</em>, not the one that minimizes its chance of winning.
 At the random board's kickoff the player holding the ball is ahead: the exact solution is worth {seat_value:+.2f} to it even against a perfect best response. So
-the exact solver wins {pct(seat_row)} of games and loses {pct(1 - seat_row)} from that seat, and wins {pct(seat_col)} from the other seat. On the deterministic
-board both seats tie every game.</p>
+the exact solver wins {pct(seat_row)} of games and loses {pct(1 - seat_row)} when it starts with the ball, and wins {pct(seat_col)} when it starts without the ball. On the deterministic
+board both starts tie every game.</p>
 {legend}<div>{seat_chart}</div></section>""",
         f"""<section><h2>Setup</h2>{setup}</section>""",
         f"""<section><h2>Results by board</h2>
-<p>Against the best response the exact solver wins {pct(rnd['exact']['vs_best_response'][0])} of games from the ball seat on the random board; the six learners win
+<p>Against the best response the exact solver wins {pct(rnd['exact']['vs_best_response'][0])} of games when it starts with the ball on the random board; the six learners win
 {pct(min(pg_br))} to {pct(max(pg_br))}. Against a random player the learners win {pct(min(pg_rand))} to {pct(max(pg_rand))} of games on the deterministic board.
 Fictitious-play training wins more often against a random player; neither way of training reaches the exact solver's rate against the best response.</p>
 {''.join(board_section(t, n, b) for t, n, b in boards)}</section>""",
@@ -846,13 +847,13 @@ response to it. This is the detailed report with every table and plot; a short v
 
 <div class="callout"><b>Summary</b>
 <ul>
-<li>On the random board the exact solver wins {pct(seat_row)} from the ball seat, {pct(seat_col)} from the other seat and {pct((seat_row + seat_col) / 2)} balanced; the six learners win
+<li>On the random board the exact solver wins {pct(seat_row)} when it starts with the ball, {pct(seat_col)} when it starts without the ball and {pct((seat_row + seat_col) / 2)} averaged over both starts; the six learners win
 {pct(min(pg_br))} to {pct(max(pg_br))}, {pct(min(x['vs_best_response_column'][0] for x in rnd['learners']))} to {pct(max(x['vs_best_response_column'][0] for x in rnd['learners']))} and
 {pct(min((x['vs_best_response'][0] + x['vs_best_response_column'][0]) / 2 for x in rnd['learners']))} to {pct(max((x['vs_best_response'][0] + x['vs_best_response_column'][0]) / 2 for x in rnd['learners']))}.
 On the deterministic board the exact solver ties itself, so it wins 0%.</li>
 <li>Against a random player the learners win {pct(min(pg_rand))} to {pct(max(pg_rand))} of games (deterministic board).</li>
 <li>Starting from the {mixed['mixed_states']} states where the exact answer has to mix, they win {pct(min(mx))} to {pct(max(mx))} against the exact Nash policy; the exact solver wins {pct(mixed['exact']['vs_nash'][0])}.</li>
-<li>No setting tried replicates the exact solver. The best, on 10 seeds, wins {pct(res['more_seeds']['conditions']['a2c_fp_10k']['ball_ci'][0]) if res.get('more_seeds') else '—'} from the ball seat (A2C, fictitious play, 10,000 iterations).</li>
+<li>No setting tried replicates the exact solver. The best, on 10 seeds, wins {pct(res['more_seeds']['conditions']['a2c_fp_10k']['ball_ci'][0]) if res.get('more_seeds') else '—'} when it starts with the ball (A2C, fictitious play, 10,000 iterations).</li>
 </ul>3 seeds per learner unless stated, 1,000 games per opponent.</div>
 
 <h3>Contents</h3><ul class="toc">{toc}</ul>

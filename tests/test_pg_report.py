@@ -28,7 +28,8 @@ def test_the_report_is_short_with_two_tables_and_five_charts():
 
 
 def test_the_report_defines_the_win_rate_and_the_seats_and_leaves_exploitability_out():
-    for phrase in ("Win rate", "Ball seat", "Other seat", "Balanced", "best response to it",
+    for phrase in ("Win rate", "Starts with the ball", "Starts without the ball",
+                   "Average of both", "best response to it",
                    "a win is more goals than the opponent in 100 steps"):
         assert phrase in TEXT
     before_toy_game = TEXT.lower().split("5. rock-paper")[0]
@@ -53,12 +54,13 @@ def test_the_report_has_every_section_in_order():
 
 def test_every_headline_number_in_the_findings_comes_from_the_data():
     rnd = RES["random"]["exact"]
-    assert f"the exact solver wins {rnd['vs_best_response'][0]:.0%} from the ball seat" in TEXT
-    assert f"{rnd['vs_best_response_column'][0]:.0%} from the other seat" in TEXT
+    ball = f"{rnd['vs_best_response'][0]:.0%}"
+    assert f"the exact solver wins {ball} when it starts with the ball" in TEXT
+    assert f"{rnd['vs_best_response_column'][0]:.0%} when it starts without the ball" in TEXT
     mixed = RES["mixed"]
     assert f"the exact solver wins {mixed['exact']['vs_nash'][0]:.0%}" in TEXT
     more = RES["more_seeds"]["conditions"]
-    assert f"{more['a2c_fp_10k']['ball_ci'][0]:.0%} from the ball seat" in TEXT
+    assert f"{more['a2c_fp_10k']['ball_ci'][0]:.0%} when it starts with the ball" in TEXT
 
 
 def test_the_training_choice_lines_cover_every_comparison_and_the_ablation_is_labelled():

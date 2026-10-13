@@ -49,10 +49,10 @@ def test_every_board_has_a_wins_ties_and_losses_table_and_the_mixed_states_have_
 
 def test_the_numbers_in_the_summary_and_the_seat_table_come_from_the_data():
     rnd = RES["random"]["exact"]
-    assert f"the exact solver wins {rnd['vs_best_response'][0]:.0%} from the ball seat" in TEXT
-    assert f"{rnd['vs_best_response_column'][0]:.0%} from the other seat" in TEXT
+    assert f"the exact solver wins {rnd['vs_best_response'][0]:.0%} when it starts with the ball" in TEXT
+    assert f"{rnd['vs_best_response_column'][0]:.0%} when it starts without the ball" in TEXT
     more = RES["more_seeds"]["conditions"]
-    assert f"wins {more['a2c_fp_10k']['ball_ci'][0]:.0%} from the ball seat" in TEXT
+    assert f"wins {more['a2c_fp_10k']['ball_ci'][0]:.0%} when it starts with the ball" in TEXT
 
 
 def test_every_training_choice_has_a_chart_and_a_table_with_ranges_of_single_seeds():

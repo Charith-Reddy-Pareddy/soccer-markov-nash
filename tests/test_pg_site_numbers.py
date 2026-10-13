@@ -313,7 +313,7 @@ def test_the_win_rate_table_in_the_report_matches_the_data():
     learner = RESULTS["learners"][2]
     ball, other = learner["vs_best_response"][0], learner["vs_best_response_column"][0]
     assert a2c[2:5] == [f"{round(v * 100)}%" for v in (ball, other, (ball + other) / 2)]
-    assert "Balanced" in PAGE and "ball seat" in html
+    assert "Average of both" in PAGE and "starts with the ball" in html
 
 
 def test_the_entropy_bonus_is_described_as_an_ablation_not_a_fix():

@@ -137,16 +137,16 @@ def line_chart(series, rounds, width=660, height=260, top=None, x_label="round",
 
 
 def seat_rates(entry: dict) -> list[float]:
-    """Win rate against the best response from the ball-holding seat, from the other seat, and
+    """Win rate against the best response when it starts with the ball, when it starts without the ball, and
     their 50/50 average."""
     ball, other = entry["vs_best_response"][0], entry["vs_best_response_column"][0]
     return [ball, other, (ball + other) / 2]
 
 
 def win_rate_table(boards) -> str:
-    """Every win rate against the best response in one table, for both kickoff seats and their
+    """Every win rate against the best response in one table, for both starting positions and their
     average, on every board (``boards``: (title, board) pairs)."""
-    seats = ("ball seat", "other seat", "balanced")
+    seats = ("with ball", "without ball", "average of both")
     names = []
     for _, b in boards:
         names += [name(x) for x in b["learners"] if name(x) not in names]
@@ -179,15 +179,15 @@ def ten_seeds_block(res: dict) -> str:
         rows = [{"label": lab, "training": "",
                  "base": {"mean": sum(b[m]) / len(b[m]), "runs": b[m]},
                  "variant": {"mean": sum(v[m]) / len(v[m]), "runs": v[m]}}
-                for m, lab in (("ball", "Ball seat"), ("other", "Other seat"), ("balanced", "Balanced"))]
+                for m, lab in (("ball", "Starts with the ball"), ("other", "Starts without the ball"), ("balanced", "Average of both"))]
         parts.append(
             f"<h3>{pair['label']}: {pair['variant']}</h3><div>{variant_bars(rows, ball, keys=keys)}</div>"
-            f"<p>Ball seat {pct(b['ball_ci'][0])} ({ci(b['ball_ci'])}) → {pct(v['ball_ci'][0])} ({ci(v['ball_ci'])}), a change of {dci(pair['ball_diff'])}; "
-            f"balanced {pct(b['balanced_ci'][0])} → {pct(v['balanced_ci'][0])}, {dci(pair['balanced_diff'])}. "
+            f"<p>Starts with the ball {pct(b['ball_ci'][0])} ({ci(b['ball_ci'])}) → {pct(v['ball_ci'][0])} ({ci(v['ball_ci'])}), a change of {dci(pair['ball_diff'])}; "
+            f"averaged over both starts {pct(b['balanced_ci'][0])} → {pct(v['balanced_ci'][0])}, {dci(pair['balanced_diff'])}. "
             f"The interval for the change {'excludes' if pair['ball_diff'][1] > 0 else 'includes'} zero.</p>")
     return (f"<h3>Ten seeds for the two best-looking settings</h3><p>Seeds 0 to {data['seeds'] - 1}, random board; 95% intervals (Student's t) in brackets; "
-            f"green: usual setting, orange: changed setting, dots: single seeds. The exact solver wins {pct(ball)} from the ball seat, {pct(other)} from the other "
-            f"seat and {pct((ball + other) / 2)} balanced.</p>{''.join(parts)}")
+            f"green: usual setting, orange: changed setting, dots: single seeds. The exact solver wins {pct(ball)} when it starts with the ball, {pct(other)} from the other "
+            f"seat and {pct((ball + other) / 2)} averaged over both starts.</p>{''.join(parts)}")
 
 
 def related_section(res: dict) -> str:
@@ -254,7 +254,7 @@ probability it gives to the exact solver's kickoff move ({data['move']}; the exa
 seed 0. Orange: standard training's current network. Grey: the current network under fictitious play. Green: fictitious play's average.</p>
 <div>{line_chart(win, data['iterations'], x_label='iteration', label_every=4)}</div>
 <div>{line_chart(moves, data['iterations'], top=1, x_label='iteration', label_every=4)}</div>
-<p>In the second half of training the win rate against the best response stays within {ranges}; the exact solver wins {pct(exact)} from the ball seat.
+<p>In the second half of training the win rate against the best response stays within {ranges}; the exact solver wins {pct(exact)} when it starts with the ball.
 Standard training keeps swinging; the fictitious-play average is steadier but flat and low.</p></section>"""
 
 
@@ -301,8 +301,8 @@ def findings_section(res: dict) -> str:
     rand = [x["vs_random"][0] for x in det["learners"]]
     mx = [x["vs_nash"][0] for x in mixed["learners"]]
     lines = [
-        f"<b>No learner replicates the exact solver.</b> On the random board the exact solver wins {pct(ex_ball)} from the ball seat, {pct(ex_other)} from the other seat and "
-        f"{pct((ex_ball + ex_other) / 2)} balanced; the six learners win {pct(min(ball))} to {pct(max(ball))}, {pct(min(other))} to {pct(max(other))} and {pct(min(bal))} to {pct(max(bal))}. "
+        f"<b>No learner replicates the exact solver.</b> On the random board the exact solver wins {pct(ex_ball)} when it starts with the ball, {pct(ex_other)} when it starts without the ball and "
+        f"{pct((ex_ball + ex_other) / 2)} averaged over both starts; the six learners win {pct(min(ball))} to {pct(max(ball))}, {pct(min(other))} to {pct(max(other))} and {pct(min(bal))} to {pct(max(bal))}. "
         "On the deterministic board the exact solver ties itself and the learners win "
         f"{pct(max(x['vs_best_response'][0] for x in det['learners']))} or less"
         f"{'; in the continuing game every learner wins 0%' if cont else ''}.",
@@ -313,7 +313,7 @@ def findings_section(res: dict) -> str:
     if more:
         c = more["conditions"]
         lines.append(
-            f"<b>Best settings, on {more['seeds']} seeds:</b> A2C fictitious play at 10,000 iterations wins {pct(c['a2c_fp_10k']['ball_ci'][0])} from the ball seat "
+            f"<b>Best settings, on {more['seeds']} seeds:</b> A2C fictitious play at 10,000 iterations wins {pct(c['a2c_fp_10k']['ball_ci'][0])} when it starts with the ball "
             f"(95% interval {pct(c['a2c_fp_10k']['ball_ci'][1])} to {pct(c['a2c_fp_10k']['ball_ci'][2])}) against {pct(c['a2c_fp_base']['ball_ci'][0])} at 2,000; PPO with replayed data wins "
             f"{pct(c['ppo_sp_replay4']['ball_ci'][0])} ({pct(c['ppo_sp_replay4']['ball_ci'][1])} to {pct(c['ppo_sp_replay4']['ball_ci'][2])}) against {pct(c['ppo_sp_base']['ball_ci'][0])}. Both gains hold up and stay well below the exact solver.")
     return f"""<section><h2>3. Findings</h2><ul>{"".join(f"<li>{x}</li>" for x in lines)}</ul></section>"""
@@ -365,13 +365,13 @@ ul.related{{font-size:12px;line-height:1.45}} ul.related li{{margin:2px 0}}
 opponent is the best response to it.</p>
 
 <section><h2>1. Win rates against the best response</h2>
+<p>Two players face each other. At kickoff one of them has the ball and the other has to defend, and having the ball is an advantage. Each learner is trained for both players, so it is measured in both positions. <b>Starts with the ball</b>: our learner is the player who has the ball at kickoff. <b>Starts without the ball</b>: our learner is the other player. <b>Average of both</b>: the mean of the two, one fair number that does not depend on who starts with the ball.</p>
 {win_rate_table(boards)}
 <ul>
 <li><b>Win rate</b>: the share of 1,000 games the trained player wins (it scores while the opponent does not; games with no goal or equal goals are ties), when the
 opponent plays the exact best response to it, the move that minimizes its expected discounted score difference. Mean of 3 seeds.</li>
-<li><b>Ball seat</b>: the player that holds the ball at kickoff. <b>Other seat</b>: the same learner as the other player. <b>Balanced</b>: their 50/50 average, one number that does not
-depend on who starts with the ball. The exact solver is the top row, as context rather than a target.</li>
-<li>The random board's kickoff is worth {res["random"].get("kickoff_value", 0.0):+.2f} to the ball holder even against a perfect best response, so the exact solver wins more than half its games from that seat.
+<li>The exact solver is the top row, as context rather than a target. Each cell is the mean of 3 seeds.</li>
+<li>The random board's kickoff is worth {res["random"].get("kickoff_value", 0.0):+.2f} to the ball holder even against a perfect best response, so the exact solver wins more than half its games when it starts with the ball.
 On the deterministic board the exact solver ties itself; in the continuing game a win is more goals than the opponent in 100 steps. A dash means the learner was not run on that board.</li>
 </ul></section>
 
