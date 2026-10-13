@@ -45676,18 +45676,18 @@
    "title": "Iterative solution of games by fictitious play",
    "authors": "Brown",
    "year": 1951,
-   "venue": "Activity Analysis of Production and Allocation",
+   "venue": "Activity Analysis of Production and Allocation (T. C. Koopmans, ed.), Wiley, pp. 374-376",
    "url": "https://arxiv.org/pdf/2205.01469",
-   "says": "Introduced fictitious play as a computer method for finding equilibria of two-player zero-sum games (first proposed in 1949). Not read directly (the publisher and JSTOR pages did not load); described in the linked paper."
+   "says": "Introduced fictitious play as a method for solving two-person zero-sum games (first proposed in 1949); generally regarded as the origin of the method. Not read directly: the publisher and JSTOR pages did not load, so the summary and pages (374-376) come from the linked paper and a university lecture reference list."
   },
   {
    "group": "older",
    "title": "An iterative method of solving a game",
    "authors": "Robinson",
    "year": 1951,
-   "venue": "Annals of Mathematics 54(2)",
+   "venue": "Annals of Mathematics 54(2), pp. 296-301",
    "url": "https://arxiv.org/pdf/2205.01469",
-   "says": "Proved Brown's conjecture that fictitious play converges in two-player zero-sum games; Shapley (1964) later showed that convergence fails in general games. Not read directly (JSTOR did not load); described in the linked paper."
+   "says": "Shows that the iterative procedure suggested by Brown, in which each player in turn plays the best pure strategy against the opponent's accumulated mixed strategy, converges for two-person zero-sum (matrix) games; Shapley (1964) later showed that convergence fails in general games. Not read directly (JSTOR did not load): the summary comes from a Semantic Scholar record and the linked paper."
   },
   {
    "group": "older",
@@ -45714,7 +45714,7 @@
    "year": 1996,
    "venue": "Games and Economic Behavior 14(1)",
    "url": "https://doi.org/10.1006/game.1996.0044",
-   "says": "Defines several notions of potential function for games in strategic form and characterizes the games that have one: all players' incentives to change strategy are captured by a single function."
+   "says": "Defines several notions of potential function for games in strategic form and characterizes the games that have one (a game is potential when a single function captures every player's incentive to change strategy). Abstract read on a copy of the paper's first page."
   },
   {
    "group": "older",
