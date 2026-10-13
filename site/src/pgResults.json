@@ -45678,7 +45678,7 @@
    "year": 1951,
    "venue": "Activity Analysis of Production and Allocation",
    "url": "https://arxiv.org/pdf/2205.01469",
-   "says": "Introduced fictitious play as a computer method for finding equilibria of two-player zero-sum games (first proposed in 1949). Not read directly; described in the linked paper."
+   "says": "Introduced fictitious play as a computer method for finding equilibria of two-player zero-sum games (first proposed in 1949). Not read directly (the publisher and JSTOR pages did not load); described in the linked paper."
   },
   {
    "group": "older",
@@ -45687,7 +45687,7 @@
    "year": 1951,
    "venue": "Annals of Mathematics 54(2)",
    "url": "https://arxiv.org/pdf/2205.01469",
-   "says": "Proved Brown's conjecture that fictitious play converges in two-player zero-sum games; Shapley (1964) later showed that convergence fails in general games. Not read directly; described in the linked paper."
+   "says": "Proved Brown's conjecture that fictitious play converges in two-player zero-sum games; Shapley (1964) later showed that convergence fails in general games. Not read directly (JSTOR did not load); described in the linked paper."
   },
   {
    "group": "older",
@@ -45696,7 +45696,7 @@
    "year": 1994,
    "venue": "ICML, pp. 157-163",
    "url": "https://mlanthology.org/icml/1994/littman1994icml-markov",
-   "says": "Two-player zero-sum Markov games and minimax-Q, a Q-learning variant that replaces the max with a minimax over the joint action (each update solves a linear program)."
+   "says": "Extends reinforcement learning from one adaptive agent to several; studies two agents with directly opposed goals sharing an environment and gives a Q-learning-style algorithm (minimax-Q), shown on a simple game whose best strategy is probabilistic."
   },
   {
    "group": "older",
@@ -45732,7 +45732,7 @@
    "year": 2002,
    "venue": "Econometrica 70(6)",
    "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0262.2002.00440.x",
-   "says": "Global convergence of stochastic (perturbed) fictitious play for several classes of games, including zero-sum and potential games."
+   "says": "Stochastic (perturbed) fictitious play converges globally in four classes of games: those with an interior evolutionarily stable state, zero-sum games, potential games and supermodular games."
   },
   {
    "group": "older",
@@ -45741,7 +45741,7 @@
    "year": 2003,
    "venue": "Journal of Machine Learning Research 4",
    "url": "https://jmlr.org/papers/v4/hu03a.html",
-   "says": "Q-learning toward Nash equilibria of general-sum Markov games; convergence is proved only under restrictions on the stage games that arise during learning."
+   "says": "Q-learning for general-sum Markov games in which each agent assumes Nash play on the current Q-values; proved to converge under restrictions on the intermediate stage games, which grid-game experiments suggest are not always necessary."
   },
   {
    "group": "older",
@@ -45750,7 +45750,7 @@
    "year": 2006,
    "venue": "Games and Economic Behavior 56(2)",
    "url": "https://ideas.repec.org/a/eee/gamebe/v56y2006i2p285-298.html",
-   "says": "A broad class of adaptive learning processes, including an actor-critic process that learns only from rewards, shown to converge in games with the fictitious-play property."
+   "says": "A broad class of adaptive learning processes extending weakened fictitious play, shown to converge in games with the fictitious-play property; includes an actor-critic process in which a player sees only the reward of the action it chose. Abstract read on the authors' Bristol page."
   },
   {
    "group": "older",
@@ -45777,7 +45777,7 @@
    "year": 2016,
    "venue": "arXiv",
    "url": "https://arxiv.org/abs/1603.01121",
-   "says": "Neural fictitious self-play (NFSP) learns approximate Nash equilibria of poker games end to end; ordinary reinforcement learning diverged on the small game (Leduc poker) where NFSP moved toward equilibrium."
+   "says": "Neural fictitious self-play (NFSP) combines fictitious self-play with deep reinforcement learning to approximate Nash equilibria end to end; on Leduc poker it converged near an equilibrium where standard reinforcement learning methods failed to converge, and on Limit Texas Hold'em it came close to leading algorithms that rely on expert knowledge."
   },
   {
    "group": "recent",
@@ -45795,7 +45795,7 @@
    "year": 2020,
    "venue": "OpenReview",
    "url": "https://astro.paperswithcode.com/paper/policy-optimization-in-zero-sum-markov-games",
-   "says": "A smooth fictitious self-play whose best-response step is a PPO step with entropy regularization reaches a neighbourhood of a Nash equilibrium at a sublinear rate in zero-sum Markov games (a guarantee for the regularized method, not the exact equilibrium)."
+   "says": "A smooth fictitious self-play in which each player takes an entropy-regularized proximal policy optimization (PPO) step against the other; the joint policies converge to a neighbourhood of a Nash equilibrium at a sublinear rate, the first finite-time guarantee for fictitious self-play in zero-sum Markov games (for the regularized method, not the exact equilibrium). Authors and year from the Google Scholar listing; the paper's own page did not load."
   },
   {
    "group": "recent",
@@ -45804,7 +45804,7 @@
    "year": 2021,
    "venue": "ICML, PMLR 139",
    "url": "https://proceedings.mlr.press/v139/qiu21b.html",
-   "says": "Fictitious-play policy optimization with optimism for zero-sum Markov games with structured but unknown transitions, with square-root-of-episodes regret bounds."
+   "says": "Fictitious-play policy optimization with UCB-style optimism for two-player zero-sum Markov games with structured, unknown transitions (factored independent or single-controller), with tight regret bounds of order the square root of the number of rounds."
   },
   {
    "group": "recent",
@@ -45813,16 +45813,16 @@
    "year": 2022,
    "venue": "NeurIPS 35",
    "url": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/8951f484e8242b7f74817fdc390dd954-Abstract.html",
-   "says": "Each iteration updates the policy at every state with a matrix-game algorithm and then the values; the state-wise average policy converges to an approximate Nash equilibrium of two-player zero-sum Markov games."
+   "says": "Each iteration updates the policy at every state with a matrix-game algorithm and then the values; the state-wise average policy converges to an approximate Nash equilibrium of two-player zero-sum Markov games when the matrix-game learners have low weighted regret (rates of roughly T^-5/6, and T^-1 with a modified value update)."
   },
   {
    "group": "recent",
    "title": "Fictitious play in zero-sum stochastic games",
    "authors": "Sayin, Parise and Ozdaglar",
    "year": 2022,
-   "venue": "SIAM Journal on Control and Optimization",
-   "url": "https://deepai.org/publication/fictitious-play-in-zero-sum-stochastic-games",
-   "says": "A fictitious-play variant that combines classical fictitious play with Q-learning for two-player zero-sum stochastic games."
+   "venue": "SIAM Journal on Control and Optimization 60(4), pp. 2095-2114",
+   "url": "https://arxiv.org/abs/2010.04223",
+   "says": "Combines classical fictitious play with Q-learning in two-player zero-sum stochastic games; the strategy beliefs converge to a stationary mixed Nash equilibrium, in both the model-based and model-free cases."
   },
   {
    "group": "recent",
@@ -45831,7 +45831,7 @@
    "year": 2022,
    "venue": "ACM EC",
    "url": "https://arxiv.org/abs/2205.11389",
-   "says": "A variant of fictitious play converges in identical-interest Markov games where one player controls the transitions; together with earlier results it covers both zero-sum and identical-interest Markov games."
+   "says": "A new variant of fictitious play for Markov games converges to a Nash equilibrium in n-player identical-interest games where a single player controls the transitions; together with earlier results it covers both zero-sum and single-controller identical-interest Markov games."
   },
   {
    "group": "recent",
@@ -45840,7 +45840,7 @@
    "year": 2024,
    "venue": "Journal of Machine Learning Research 25(4)",
    "url": "https://jmlr.org/papers/v25/21-1205.html",
-   "says": "Entropy regularization gives linear-rate convergence to the regularized equilibrium (including in zero-sum Markov games), and tuning the weight approaches an approximate Nash equilibrium of the unregularized game."
+   "says": "Extragradient methods reach the entropy-regularized equilibrium at a linear rate (also in zero-sum Markov games), and tuning the regularization weight approaches an approximate Nash equilibrium of the unregularized game at a sublinear rate."
   }
  ],
  "more_seeds": {
