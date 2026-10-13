@@ -41,7 +41,7 @@ def test_the_report_uses_the_agreed_terms_and_names_no_one():
     ours = TEXT.split("Related work")[0]  # related-work titles are quoted as published
     assert "self-play" not in ours.lower()
     assert not re.search(r"professor|\bdog\b|sheep|not yet", TEXT, re.I)
-    assert "mirror gap" not in TEXT.lower()
+    assert "Mirror gap" not in TEXT  # the measure is called by its lower-case name
 
 
 def test_the_report_has_every_section_in_order():

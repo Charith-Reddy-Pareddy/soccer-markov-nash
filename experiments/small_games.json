@@ -1,0 +1,188 @@
+[
+ {
+  "game": "Battle of the sexes (coordination)",
+  "actions": [
+   "B",
+   "S"
+  ],
+  "pure": [
+   "BB",
+   "SS"
+  ],
+  "mixed": [
+   0.667,
+   0.333
+  ],
+  "dynamics": [
+   {
+    "start": "BB",
+    "simultaneous": "BB",
+    "alternating": "BB"
+   },
+   {
+    "start": "BS",
+    "simultaneous": "keeps switching",
+    "alternating": "SS"
+   },
+   {
+    "start": "SB",
+    "simultaneous": "keeps switching",
+    "alternating": "BB"
+   },
+   {
+    "start": "SS",
+    "simultaneous": "SS",
+    "alternating": "SS"
+   }
+  ],
+  "fictitious_play": {
+   "BB": [
+    1.0,
+    0.0,
+    1.0,
+    0.0
+   ],
+   "BS": [
+    1.0,
+    0.001,
+    0.999,
+    0.001
+   ],
+   "SB": [
+    1.0,
+    0.001,
+    0.999,
+    0.001
+   ],
+   "SS": [
+    0.0,
+    1.0,
+    0.0,
+    1.0
+   ]
+  }
+ },
+ {
+  "game": "Different choices (anti-coordination)",
+  "actions": [
+   "0",
+   "1"
+  ],
+  "pure": [
+   "01",
+   "10"
+  ],
+  "mixed": [
+   0.5,
+   0.5
+  ],
+  "dynamics": [
+   {
+    "start": "00",
+    "simultaneous": "keeps switching",
+    "alternating": "10"
+   },
+   {
+    "start": "01",
+    "simultaneous": "01",
+    "alternating": "01"
+   },
+   {
+    "start": "10",
+    "simultaneous": "10",
+    "alternating": "10"
+   },
+   {
+    "start": "11",
+    "simultaneous": "keeps switching",
+    "alternating": "01"
+   }
+  ],
+  "fictitious_play": {
+   "00": [
+    0.5,
+    0.5,
+    0.5,
+    0.5
+   ],
+   "01": [
+    1.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "10": [
+    0.0,
+    1.0,
+    1.0,
+    0.0
+   ],
+   "11": [
+    0.5,
+    0.5,
+    0.5,
+    0.5
+   ]
+  }
+ },
+ {
+  "game": "Matching pennies (zero-sum)",
+  "actions": [
+   "H",
+   "T"
+  ],
+  "pure": [],
+  "mixed": [
+   0.5,
+   0.5
+  ],
+  "dynamics": [
+   {
+    "start": "HH",
+    "simultaneous": "keeps switching",
+    "alternating": "keeps switching"
+   },
+   {
+    "start": "HT",
+    "simultaneous": "keeps switching",
+    "alternating": "keeps switching"
+   },
+   {
+    "start": "TH",
+    "simultaneous": "keeps switching",
+    "alternating": "keeps switching"
+   },
+   {
+    "start": "TT",
+    "simultaneous": "keeps switching",
+    "alternating": "keeps switching"
+   }
+  ],
+  "fictitious_play": {
+   "HH": [
+    0.504,
+    0.496,
+    0.488,
+    0.512
+   ],
+   "HT": [
+    0.496,
+    0.504,
+    0.511,
+    0.488
+   ],
+   "TH": [
+    0.497,
+    0.503,
+    0.512,
+    0.487
+   ],
+   "TT": [
+    0.496,
+    0.503,
+    0.512,
+    0.488
+   ]
+  }
+ }
+]

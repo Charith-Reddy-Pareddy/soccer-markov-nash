@@ -323,6 +323,72 @@ def related_section(res: dict) -> str:
 <p>Has fictitious play been combined with policy gradient before? Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang) and compared each one-line summary with the abstract on the paper's own proceedings, journal or arXiv page, or on a bibliographic mirror where the publisher's page would not load (noted in the entry). JSTOR and the publisher pages for the 1951 papers would not load, so Brown and Robinson are cited from the linked secondary source and were not read. I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>{groups}</section>"""
 
 
+def symmetry_section(res: dict) -> str:
+    boards = res.get("symmetry")
+    if not boards:
+        return ""
+    names = [r["name"] for r in boards[0]["rows"]]
+    cont = next((b for b in boards if b["board"] == "continuing"), None)
+    extra = [r["name"] for r in cont["rows"] if r["name"] not in names] if cont else []
+    rows = []
+    for name_ in names + extra:
+        cells = []
+        for b in boards:
+            hit = next((r for r in b["rows"] if r["name"] == name_), None)
+            cells.append(f"{hit['gap']:.2f}" if hit else "&mdash;")
+        rows.append([name_, *cells])
+    learner_gaps = [r["gap"] for b in boards for r in b["rows"] if r["name"] != "Exact solver"]
+    pair_gaps = [(g[f"{a}, standard"], g[f"{a}, fictitious play"]) for b in boards
+                 for g in [{r["name"]: r["gap"] for r in b["rows"]}] for a in ("REINFORCE", "A2C", "PPO")]
+    pairs, closer = len(pair_gaps), sum(f < s for s, f in pair_gaps)
+    return f"""<section><h2>Are the two players mirror images?</h2>
+<p>The board is symmetric: swapping the two players and mirroring the pitch gives the same game. The <b>mirror gap</b> measures how far player 1's policy is from the mirror
+image of player 0's: for every position and several steps it takes the largest difference in move probabilities between player 0's policy and the mirrored policy of
+player 1, then averages. 0 means the pair is perfectly symmetric, 1 means opposite. The exact solver is symmetric (0). The learners are not: their two networks are trained
+separately and settle on different policies, with gaps of {min(learner_gaps):.2f} to {max(learner_gaps):.2f}; fictitious play has the smaller gap in {closer} of the {pairs} learner-and-board pairs.</p>
+{table(["policy"] + [b["title"] for b in boards], rows)}</section>"""
+
+
+def small_games_section(res: dict) -> str:
+    games = res.get("small_games")
+    if not games:
+        return ""
+    rows = []
+    for g in games:
+        pure = ", ".join(g["pure"]) or "none"
+        mixed = f"{g['mixed'][0]:.2f} / {g['mixed'][1]:.2f}" if g["mixed"] else "none"
+        for k, dyn in enumerate(g["dynamics"]):
+            fp = g["fictitious_play"][dyn["start"]]
+            rows.append([g["game"] if k == 0 else "", pure if k == 0 else "", mixed if k == 0 else "", dyn["start"], dyn["simultaneous"], dyn["alternating"],
+                         f"{fp[0]:.2f} / {fp[2]:.2f}"])
+    return f"""<section><h2>Other kinds of games</h2>
+<p>Best-response dynamics are known to converge in zero-sum games and in potential games, such as coordination games, but only to one of the equilibria and not necessarily from every start. Three
+two-by-two games show the difference. <b>Simultaneous</b>: both players switch to the best response to the other's last action. <b>Alternating</b>: one player responds, then the other
+responds to that. <b>Fictitious play</b>: each player best-responds to the average of the other's past play; the last column is the share of the first action played by the row
+and by the column player (2,000 rounds). Battle of the sexes (both prefer to be together; each prefers a different place): payoffs B,B = 2 and 1, S,S = 1 and 2, otherwise 0. Different choices: 1 each if the players choose differently,
+otherwise 0. Matching pennies: the row player wants to match, the column player wants to differ.</p>
+{table(["game", "pure equilibria", "mixed equilibrium (first action)", "start", "simultaneous best responses end in", "alternating best responses end in", "fictitious play"], rows, "small")}
+<p>In the coordination game the dynamics end in one of the two pure equilibria, which one depending on the start; started with mismatched choices the simultaneous version keeps switching. Where the only
+equilibrium is mixed (matching pennies) best-response dynamics never settle, but fictitious play's averages go to one half each, as in rock-paper-scissors. In the game of different choices, started with
+the same choice, simultaneous best responses keep switching and fictitious play's averages go to one half each while the players always match; started with different choices it stays there.</p></section>"""
+
+
+def rps_phases_block(res: dict) -> str:
+    data = res.get("rps_phases")
+    if not data:
+        return ""
+    rows = []
+    for phase in data["phases"]:
+        cells = [f"{phase} iterations"]
+        for mode in ("fictitious", "fictitious_argmax"):
+            run = data["runs"][f"{phase}/{mode}"]["final_exploitability"]
+            cells.append(f"<b>{sum(run) / len(run):.2f}</b><span class=\"sub\">{min(run):.2f} to {max(run):.2f}</span>")
+        rows.append(cells)
+    return (f"<h3>How long to train each best response</h3><p>Same networks and settings, {data['iterations']:,} iterations, {data['seeds']} seeds; each snapshot is taken after 5, 50 or 200 "
+            "iterations of training. Exploitability of the average of snapshots (mean of the last 300 iterations; 0 is one third each):</p>"
+            + table(["time between snapshots", "average of softmax snapshots", "average of argmax snapshots"], rows))
+
+
 def variant_section(res: dict) -> str:
     both = res.get("variants")
     if not both or not both.get("random") or not both.get("deterministic"):
@@ -791,7 +857,7 @@ of these states, though not at the states or in the proportions the exact soluti
 {policy_html()}{policy_table_html()}</section>""",
         f"""<section><h2>Why fictitious play</h2>
 <p>On rock-paper-scissors, answering the opponent's latest move makes the play flip between rock, paper and scissors for ever. Answering the average of everything it
-has played converges to one third each.</p><div>{rps_plot(res['rps'])}</div>{rps_nn_section(res).replace('<h2>', '<h3>', 1).replace('</h2>', '</h3>', 1).replace('<section>', '').replace('</section>', '')}</section>""",
+has played converges to one third each.</p><div>{rps_plot(res['rps'])}</div>{rps_nn_section(res).replace('<h2>', '<h3>', 1).replace('</h2>', '</h3>', 1).replace('<section>', '').replace('</section>', '')}{rps_phases_block(res)}</section>""",
         curves_section(res),
         f"""<section><h2>More training</h2>
 <p>Standard training at 8,000 instead of 2,000 iterations (two seeds each), deterministic board.</p>{legend}<div>{long_chart}</div>{long_table}
@@ -804,7 +870,8 @@ close the gap to the exact solver.</p></section>""",
 the best response at each checkpoint round (one seed per run); every line ends below {pct(max(c['win_vs_best_response'] for r in res['fp_br'] for c in r['checkpoints']))}.</p>
 <div>{line_chart(fp_series, rounds)}</div>{fp_table}</section>""",
         variant_section(res), argmax_section(res), entropy_section(res),
-        choices_section(res), more_seeds_section(res), related_section(res), reproduce_section(res),
+        choices_section(res), more_seeds_section(res), symmetry_section(res), small_games_section(res),
+        related_section(res), reproduce_section(res),
     ]
     numbered, k = [], 0
     for sec in sections:

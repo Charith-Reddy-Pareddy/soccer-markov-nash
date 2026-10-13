@@ -68,6 +68,14 @@ def summary(rows) -> dict:
     }
 
 
+_BOARDS: dict = {}
+
+
+def build_board_source(key: str) -> dict | None:
+    """The summary of one board as already assembled by ``build()`` (set while it runs)."""
+    return _BOARDS.get(key)
+
+
 def build() -> dict:
     main = read(EXP / "pg_finite_a10.csv")
     long_rows = [r for p in sorted(glob.glob(str(EXP / "pg_finite_a10_long_*.csv")))
@@ -97,15 +105,18 @@ def build() -> dict:
                              "win_vs_best_response": round(float(r["row_win_vs_br"]), 6)}
                             for r in rs],
         })
-    return {"exact": summary([r for r in main if r["algo"] == "exact"]),
-            "learners": learners, "longer": longer, "fp_br": fp_br,
-            "random": random_board(), "mixed": mixed_states(),
-            "continuing": continuing_game(), "rps": rock_paper_scissors(),
+    result = {"exact": summary([r for r in main if r["algo"] == "exact"]),
+              "learners": learners, "longer": longer, "fp_br": fp_br,
+              "random": random_board(), "mixed": mixed_states(),
+              "continuing": continuing_game(), "rps": rock_paper_scissors()}
+    _BOARDS.update({"deterministic": result, "random": result["random"], "continuing": result["continuing"]})
+    return {**result,
             "variants": {b: variants(b) for b in VARIANT_FILES},
             "argmax": argmax_average(), "rps_nn": rps_networks(),
             "entropy": larger_entropy(), "choices": training_choices(),
             "curves": training_curves(), "related": RELATED,
-            "more_seeds": more_seeds()}
+            "more_seeds": more_seeds(), "symmetry": symmetry(), "small_games": small_games(),
+            "rps_phases": rps_phases()}
 
 
 def random_board() -> dict:
@@ -298,6 +309,15 @@ def training_choices() -> list[dict] | None:
             "s25": _file_rows(f"pg_study_random_snap25_fictitious_{a}.csv", a, "fictitious"),
             "s100": _file_rows(f"pg_study_random_snap100_fictitious_{a}.csv", a, "fictitious")})
          for a, lab in algos]))
+    bkeys = [("b64", "64 episodes per iteration (used elsewhere)"), ("b8", "8 episodes"), ("b256", "256 episodes")]
+    studies.append(_study(
+        "How much data per iteration",
+        "Random board: 8, 64 or 256 episodes of 100 steps are simulated before each update.",
+        "br", rnd_ref, bkeys,
+        [(lab, tr, {"b64": _runs("random", a, m),
+                    "b8": _file_rows(f"pg_study_random_ep8_{m}_{a}.csv", a, m),
+                    "b256": _file_rows(f"pg_study_random_ep256_{m}_{a}.csv", a, m)})
+         for a, lab in algos for m, tr in modes]))
     studies.append(_study(
         "Five times as many iterations",
         "Random board: 10,000 iterations instead of 2,000.",
@@ -420,6 +440,34 @@ def more_seeds() -> dict | None:
                       "baseline_key": base, "variant_key": var,
                       **{f"{m}_diff": difference(conds[base][m], conds[var][m]) for m in ("ball", "other", "balanced")}})
     return {"seeds": MORE_SEEDS, "conditions": conds, "pairs": pairs}
+
+
+def symmetry() -> list[dict]:
+    """How far the two players' policies are from being mirror images of each other (0: perfectly
+    symmetric, 1: opposite), for the exact solver and every learner on every board."""
+    out = []
+    for key, title, board in (("deterministic", "Deterministic board (A10)", build_board_source("deterministic")),
+                              ("random", "Random move-order board", build_board_source("random")),
+                              ("continuing", "Continuing game", build_board_source("continuing"))):
+        if not board:
+            continue
+        rows = [{"name": "Exact solver", "gap": board["exact"]["mirror_gap"]}]
+        rows += [{"name": f"{x['label']}, {x['training']}", "gap": x["mirror_gap"]} for x in board["learners"]]
+        out.append({"board": key, "title": title, "rows": rows})
+    return out
+
+
+def small_games() -> list[dict] | None:
+    """Best-response dynamics and fictitious play on small coordination, anti-coordination and
+    zero-sum games (experiments/small_games.json)."""
+    path = EXP / "small_games.json"
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def rps_phases() -> dict | None:
+    """Rock-paper-scissors networks with best responses trained for 5, 50 or 200 iterations."""
+    path = EXP / "rps_nn_phases.json"
+    return json.loads(path.read_text()) if path.exists() else None
 
 
 def training_curves() -> dict | None:

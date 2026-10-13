@@ -31,7 +31,7 @@ def test_the_sections_are_numbered_in_order_and_listed_in_the_contents():
     assert re.findall(r"<li>(.*?)</li>", toc) == HEADS
     for needed in ("Setup", "Results by board", "Mixed states of the random board", "Action probabilities",
                    "Does training converge?", "Training choices", "More seeds", "Related work",
-                   "Reproducing the numbers"):
+                   "Reproducing the numbers", "Are the two players mirror images?", "Other kinds of games"):
         assert any(needed in h for h in HEADS)
 
 
@@ -84,7 +84,7 @@ def test_the_related_work_has_both_groups_and_says_how_it_was_checked():
 
 def test_the_report_names_no_one_and_leaves_exploitability_to_a_definition():
     assert not re.search(r"professor|\bdog\b|sheep|not yet", TEXT, re.I)
-    assert "mirror gap" not in TEXT.lower()
+    assert "Mirror gap" not in TEXT  # the measure is called by its lower-case name
     assert "Exploitability is about attackers, not about the player who has the ball" in TEXT
     assert "kickoff advantage cancels out of the sum" in TEXT and "not a win rate" in TEXT
 
@@ -207,3 +207,11 @@ def test_the_action_probability_tables_match_the_saved_policy_outputs():
 def test_ranges_never_read_zero_to_zero_and_zero_wins_are_not_called_more_than_zero():
     assert not re.search(r"\b(\d+)% to \1%", TEXT)
     assert "more than 0%" not in TEXT
+
+
+def test_the_symmetry_and_small_game_tables_and_the_phase_table_are_in_the_report():
+    block = HTML.split("Are the two players mirror images?</h2>")[1].split("<h2>")[0]
+    assert block.count("<table") == 1 and "mirror gap" in block and "Exact solver" in block
+    games = HTML.split("Other kinds of games</h2>")[1].split("<h2>")[0]
+    assert "Battle of the sexes" in games and "keeps switching" in games and "Matching pennies" in games
+    assert "How long to train each best response" in HTML and "time between snapshots" in HTML

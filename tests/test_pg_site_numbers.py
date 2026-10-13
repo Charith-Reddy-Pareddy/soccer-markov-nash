@@ -288,7 +288,7 @@ def test_the_continuing_variants_have_three_seeds_and_the_text_claims_hold():
 
 
 def test_only_the_explanatory_tables_and_the_win_rate_table_remain():
-    assert PAGE.count("<table") == 3 and "function WinRateTable" in PAGE and "<WinRateTable" in PAGE
+    assert PAGE.count("<table") == 5 and "function WinRateTable" in PAGE and "<WinRateTable" in PAGE
     html = (ROOT / "docs" / "policy_gradient.html").read_text()
     assert html.count("<table") == 2 and html.count('<table class="wins">') == 1
     assert html.index('<table class="wins">') == html.index("<table")  # the win rates come first
@@ -388,7 +388,7 @@ def test_the_training_choices_cover_every_comparison_with_three_seeds_per_settin
     assert [s["title"] for s in studies][:2] == [
         "Leaving out the last steps: how many?",
         "Leaving out the last steps in the continuing game"]
-    assert len(studies) == 8
+    assert len(studies) == 9
     for s in studies:
         assert s["metric"] in ("br", "tie") and len(s["keys"]) >= 2 and s["rows"]
         for row in s["rows"]:
@@ -507,3 +507,48 @@ def test_the_related_work_covers_older_and_recent_papers_and_says_how_it_was_che
     for text in (" ".join(PAGE.split()), " ".join(html.split())):
         assert "Google Scholar" in text and "JSTOR" in text and "Older work" in text
     assert "Brown" in html and "Robinson" in html and "Littman" in html
+
+
+def test_the_symmetry_table_covers_every_board_and_the_exact_solver_is_symmetric():
+    boards = RESULTS["symmetry"]
+    assert [b["board"] for b in boards] == ["deterministic", "random", "continuing"]
+    for b in boards:
+        assert b["rows"][0] == {"name": "Exact solver", "gap": 0.0}
+        assert all(0.0 < r["gap"] <= 1.0 for r in b["rows"][1:])
+    published = {(x["label"], x["training"]): x["mirror_gap"] for x in RESULTS["learners"]}
+    first = {r["name"]: r["gap"] for r in boards[0]["rows"]}
+    for (label, training), gap in published.items():
+        assert first[f"{label}, {training}"] == gap
+    assert "Are the two players mirror images?" in PAGE
+
+
+def test_the_small_games_show_the_known_behaviour_of_best_response_dynamics():
+    games = {g["game"]: g for g in RESULTS["small_games"]}
+    bos = games["Battle of the sexes (coordination)"]
+    assert bos["pure"] == ["BB", "SS"] and bos["mixed"] == [0.667, 0.333]
+    ends = {d["start"]: d["simultaneous"] for d in bos["dynamics"]}
+    assert ends["BB"] == "BB" and ends["SS"] == "SS" and ends["BS"] == "keeps switching"
+    pennies = games["Matching pennies (zero-sum)"]
+    assert pennies["pure"] == []
+    assert all(d["alternating"] == "keeps switching" for d in pennies["dynamics"])
+    assert all(abs(v - 0.5) < 0.03 for freqs in pennies["fictitious_play"].values() for v in freqs)
+    assert "Coordination, anti-coordination and a zero-sum game" in PAGE
+
+
+def test_the_rock_paper_scissors_phase_runs_cover_three_lengths_and_two_averages():
+    data = RESULTS["rps_phases"]
+    assert data["phases"] == [5, 50, 200] and data["seeds"] == 3
+    modes = ("fictitious", "fictitious_argmax")
+    assert set(data["runs"]) == {f"{p}/{m}" for p in (5, 50, 200) for m in modes}
+    for run in data["runs"].values():
+        assert len(run["final_exploitability"]) == 3 and len(run["aggregate"]) > 100
+        assert all(0.0 <= v <= 2.0 for v in run["final_exploitability"])
+
+
+def test_the_batch_size_study_uses_the_published_runs_for_64_episodes():
+    study = next(s for s in RESULTS["choices"] if s["title"] == "How much data per iteration")
+    assert [k for k, _ in study["keys"]] == ["b64", "b8", "b256"]
+    by = {(x["label"], x["training"]): x for x in RESULTS["random"]["learners"]}
+    for row in study["rows"]:
+        published = by[(row["label"], row["training"])]["vs_best_response"][0]
+        assert row["b64"]["mean"] == pytest.approx(published, abs=1e-5)

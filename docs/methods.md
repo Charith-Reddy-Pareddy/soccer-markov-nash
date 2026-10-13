@@ -106,6 +106,9 @@ All `soccer_nash/experiment.py` and `scripts/*.py`; every table regenerates via
 | `pg_study_{random,a10,rate_a10}_<setting>_<mode>_<algo>.csv` | `pg_finite.py --seeds 3 --resume --prefix pg_study --board <board> [--scoring rate] --algos <algo> --modes <mode> <option> --tag _<setting>_<mode>_<algo>` with `<option>` one of `--trim 5/20/40`, `--snap-every 1/25/100`, `--iterations 10000`, `--minibatch 256`, `--replay 4`, or `--algos a2c_exact`, and `--weights` for the weight-averaged networks | the training-choice comparisons (how many last steps to leave out, snapshot interval, five times the iterations, mini-batches, replayed data, the exact critic on every board, averaging weights); **3 seeds** each | ~10 min to ~4 h each |
 | `pg_more_random_<setting>_s<seed>.csv` | `pg_finite.py --seeds 1 --seed-start <seed> --resume --prefix pg_more --board random --algos <a2c\|ppo> --modes <fictitious\|selfplay> [--iterations 10000 \| --replay 4] --tag _<setting>_s<seed>` for seeds 3-9, with seeds 0-2 from the earlier files | the two settings that looked best on 3 seeds (A2C fictitious play at 10,000 iterations, PPO standard training with replay of 4 iterations) and their baselines, on **10 seeds** each | ~5 min to ~2 h each |
 | `pg_curves_{random,a10}_<mode>_<algo>.csv` | `pg_curves.py --board <board> --algos <algo> --modes <mode> --tag _<mode>_<algo>` | win rate against the best response, and the kickoff policy of the current and reported network, every 100 iterations of training; **3 seeds** | ~2-3 h each |
+| `pg_study_random_ep{8,256}_<mode>_<algo>.csv` | `pg_finite.py --seeds 3 --resume --prefix pg_study --board random --algos <a2c\\|ppo> --modes <mode> --episodes <8\\|256> --tag _ep<N>_<mode>_<algo>` | A2C and PPO, standard and fictitious play, with 8 or 256 episodes per iteration instead of 64; **3 seeds** | ~10 min to ~2 h each |
+| `rps_nn_phases.json` | `rps_nn_phases.py` | rock-paper-scissors networks with a snapshot every 5, 50 or 200 iterations (softmax and argmax averages); **3 seeds**, 8,000 iterations | ~1 h |
+| `small_games.json` | `small_games.py` | best-response dynamics and fictitious play on a coordination game, a game of different choices and matching pennies | ~1 s |
 | `pg_exact_kickoff.json` | `pg_exact_kickoff.py` | the exact solver's kickoff move probabilities on both boards, for the curve plots | ~2 min |
 | `rps_nn.json` | `rps_nn.py` | rock-paper-scissors with neural-network players: standard, fictitious play, argmax fictitious play, at the soccer settings and with a larger entropy bonus; **3 seeds**, 3,000 iterations | ~15 min |
 | `pg_random_kickoff_value.json` | `pg_kickoff_value.py` | value of the random board at the kickoff for the exact 100-step solution (the ball-holding seat's edge) | ~1 min |
@@ -139,7 +142,7 @@ exact and portable, and is the headline efficiency number.
 the A10 netID start `(0,1,6,3,0)`. The pure/mixed counts and the whole geometric
 analysis are over *all* states and do not depend on it.
 
-**Tests.** 519 fast tests (`pytest -m "not slow"`) pass on every commit --
+**Tests.** 529 fast tests (`pytest -m "not slow"`) pass on every commit --
 collision-rule enumeration against the A10 spec, the self-loop `V = 0`
 invariant across all 2380 states, solver/backup equivalence, and the neural
 (DQN/policy-gradient) and reward-audit modules. `make test-all` adds ~34

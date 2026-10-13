@@ -273,11 +273,18 @@ def rps_section(res: dict) -> str:
               f"{ex[names[1]]['standard']:.2f} standard, {ex[names[1]]['fictitious']:.2f} softmax average, "
               f"{ex[names[1]]['fictitious_argmax']:.2f} argmax average. That is a stabilization effect of the changed objective, "
               "not evidence of convergence to the unregularized equilibrium." if len(names) > 1 else "")
+    ph = res.get("rps_phases")
+    phase_text = ""
+    if ph:
+        mean = lambda v: sum(v) / len(v)  # noqa: E731
+        soft = ", ".join(f"{mean(ph['runs'][f'{p}/fictitious']['final_exploitability']):.2f}" for p in ph["phases"])
+        pure = ", ".join(f"{mean(ph['runs'][f'{p}/fictitious_argmax']['final_exploitability']):.2f}" for p in ph["phases"])
+        phase_text = (f" Snapshots after {', '.join(map(str, ph['phases']))} iterations of training instead of 5: exploitability {soft} (softmax average) and {pure} (argmax average).")
     return f"""<section><h2>5. Rock-paper-scissors with neural networks</h2>
 <p>Each player is a small softmax network trained by REINFORCE ({data['iterations']:,} iterations, {data['batch']} games each, {data['seeds']} seeds; seed 0 shown).
 Orange: the current network's share of rock. Green: the average over past snapshots (fictitious play), of softmax policies or of argmax (pure) policies.
 Exploitability (right) is what a perfect attacker could gain against the two networks' policies, summed over both players: 0 at one third each, 2 at worst. With the soccer settings the standard networks cycle ({ex[names[0]]['standard']:.2f}) and neither average
-reaches one third (softmax {ex[names[0]]['fictitious']:.2f}, argmax {ex[names[0]]['fictitious_argmax']:.2f}).{second}</p>
+reaches one third (softmax {ex[names[0]]['fictitious']:.2f}, argmax {ex[names[0]]['fictitious_argmax']:.2f}).{second}{phase_text}</p>
 <div>{rps_nn_panels(first, data['iterations'])}</div></section>"""
 
 
@@ -359,6 +366,10 @@ def findings_section(res: dict) -> str:
         f"Against a random player the learners win {pct(min(rand))} to {pct(max(rand))} of games (deterministic board); fictitious play does better than standard training.",
         f"Starting from the {mixed['mixed_states']} states where the exact answer has to mix, the learners win {pct(min(mx))} to {pct(max(mx))} against the exact Nash policy; the exact solver wins {pct(mixed['exact']['vs_nash'][0])}.",
     ]
+    sym = res.get("symmetry")
+    if sym:
+        gaps = [r["gap"] for b in sym for r in b["rows"] if r["name"] != "Exact solver"]
+        lines.append(f"<b>The two players are not mirror images:</b> mirror gap 0 for the exact solver, {min(gaps):.2f} to {max(gaps):.2f} for the learners (1 is opposite).")
     more = res.get("more_seeds")
     if more:
         c = more["conditions"]
@@ -386,7 +397,7 @@ def build_html(res: dict) -> str:
 <title>Policy gradient on the soccer game</title><style>
 :root{{--ink:#1c2e26;--accent:#1DB954;--accent-dark:#178A42;--line:#dbe5df;--muted:#5b6b63;--card:#f3f8f5}}
 *{{box-sizing:border-box}}
-body{{font:14px/1.6 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;max-width:900px;margin:36px auto;color:var(--ink);padding:0 28px}}
+body{{font:13.5px/1.55 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;max-width:900px;margin:36px auto;color:var(--ink);padding:0 28px}}
 h1{{font-size:26px;margin:0 0 6px;color:var(--accent-dark);letter-spacing:-.01em}}
 h2{{font-size:18px;margin:0 0 8px;color:var(--accent-dark);break-after:avoid}}
 h3{{font-size:13px;margin:16px 0 4px;color:var(--ink)}}
