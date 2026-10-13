@@ -45703,9 +45703,9 @@
    "title": "Fictitious play property for games with identical interests",
    "authors": "Monderer and Shapley",
    "year": 1996,
-   "venue": "Journal of Economic Theory 68",
+   "venue": "Journal of Economic Theory 68(1), pp. 258-265",
    "url": "https://doi.org/10.1006/jeth.1996.0014",
-   "says": "Fictitious play converges in games with identical interests (best-response equivalent to an identical-payoff game)."
+   "says": "Defines n-person games with identical interests (best-response equivalent in mixed strategies to a game with identical payoff functions) and proves that every such game has the fictitious-play property. Abstract read on a bibliographic mirror; the publisher's page was blocked."
   },
   {
    "group": "older",
