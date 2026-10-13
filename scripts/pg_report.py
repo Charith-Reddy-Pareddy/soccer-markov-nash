@@ -105,7 +105,7 @@ def variant_bars(rows, reference, width=660, field="", keys=None) -> str:
     for i, r in enumerate(rows):
         y0 = 28 + i * group
         out.append(f'<text x="{left - 8}" y="{y0 + group / 2 - 6}" text-anchor="end" fill="#1c2e26">'
-                   f'{r["label"]}, {r["training"]}</text>')
+                   f'{r["label"]}{", " + r["training"] if r["training"] else ""}</text>')
         for n, (key, colour) in enumerate((keys or VARIANT_COLOURS).items()):
             v, y = r[key], y0 + n * (bar + 2)
             mean, runs = v[f"{field}mean"], v[f"{field}runs"]
@@ -330,6 +330,39 @@ def related_section(res: dict) -> str:
 <p>Has fictitious play been combined with policy gradient before? Yes, in several forms. In a short search I found these; the one-line summaries
 follow each paper's abstract or listing and I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient
 with fictitious play in zero-sum Markov games.</p><ul>{lis}</ul></section>"""
+
+
+def more_seeds_section(res: dict) -> str:
+    data = res.get("more_seeds")
+    if not data:
+        return ""
+    pts = lambda v: f"{'+' if v >= 0 else '−'}{abs(round(v * 100))}"  # noqa: E731
+    ci = lambda v: f"{pct(v[0])} (95% interval {pct(v[1])} to {pct(v[2])})"  # noqa: E731
+    dci = lambda v: f"{pts(v[0])} points (95% interval {pts(v[1])} to {pts(v[2])})"  # noqa: E731
+    keys = {"base": GREEN, "variant": ORANGE}
+    exact = res["random"]["exact"]
+    ball, other = exact["vs_best_response"][0], exact["vs_best_response_column"][0]
+    parts = []
+    for pair in data["pairs"]:
+        b, v = data["conditions"][pair["baseline_key"]], data["conditions"][pair["variant_key"]]
+        rows = [{"label": lab, "training": "",
+                 "base": {"mean": sum(b[m]) / len(b[m]), "runs": b[m]},
+                 "variant": {"mean": sum(v[m]) / len(v[m]), "runs": v[m]}}
+                for m, lab in (("ball", "Ball seat"), ("other", "Other seat"), ("balanced", "Balanced"))]
+        parts.append(
+            f"<h3>{pair['label']}: {pair['variant']}</h3><div>{variant_bars(rows, ball, keys=keys)}</div>"
+            f'<p class="muted"><span style="color:{GREEN}">■</span> usual setting &nbsp; <span style="color:{ORANGE}">■</span> changed setting</p>'
+            f"<p>{pair['label']}, {pair['variant']}: ball seat {ci(b['ball_ci'])} before and {ci(v['ball_ci'])} after, a change of "
+            f"{dci(pair['ball_diff'])}; balanced {ci(b['balanced_ci'])} before and {ci(v['balanced_ci'])} after, a change of "
+            f"{dci(pair['balanced_diff'])}. The interval for the change from the ball seat "
+            f"{'excludes' if pair['ball_diff'][1] > 0 else 'includes'} zero; from the other seat both settings win "
+            f"{pct(max(*b['other'], *v['other']))} or less in every run.</p>")
+    return f"""<section><h2>15. More seeds</h2>
+<p>With 3 seeds, A2C with fictitious play looked better at 10,000 iterations than at 2,000, and PPO with standard training looked better with replayed
+data. Each of these two settings and its usual-setting baseline was run on seeds 0 to {data['seeds'] - 1} (random move-order board). Bars are means; dots
+are single seeds; the intervals are 95% intervals from Student's t. The exact solver wins {pct(ball)} from the ball seat, {pct(other)} from the other seat
+and {pct((ball + other) / 2)} balanced.</p>
+{"".join(parts)}</section>"""
 
 
 def variant_section(res: dict) -> str:
@@ -702,6 +735,8 @@ responses, then adds the result to its history. Win rate against the best respon
 {choices_section(res)}
 
 {related_section(res)}
+
+{more_seeds_section(res)}
 </body></html>"""
 
 

@@ -104,7 +104,8 @@ def build() -> dict:
             "variants": {b: variants(b) for b in VARIANT_FILES},
             "argmax": argmax_average(), "rps_nn": rps_networks(),
             "entropy": larger_entropy(), "choices": training_choices(),
-            "curves": training_curves(), "related": RELATED}
+            "curves": training_curves(), "related": RELATED,
+            "more_seeds": more_seeds()}
 
 
 def random_board() -> dict:
@@ -348,6 +349,75 @@ def _prefixed(row: dict, prefix: str) -> dict:
         if k.startswith(prefix):
             out[k[len(prefix):]] = row[k]
     return out
+
+
+# two-sided 95% critical values of Student's t, by degrees of freedom
+T95 = [12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201, 2.179, 2.160,
+       2.145, 2.131, 2.120, 2.110, 2.101, 2.093, 2.086, 2.080, 2.074, 2.069, 2.064, 2.060, 2.056,
+       2.052, 2.048, 2.045, 2.042]
+
+
+def t95(df: float) -> float:
+    return T95[max(0, min(len(T95), int(df)) - 1)]
+
+
+def interval(values: list[float]) -> list[float]:
+    """Mean and the ends of its 95% confidence interval (Student's t), kept within 0 and 1 because
+    the values are shares of games."""
+    n, m = len(values), st.mean(values)
+    half = t95(n - 1) * st.stdev(values) / n ** 0.5
+    return [round(m, 6), round(max(m - half, 0.0), 6), round(min(m + half, 1.0), 6)]
+
+
+def difference(a: list[float], b: list[float]) -> list[float]:
+    """Mean of ``b`` minus mean of ``a`` and the ends of its 95% interval (Welch)."""
+    va, vb = st.variance(a) / len(a), st.variance(b) / len(b)
+    df = (va + vb) ** 2 / (va ** 2 / (len(a) - 1) + vb ** 2 / (len(b) - 1))
+    half = t95(df) * (va + vb) ** 0.5
+    d = st.mean(b) - st.mean(a)
+    return [round(d, 6), round(d - half, 6), round(d + half, 6)]
+
+
+MORE_SEEDS = 10
+# condition -> (first-three-seeds file, mode, seed files of the extra runs)
+MORE_CONDITIONS = {
+    "a2c_fp_base": ("pg_finite_random_a2c.csv", "a2c", "fictitious", "pg_more_random_a2c_fp_base_s*.csv"),
+    "a2c_fp_10k": ("pg_study_random_iter10000_fictitious_a2c.csv", "a2c", "fictitious", "pg_more_random_a2c_fp_10k_s*.csv"),
+    "ppo_sp_base": ("pg_finite_random_ppo.csv", "ppo", "selfplay", "pg_more_random_ppo_sp_base_s*.csv"),
+    "ppo_sp_replay4": ("pg_study_random_replay4_selfplay_ppo.csv", "ppo", "selfplay", "pg_more_random_ppo_replay4_s*.csv"),
+}
+
+
+def _more_rows(key: str) -> list[dict]:
+    first, algo, mode, extra = MORE_CONDITIONS[key]
+    rows = _file_rows(first, algo, mode) + _file_rows(extra, algo, mode)
+    by_seed = {int(r["seed"]): r for r in rows}
+    return [by_seed[k] for k in sorted(by_seed)]
+
+
+def more_seeds() -> dict | None:
+    """The two settings that looked best with 3 seeds (A2C fictitious play at 10,000 iterations and
+    PPO standard training with replay of 4 iterations) and their baselines, on seeds 0-9: win rate
+    against the best response from each kickoff seat and balanced, with 95% intervals."""
+    conds = {}
+    for key in MORE_CONDITIONS:
+        rows = _more_rows(key)
+        if len(rows) < MORE_SEEDS:
+            return None
+        ball = [float(r["row_win_vs_br"]) for r in rows]
+        other = [float(r["col_win_vs_br"]) for r in rows]
+        balanced = [(x + y) / 2 for x, y in zip(ball, other)]
+        conds[key] = {"seeds": [int(r["seed"]) for r in rows], "ball": ball, "other": other,
+                      "balanced": balanced, "ball_ci": interval(ball), "other_ci": interval(other),
+                      "balanced_ci": interval(balanced),
+                      "random": [float(r["row_win_vs_random"]) for r in rows],
+                      "tie_nash": [float(r["row_tie_vs_nash"]) for r in rows]}
+    pairs = []
+    for label, base, var, variant in (("A2C, fictitious play", "a2c_fp_base", "a2c_fp_10k", "10,000 iterations"),
+                                      ("PPO, standard", "ppo_sp_base", "ppo_sp_replay4", "replay of 4 iterations")):
+        pairs.append({"label": label, "variant": variant, "baseline_key": base, "variant_key": var,
+                      **{f"{m}_diff": difference(conds[base][m], conds[var][m]) for m in ("ball", "other", "balanced")}})
+    return {"seeds": MORE_SEEDS, "conditions": conds, "pairs": pairs}
 
 
 def training_curves() -> dict | None:

@@ -81,7 +81,8 @@ def test_the_report_has_a_section_per_board_and_the_plots():
                 + 2  # more training, long best responses
                 + 3 + 3 + 3  # sharing and trimming; argmax averages; larger entropy bonus
                 + 2 * len(RES["curves"])  # training curves: two charts per board
-                + len(RES["choices"]))  # one chart per training-choice comparison
+                + len(RES["choices"])  # one chart per training-choice comparison
+                + len(RES["more_seeds"]["pairs"]))  # the two more-seeds comparisons
     assert HTML.count("<svg") == expected and HTML.split("<section><h2>3.")[1].count("<table") == 1
     assert "best-response dynamics" in TEXT
 

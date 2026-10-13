@@ -439,3 +439,58 @@ def test_the_related_work_list_has_links_and_the_page_hedges_what_was_checked():
     html = (ROOT / "docs" / "policy_gradient.html").read_text()
     assert "have not checked the proofs" in " ".join(html.split())
     assert all(i["url"] in html for i in items)
+
+
+def _site_data_module():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "pg_site_data_for_tests", ROOT / "scripts" / "pg_site_data.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_the_interval_and_difference_helpers_follow_student_t():
+    mod = _site_data_module()
+    values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    mean, lo, hi = mod.interval(values)
+    import statistics
+
+    half = 2.262 * statistics.stdev(values) / 10 ** 0.5
+    assert mean == pytest.approx(0.55) and lo == pytest.approx(mean - half, abs=1e-5)
+    assert hi == pytest.approx(mean + half, abs=1e-5)
+    same = mod.difference(values, values)
+    assert same[0] == 0.0 and same[1] < 0.0 < same[2]
+    shifted = mod.difference(values, [v + 5 for v in values])
+    assert shifted[0] == pytest.approx(5.0) and shifted[1] > 4.0
+    assert mod.t95(9) == 2.262 and mod.t95(1000) == mod.T95[-1]
+    near_zero = mod.interval([0.0, 0.0, 0.001, 0.0, 0.002, 0.0, 0.0, 0.0, 0.001, 0.0])
+    assert near_zero[1] == 0.0 and 0.0 < near_zero[0] < near_zero[2] <= 1.0
+
+
+def test_the_more_seeds_comparison_has_ten_seeds_per_condition_and_consistent_intervals():
+    data = RESULTS["more_seeds"]
+    assert data["seeds"] == 10
+    assert set(data["conditions"]) == {"a2c_fp_base", "a2c_fp_10k", "ppo_sp_base", "ppo_sp_replay4"}
+    for c in data["conditions"].values():
+        assert c["seeds"] == list(range(10))
+        for m in ("ball", "other", "balanced"):
+            assert len(c[m]) == 10
+            mean, lo, hi = c[f"{m}_ci"]
+            assert lo <= mean <= hi and mean == pytest.approx(sum(c[m]) / 10, abs=1e-5)
+        assert c["balanced"] == pytest.approx([(x + y) / 2 for x, y in zip(c["ball"], c["other"])])
+    for pair in data["pairs"]:
+        base = data["conditions"][pair["baseline_key"]]["ball_ci"][0]
+        var = data["conditions"][pair["variant_key"]]["ball_ci"][0]
+        assert pair["ball_diff"][0] == pytest.approx(var - base, abs=1e-5)
+    assert "More seeds" in PAGE
+
+
+def test_the_first_three_seeds_of_the_more_seeds_baselines_are_the_published_runs():
+    by = {(x["label"], x["training"]): x for x in RESULTS["random"]["learners"]}
+    data = RESULTS["more_seeds"]["conditions"]
+    for key, label, training in (("a2c_fp_base", "A2C", "fictitious play"),
+                                 ("ppo_sp_base", "PPO", "standard")):
+        published = by[(label, training)]["vs_best_response"][0]
+        assert sum(data[key]["ball"][:3]) / 3 == pytest.approx(published, abs=1e-3)
