@@ -831,7 +831,7 @@ def build_html(res: dict) -> str:
 <p>Two players face each other. At kickoff one of them has the ball and the other has to defend, and having the ball is an advantage. Each learner is trained for both players, so it is measured in both positions. <b>Starts with the ball</b>: our learner is the player who has the ball at kickoff. <b>Starts without the ball</b>: our learner is the other player. <b>Average of both</b>: the mean of the two, one fair number that does not depend on who starts with the ball.</p>
 {win_rate_table([(t, b) for t, _, b in boards])}
 <p>The share of 1,000 games each learner wins when the opponent plays the exact best response to it, when it starts with the ball, when it starts without the ball, and averaged over both
-(mean of 3 seeds). The exact solver is the top row, as context rather than a target. A dash means the learner was not run on that board.</p>
+(mean of 3 seeds). The exact solver is the top row, as context rather than a target. The win rate is a check, not an objective: no learner is trained to raise it. A dash means the learner was not run on that board.</p>
 <h3>How to read the numbers</h3>{definitions}
 <h3>Why the exact solver does not win 0% against the best response</h3>
 <p>The best response is the move that minimizes our player's <em>expected discounted score difference</em>, not the one that minimizes its chance of winning.
