@@ -29,19 +29,24 @@ def main() -> None:
     ap.add_argument("--rounds", type=int, default=30)
     ap.add_argument("--br-iters", type=int, default=100)
     ap.add_argument("--episodes", type=int, default=64)
+    ap.add_argument("--updates-per-batch", type=int, default=5,
+                    help="REINFORCE/A2C optimization passes on each collected response batch")
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--eval-every", type=int, default=5)
     ap.add_argument("--games", type=int, default=500)
     ap.add_argument("--gamma", type=float, default=0.9)
     ap.add_argument("--tag", default="")
     a = ap.parse_args()
+    if a.updates_per_batch < 1:
+        raise SystemExit("--updates-per-batch must be positive")
 
     game = A10SoccerGame()
     horizon = game.max_steps
     solver = NashQIteration(game, gamma=a.gamma, mode="hybrid", tol=1e-10)
     _, row_t, col_t = fh.solve_finite_horizon(solver, a.gamma, horizon)
     exact = (fh.tables_to_policy(row_t), fh.tables_to_policy(col_t))
-    path = EXP / f"pg_fp_br_{a.algo}_s{a.seed}{a.tag}.csv"
+    update_tag = f"_updates{a.updates_per_batch}" if a.updates_per_batch != 1 else ""
+    path = EXP / f"pg_fp_br_{a.algo}_s{a.seed}{update_tag}{a.tag}.csv"
     rows: list[dict] = []
     t0 = time.perf_counter()
 
@@ -49,7 +54,8 @@ def main() -> None:
         if r % a.eval_every and r != a.rounds:
             return
         row = {"algo": a.algo, "seed": a.seed, "round": r,
-               "br_iters": a.br_iters, "elapsed_s": round(time.perf_counter() - t0),
+               "br_iters": a.br_iters, "updates_per_batch": a.updates_per_batch,
+               "elapsed_s": round(time.perf_counter() - t0),
                **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1, a.gamma, horizon,
                              a.games, a.seed)}
         rows.append(row)
@@ -60,7 +66,8 @@ def main() -> None:
             w.writerows(rows)
 
     pf.train_fp_br(game, a.algo, a.rounds, a.br_iters, a.gamma, horizon, a.episodes,
-                   a.lr, seed=a.seed, on_round=on_round)
+                   a.lr, seed=a.seed, on_round=on_round,
+                   updates_per_batch=a.updates_per_batch)
     print(f"wrote experiments/{path.name}")
 
 

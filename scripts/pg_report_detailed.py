@@ -745,7 +745,7 @@ def reproduce_section(res: dict) -> str:
     return f"""<section><h2>Reproducing the numbers</h2>
 <p>Every number in this report is computed by <code>scripts/pg_site_data.py</code> from the result files in <code>experiments/</code>; the same data
 feeds the website's Policy gradient tab. The runner is <code>scripts/pg_finite.py</code> (2,000 iterations of 64 episodes and 1,000 evaluation games by
-default); each output row records the number of iterations. <code>make pg-report</code> and <code>make pg-pdf</code> rebuild the short report and
+default). The saved comparisons used one REINFORCE/A2C update pass per collected batch; the runner now defaults to five and writes those runs to separate files. Use <code>--updates-per-batch 1</code> to reproduce the saved data. PPO retains four epochs. Each output row records the effective update count. <code>make pg-report</code> and <code>make pg-pdf</code> rebuild the short report and
 <code>make pg-detailed-pdf</code> this one.</p>
 {methods_table()}</section>"""
 
@@ -824,7 +824,7 @@ def build_html(res: dict) -> str:
         ["Game", "7&times;5 board, goal rows 1&ndash;3. Fixed 100 steps, discount 0.9, and the number of steps left is a network input."],
         ["Boards", "Deterministic (A10): simultaneous moves, the carrier wins contested squares. Random move order: moves are applied in a random order each step. Continuing game: fixed 100 steps, play restarts after a goal."],
         ["Returns", "REINFORCE: the discounted return from each step to the end of the episode, no baseline. A2C: 10-step bootstrapped advantage from a learned critic. A2C with the exact critic: the critic is the exact solver's value, frozen, so the advantage is the exact Q(s, a<sub>0</sub>, a<sub>1</sub>) minus V(s). PPO: GAE (&lambda; 0.95), ratio clipped at 0.2, 4 epochs."],
-        ["Updates", "Every iteration: 64 episodes of 100 steps, then one gradient step per player on all of that data (four for PPO). 2,000 iterations. Learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. No mini-batches, no replay (both are tested in the training choices)."],
+        ["Updates", "Saved comparison tables use one update pass on each collected REINFORCE/A2C batch. The runner now defaults to five shuffled passes (--updates-per-batch 5); use 1 to reproduce those results. PPO retains four epochs. Each pass uses all data or one shuffled mini-batch sweep. Every iteration collects 64 episodes of 100 steps; 2,000 iterations, learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. Replay remains a separate option."],
         ["Standard", "Both players' current networks play each other and keep updating: real-time best responses."],
         ["Fictitious play", "Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations, a fixed budget of 5 policy-gradient iterations); the policy it reports is the average of its own snapshots. Policies, never network weights, are averaged."],
         ["Evaluation", "1,000 repeated games from the kickoff against a random player, the exact Nash policy and the exact best response; wins, ties and losses counted. 3 seeds per learner unless stated."]], "text")

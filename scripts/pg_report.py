@@ -444,7 +444,7 @@ On the deterministic board the exact solver ties itself; in the continuing game 
 {table(["setting", "value"], [
  ["Game", "7&times;5 board, goal rows 1&ndash;3, fixed 100 steps, discount 0.9; the number of steps left is a network input. Three boards: deterministic (A10), random move order, and the continuing game (play restarts after a goal)."],
  ["Algorithms", "REINFORCE (discounted returns), A2C (10-step bootstrapped advantage; also with the exact solver's values as a frozen critic), PPO (GAE, clip 0.2, 4 epochs)."],
- ["Updates", "Each iteration: 64 episodes of 100 steps, one gradient step per player on all the data. 2,000 iterations, learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 networks, a separate network per player."],
+ ["Updates", "The saved comparisons used one REINFORCE/A2C update per collected batch. The runner now defaults to five shuffled passes over each new batch (--updates-per-batch 5); set it to 1 to reproduce the saved CSVs. PPO keeps its four epochs. Each iteration collects 64 episodes of 100 steps; 2,000 iterations, learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 networks, separate network per player."],
  ["Standard", "Both current networks play each other and keep updating."],
  ["Fictitious play", "Each player trains against a frozen snapshot of the other drawn from all its past snapshots (one every 5 iterations); it reports the average of its own snapshots. Policies, never weights, are averaged."]], "text")}
 </section>

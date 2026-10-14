@@ -297,9 +297,30 @@ def test_the_runner_trains_for_the_documented_2000_iterations_by_default():
     spec.loader.exec_module(mod)
     args = mod.parser().parse_args([])
     assert args.iterations == 2000 and args.episodes == 64 and args.games == 1000
-    assert args.seeds == 3 and args.entropy == 0.01
+    assert args.seeds == 3 and args.entropy == 0.01 and args.updates_per_batch == 5
     pretrained_args = mod.parser().parse_args(["--algos", "a2c_pretrained"])
     assert pretrained_args.algos == ["a2c_pretrained"]
+    one_update = mod.parser().parse_args(["--updates-per-batch", "1"])
+    assert one_update.updates_per_batch == 1
+
+
+def test_training_forwards_multiple_updates_for_each_collected_player_batch(small, monkeypatch):
+    game = small[0]
+    seen = []
+    update = pf.update
+
+    def record(*args, **kwargs):
+        seen.append((kwargs["updates_per_batch"], id(args[3]["X"])))
+        return update(*args, **kwargs)
+
+    monkeypatch.setattr(pf, "update", record)
+    pf.train(game, "a2c", "selfplay", GAMMA, HORIZON, iterations=1, episodes=3,
+             updates_per_batch=2, seed=5)
+    assert [n for n, _ in seen] == [2, 2]
+    assert seen[0][1] == seen[1][1]
+    with pytest.raises(ValueError, match="updates_per_batch"):
+        pf.train(game, "a2c", "selfplay", GAMMA, HORIZON, iterations=1,
+                 episodes=2, updates_per_batch=0)
 
 
 def test_resumed_runs_are_read_back_as_numbers_so_the_final_summary_can_average_them(tmp_path):
@@ -336,6 +357,39 @@ def test_minibatches_take_several_gradient_steps_where_full_batch_takes_one(smal
 
     n = int(batch["alive"].sum())
     assert steps(0) == 1 and steps(16) == -(-n // 16)
+
+
+@pytest.mark.parametrize("algo", ["reinforce", "a2c", "a2c_exact", "a2c_pretrained"])
+def test_configured_updates_reuse_one_collected_batch_and_ppo_keeps_its_epochs(small, algo):
+    import torch
+
+    game, solver, *_ = small
+    exact = fh.ExactCritic(game, solver, GAMMA, HORIZON) if algo in pf.EXACT_ALGOS else None
+    batch = pf.collect(game, pf._Current(pf.Net(game, 4)), pf._Current(pf.Net(game, 4)), 4,
+                       HORIZON, np.random.default_rng(13))
+    net = pf.Net(game, 4)
+    critic = pf.Net(game, 1) if algo in ("a2c", "a2c_pretrained") else None
+    if algo == "a2c_pretrained":
+        pf.fit_exact_critic(critic, exact, 0, epochs=1, batch_size=128)
+    params = [*net.parameters(), *(critic.parameters() if critic is not None else [])]
+    opt = torch.optim.SGD(params, lr=0.01)
+    calls = [0]
+    step = opt.step
+    opt.step = lambda *a, **k: (calls.__setitem__(0, calls[0] + 1), step(*a, **k))[1]
+    pf.update(net, critic, [opt, opt], batch, 0, algo, GAMMA, 0.01, exact=exact,
+              updates_per_batch=3)
+    assert calls[0] == 3
+
+    ppo_net = pf.Net(game, 4)
+    ppo_critic = pf.Net(game, 1)
+    ppo_opt = torch.optim.SGD([*ppo_net.parameters(), *ppo_critic.parameters()], lr=0.01)
+    ppo_calls = [0]
+    ppo_step = ppo_opt.step
+    ppo_opt.step = lambda *a, **k: (ppo_calls.__setitem__(0, ppo_calls[0] + 1),
+                                    ppo_step(*a, **k))[1]
+    pf.update(ppo_net, ppo_critic, [ppo_opt, ppo_opt], batch, 0, "ppo", GAMMA, 0.01,
+              updates_per_batch=3)
+    assert ppo_calls[0] == 4
 
 
 def test_replay_concatenates_episodes_and_every_algorithm_trains_with_it(small):

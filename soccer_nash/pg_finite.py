@@ -177,8 +177,10 @@ def _returns(r, alive, value, algo, gamma, n_step=10, lam=0.95):
 
 def update(
     net, critic, opts, batch, player, algo, gamma, entropy, clip=0.2, epochs=4, exact=None,
-    trim=0, minibatch=0,
+    trim=0, minibatch=0, updates_per_batch=1,
 ):
+    if updates_per_batch < 1:
+        raise ValueError("updates_per_batch must be positive")
     sign = 1.0 if player == 0 else -1.0
     X, alive = batch["X"], batch["alive"]
     r = sign * batch["R"]
@@ -204,8 +206,9 @@ def update(
     elif algo == "a2c":
         adv_f = adv_f - value[use]
     tgt = target[use] if target is not None else None
-    for _ in range(epochs if algo == "ppo" else 1):
-        # one gradient step on all the data, or one per random mini-batch of ``minibatch`` samples
+    passes = epochs if algo == "ppo" else updates_per_batch
+    for _ in range(passes):
+        # Each pass reuses the collected data once, as a full batch or shuffled mini-batches.
         parts = torch.randperm(x.shape[0]).split(minibatch) if minibatch else [slice(None)]
         for i in parts:
             logp_all = torch.log_softmax(net(x[i]), dim=-1)
@@ -276,14 +279,15 @@ def train(
     entropy: float = 0.01, snap_every: int = 5, seed: int = 0, exact=None,
     shared: bool = False, trim: int = 0, replay: int = 1, minibatch: int = 0,
     checkpoint_every: int = 0, on_checkpoint=None, critic_pretrain_epochs: int = 10,
-    critic_pretrain_batch_size: int = 4096,
+    critic_pretrain_batch_size: int = 4096, updates_per_batch: int = 5,
 ) -> Trained:
     """``mode``: ``selfplay`` (standard), ``fictitious`` (train against the average of the
     opponent's past snapshots, report the average of one's own), or ``fictitious_argmax``
     (the same, but every snapshot is first turned into the pure policy that takes its most
     likely move, so both the opponent mixture and the reported policy average pure policies).
     ``replay``: each update uses the last ``replay`` iterations' data; ``minibatch``: split the
-    data into random mini-batches of that many samples, one gradient step each.
+    data into random mini-batches of that many samples. REINFORCE/A2C make
+    ``updates_per_batch`` passes over each collected batch; PPO keeps its ``epochs`` passes.
     ``on_checkpoint(iteration, reported, current)`` is called every ``checkpoint_every``
     iterations with the reported policies and the current networks' policies.
     ``shared``: both players' policies are two output heads of one network.
@@ -293,6 +297,8 @@ def train(
         raise ValueError(f"algo: one of ALGOS or {EXACT_ALGOS}; mode: one of {MODES}")
     if algo in EXACT_ALGOS and exact is None:
         raise ValueError(f"{algo} needs the exact solver values")
+    if updates_per_batch < 1:
+        raise ValueError("updates_per_batch must be positive")
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     if shared:
@@ -322,7 +328,8 @@ def train(
             for i in (0, 1):
                 buffers[i] = (buffers[i] + [batch])[-replay:]
                 update(nets[i], critics[i], opts, _concat(buffers[i]), i, algo, gamma, entropy,
-                       exact=exact, trim=trim, minibatch=minibatch)
+                       exact=exact, trim=trim, minibatch=minibatch,
+                       updates_per_batch=updates_per_batch)
         else:
             for i in (0, 1):
                 mine = _Current(nets[i])
@@ -331,7 +338,8 @@ def train(
                 batch = collect(game, *players, episodes, horizon, rng)
                 buffers[i] = (buffers[i] + [batch])[-replay:]
                 update(nets[i], critics[i], opts, _concat(buffers[i]), i, algo, gamma, entropy,
-                       exact=exact, trim=trim, minibatch=minibatch)
+                       exact=exact, trim=trim, minibatch=minibatch,
+                       updates_per_batch=updates_per_batch)
             if (it + 1) % snap_every == 0:
                 for i in (0, 1):
                     snaps[i].append(_frozen(nets[i]))
@@ -352,7 +360,7 @@ def train(
 def train_fp_br(
     game: SoccerGame, algo: str, rounds: int = 20, br_iters: int = 100, gamma: float = 0.9,
     horizon: int = 100, episodes: int = 64, lr: float = 1e-3, entropy: float = 0.01,
-    seed: int = 0, on_round=None,
+    seed: int = 0, on_round=None, updates_per_batch: int = 5,
 ) -> Trained:
     """Fictitious play with best-response phases, all by policy gradient.
 
@@ -364,6 +372,8 @@ def train_fp_br(
     is called after every round."""
     if algo not in ALGOS:
         raise ValueError("algo must be one of ALGOS")
+    if updates_per_batch < 1:
+        raise ValueError("updates_per_batch must be positive")
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     nets = [Net(game, 4), Net(game, 4)]
@@ -378,7 +388,8 @@ def train_fp_br(
                 theirs = _Mixture(snaps[1 - i], episodes, rng)
                 players = (_Current(nets[i]), theirs) if i == 0 else (theirs, _Current(nets[i]))
                 batch = collect(game, *players, episodes, horizon, rng)
-                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy)
+                update(nets[i], critics[i], opts, batch, i, algo, gamma, entropy,
+                       updates_per_batch=updates_per_batch)
             snaps[i].append(_frozen(nets[i]))
         if on_round is not None:
             on_round(r, Trained(_policy(snaps[0][1:], horizon), _policy(snaps[1][1:], horizon)))

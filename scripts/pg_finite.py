@@ -43,6 +43,8 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--seed-start", type=int, default=0, help="first seed to run")
     ap.add_argument("--iterations", type=int, default=2000)
     ap.add_argument("--episodes", type=int, default=64)
+    ap.add_argument("--updates-per-batch", type=int, default=5,
+                    help="REINFORCE/A2C passes over each collected batch; PPO uses 4 epochs")
     ap.add_argument("--games", type=int, default=1000)
     ap.add_argument("--gamma", type=float, default=0.9)
     ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS),
@@ -75,6 +77,8 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     a = parser().parse_args()
+    if a.updates_per_batch < 1:
+        raise SystemExit("--updates-per-batch must be positive")
 
     order = "deterministic" if a.board == "a10" else "random"
     if a.scoring == "rate":
@@ -91,13 +95,17 @@ def main() -> None:
              **fh.evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
     print(rows[0], flush=True)
     name = a.board if a.scoring == "win" else f"rate_{a.board}"
-    path = EXP / f"{a.prefix}_{name}{a.tag}.csv"
+    update_tag = (f"_updates{a.updates_per_batch}"
+                  if a.updates_per_batch != 1 and any(
+                      algo != "ppo" for algo in a.algos) else "")
+    path = EXP / f"{a.prefix}_{name}{update_tag}{a.tag}.csv"
 
     done = set()
     if a.resume and path.exists():
         old_rows = load_runs(path)
         rows.extend(old_rows)
-        done = {(r["algo"], r["mode"], int(r["seed"])) for r in old_rows}
+        done = {(r["algo"], r["mode"], int(r["seed"]),
+                 int(r.get("updates_per_batch", 1))) for r in old_rows}
 
     def save() -> None:
         with path.open("w", newline="") as f:
@@ -106,9 +114,10 @@ def main() -> None:
             w.writerows(rows)
 
     for algo in a.algos:
+        algo_updates = 1 if algo == "ppo" else a.updates_per_batch
         for mode in a.modes:
             for seed in range(a.seed_start, a.seed_start + a.seeds):
-                if (algo, mode, seed) in done:
+                if (algo, mode, seed, algo_updates) in done:
                     continue
                 t = time.perf_counter()
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
@@ -116,7 +125,8 @@ def main() -> None:
                               shared=a.shared, trim=a.trim, entropy=a.entropy,
                               snap_every=a.snap_every, minibatch=a.minibatch, replay=a.replay,
                               critic_pretrain_epochs=a.critic_pretrain_epochs,
-                              critic_pretrain_batch_size=a.critic_pretrain_batch_size)
+                              critic_pretrain_batch_size=a.critic_pretrain_batch_size,
+                              updates_per_batch=a.updates_per_batch)
                 dt = round(time.perf_counter() - t, 1)
                 extra = {}
                 if a.weights and tr.snaps:
@@ -127,6 +137,7 @@ def main() -> None:
                         extra.update({f"{tag}_{k}": v for k, v in scored.items()
                                       if k.startswith("row_") or k == "exploitability"})
                 rows.append({"algo": algo, "mode": mode, "seed": seed, "train_s": dt,
+                             "updates_per_batch": algo_updates,
                              "iterations": a.iterations, **extra,
                              **fh.evaluate(game, solver, exact, tr.pol0, tr.pol1,
                                         a.gamma, horizon, a.games, seed)})
@@ -134,8 +145,10 @@ def main() -> None:
                 save()
     print("\nalgo | mode | exploitability | row wins vs random / nash / br | mirror gap")
     for algo in a.algos:
+        algo_updates = 1 if algo == "ppo" else a.updates_per_batch
         for mode in a.modes:
-            r = [x for x in rows if x["algo"] == algo and x["mode"] == mode]
+            r = [x for x in rows if x["algo"] == algo and x["mode"] == mode
+                 and int(x.get("updates_per_batch", 1)) == algo_updates]
             m = lambda k, r=r: statistics.mean(x[k] for x in r)  # noqa: E731
             print(f"{algo:9s} {mode:10s} {m('exploitability'):.3f}  "
                   f"{m('row_win_vs_random'):.3f} / {m('row_win_vs_nash'):.3f} / "

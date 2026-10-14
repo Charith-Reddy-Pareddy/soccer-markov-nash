@@ -31,3 +31,10 @@ The critic fit defaults to 10 complete passes through shuffled state-time
 samples, in batches of 4,096. Adjust it with `--critic-pretrain-epochs` and
 `--critic-pretrain-batch-size`. The resulting metrics are written to the same
 experiment CSV format as the other finite-horizon PG runs.
+
+After critic pretraining, REINFORCE and A2C make five optimization passes over
+each newly collected rollout batch by default (`--updates-per-batch`). This
+count is independent of critic pretraining. PPO continues to use its four
+clipped-policy epochs. Multi-update REINFORCE/A2C runs use a separate
+`_updates5.csv` output so they cannot overwrite or be confused with the
+historical single-update results.
