@@ -90,6 +90,10 @@ worse action accuracy that hedges correctly where it counts is not
 [docs/report.md](docs/report.md) §8: *"action accuracy is not equilibrium
 accuracy"*).
 
+## Policy-gradient study
+
+The soccer policy-gradient study compares REINFORCE, A2C, and PPO on the deterministic A10 and random move-order boards, with standard training and neural fictitious play. Under the tested settings, none recovers the exact equilibrium. Win rate against the exact value-best response is reported as a diagnostic, not a training objective. See the [concise report (PDF)](docs/policy_gradient.pdf), [detailed report (PDF)](docs/policy_gradient_detailed.pdf), [full write-up](docs/policy_gradient.md), and [live results page](https://charith-reddy-pareddy.github.io/soccer-markov-nash/policy.html).
+
 **Proof status.** Claims A and B below (deterministic game) are exact,
 machine-checked results. The goal-width switch (headline result 1) is an
 *empirical* result over the tested parameter grid. The single-cell case has a
