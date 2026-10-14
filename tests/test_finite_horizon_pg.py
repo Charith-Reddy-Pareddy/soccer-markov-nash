@@ -159,6 +159,66 @@ def test_a2c_with_the_exact_critic_trains_in_both_schemes_and_needs_the_critic(c
         pf.train(game, "a2c_exact", "selfplay", GAMMA, HORIZON, iterations=1, episodes=2)
 
 
+def test_pretrained_critic_fits_exact_values_for_both_player_perspectives(small):
+    import torch
+
+    game, solver, *_ = small
+    exact = fh.ExactCritic(game, solver, GAMMA, HORIZON)
+    states = list(exact.states)
+    x = torch.cat([pf.features(states, t, HORIZON) for t in range(HORIZON)])
+    ids = torch.tensor([exact.code(*s) for _ in range(HORIZON) for s in states])
+    times = torch.arange(HORIZON).repeat_interleave(len(states))
+    target = exact.V[times, ids]
+    torch.manual_seed(7)
+    c0, c1 = pf.Net(game, 1), pf.Net(game, 1)
+    before = torch.nn.functional.mse_loss(c0(x).squeeze(-1), target)
+    pf.fit_exact_critic(c0, exact, 0, epochs=80, batch_size=len(x))
+    pf.fit_exact_critic(c1, exact, 1, epochs=80, batch_size=len(x))
+    after = torch.nn.functional.mse_loss(c0(x).squeeze(-1), target)
+    assert after < before * 0.5
+    assert torch.nn.functional.mse_loss(c1(x).squeeze(-1), -target) < before
+    assert all(not p.requires_grad for p in c0.parameters())
+    assert all(not p.requires_grad for p in c1.parameters())
+
+
+def test_pretrained_critic_is_frozen_during_policy_updates_and_runs_both_modes(small):
+    import torch
+
+    game, solver, *_ = small
+    exact = fh.ExactCritic(game, solver, GAMMA, HORIZON)
+    net, critic = pf.Net(game, 4), pf.Net(game, 1)
+    pf.fit_exact_critic(critic, exact, 0, epochs=2, batch_size=128)
+    batch = pf.collect(game, pf._Current(net), pf._Current(pf.Net(game, 4)), 4, HORIZON,
+                       np.random.default_rng(11))
+    opts = [torch.optim.Adam([*net.parameters(), *critic.parameters()]) for _ in range(2)]
+    before = [p.detach().clone() for p in critic.parameters()]
+    pf.update(net, critic, opts, batch, 0, "a2c_pretrained", GAMMA, 0.0, exact=exact)
+    assert all(torch.equal(p.detach(), old) for p, old in zip(critic.parameters(), before))
+    assert all(p.grad is None for p in critic.parameters())
+
+    for mode in ("selfplay", "fictitious"):
+        tr = pf.train(game, "a2c_pretrained", mode, GAMMA, HORIZON, iterations=2,
+                      episodes=4, snap_every=1, exact=exact,
+                      critic_pretrain_epochs=2, critic_pretrain_batch_size=128)
+        assert tr.critics is not None and len(tr.critics) == 2
+        assert all(not p.requires_grad for c in tr.critics for p in c.parameters())
+        assert tr.pol0(0, [game.initial_state()]).sum() == pytest.approx(1.0, abs=1e-5)
+    with pytest.raises(ValueError):
+        pf.train(game, "a2c_pretrained", "selfplay", GAMMA, HORIZON,
+                 iterations=1, episodes=2)
+
+
+def test_pretrained_critic_supports_random_move_order_board(small):
+    game = SoccerGame(width=4, height=3, goal_rows=(1,), move_order="random",
+                      max_steps=HORIZON)
+    solver = NashQIteration(game, gamma=GAMMA, mode="hybrid", tol=1e-10)
+    exact = fh.ExactCritic(game, solver, GAMMA, HORIZON)
+    tr = pf.train(game, "a2c_pretrained", "selfplay", GAMMA, HORIZON,
+                  iterations=1, episodes=3, exact=exact, seed=2,
+                  critic_pretrain_epochs=2, critic_pretrain_batch_size=128)
+    assert tr.pol1(0, [game.initial_state()]).sum() == pytest.approx(1.0, abs=1e-5)
+
+
 def test_shared_network_players_use_one_trunk_and_separate_output_slices(small):
     game = small[0]
     base = pf.Net(game, 8)
@@ -238,6 +298,8 @@ def test_the_runner_trains_for_the_documented_2000_iterations_by_default():
     args = mod.parser().parse_args([])
     assert args.iterations == 2000 and args.episodes == 64 and args.games == 1000
     assert args.seeds == 3 and args.entropy == 0.01
+    pretrained_args = mod.parser().parse_args(["--algos", "a2c_pretrained"])
+    assert pretrained_args.algos == ["a2c_pretrained"]
 
 
 def test_resumed_runs_are_read_back_as_numbers_so_the_final_summary_can_average_them(tmp_path):

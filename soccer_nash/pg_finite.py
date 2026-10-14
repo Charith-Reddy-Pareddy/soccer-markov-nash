@@ -21,6 +21,7 @@ from torch import nn
 from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
 
 ALGOS = ("reinforce", "a2c", "ppo")
+EXACT_ALGOS = ("a2c_exact", "a2c_pretrained")
 MODES = ("selfplay", "fictitious", "fictitious_argmax")
 
 
@@ -28,6 +29,28 @@ def features(states: list[State], t: int, horizon: int) -> torch.Tensor:
     """State plus the fraction of the horizon still remaining."""
     x = torch.tensor(np.array(states, dtype=np.float32))
     return torch.cat([x, torch.full((len(states), 1), (horizon - t) / horizon)], dim=1)
+
+
+def fit_exact_critic(critic, exact, player: int, epochs: int = 10,
+                     batch_size: int = 4096, lr: float = 1e-3) -> None:
+    """Fit a value network to all exact state-time values, then freeze it."""
+    if epochs < 1 or batch_size < 1:
+        raise ValueError("critic pretraining epochs and batch size must be positive")
+    states = list(exact.states)
+    x = torch.cat([features(states, t, exact.horizon) for t in range(exact.horizon)])
+    ids = torch.tensor([exact.code(*s) for _ in range(exact.horizon) for s in states])
+    times = torch.arange(exact.horizon).repeat_interleave(len(states))
+    sign = 1.0 if player == 0 else -1.0
+    y = exact.V[times, ids] * sign
+    opt = torch.optim.Adam(critic.parameters(), lr=lr)
+    critic.train()
+    for _ in range(epochs):
+        for idx in torch.randperm(len(x)).split(batch_size):
+            loss = nn.functional.mse_loss(critic(x[idx]).squeeze(-1), y[idx])
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+    critic.eval().requires_grad_(False)
 
 
 class Net(nn.Module):
@@ -162,6 +185,11 @@ def update(
     if algo == "a2c_exact":
         value, target = None, None
         adv = sign * exact.advantage(batch)
+    elif algo == "a2c_pretrained":
+        with torch.no_grad():
+            value = critic(X).squeeze(-1)
+            adv = sign * exact.action_value(batch) - value
+        target = None
     else:
         with torch.no_grad():
             value = critic(X).squeeze(-1) if critic is not None else None
@@ -175,7 +203,7 @@ def update(
         adv_f = (adv_f - adv_f.mean()) / (adv_f.std() + 1e-8)
     elif algo == "a2c":
         adv_f = adv_f - value[use]
-    tgt = target[use] if critic is not None else None
+    tgt = target[use] if target is not None else None
     for _ in range(epochs if algo == "ppo" else 1):
         # one gradient step on all the data, or one per random mini-batch of ``minibatch`` samples
         parts = torch.randperm(x.shape[0]).split(minibatch) if minibatch else [slice(None)]
@@ -189,7 +217,7 @@ def update(
                 pl = -(logp * adv_f[i]).mean()
             ent = -(logp_all.exp() * logp_all).sum(-1).mean()
             loss = pl - entropy * ent
-            if critic is not None:
+            if tgt is not None:
                 loss = loss + 0.5 * nn.functional.mse_loss(critic(x[i]).squeeze(-1), tgt[i])
             opts[player].zero_grad()
             loss.backward()
@@ -213,6 +241,7 @@ class Trained:
     pol0: object
     pol1: object
     snaps: tuple | None = None   # each player's snapshots, for the fictitious-play modes
+    critics: tuple | None = None # frozen value networks when using a2c_pretrained
 
 
 def _policy(nets: list[Net], horizon: int, pure: bool = False):
@@ -246,7 +275,8 @@ def train(
     horizon: int = 100, iterations: int = 300, episodes: int = 64, lr: float = 1e-3,
     entropy: float = 0.01, snap_every: int = 5, seed: int = 0, exact=None,
     shared: bool = False, trim: int = 0, replay: int = 1, minibatch: int = 0,
-    checkpoint_every: int = 0, on_checkpoint=None,
+    checkpoint_every: int = 0, on_checkpoint=None, critic_pretrain_epochs: int = 10,
+    critic_pretrain_batch_size: int = 4096,
 ) -> Trained:
     """``mode``: ``selfplay`` (standard), ``fictitious`` (train against the average of the
     opponent's past snapshots, report the average of one's own), or ``fictitious_argmax``
@@ -259,10 +289,10 @@ def train(
     ``shared``: both players' policies are two output heads of one network.
     ``trim``: drop the last ``trim`` steps of every episode from the policy and critic
     losses (they still enter the returns of earlier steps)."""
-    if (algo not in ALGOS and algo != "a2c_exact") or mode not in MODES:
-        raise ValueError(f"algo: one of ALGOS or 'a2c_exact'; mode: one of {MODES}")
-    if algo == "a2c_exact" and exact is None:
-        raise ValueError("a2c_exact needs the exact critic")
+    if (algo not in ALGOS and algo not in EXACT_ALGOS) or mode not in MODES:
+        raise ValueError(f"algo: one of ALGOS or {EXACT_ALGOS}; mode: one of {MODES}")
+    if algo in EXACT_ALGOS and exact is None:
+        raise ValueError(f"{algo} needs the exact solver values")
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     if shared:
@@ -271,6 +301,10 @@ def train(
     else:
         nets = [Net(game, 4), Net(game, 4)]
     critics = [Net(game, 1) if algo not in ("reinforce", "a2c_exact") else None for _ in nets]
+    if algo == "a2c_pretrained":
+        for i, critic in enumerate(critics):
+            fit_exact_critic(critic, exact, i, critic_pretrain_epochs,
+                             critic_pretrain_batch_size, lr)
     if shared:
         params = [*base.parameters(),
                   *(q for c in critics if c is not None for q in c.parameters())]
@@ -308,9 +342,11 @@ def train(
             on_checkpoint(it + 1, reported,
                           Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon)))
     if mode == "selfplay":
-        return Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon))
+        return Trained(_policy([nets[0]], horizon), _policy([nets[1]], horizon),
+                       critics=tuple(critics) if algo == "a2c_pretrained" else None)
     return Trained(_policy(snaps[0], horizon, pure), _policy(snaps[1], horizon, pure),
-                   (snaps[0], snaps[1]))
+                   (snaps[0], snaps[1]),
+                   tuple(critics) if algo == "a2c_pretrained" else None)
 
 
 def train_fp_br(

@@ -139,6 +139,7 @@ class ExactCritic:
     def __init__(self, game: SoccerGame, solver, gamma: float, horizon: int):
         values, _, _ = solve_finite_horizon(solver, gamma, horizon)
         self.width, self.height, self.horizon = game.width, game.height, horizon
+        self.states = tuple(solver._states)
         size = game.width * game.height * game.width * game.height * 2
         self.Q = np.zeros((horizon, size, 4, 4), dtype=np.float32)
         self.V = np.zeros((horizon, size), dtype=np.float32)
@@ -155,12 +156,24 @@ class ExactCritic:
 
     def advantage(self, batch) -> torch.Tensor:
         """Player 0's advantage for every (step, episode) of a collected batch."""
+        return self.action_value(batch) - self.state_value(batch)
+
+    def action_value(self, batch) -> torch.Tensor:
+        """Exact player-0 Q value for the joint actions sampled in ``batch``."""
         X = batch["X"]
         t = ((1 - X[..., 5]) * self.horizon).round().long().clamp(0, self.horizon - 1)
         r = X[..., :5].round().long()
         code = self.code(r[..., 0], r[..., 1], r[..., 2], r[..., 3], r[..., 4])
         a0, a1 = batch["A"][0], batch["A"][1]
-        return self.Q[t, code, a0, a1] - self.V[t, code]
+        return self.Q[t, code, a0, a1]
+
+    def state_value(self, batch) -> torch.Tensor:
+        """Exact player-0 state value for every (step, episode) in ``batch``."""
+        X = batch["X"]
+        t = ((1 - X[..., 5]) * self.horizon).round().long().clamp(0, self.horizon - 1)
+        r = X[..., :5].round().long()
+        code = self.code(r[..., 0], r[..., 1], r[..., 2], r[..., 3], r[..., 4])
+        return self.V[t, code]
 
 
 def mirror_gap(game: SoccerGame, row, col, times=(0, 25, 50, 75, 99)) -> tuple[float, float]:

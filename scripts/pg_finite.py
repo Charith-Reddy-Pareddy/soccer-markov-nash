@@ -45,7 +45,12 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--episodes", type=int, default=64)
     ap.add_argument("--games", type=int, default=1000)
     ap.add_argument("--gamma", type=float, default=0.9)
-    ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS), choices=[*pf.ALGOS, "a2c_exact"])
+    ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS),
+                    choices=[*pf.ALGOS, *pf.EXACT_ALGOS])
+    ap.add_argument("--critic-pretrain-epochs", type=int, default=10,
+                    help="a2c_pretrained: full supervised passes over exact state-time values")
+    ap.add_argument("--critic-pretrain-batch-size", type=int, default=4096,
+                    help="a2c_pretrained: state-time samples per value-network update")
     ap.add_argument("--scoring", choices=["win", "rate"], default="win",
                     help="win: the first goal ends the game; rate: play continues after a goal")
     ap.add_argument("--modes", nargs="+", default=["selfplay", "fictitious"], choices=pf.MODES)
@@ -80,7 +85,8 @@ def main() -> None:
     solver = NashQIteration(game, gamma=a.gamma, mode="hybrid", tol=1e-10)
     _, row_t, col_t = fh.solve_finite_horizon(solver, a.gamma, horizon)
     exact = (fh.tables_to_policy(row_t), fh.tables_to_policy(col_t))
-    critic = fh.ExactCritic(game, solver, a.gamma, horizon) if "a2c_exact" in a.algos else None
+    critic = fh.ExactCritic(game, solver, a.gamma, horizon) \
+        if any(algo in pf.EXACT_ALGOS for algo in a.algos) else None
     rows = [{"algo": "exact", "mode": "-", "seed": 0, "train_s": 0.0, "iterations": 0,
              **fh.evaluate(game, solver, exact, *exact, a.gamma, horizon, a.games, 0)}]
     print(rows[0], flush=True)
@@ -108,7 +114,9 @@ def main() -> None:
                 tr = pf.train(game, algo, mode, a.gamma, horizon, a.iterations,
                               a.episodes, seed=seed, exact=critic,
                               shared=a.shared, trim=a.trim, entropy=a.entropy,
-                              snap_every=a.snap_every, minibatch=a.minibatch, replay=a.replay)
+                              snap_every=a.snap_every, minibatch=a.minibatch, replay=a.replay,
+                              critic_pretrain_epochs=a.critic_pretrain_epochs,
+                              critic_pretrain_batch_size=a.critic_pretrain_batch_size)
                 dt = round(time.perf_counter() - t, 1)
                 extra = {}
                 if a.weights and tr.snaps:
