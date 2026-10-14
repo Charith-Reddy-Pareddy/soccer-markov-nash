@@ -509,6 +509,20 @@ def test_the_related_work_covers_older_and_recent_papers_and_says_how_it_was_che
     assert "Brown" in html and "Robinson" in html and "Littman" in html
 
 
+def test_competitive_policy_optimization_is_linked_in_both_pg_reports():
+    item = next(x for x in RESULTS["related"] if x["title"] == "Competitive Policy Optimization")
+    assert item["authors"] == "Prajapat, Azizzadenesheli, Liniger, Yue and Anandkumar"
+    assert item["year"] == 2021 and "UAI 37" in item["venue"]
+    assert item["url"] == "https://proceedings.mlr.press/v161/prajapat21a.html"
+    assert "more than 74%" in item["says"]
+    assert "not a proof of Nash convergence" in item["says"]
+    for name in ("policy_gradient.html", "policy_gradient_detailed.html"):
+        html = (ROOT / "docs" / name).read_text()
+        assert item["url"] in html
+        assert "Competitive Policy Optimization" in html
+        assert "more than 74%" in html
+
+
 def test_the_symmetry_table_covers_every_board_and_the_exact_solver_is_symmetric():
     boards = RESULTS["symmetry"]
     assert [b["board"] for b in boards] == ["deterministic", "random", "continuing"]

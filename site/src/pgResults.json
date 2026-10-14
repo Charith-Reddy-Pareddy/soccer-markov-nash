@@ -46248,6 +46248,15 @@
   },
   {
    "group": "recent",
+   "title": "Competitive Policy Optimization",
+   "authors": "Prajapat, Azizzadenesheli, Liniger, Yue and Anandkumar",
+   "year": 2021,
+   "venue": "UAI 37, PMLR 161, pp. 64-74",
+   "url": "https://proceedings.mlr.press/v161/prajapat21a.html",
+   "says": "Tests game-aware competitive policy gradient (CoPG) and trust-region CoPO against standard gradient-descent-ascent in Markov soccer; CoPG wins more than 74% of reported games against GDA. This is an empirical result for the paper's soccer setup, not a proof of Nash convergence or a training-time guarantee for this project."
+  },
+  {
+   "group": "recent",
    "title": "Policy Optimization in Zero-Sum Markov Games: Fictitious Self-Play Provably Attains Nash Equilibria",
    "authors": "Liu, Yang and Wang",
    "year": 2020,
