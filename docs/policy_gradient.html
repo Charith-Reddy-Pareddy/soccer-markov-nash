@@ -36,7 +36,7 @@ opponent is the best response to it.</p>
 <ul>
 <li><b>Win rate</b>: the share of 1,000 games the trained player wins (it scores while the opponent does not; games with no goal or equal goals are ties), when the
 opponent plays the exact best response to it, the move that minimizes its expected discounted score difference. Mean of 3 seeds.</li>
-<li>The exact solver is the top row, as context rather than a target. Each cell is the mean of 3 seeds.</li>
+<li>The exact solver is the top row, as context rather than a target. The win rate is a check, not an objective: no learner is trained to raise it. Each cell is the mean of 3 seeds.</li>
 <li><b>Exploitability</b> is not used for soccer. It is what a perfect attacker could gain against the two players' policies together (a score, not a win rate, and it does not depend on who has the ball); it appears only in the rock-paper-scissors test, where 0 means one third each. The win rate above judges the player we train.</li>
 <li>The random board's kickoff is worth +0.15 to the ball holder even against a perfect best response, so the exact solver wins more than half its games when it starts with the ball.
 On the deterministic board the exact solver ties itself; in the continuing game a win is more goals than the opponent in 100 steps. A dash means the learner was not run on that board.</li>

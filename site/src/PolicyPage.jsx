@@ -562,7 +562,7 @@ export default function PolicyPage() {
             Each learner is trained for both players, so it is measured in both positions. <b>Starts with the ball</b>: our learner is the player who has the ball at
             kickoff. <b>Starts without the ball</b>: our learner is the other player. <b>Average of both</b>: the mean of the two, one fair number that does not depend
             on who starts with the ball. Each cell is the share of 1,000 games the learner wins when the opponent plays the exact best response to it (the move that
-            minimizes its expected discounted score difference), mean of 3 seeds; the exact solver is the top row, as context rather than a target.</p>
+            minimizes its expected discounted score difference), mean of 3 seeds; the exact solver is the top row, as context rather than a target. The win rate is a check, not an objective: no learner is trained to raise it.</p>
           <WinRateTable boards={available.map(([k, label]) => [k, label, boards[k]])} />
           <p className="fig-cap">The deterministic board is the A10 board: the exact solver ties itself there, so it wins 0% either way.
             A dash means the learner was not run on that board. Wins against the exact Nash policy and a random player are in the charts below.</p>
