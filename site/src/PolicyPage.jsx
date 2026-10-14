@@ -66,21 +66,21 @@ function WinRateTable({ boards }) {
         <thead>
           <tr>
             <th rowSpan={2}>Learner</th>
-            {boards.map(([k, title]) => <th key={k} colSpan={SEATS.length}>{title}</th>)}
+            {boards.map(([k, title]) => <th key={k} colSpan={SEATS.length + 1}>{title}</th>)}
           </tr>
-          <tr>{boards.flatMap(([k]) => SEATS.map(([f, s]) => <th key={`${k}-${f}`}>{s}</th>))}</tr>
+          <tr>{boards.flatMap(([k]) => [...SEATS.map(([f, s]) => <th key={k + "-" + f}>{s}</th>), <th key={k + "-gap"}>Nash gap</th>])}</tr>
         </thead>
         <tbody>
           <tr>
             <td>Exact solver</td>
-            {boards.flatMap(([k, , b]) => SEATS.map(([f]) => <td key={`${k}-${f}`}>{pct(seatRates(b.exact)[f])}</td>))}
+            {boards.flatMap(([k, , b]) => [...SEATS.map(([f]) => <td key={k + "-" + f}>{pct(seatRates(b.exact)[f])}</td>), <td key={k + "-gap"}>{b.exact.exploitability.mean.toFixed(3)}</td>])}
           </tr>
           {names.map((n) => (
             <tr key={n}>
               <td>{n}</td>
               {boards.flatMap(([k, , b]) => {
                 const l = b.learners.find((x) => name(x) === n);
-                return SEATS.map(([f]) => <td key={`${k}-${f}`}>{l ? pct(seatRates(l)[f]) : "\u2014"}</td>);
+                return [...SEATS.map(([f]) => <td key={k + "-" + f}>{l ? pct(seatRates(l)[f]) : "\u2014"}</td>), <td key={k + "-gap"}>{l ? l.exploitability.mean.toFixed(3) : "\u2014"}</td>];
               })}
             </tr>
           ))}
@@ -483,19 +483,20 @@ export default function PolicyPage() {
             <table className="text-table">
               <thead><tr><th>Number</th><th>What it is</th></tr></thead>
               <tbody>
-                <tr><td>Win rate against the best response</td><td>The share of 1,000 games the trained player wins when the opponent plays the exact best response to it, the move that is best against exactly what our player will do. A player who always does the same thing loses every game; the exact solver mixes optimally, so its rate is the ceiling to compare with.</td></tr>
+                <tr><td>Win rate against the best response</td><td>The share of 1,000 games the trained player wins when the opponent plays the exact best response to it under discounted-score difference. This is an empirical outcome, not a guaranteed upper bound, because the best response does not optimize win probability.</td></tr>
+                <tr><td>Nash gap (exploitability)</td><td>The sum of the two players&rsquo; gains in expected discounted score when each, in turn, replaces its policy with an exact best response to the other. It is 0 at the exact Nash equilibrium; smaller is closer to equilibrium. This payoff metric is distinct from win rate.</td></tr>
                 <tr><td>Win rate against the exact Nash policy</td><td>The same, against the exact equilibrium player. The exact solver cannot be beaten by it; a learner that mixes well scores close to the exact solver&rsquo;s own rate.</td></tr>
                 <tr><td>Win rate against a random player</td><td>A sanity check: every learner should beat a player who moves at random.</td></tr>
                 <tr><td>A win</td><td>The player scores while the opponent does not. In the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal (or equal goals) are ties.</td></tr>
               </tbody>
             </table>
           </div>
-          <h3>What about exploitability?</h3>
-          <p>Exploitability is about attackers, not about the player who has the ball. Take the two players&rsquo; policies as fixed, replace each player in turn by the exact best response to the other, and add up what the two attackers gain in expected discounted score (goals scored minus goals conceded, discounted). It is 0 exactly at an equilibrium, such as the exact solver, and grows the easier the pair of policies is to beat. It is a property of the pair, not of one player, and the kickoff advantage cancels out of the sum. It is a score, not a win rate, so it cannot be compared with the percentages in the tables. We keep it in the result files and use it in the rock-paper-scissors test, where 0 means one third each and 2 means both players are always beaten. For soccer we report the trained player&rsquo;s win rate against the best response instead, because that judges the player we train: how often it wins against a perfect opponent.</p>
+          <h3>Why the Nash gap is also reported</h3>
+          <p>The Nash gap (called exploitability in the experiment files) is the sum of both players&rsquo; gains in expected discounted score if each, in turn, switches to an exact best response against the other&rsquo;s fixed policy. It is zero at equilibrium, including the exact solver, and smaller is better. It evaluates the policy pair and is not a percentage or a win rate. The win-rate tables answer a separate question: how often the trained player wins against its exact best response under the discounted-score objective.</p>
           <h3>Why the exact solver does not win 0% against the best response</h3>
           <p>The best response is the move that minimizes our player&rsquo;s <em>expected discounted score difference</em>, not the one that
             minimizes its chance of winning. At the random board&rsquo;s kickoff the player holding the ball is ahead: the exact solution is worth
-            {" "}{rnd.kickoff_value >= 0 ? "+" : "\u2212"}{Math.abs(rnd.kickoff_value).toFixed(2)} to it even against a perfect best response. So the exact solver wins {pct(rnd.exact.vs_best_response[0])} of
+            {" "}{rnd.kickoff_value >= 0 ? "+" : "\u2212"}{Math.abs(rnd.kickoff_value).toFixed(2)} to it even against an exact best response. Its win rate is a reference outcome, not a theoretical ceiling, because the best response minimizes discounted score rather than win probability. The exact solver wins {pct(rnd.exact.vs_best_response[0])} of
             games and loses {pct(1 - rnd.exact.vs_best_response[0])} when it starts with the ball, and wins {pct(rnd.exact.vs_best_response_column[0])} when it starts without the ball. The first number
             is the one reported on this page (our learners always play the player who starts with the ball). On the deterministic board both starts tie every game.</p>
           <StackBars rows={seatRows} titles={["Random board, starting with the ball", "Random board, starting without the ball"]} />

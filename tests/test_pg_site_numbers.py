@@ -303,16 +303,21 @@ def test_the_win_rate_table_in_the_report_matches_the_data():
     block = html[i:html.index("</table>", i)]
     rows = [re.sub(r"<[^>]+>", " ", r).split() for r in block.split("<tr>")[1:]]
     exact = next(r for r in rows if r[:2] == ["Exact", "solver"])
-    boards = {"deterministic": RESULTS["exact"], "random": RESULTS["random"]["exact"]}
-    want = []
+    boards = {"deterministic": RESULTS["exact"], "random": RESULTS["random"]["exact"],
+              "continuing": RESULTS["continuing"]["exact"]}
+    want_with_gaps = []
     for e in boards.values():
         ball, other = e["vs_best_response"][0], e["vs_best_response_column"][0]
-        want += [f"{ball * 100:.0f}%", f"{other * 100:.0f}%", f"{(ball + other) * 50:.0f}%"]
-    assert exact[2:8] == want
+        want_with_gaps += [f"{ball * 100:.0f}%", f"{other * 100:.0f}%",
+                           f"{(ball + other) * 50:.0f}%", f"{e['exploitability']['mean']:.3f}"]
+    assert exact[2:] == want_with_gaps
     a2c = next(r for r in rows if r[0] == "A2C," and r[1] == "standard")
     learner = RESULTS["learners"][2]
     ball, other = learner["vs_best_response"][0], learner["vs_best_response_column"][0]
-    assert a2c[2:5] == [f"{round(v * 100)}%" for v in (ball, other, (ball + other) / 2)]
+    assert a2c[2:6] == [f"{round(v * 100)}%" for v in (ball, other, (ball + other) / 2)] + [
+        f"{learner['exploitability']['mean']:.3f}"]
+    assert "Nash gap" in PAGE and "not a guaranteed upper bound" in PAGE
+    assert "not a theoretical ceiling" in PAGE
     assert "Average of both" in PAGE and "starts with the ball" in html
 
 

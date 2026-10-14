@@ -150,16 +150,19 @@ def win_rate_table(boards) -> str:
     names = []
     for _, b in boards:
         names += [name(x) for x in b["learners"] if name(x) not in names]
-    head1 = "<th rowspan=2>learner</th>" + "".join(f"<th colspan={len(seats)}>{t}</th>" for t, _ in boards)
-    head2 = "".join(f"<th>{s}</th>" for _ in boards for s in seats)
+    head1 = "<th rowspan=2>learner</th>" + "".join(f"<th colspan={len(seats) + 1}>{t}</th>" for t, _ in boards)
+    head2 = "".join(f"<th>{s}</th>" for _ in boards for s in (*seats, "Nash gap"))
     exact = "<td><b>Exact solver</b></td>" + "".join(
-        f"<td><b>{v:.0%}</b></td>" for _, b in boards for v in seat_rates(b["exact"]))
+        "".join(f"<td><b>{v:.0%}</b></td>" for v in seat_rates(b["exact"]))
+        + f"<td><b>{b['exact']['exploitability']['mean']:.3f}</b></td>" for _, b in boards)
     rows = []
     for n in names:
         cells = []
         for _, b in boards:
             hit = next((x for x in b["learners"] if name(x) == n), None)
-            cells += [f"<td>{v:.0%}</td>" for v in seat_rates(hit)] if hit else ["<td>&mdash;</td>"] * len(seats)
+            cells += ([f"<td>{v:.0%}</td>" for v in seat_rates(hit)]
+                      + [f"<td>{hit['exploitability']['mean']:.3f}</td>"] if hit
+                      else ["<td>&mdash;</td>"] * (len(seats) + 1))
         rows.append(f"<tr><td>{n}</td>{''.join(cells)}</tr>")
     return f'<table class="wins"><tr>{head1}</tr><tr>{head2}</tr><tr>{exact}</tr>{"".join(rows)}</table>'
 
@@ -432,8 +435,8 @@ opponent is the best response to it.</p>
 <li><b>Win rate</b>: the share of 1,000 games the trained player wins (it scores while the opponent does not; games with no goal or equal goals are ties), when the
 opponent plays the exact best response to it, the move that minimizes its expected discounted score difference. Mean of 3 seeds.</li>
 <li>The exact solver is the top row, as context rather than a target. The win rate is a check, not an objective: no learner is trained to raise it. Each cell is the mean of 3 seeds.</li>
-<li><b>Exploitability</b> is not used for soccer. It is what a perfect attacker could gain against the two players' policies together (a score, not a win rate, and it does not depend on who has the ball); it appears only in the rock-paper-scissors test, where 0 means one third each. The win rate above judges the player we train.</li>
-<li>The random board's kickoff is worth {res["random"].get("kickoff_value", 0.0):+.2f} to the ball holder even against a perfect best response, so the exact solver wins more than half its games when it starts with the ball.
+<li><b>Nash gap (exploitability)</b> is the sum of both players' gains in expected discounted score if each, in turn, replaces its policy with an exact best response to the other. It is 0 at the exact Nash equilibrium; smaller is closer to equilibrium. This is a payoff gap, not a win rate. The win-rate columns separately show how often the trained player wins against its exact discounted-score best response.</li>
+<li>The random board's kickoff is worth {res["random"].get("kickoff_value", 0.0):+.2f} to the ball holder even against an exact best response, so the exact solver wins more than half its games when it starts with the ball.
 On the deterministic board the exact solver ties itself; in the continuing game a win is more goals than the opponent in 100 steps. A dash means the learner was not run on that board.</li>
 </ul></section>
 

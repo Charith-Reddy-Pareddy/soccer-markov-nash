@@ -561,16 +561,19 @@ def win_rate_table(boards) -> str:
     names = []
     for _, b in boards:
         names += [name(x) for x in b["learners"] if name(x) not in names]
-    head1 = "<th rowspan=2>learner</th>" + "".join(f"<th colspan={len(seats)}>{t}</th>" for t, _ in boards)
-    head2 = "".join(f"<th>{s}</th>" for _ in boards for s in seats)
+    head1 = "<th rowspan=2>learner</th>" + "".join(f"<th colspan={len(seats) + 1}>{t}</th>" for t, _ in boards)
+    head2 = "".join(f"<th>{s}</th>" for _ in boards for s in (*seats, "Nash gap"))
     exact = "<td><b>Exact solver</b></td>" + "".join(
-        f"<td><b>{v:.0%}</b></td>" for _, b in boards for v in seat_rates(b["exact"]))
+        "".join(f"<td><b>{v:.0%}</b></td>" for v in seat_rates(b["exact"]))
+        + f"<td><b>{b['exact']['exploitability']['mean']:.3f}</b></td>" for _, b in boards)
     rows = []
     for n in names:
         cells = []
         for _, b in boards:
             hit = next((x for x in b["learners"] if name(x) == n), None)
-            cells += [f"<td>{v:.0%}</td>" for v in seat_rates(hit)] if hit else ["<td>&mdash;</td>"] * len(seats)
+            cells += ([f"<td>{v:.0%}</td>" for v in seat_rates(hit)]
+                      + [f"<td>{hit['exploitability']['mean']:.3f}</td>"] if hit
+                      else ["<td>&mdash;</td>"] * (len(seats) + 1))
         rows.append(f"<tr><td>{n}</td>{''.join(cells)}</tr>")
     return f'<table class="wins"><tr>{head1}</tr><tr>{head2}</tr><tr>{exact}</tr>{"".join(rows)}</table>'
 
@@ -815,7 +818,7 @@ def build_html(res: dict) -> str:
         ["Win rate against a random player", "A sanity check: every learner should beat a player who moves at random."],
         ["A win", "The player scores while the opponent does not. On the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal, or equal goals, are ties."],
         ["Distance from the exact mix", "Total-variation distance between a learner's probabilities and the exact solver's at the first step: 0 is identical, 1 is no overlap."],
-        ["Exploitability", "Exploitability is about attackers, not about the player who has the ball. Take the two players' policies as fixed, replace each player in turn by the exact best response to the other, and add up what the two attackers gain in expected discounted score (goals scored minus goals conceded, discounted). It is 0 exactly at an equilibrium, such as the exact solver, and grows the easier the pair of policies is to beat. It is a property of the pair, not of one player, and the kickoff advantage cancels out of the sum. It is a score, not a win rate, so it cannot be compared with the percentages in the tables. We keep it in the result files and use it in the rock-paper-scissors test, where 0 means one third each and 2 means both players are always beaten. For soccer we report the trained player's win rate against the best response instead, because that judges the player we train: how often it wins against a perfect opponent."]], "text")
+        ["Nash gap (exploitability)", "The sum of both players' gains in expected discounted score if each, in turn, replaces its policy with an exact best response to the other. It is 0 at the exact Nash equilibrium; smaller is closer to equilibrium. This payoff gap evaluates the policy pair and is not a win rate."]], "text")
 
     setup = table(["setting", "value"], [
         ["Game", "7&times;5 board, goal rows 1&ndash;3. Fixed 100 steps, discount 0.9, and the number of steps left is a network input."],
@@ -835,7 +838,7 @@ def build_html(res: dict) -> str:
 <h3>How to read the numbers</h3>{definitions}
 <h3>Why the exact solver does not win 0% against the best response</h3>
 <p>The best response is the move that minimizes our player's <em>expected discounted score difference</em>, not the one that minimizes its chance of winning.
-At the random board's kickoff the player holding the ball is ahead: the exact solution is worth {seat_value:+.2f} to it even against a perfect best response. So
+At the random board's kickoff the player holding the ball is ahead: the exact solution is worth {seat_value:+.2f} to it even against an exact best response. Its win rate is a reference outcome, not a theoretical ceiling, because the best response minimizes discounted score rather than win probability. So
 the exact solver wins {pct(seat_row)} of games and loses {pct(1 - seat_row)} when it starts with the ball, and wins {pct(seat_col)} when it starts without the ball. On the deterministic
 board both starts tie every game.</p>
 {legend}<div>{seat_chart}</div></section>""",

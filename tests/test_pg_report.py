@@ -32,8 +32,10 @@ def test_the_report_defines_the_win_rate_and_the_seats_and_explains_exploitabili
                    "Average of both", "best response to it",
                    "a win is more goals than the opponent in 100 steps"):
         assert phrase in TEXT
-    assert "Exploitability is not used for soccer" in TEXT
-    assert "perfect attacker could gain" in TEXT and "not a win rate" in TEXT
+    assert "Nash gap (exploitability)" in TEXT
+    assert "sum of both players' gains in expected discounted score" in TEXT
+    assert "exact Nash equilibrium" in TEXT and "not a win rate" in TEXT
+    assert "Nash gap</th>" in HTML and "<td><b>0.000</b></td>" in HTML
 
 
 def test_the_report_uses_the_agreed_terms_and_names_no_one():
@@ -97,17 +99,19 @@ def test_the_line_chart_has_a_line_per_run_and_honours_a_fixed_top():
 def test_the_win_rate_table_has_seat_columns_a_balanced_average_and_dashes_for_missing_learners():
     def entry(label, ball, other):
         return {"label": label, "training": "standard", "vs_best_response": [ball, 0, 1 - ball],
-                "vs_best_response_column": [other, 0, 1 - other]}
+                "vs_best_response_column": [other, 0, 1 - other],
+                "exploitability": {"mean": 0.0 if label == "x" else 0.5}}
 
     a, b = entry("A2C", 0.1, 0.3), entry("A2C, exact critic", 0.0, 0.0)
     exact = entry("x", 0.5, 0.3)
     html = pg_report.win_rate_table([("first", {"exact": exact, "learners": [a]}),
                                      ("second", {"exact": exact, "learners": [a, b]})])
-    assert html.count("<tr>") == 5 and html.count("&mdash;") == 3
+    assert html.count("<tr>") == 5 and html.count("&mdash;") == 4
     for cell in ("<b>50%</b>", "<b>30%</b>", "<b>40%</b>"):  # exact solver: ball, other, balanced
         assert cell in html
     for cell in ("<td>10%</td>", "<td>30%</td>", "<td>20%</td>"):  # A2C
         assert cell in html
+    assert "<th>Nash gap</th>" in html and "<td>0.500</td>" in html
     assert pg_report.seat_rates(a) == [0.1, 0.3, 0.2]
 
 

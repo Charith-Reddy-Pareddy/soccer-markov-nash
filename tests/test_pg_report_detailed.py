@@ -85,8 +85,11 @@ def test_the_related_work_has_both_groups_and_says_how_it_was_checked():
 def test_the_report_names_no_one_and_leaves_exploitability_to_a_definition():
     assert not re.search(r"professor|\bdog\b|sheep|not yet", TEXT, re.I)
     assert "Mirror gap" not in TEXT  # the measure is called by its lower-case name
-    assert "Exploitability is about attackers, not about the player who has the ball" in TEXT
-    assert "kickoff advantage cancels out of the sum" in TEXT and "not a win rate" in TEXT
+    assert "Nash gap (exploitability)" in TEXT
+    assert "sum of both players' gains in expected discounted score" in TEXT
+    assert "Nash gap</th>" in HTML and "<td><b>0.000</b></td>" in HTML
+    assert "not a win rate" in TEXT
+    assert "not a theoretical ceiling" in TEXT
 
 
 @pytest.mark.skipif(shutil.which("pdftotext") is None, reason="pdftotext not installed")
@@ -171,7 +174,8 @@ def test_the_win_rate_and_mixed_state_tables_match_the_data():
 
     def seat(entry):
         ball, other = entry["vs_best_response"][0], entry["vs_best_response_column"][0]
-        return [f"{ball:.0%}", f"{other:.0%}", f"{(ball + other) / 2:.0%}"]
+        return [f"{ball:.0%}", f"{other:.0%}", f"{(ball + other) / 2:.0%}",
+                f"{entry['exploitability']['mean']:.3f}"]
 
     exact = next(r for r in wins if r and r[0] == "Exact solver")
     assert exact[1:] == sum((seat(b["exact"]) for b in boards), [])
@@ -179,7 +183,7 @@ def test_the_win_rate_and_mixed_state_tables_match_the_data():
         want = []
         for b in boards:
             hit = next((x for x in b["learners"] if _name(x) == row[0]), None)
-            want += seat(hit) if hit else ["—"] * 3
+            want += seat(hit) if hit else ["—"] * 4
         assert row[1:] == want, row[0]
     mixed = next(t for _, t in tabs if t and "distance from the exact mix" in t[0])
     m = RES["mixed"]
