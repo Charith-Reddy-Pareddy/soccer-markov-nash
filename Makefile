@@ -1,6 +1,6 @@
 PY ?= ./.venv/bin/python
 
-.PHONY: help lint test test-all coverage report positions-pdf pg-report pg-pdf pg-detailed pg-detailed-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf coinflip-cases coinflip-cases-pdf tackle-cases tackle-cases-pdf territory-cases territory-cases-pdf slip-cases slip-cases-pdf board-cases-pdfs templates-n5 explorer-data explorer-neural-data site a10 clean
+.PHONY: help lint test test-all coverage report positions-pdf pg-report pg-pdf pg-detailed pg-detailed-pdf pg-assumptions-pdf reproduce-core experiments phase benchmark dqn dqn-ablation dqn-random policy-gradient policy-gradient-warmstart policy-gradient-batch policy-gradient-batch-updates policy-gradient-architectures policy-gradient-ablation degeneracy distance-table pure-vs-mixed figures png gallery littman mixing reward blend occupancy tournament tournament4 tournament-deepdive numerics templates proof verify generalize tackle positional positions positions-matrix a10-cases a10-cases-pdf coinflip-cases coinflip-cases-pdf tackle-cases tackle-cases-pdf territory-cases territory-cases-pdf slip-cases slip-cases-pdf board-cases-pdfs templates-n5 explorer-data explorer-neural-data site a10 clean
 
 help:
 	@echo "make lint         - ruff check (style + unused code)"
@@ -115,6 +115,9 @@ pg-detailed-pdf: pg-detailed
 	  --print-to-pdf=docs/policy_gradient_detailed.pdf --virtual-time-budget=10000 \
 	  "file://$(CURDIR)/docs/policy_gradient_detailed.html"
 	@echo "wrote docs/policy_gradient_detailed.pdf"
+
+pg-assumptions-pdf:
+	$(PY) scripts/render_pg_assumptions.py
 
 a10-cases-pdf:
 	@command -v chromium >/dev/null 2>&1 && BROWSER=chromium || BROWSER="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \

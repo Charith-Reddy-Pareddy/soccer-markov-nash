@@ -94,6 +94,10 @@ accuracy"*).
 
 The soccer policy-gradient study evaluates two scoring formats as complementary conditions; neither is designated the primary result. In the first-goal format, the episode ends at the first score; it is tested on deterministic A10 and random move-order boards. In the fixed-horizon goal-reset format, play restarts after each goal and continues for 100 steps; it is tested on deterministic A10. Results are reported separately because the outcome measures differ. REINFORCE, A2C, and PPO use standard training and neural fictitious play. Under the tested settings, none recovers the exact equilibrium. Win rate against the exact value-best response is a diagnostic, not a training objective. See the [concise report (PDF)](docs/policy_gradient.pdf), [detailed report (PDF)](docs/policy_gradient_detailed.pdf), [full write-up](docs/policy_gradient.md), and [live results page](https://charith-reddy-pareddy.github.io/soccer-markov-nash/policy.html).
 
+The additional exploratory PG comparisons, including their fixed game and reward assumptions, evaluation choices, and incomplete runs, are documented separately in the [assumptions note](docs/pg_experiment_assumptions.html) and its [PDF](docs/pg_experiment_assumptions.pdf). The note states which training settings were varied and why none of the results establish convergence.
+
+The frozen-value PG procedure pretrains critics on exact state-time values, freezes them, and updates actors from sampled returns with the critic as a state-value baseline. Exact action-value lookups are not used during those actor updates; the separate `a2c_exact` oracle method is reported distinctly. The first frozen-value A10 run is exploratory and has no completed matched control yet.
+
 **Proof status.** Claims A and B below (deterministic game) are exact,
 machine-checked results. The goal-width switch (headline result 1) is an
 *empirical* result over the tested parameter grid. The single-cell case has a

@@ -11,7 +11,11 @@ reproducible from the repo's own code. For the technical answer, start with
   [Policy gradient tab](policy.html)) —
   REINFORCE, A2C and PPO against the exact solver, by self-play and by
   fictitious play; the group-note checklist is [group_note.md](group_note.md) and
-  every assumption is in [solver_assumptions.md](solver_assumptions.md).
+  every assumption is in [solver_assumptions.md](solver_assumptions.md). The
+  separate [PG experiment assumptions note](pg_experiment_assumptions.html)
+  (also [PDF](pg_experiment_assumptions.pdf)) records exploratory settings,
+  reward safeguards, and incomplete runs; regenerate it with
+  `make pg-assumptions-pdf`.
 - [methods.md](methods.md) — the solver, the state encoding, seeds, repeat
   counts, board ranges: how every number was produced.
 - [discussion.md](discussion.md) — research-level open questions, the best
