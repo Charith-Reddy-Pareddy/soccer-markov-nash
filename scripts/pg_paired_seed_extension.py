@@ -13,10 +13,9 @@ sys.path.insert(0, str(ROOT))
 
 from soccer_nash import finite_horizon as fh
 from soccer_nash import pg_finite as pf
+from soccer_nash.finite_horizon import mirror_gap
 from soccer_nash.game import A10SoccerGame
 from soccer_nash.nash_q import NashQIteration
-from soccer_nash.finite_horizon import mirror_gap
-
 
 OUT = ROOT / "experiments"
 ALGOS = ("a2c", "a2c_mc", "a2c_pretrained")
@@ -98,8 +97,14 @@ def exact_critic(game, solver, gamma, horizon, values):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run paired A10 A2C critic comparisons.")
-    parser.add_argument("--seeds", nargs="+", type=int, default=[10, 11], help="seed IDs to run (default: 10 11)")
-    parser.add_argument("--output", type=pathlib.Path, default=None, help="CSV output path; use a new path to rerun recorded seeds")
+    parser.add_argument(
+        "--seeds", nargs="+", type=int, default=[10, 11],
+        help="seed IDs to run (default: 10 11)",
+    )
+    parser.add_argument(
+        "--output", type=pathlib.Path, default=None,
+        help="CSV output path; use a new path to rerun recorded seeds",
+    )
     args = parser.parse_args()
     game = A10SoccerGame()
     gamma, horizon, games, updates = 0.9, 100, 1000, 5
@@ -110,6 +115,8 @@ def main() -> None:
     teacher = None
     OUT.mkdir(parents=True, exist_ok=True)
     path = args.output or OUT / "pg_paired_new_seeds_a10.csv"
+    if not path.is_absolute():
+        path = ROOT / path
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = []
     if path.exists():
