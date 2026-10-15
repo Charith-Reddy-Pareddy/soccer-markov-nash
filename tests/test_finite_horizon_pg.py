@@ -192,6 +192,7 @@ def test_pretrained_critic_is_frozen_during_policy_updates_and_runs_both_modes(s
                        np.random.default_rng(11))
     opts = [torch.optim.Adam([*net.parameters(), *critic.parameters()]) for _ in range(2)]
     before = [p.detach().clone() for p in critic.parameters()]
+    exact.action_value = lambda _: pytest.fail("pretrained actor update queried exact action values")
     pf.update(net, critic, opts, batch, 0, "a2c_pretrained", GAMMA, 0.0, exact=exact)
     assert all(torch.equal(p.detach(), old) for p, old in zip(critic.parameters(), before))
     assert all(p.grad is None for p in critic.parameters())

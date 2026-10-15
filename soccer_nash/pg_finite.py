@@ -33,7 +33,7 @@ def features(states: list[State], t: int, horizon: int) -> torch.Tensor:
 
 def fit_exact_critic(critic, exact, player: int, epochs: int = 10,
                      batch_size: int = 4096, lr: float = 1e-3) -> None:
-    """Fit a value network to all exact state-time values, then freeze it."""
+    """Fit a value baseline to exact state-time values, then freeze it."""
     if epochs < 1 or batch_size < 1:
         raise ValueError("critic pretraining epochs and batch size must be positive")
     states = list(exact.states)
@@ -188,9 +188,12 @@ def update(
         value, target = None, None
         adv = sign * exact.advantage(batch)
     elif algo == "a2c_pretrained":
+        # The exact solver is used to pretrain the frozen state-value baseline;
+        # actor advantages come from sampled returns, not exact action values.
         with torch.no_grad():
             value = critic(X).squeeze(-1)
-            adv = sign * exact.action_value(batch) - value
+            returns, _ = _returns(r, alive, None, "reinforce", gamma)
+            adv = returns - value
         target = None
     else:
         with torch.no_grad():
