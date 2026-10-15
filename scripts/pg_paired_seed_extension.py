@@ -3,14 +3,11 @@ from __future__ import annotations
 import argparse
 import csv
 import pathlib
-import sys
 import time
 
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-
 from soccer_nash import finite_horizon as fh
 from soccer_nash import pg_finite as pf
 from soccer_nash.finite_horizon import mirror_gap
