@@ -92,7 +92,7 @@ accuracy"*).
 
 ## Policy-gradient study
 
-The soccer policy-gradient study compares REINFORCE, A2C, and PPO on the deterministic A10 and random move-order boards, with standard training and neural fictitious play. Under the tested settings, none recovers the exact equilibrium. Win rate against the exact value-best response is reported as a diagnostic, not a training objective. See the [concise report (PDF)](docs/policy_gradient.pdf), [detailed report (PDF)](docs/policy_gradient_detailed.pdf), [full write-up](docs/policy_gradient.md), and [live results page](https://charith-reddy-pareddy.github.io/soccer-markov-nash/policy.html).
+The soccer policy-gradient study evaluates two scoring formats as complementary conditions; neither is designated the primary result. In the first-goal format, the episode ends at the first score; it is tested on deterministic A10 and random move-order boards. In the fixed-horizon goal-reset format, play restarts after each goal and continues for 100 steps; it is tested on deterministic A10. Results are reported separately because the outcome measures differ. REINFORCE, A2C, and PPO use standard training and neural fictitious play. Under the tested settings, none recovers the exact equilibrium. Win rate against the exact value-best response is a diagnostic, not a training objective. See the [concise report (PDF)](docs/policy_gradient.pdf), [detailed report (PDF)](docs/policy_gradient_detailed.pdf), [full write-up](docs/policy_gradient.md), and [live results page](https://charith-reddy-pareddy.github.io/soccer-markov-nash/policy.html).
 
 **Proof status.** Claims A and B below (deterministic game) are exact,
 machine-checked results. The goal-width switch (headline result 1) is an

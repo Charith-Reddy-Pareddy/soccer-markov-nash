@@ -179,12 +179,14 @@ def test_the_dog_game_code_and_data_are_gone():
 
 
 def test_the_tab_leads_with_the_win_rate_against_the_best_response():
-    for part in ("function WinCell", "function BestResponseBars", "function RpsPlot"):
+    for part in ("function BestResponseBars", "function RpsPlot"):
         assert part in PAGE
+    assert "function WinCell" not in PAGE
     assert "Win rate against the best response" in PAGE
     assert "Exploitability</th>" not in PAGE and "Mirror gap" not in PAGE
     assert PAGE.index("Win rate against the best response") < PAGE.index("against each opponent")
-    for k in ("Deterministic board (A10)", "Random move-order board", "Continuing game"):
+    for k in ("Deterministic board (A10)", "Random move-order board",
+              "Goal-reset game (fixed horizon)"):
         assert k in PAGE
 
 
@@ -526,6 +528,14 @@ def test_competitive_policy_optimization_is_linked_in_both_pg_reports():
         assert item["url"] in html
         assert "Competitive Policy Optimization" in html
         assert "more than 74%" in html
+
+
+def test_live_policy_page_describes_both_formats_and_update_passes():
+    page = (ROOT / "site" / "src" / "PolicyPage.jsx").read_text()
+    assert "neither is designated the primary result" in page
+    assert "first-goal termination on deterministic A10 and random move-order boards" in page
+    assert "fixed-horizon goal-reset play on deterministic A10" in page
+    assert "runner now defaults to five shuffled passes" in page
 
 
 def test_the_symmetry_table_covers_every_board_and_the_exact_solver_is_symmetric():

@@ -395,7 +395,7 @@ def build_html(res: dict) -> str:
     boards = [("Deterministic board (A10)", res)]
     boards.append(("Random move-order board", res["random"]))
     if res.get("continuing"):
-        boards.append(("Continuing game", res["continuing"]))
+        boards.append(("Goal-reset game, fixed horizon", res["continuing"]))
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>Policy gradient on the soccer game</title><style>
 :root{{--ink:#1c2e26;--accent:#1DB954;--accent-dark:#178A42;--line:#dbe5df;--muted:#5b6b63;--card:#f3f8f5}}
@@ -425,8 +425,7 @@ ul.related{{font-size:12px;line-height:1.45}} ul.related li{{margin:2px 0}}
 </style></head><body>
 <div class="eyebrow">Policy gradient &middot; soccer game</div>
 <h1>Policy gradient on the soccer game</h1>
-<p class="lede">REINFORCE, A2C and PPO, trained the standard way and by fictitious play, scored by how often the trained player wins when the
-opponent is the best response to it.</p>
+<p class="lede">We evaluate first-goal and fixed-horizon goal-reset soccer as complementary game formats; neither is designated the primary result. First-goal play is tested on deterministic and random move-order boards, while goal-reset play is tested on the deterministic board. REINFORCE, A2C and PPO use standard training and fictitious play. Results stay separate because a win means a different thing in each format.</p>
 
 <section><h2>1. Win rates against the best response</h2>
 <p>Two players face each other. At kickoff one of them has the ball and the other has to defend, and having the ball is an advantage. Each learner is trained for both players, so it is measured in both positions. <b>Starts with the ball</b>: our learner is the player who has the ball at kickoff. <b>Starts without the ball</b>: our learner is the other player. <b>Average of both</b>: the mean of the two, one fair number that does not depend on who starts with the ball.</p>
@@ -437,12 +436,12 @@ opponent plays the exact best response to it, the move that minimizes its expect
 <li>The exact solver is the top row, as context rather than a target. The win rate is a check, not an objective: no learner is trained to raise it. Each cell is the mean of 3 seeds.</li>
 <li><b>Nash gap (exploitability)</b> is the sum of both players' gains in expected discounted score if each, in turn, replaces its policy with an exact best response to the other. It is 0 at the exact Nash equilibrium; smaller is closer to equilibrium. This is a payoff gap, not a win rate. The win-rate columns separately show how often the trained player wins against its exact discounted-score best response.</li>
 <li>The random board's kickoff is worth {res["random"].get("kickoff_value", 0.0):+.2f} to the ball holder even against an exact best response, so the exact solver wins more than half its games when it starts with the ball.
-On the deterministic board the exact solver ties itself; in the continuing game a win is more goals than the opponent in 100 steps. A dash means the learner was not run on that board.</li>
+On first-goal deterministic play the exact solver ties itself. In goal-reset play, a win means more goals than the opponent over 100 steps. A dash means the learner was not run in that condition.</li>
 </ul></section>
 
 <section><h2>2. Setup</h2>
 {table(["setting", "value"], [
- ["Game", "7&times;5 board, goal rows 1&ndash;3, fixed 100 steps, discount 0.9; the number of steps left is a network input. Three boards: deterministic (A10), random move order, and the continuing game (play restarts after a goal)."],
+ ["Game formats", "Both formats are included as complementary conditions, with no primary format: first-goal termination on deterministic A10 and random move-order boards; fixed-horizon goal-reset play on deterministic A10. Each uses a 7&times;5 board, goal rows 1&ndash;3, a 100-step horizon, discount 0.9, and remaining steps as a network input. Results are reported separately: first-goal outcome is who scores first; goal-reset outcome is goal difference over 100 steps."],
  ["Algorithms", "REINFORCE (discounted returns), A2C (10-step bootstrapped advantage; also with the exact solver's values as a frozen critic), PPO (GAE, clip 0.2, 4 epochs)."],
  ["Updates", "The saved comparisons used one REINFORCE/A2C update per collected batch. The runner now defaults to five shuffled passes over each new batch (--updates-per-batch 5); set it to 1 to reproduce the saved CSVs. PPO keeps its four epochs. Each iteration collects 64 episodes of 100 steps; 2,000 iterations, learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 networks, separate network per player."],
  ["Standard", "Both current networks play each other and keep updating."],
