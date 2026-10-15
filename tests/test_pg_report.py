@@ -30,12 +30,20 @@ def test_the_report_is_short_with_two_tables_and_five_charts():
 def test_the_report_defines_the_win_rate_and_the_seats_and_explains_exploitability():
     for phrase in ("Win rate", "Starts with the ball", "Starts without the ball",
                    "Average of both", "best response to it",
-                   "a win is more goals than the opponent in 100 steps"):
+                   "a win means more goals than the opponent over 100 steps"):
         assert phrase in TEXT
     assert "Nash gap (exploitability)" in TEXT
     assert "sum of both players' gains in expected discounted score" in TEXT
     assert "exact Nash equilibrium" in TEXT and "not a win rate" in TEXT
     assert "Nash gap</th>" in HTML and "<td><b>0.000</b></td>" in HTML
+
+
+def test_the_report_presents_both_scoring_formats_as_complementary():
+    assert "neither is designated the primary result" in TEXT
+    assert "First-goal play is tested on deterministic and random move-order boards" in TEXT
+    assert "goal-reset play is tested on the deterministic board" in TEXT
+    assert "who scores first" in TEXT and "goal difference over 100 steps" in TEXT
+    assert "Goal-reset game, fixed horizon" in TEXT
 
 
 def test_the_report_uses_the_agreed_terms_and_names_no_one():

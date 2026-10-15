@@ -9,17 +9,6 @@ import "./landing.css";
 const pct = (v) => `${Math.round(v * 100)}%`;
 const name = (l) => `${l.label}, ${l.training}`;
 
-// Share of the 1,000 games the player wins (scores while the opponent does not), with the
-// ties (no goal, or equal goals) and the losses beside it.
-function WinCell({ t }) {
-  return (
-    <td>
-      <b>{pct(t[0])}</b>
-      <span className="sub">tie {pct(t[1])} &middot; loss {pct(t[2])}</span>
-    </td>
-  );
-}
-
 // The headline number: how often the trained player wins when the opponent is the best response
 // to it, with the exact solver's own rate as the reference line.
 function BestResponseBars({ rows, reference }) {
@@ -312,7 +301,7 @@ function RpsPlot({ data }) {
 const BOARDS = [
   ["deterministic", "Deterministic board (A10)"],
   ["random", "Random move-order board"],
-  ["continuing", "Continuing game (restarts after a goal)"],
+  ["continuing", "Goal-reset game (fixed horizon)"],
 ];
 
 export default function PolicyPage() {
@@ -453,11 +442,7 @@ export default function PolicyPage() {
           <div>
             <div className="kicker">Policy gradient &middot; soccer game</div>
             <h1>Policy gradient on the soccer game</h1>
-            <p className="lede">REINFORCE, A2C and PPO are trained on the discounted 100-step game and scored by
-              one number: how often the trained player wins when the opponent is the best response to it.
-              Each is trained two ways: the standard way, where both players keep updating against each
-              other, and fictitious play, where each player responds to the average of its opponent&rsquo;s past
-              strategies.</p>
+            <p className="lede">This study evaluates first-goal and fixed-horizon goal-reset soccer as complementary formats; neither is designated the primary result. First-goal play is tested on deterministic A10 and random move-order boards. Goal-reset play is tested on deterministic A10. Results stay separate because a win means a different thing in each format. REINFORCE, A2C and PPO use standard training and fictitious play.</p>
             <div className="cta-row">
               <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>
               <a className="btn btn-outline" href="policy_gradient_detailed.pdf">Detailed PDF &rarr;</a>
@@ -478,7 +463,7 @@ export default function PolicyPage() {
       <section id="setup">
         <div className="wrap">
           <div className="eyebrow"><span className="badge p0">01</span>How to read the numbers</div>
-          <h2>One number: the win rate against the best response</h2>
+          <h2>Compare results within each game format</h2>
           <div className="tbl-wrap">
             <table className="text-table">
               <thead><tr><th>Number</th><th>What it is</th></tr></thead>
@@ -512,9 +497,9 @@ export default function PolicyPage() {
             <table className="text-table">
               <thead><tr><th>Setting</th><th>Value</th></tr></thead>
               <tbody>
-                <tr><td>Game</td><td>7&times;5 board, goal rows 1&ndash;3. First goal ends the game (A10 and random-order boards) or play restarts after a goal (continuing game). Fixed 100 steps, discount 0.9, the number of steps left is a network input.</td></tr>
+                <tr><td>Game formats</td><td>Both are included as complementary conditions, with no primary format: first-goal termination on deterministic A10 and random move-order boards; fixed-horizon goal-reset play on deterministic A10. Each uses a 7&times;5 board, goal rows 1&ndash;3, 100 steps, discount 0.9, and remaining steps as a network input. First-goal outcomes count who scores first; goal-reset outcomes compare goal difference over 100 steps.</td></tr>
                 <tr><td>Returns</td><td>REINFORCE: the discounted return from each step to the end of the episode, no baseline. A2C: 10-step bootstrapped advantage from a learned critic. A2C with the exact critic: the critic is the exact solver&rsquo;s value, frozen, so the advantage is the exact Q(s, a<sub>0</sub>, a<sub>1</sub>) minus V(s). PPO: GAE (&lambda; 0.95), ratio clipped at 0.2, 4 epochs.</td></tr>
-                <tr><td>Updates</td><td>Every iteration: 64 episodes of 100 steps, then one gradient step per player on all of that data (four for PPO). 2,000 iterations. Learning rate 10<sup>&minus;3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. No mini-batches, no replay.</td></tr>
+                <tr><td>Updates</td><td>The saved comparisons use one REINFORCE/A2C update pass per collected batch; the runner now defaults to five shuffled passes (--updates-per-batch 5). PPO uses four epochs. Set the option to 1 to reproduce the saved REINFORCE/A2C comparisons. Every iteration collects 64 episodes of 100 steps. Other settings: 2,000 iterations, learning rate 10<sup>&minus;3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, separate network per player. No mini-batches or replay in the baseline comparisons.</td></tr>
                 <tr><td>Standard</td><td>Both players&rsquo; current networks play each other and keep updating: real-time best responses.</td></tr>
                 <tr><td>Fictitious play</td><td>Each player trains against a frozen snapshot of the other, drawn at random from all its past snapshots (one every 5 iterations); the policy it reports is the average of its own snapshots. Every snapshot follows a fixed budget of 5 policy-gradient iterations, and what is averaged is policies (action probabilities), never network weights.</td></tr>
               </tbody>

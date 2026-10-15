@@ -751,8 +751,8 @@ default). The saved comparisons used one REINFORCE/A2C update pass per collected
 
 
 def whats_new(res: dict) -> str:
-    items = ["The win-rate table reports both starting positions (with and without the ball) and their 50/50 average; the exact solver is context, not a target.",
-             "A third board, the continuing game (fixed 100 steps, play restarts after a goal), with A2C using the exact solver's values as a frozen critic."]
+    items = ["Both first-goal and fixed-horizon goal-reset scoring are included as complementary conditions; neither is designated primary. The win-rate table reports both starting positions and their 50/50 average.",
+             "The goal-reset condition runs for a fixed 100 steps, restarting after each score; it also includes A2C using the exact solver's values as a frozen critic."]
     if res.get("variants"):
         items.append("Comparisons of one shared network and of leaving out the last steps of each episode, on all three boards.")
     if res.get("argmax"):
@@ -778,7 +778,7 @@ def build_html(res: dict) -> str:
               ("The random move-order board", "Moves are applied in a random order each step; the exact solution "
                "mixes at 94 stage games.", rnd)]
     if cont:
-        boards.append(("The continuing game", "Play restarts after every goal and runs for exactly 100 steps; a win is "
+        boards.append(("The goal-reset game (fixed horizon)", "Play restarts after every goal and runs for exactly 100 steps; a win is "
                        "more goals than the opponent. Also shows A2C with the exact solver's values as a frozen critic.", cont))
     seat_row, seat_col = rnd["exact"]["vs_best_response"][0], rnd["exact"]["vs_best_response_column"][0]
     seat_value = rnd.get("kickoff_value", 0.0)
@@ -816,13 +816,13 @@ def build_html(res: dict) -> str:
         ["Starts with the ball / starts without the ball / average of both", "At kickoff one player has the ball and the other has to defend. Starts with the ball: our learner is the player who has the ball. Starts without the ball: our learner is the other player. Average of both: the mean of the two, one fair number that does not depend on who starts with the ball."],
         ["Win rate against the exact Nash policy", "The same, against the exact equilibrium player."],
         ["Win rate against a random player", "A sanity check: every learner should beat a player who moves at random."],
-        ["A win", "The player scores while the opponent does not. On the first two boards the first goal ends the game; in the continuing game play restarts after a goal and a win is more goals than the opponent in 100 steps. Games with no goal, or equal goals, are ties."],
+        ["A win", "In first-goal play, the winner is the player who scores first. In fixed-horizon goal-reset play, the winner scores more goals over 100 steps. No goal or equal goals is a tie."],
         ["Distance from the exact mix", "Total-variation distance between a learner's probabilities and the exact solver's at the first step: 0 is identical, 1 is no overlap."],
         ["Nash gap (exploitability)", "The sum of both players' gains in expected discounted score if each, in turn, replaces its policy with an exact best response to the other. It is 0 at the exact Nash equilibrium; smaller is closer to equilibrium. This payoff gap evaluates the policy pair and is not a win rate."]], "text")
 
     setup = table(["setting", "value"], [
-        ["Game", "7&times;5 board, goal rows 1&ndash;3. Fixed 100 steps, discount 0.9, and the number of steps left is a network input."],
-        ["Boards", "Deterministic (A10): simultaneous moves, the carrier wins contested squares. Random move order: moves are applied in a random order each step. Continuing game: fixed 100 steps, play restarts after a goal."],
+        ["Game formats", "Both scoring formats are included as complementary conditions, with neither designated primary. First-goal termination is tested on deterministic A10 and random move-order boards. Fixed-horizon goal-reset play is tested on deterministic A10; play restarts after each score and continues for 100 steps. Results are reported separately because their outcomes differ."],
+        ["Board and horizon", "7&times;5 board, goal rows 1&ndash;3, 100 steps, discount 0.9, and remaining steps as a network input. A10 uses simultaneous moves with the carrier winning contested squares; random move-order applies moves in a random order each step."],
         ["Returns", "REINFORCE: the discounted return from each step to the end of the episode, no baseline. A2C: 10-step bootstrapped advantage from a learned critic. A2C with the exact critic: the critic is the exact solver's value, frozen, so the advantage is the exact Q(s, a<sub>0</sub>, a<sub>1</sub>) minus V(s). PPO: GAE (&lambda; 0.95), ratio clipped at 0.2, 4 epochs."],
         ["Updates", "Saved comparison tables use one update pass on each collected REINFORCE/A2C batch. The runner now defaults to five shuffled passes (--updates-per-batch 5); use 1 to reproduce those results. PPO retains four epochs. Each pass uses all data or one shuffled mini-batch sweep. Every iteration collects 64 episodes of 100 steps; 2,000 iterations, learning rate 10<sup>-3</sup>, entropy bonus 0.01, 64&times;64 network, softmax output, a separate network for each player. Replay remains a separate option."],
         ["Standard", "Both players' current networks play each other and keep updating: real-time best responses."],
@@ -843,7 +843,7 @@ the exact solver wins {pct(seat_row)} of games and loses {pct(1 - seat_row)} whe
 board both starts tie every game.</p>
 {legend}<div>{seat_chart}</div></section>""",
         f"""<section><h2>Setup</h2>{setup}</section>""",
-        f"""<section><h2>Results by board</h2>
+        f"""<section><h2>Results by game condition</h2>
 <p>Against the best response the exact solver wins {pct(rnd['exact']['vs_best_response'][0])} of games when it starts with the ball on the random board; the six learners win
 {pct(min(pg_br))} to {pct(max(pg_br))}. Against a random player the learners win {pct(min(pg_rand))} to {pct(max(pg_rand))} of games on the deterministic board.
 Fictitious-play training wins more often against a random player; neither way of training reaches the exact solver's rate against the best response.</p>
@@ -915,8 +915,7 @@ ul{{margin:6px 0 6px 18px;padding:0}} li{{margin:3px 0}}
 </style></head><body>
 <div class="eyebrow">Policy gradient &middot; soccer game &middot; detailed report</div>
 <h1>Policy gradient on the soccer game</h1>
-<p class="lede">REINFORCE, A2C and PPO, trained the standard way and by fictitious play, scored by how often the trained player wins when the opponent is the best
-response to it. This is the detailed report with every table and plot; a short version is <code>policy_gradient.pdf</code>.</p>
+<p class="lede">This study evaluates first-goal and fixed-horizon goal-reset soccer as complementary formats; neither is designated the primary result. First-goal play is tested on deterministic and random move-order boards, while goal-reset play is tested on the deterministic board. REINFORCE, A2C and PPO use standard training and fictitious play. Results are kept separate because a win means a different thing in each format. This is the detailed report; a short version is <code>policy_gradient.pdf</code>.</p>
 
 <div class="callout"><b>Summary</b>
 <ul>

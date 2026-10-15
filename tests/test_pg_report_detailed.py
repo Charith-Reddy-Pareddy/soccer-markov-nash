@@ -29,7 +29,7 @@ def test_the_sections_are_numbered_in_order_and_listed_in_the_contents():
     assert len(HEADS) >= 14
     toc = HTML.split('<ul class="toc">')[1].split("</ul>")[0]
     assert re.findall(r"<li>(.*?)</li>", toc) == HEADS
-    for needed in ("Setup", "Results by board", "Mixed states of the random board", "Action probabilities",
+    for needed in ("Setup", "Results by game condition", "Mixed states of the random board", "Action probabilities",
                    "Does training converge?", "Training choices", "More seeds", "Related work",
                    "Reproducing the numbers", "Are the two players mirror images?", "Other kinds of games"):
         assert any(needed in h for h in HEADS)
@@ -40,13 +40,19 @@ def test_the_report_is_detailed_with_many_tables_and_plots():
 
 
 def test_every_board_has_a_wins_ties_and_losses_table_and_the_mixed_states_have_a_table():
-    for board in ("The deterministic board (A10)", "The random move-order board", "The continuing game"):
+    for board in ("The deterministic board (A10)", "The random move-order board", "The goal-reset game (fixed horizon)"):
         assert board in TEXT
     assert HTML.count("vs. a random player</th><th>vs. the exact Nash policy</th><th>vs. the best response") >= 3
     assert "distance from the exact mix" in HTML and "player 0 mixes" in HTML
     assert HTML.count('<table class="probs">') >= 7  # three mixed states and four deterministic positions
 
 
+def test_detailed_report_presents_both_game_formats_without_a_primary():
+    assert "neither is designated the primary result" in TEXT
+    assert "First-goal play is tested on deterministic and random move-order boards" in TEXT
+    assert "goal-reset play is tested on the deterministic board" in TEXT
+    assert "winner is the player who scores first" in TEXT
+    assert "winner scores more goals over 100 steps" in TEXT
 def test_the_numbers_in_the_summary_and_the_seat_table_come_from_the_data():
     rnd = RES["random"]["exact"]
     assert f"the exact solver wins {rnd['vs_best_response'][0]:.0%} when it starts with the ball" in TEXT
