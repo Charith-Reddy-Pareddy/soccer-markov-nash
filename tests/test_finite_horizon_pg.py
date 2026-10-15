@@ -192,7 +192,9 @@ def test_pretrained_critic_is_frozen_during_policy_updates_and_runs_both_modes(s
                        np.random.default_rng(11))
     opts = [torch.optim.Adam([*net.parameters(), *critic.parameters()]) for _ in range(2)]
     before = [p.detach().clone() for p in critic.parameters()]
-    exact.action_value = lambda _: pytest.fail("pretrained actor update queried exact action values")
+    exact.action_value = lambda _: pytest.fail(
+        "pretrained actor update queried exact action values"
+    )
     pf.update(net, critic, opts, batch, 0, "a2c_pretrained", GAMMA, 0.0, exact=exact)
     assert all(torch.equal(p.detach(), old) for p, old in zip(critic.parameters(), before))
     assert all(p.grad is None for p in critic.parameters())
@@ -218,6 +220,22 @@ def test_pretrained_critic_supports_random_move_order_board(small):
                   iterations=1, episodes=3, exact=exact, seed=2,
                   critic_pretrain_epochs=2, critic_pretrain_batch_size=128)
     assert tr.pol1(0, [game.initial_state()]).sum() == pytest.approx(1.0, abs=1e-5)
+
+
+def test_a2c_mc_uses_the_frozen_critic_actor_target_and_trains_its_baseline(small):
+    import torch
+
+    game = small[0]
+    net, critic = pf.Net(game, 4), pf.Net(game, 1)
+    batch = pf.collect(game, pf._Current(net), pf._Current(pf.Net(game, 4)), 4, HORIZON,
+                       np.random.default_rng(19))
+    opts = [torch.optim.Adam([*net.parameters(), *critic.parameters()]) for _ in range(2)]
+    before = [p.detach().clone() for p in critic.parameters()]
+    pf.update(net, critic, opts, batch, 0, "a2c_mc", GAMMA, 0.0)
+    assert any(not torch.equal(p.detach(), old) for p, old in zip(critic.parameters(), before))
+    tr = pf.train(game, "a2c_mc", "fictitious", GAMMA, HORIZON, iterations=2,
+                  episodes=4, snap_every=1)
+    assert tr.pol0(0, [game.initial_state()]).sum() == pytest.approx(1.0, abs=1e-5)
 
 
 def test_shared_network_players_use_one_trunk_and_separate_output_slices(small):
@@ -301,6 +319,8 @@ def test_the_runner_trains_for_the_documented_2000_iterations_by_default():
     assert args.seeds == 3 and args.entropy == 0.01 and args.updates_per_batch == 5
     pretrained_args = mod.parser().parse_args(["--algos", "a2c_pretrained"])
     assert pretrained_args.algos == ["a2c_pretrained"]
+    mc_args = mod.parser().parse_args(["--algos", "a2c_mc"])
+    assert mc_args.algos == ["a2c_mc"]
     one_update = mod.parser().parse_args(["--updates-per-batch", "1"])
     assert one_update.updates_per_batch == 1
 
@@ -360,7 +380,7 @@ def test_minibatches_take_several_gradient_steps_where_full_batch_takes_one(smal
     assert steps(0) == 1 and steps(16) == -(-n // 16)
 
 
-@pytest.mark.parametrize("algo", ["reinforce", "a2c", "a2c_exact", "a2c_pretrained"])
+@pytest.mark.parametrize("algo", ["reinforce", "a2c", "a2c_exact", "a2c_pretrained", "a2c_mc"])
 def test_configured_updates_reuse_one_collected_batch_and_ppo_keeps_its_epochs(small, algo):
     import torch
 
@@ -369,7 +389,7 @@ def test_configured_updates_reuse_one_collected_batch_and_ppo_keeps_its_epochs(s
     batch = pf.collect(game, pf._Current(pf.Net(game, 4)), pf._Current(pf.Net(game, 4)), 4,
                        HORIZON, np.random.default_rng(13))
     net = pf.Net(game, 4)
-    critic = pf.Net(game, 1) if algo in ("a2c", "a2c_pretrained") else None
+    critic = pf.Net(game, 1) if algo in ("a2c", "a2c_pretrained", "a2c_mc") else None
     if algo == "a2c_pretrained":
         pf.fit_exact_critic(critic, exact, 0, epochs=1, batch_size=128)
     params = [*net.parameters(), *(critic.parameters() if critic is not None else [])]

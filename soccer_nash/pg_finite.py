@@ -22,6 +22,7 @@ from soccer_nash.game import MOVE_ACTIONS, SoccerGame, State
 
 ALGOS = ("reinforce", "a2c", "ppo")
 EXACT_ALGOS = ("a2c_exact", "a2c_pretrained")
+CONTROL_ALGOS = ("a2c_mc",)
 MODES = ("selfplay", "fictitious", "fictitious_argmax")
 
 
@@ -187,14 +188,15 @@ def update(
     if algo == "a2c_exact":
         value, target = None, None
         adv = sign * exact.advantage(batch)
-    elif algo == "a2c_pretrained":
-        # The exact solver is used to pretrain the frozen state-value baseline;
-        # actor advantages come from sampled returns, not exact action values.
+    elif algo in ("a2c_mc", "a2c_pretrained"):
+        # Both variants use sampled full returns for the actor. The MC control
+        # learns its baseline from those returns; the pretrained variant freezes
+        # a baseline fit to exact state values.
         with torch.no_grad():
             value = critic(X).squeeze(-1)
             returns, _ = _returns(r, alive, None, "reinforce", gamma)
             adv = returns - value
-        target = None
+        target = returns if algo == "a2c_mc" else None
     else:
         with torch.no_grad():
             value = critic(X).squeeze(-1) if critic is not None else None
@@ -296,8 +298,9 @@ def train(
     ``shared``: both players' policies are two output heads of one network.
     ``trim``: drop the last ``trim`` steps of every episode from the policy and critic
     losses (they still enter the returns of earlier steps)."""
-    if (algo not in ALGOS and algo not in EXACT_ALGOS) or mode not in MODES:
-        raise ValueError(f"algo: one of ALGOS or {EXACT_ALGOS}; mode: one of {MODES}")
+    if algo not in ALGOS + EXACT_ALGOS + CONTROL_ALGOS or mode not in MODES:
+        choices = ALGOS + EXACT_ALGOS + CONTROL_ALGOS
+        raise ValueError(f"algo: one of {choices}; mode: one of {MODES}")
     if algo in EXACT_ALGOS and exact is None:
         raise ValueError(f"{algo} needs the exact solver values")
     if updates_per_batch < 1:

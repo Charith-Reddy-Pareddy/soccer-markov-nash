@@ -48,7 +48,7 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--games", type=int, default=1000)
     ap.add_argument("--gamma", type=float, default=0.9)
     ap.add_argument("--algos", nargs="+", default=list(pf.ALGOS),
-                    choices=[*pf.ALGOS, *pf.EXACT_ALGOS])
+                    choices=[*pf.ALGOS, *pf.EXACT_ALGOS, *pf.CONTROL_ALGOS])
     ap.add_argument("--critic-pretrain-epochs", type=int, default=10,
                     help="a2c_pretrained: full supervised passes over exact state-time values")
     ap.add_argument("--critic-pretrain-batch-size", type=int, default=4096,

@@ -6,19 +6,23 @@ horizon solver values over the game's valid state and time pairs. Player 1's
 targets use the negative of player 0's values. The fitted networks are then
 frozen while the policy networks train.
 
-For a sampled joint action, the policy update uses the exact solver's action
-value and the frozen network's estimate as its baseline:
+The actor update uses the sampled discounted return minus the frozen value
+network's estimate as its baseline:
 
-`A_i(t, s, a_0, a_1) = sign_i * Q*(t, s, a_0, a_1) - V_net,i(t, s)`
+`A_i(t, s) = G_i(t) - V_net,i(t, s)`
 
-Here `sign_0 = +1` and `sign_1 = -1`. The value network does not receive policy-
-training gradients. This separates the neural critic approximation from the
-exact action-value lookup, so it tests the pretraining procedure without
-presenting a finite training run as a learned equilibrium solver.
+Here `G_i(t)` is a Monte Carlo discounted return from sampled play, with
+`sign_0 = +1` and `sign_1 = -1` applied to rewards. The value network does not
+receive policy-training gradients. Exact action values are not queried during
+actor updates. This separates the frozen state-value baseline from an oracle
+action-value policy update.
 
 The existing `a2c_exact` option remains a distinct oracle comparison: it uses
 the exact solver's `Q* - V*` advantage directly and does not train a neural
-critic. Ordinary `a2c` learns its critic from rollout returns.
+critic. Ordinary `a2c` uses a learned critic with the repository's 10-step
+bootstrapped advantage. The `a2c_mc` control uses a learned critic but the same
+sampled full-return actor estimator as `a2c_pretrained`; comparing those two
+isolates the baseline pretraining/freezing choice more closely.
 
 Run the new comparison with:
 
