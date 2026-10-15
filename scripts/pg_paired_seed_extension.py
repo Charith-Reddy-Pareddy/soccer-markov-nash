@@ -99,6 +99,7 @@ def exact_critic(game, solver, gamma, horizon, values):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run paired A10 A2C critic comparisons.")
     parser.add_argument("--seeds", nargs="+", type=int, default=[10, 11], help="seed IDs to run (default: 10 11)")
+    parser.add_argument("--output", type=pathlib.Path, default=None, help="CSV output path; use a new path to rerun recorded seeds")
     args = parser.parse_args()
     game = A10SoccerGame()
     gamma, horizon, games, updates = 0.9, 100, 1000, 5
@@ -108,7 +109,8 @@ def main() -> None:
     exact = (fh.tables_to_policy(row_t), fh.tables_to_policy(col_t))
     teacher = None
     OUT.mkdir(parents=True, exist_ok=True)
-    path = OUT / "pg_paired_new_seeds_a10.csv"
+    path = args.output or OUT / "pg_paired_new_seeds_a10.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
     rows = []
     if path.exists():
         with path.open() as f:
