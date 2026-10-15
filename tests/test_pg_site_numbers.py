@@ -538,6 +538,13 @@ def test_live_policy_page_describes_both_formats_and_update_passes():
     assert "runner now defaults to five shuffled passes" in page
 
 
+def test_live_policy_page_metadata_describes_both_formats():
+    meta = (ROOT / "site" / "policy.html").read_text()
+    assert "first-goal and fixed-horizon goal-reset soccer" in meta
+    assert "complementary formats" in meta
+    assert "self-play" not in meta.lower()
+
+
 def test_the_symmetry_table_covers_every_board_and_the_exact_solver_is_symmetric():
     boards = RESULTS["symmetry"]
     assert [b["board"] for b in boards] == ["deterministic", "random", "continuing"]
