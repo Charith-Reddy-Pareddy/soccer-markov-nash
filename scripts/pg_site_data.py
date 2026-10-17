@@ -116,7 +116,7 @@ def build() -> dict:
             "entropy": larger_entropy(), "choices": training_choices(),
             "curves": training_curves(), "related": RELATED,
             "more_seeds": more_seeds(), "symmetry": symmetry(), "small_games": small_games(),
-            "rps_phases": rps_phases()}
+            "rps_phases": rps_phases(), "exact_play": exact_play()}
 
 
 def random_board() -> dict:
@@ -440,6 +440,34 @@ def more_seeds() -> dict | None:
                       "baseline_key": base, "variant_key": var,
                       **{f"{m}_diff": difference(conds[base][m], conds[var][m]) for m in ("ball", "other", "balanced")}})
     return {"seeds": MORE_SEEDS, "conditions": conds, "pairs": pairs}
+
+
+EXACT_PLAY = (("a10", "table", "adam"), ("a10", "network", "adam"), ("random", "table", "adam"), ("random", "network", "adam"),
+              ("random", "table", "sgd"), ("random", "table", "eg"))
+
+
+def exact_play() -> dict | None:
+    """Exact (noise-free) gradient play on the stationary discounted game (scripts/pg_exact_play.py): the exact
+    duality gap (0 only at a Markov-perfect equilibrium) at the end of each run, per board, policy class and update
+    rule, with each learning rate a separate condition."""
+    path = EXP / "pg_exact_play.csv"
+    if not path.exists():
+        return None
+    rows = read(path)
+    final = {}
+    for r in rows:
+        key = (r["board"], r["policy"], r["method"], float(r["lr"]), int(r["seed"]))
+        if key not in final or int(r["step"]) > int(final[key]["step"]):
+            final[key] = r
+    conditions = []
+    for board, policy, method in EXACT_PLAY:
+        for lr in sorted({k[3] for k in final if k[:3] == (board, policy, method)}):
+            runs = [final[k] for k in sorted(final) if k[:4] == (board, policy, method, lr)]
+            gaps = lambda f, runs=runs: [round(float(r[f]), 6) for r in runs]  # noqa: E731
+            conditions.append({"board": board, "policy": policy, "method": method, "lr": lr, "steps": int(runs[0]["step"]),
+                               "seeds": [int(r["seed"]) for r in runs], "gap_mean": gaps("gap_mean"),
+                               "gap_max": gaps("gap_max"), "gap_kickoff": gaps("gap_kickoff")})
+    return {"conditions": conditions}
 
 
 def symmetry() -> list[dict]:

@@ -874,7 +874,7 @@ the best response at each checkpoint round (one seed per run); every line ends b
 <div>{line_chart(fp_series, rounds)}</div>{fp_table}</section>""",
         variant_section(res), argmax_section(res), entropy_section(res),
         choices_section(res), more_seeds_section(res), symmetry_section(res), small_games_section(res),
-        related_section(res), reproduce_section(res),
+        _short.exact_play_section(res), related_section(res), reproduce_section(res),
     ]
     numbered, k = [], 0
     for sec in sections:

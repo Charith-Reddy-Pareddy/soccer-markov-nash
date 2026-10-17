@@ -18,9 +18,10 @@ def test_the_win_rate_table_is_the_first_table_and_comes_before_everything_but_t
     assert HTML.index("1. Win rates against the best response") < first_table
 
 
-def test_the_report_is_short_with_two_tables_and_five_charts():
+def test_the_report_is_short_with_two_tables_and_six_charts():
     assert HTML.count("<table") == 2
-    charts = 2 + 1 + len(RES["more_seeds"]["pairs"])  # curves, rps, ten seeds
+    # curves, rock-paper-scissors, the ten-seed pairs, exact gradient play
+    charts = 2 + 1 + len(RES["more_seeds"]["pairs"]) + 1
     assert HTML.count("<svg") == charts
     for dropped in ("Action probabilities", "Mixed states of the random board", "More training",
                     "Fictitious play with long best responses", "Network sharing and trimming"):
@@ -57,7 +58,8 @@ def test_the_report_uses_the_agreed_terms_and_names_no_one():
 def test_the_report_has_every_section_in_order():
     heads = ["1. Win rates against the best response", "2. Setup", "3. Findings",
              "4. Does training converge?", "5. Rock-paper-scissors with neural networks",
-             "6. Training choices", "7. Related work"]
+             "6. Training choices", "7. Without sampling noise: exact gradient play",
+             "8. Related work"]
     positions = [HTML.index(h) for h in heads]
     assert positions == sorted(positions)
 

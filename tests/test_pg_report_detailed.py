@@ -31,7 +31,8 @@ def test_the_sections_are_numbered_in_order_and_listed_in_the_contents():
     assert re.findall(r"<li>(.*?)</li>", toc) == HEADS
     for needed in ("Setup", "Results by game condition", "Mixed states of the random board", "Action probabilities",
                    "Does training converge?", "Training choices", "More seeds", "Related work",
-                   "Reproducing the numbers", "Are the two players mirror images?", "Other kinds of games"):
+                   "Reproducing the numbers", "Are the two players mirror images?", "Other kinds of games",
+                   "Without sampling noise: exact gradient play"):
         assert any(needed in h for h in HEADS)
 
 

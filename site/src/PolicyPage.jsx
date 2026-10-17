@@ -273,6 +273,48 @@ function VariantBars({ rows, reference, field = "", keys = VARIANT_KEYS }) {
   );
 }
 
+// Exact gradient play: per condition, the mean duality gap over states and the gap at the kickoff, median over runs
+// as a bar and each run as a dot.
+function GapBars({ conditions }) {
+  const W = 660, left = 250, right = 40, bar = 13, group = 2 * (bar + 2) + 14;
+  const H = group * conditions.length + 48;
+  const x = (v) => left + Math.min(v, 1) * (W - left - right);
+  const update = { adam: "simultaneous Adam", sgd: "simultaneous gradient steps", eg: "extragradient" };
+  const fields = [["gap_mean", "var(--pitch)"], ["gap_kickoff", "var(--ember)"]];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="exact duality gap by condition" className="pg-bars">
+      {[0, 0.25, 0.5, 0.75, 1].map((g) => (
+        <g key={g}>
+          <line x1={x(g)} y1="22" x2={x(g)} y2={H - 22} stroke="var(--rule)" />
+          <text x={x(g)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--ink-faint)">{g}</text>
+        </g>
+      ))}
+      <rect x={left} y="6" width="10" height="10" fill="var(--pitch)" /><text x={left + 14} y="15" fontSize="11" fill="var(--ink)">mean gap over states</text>
+      <rect x={left + 150} y="6" width="10" height="10" fill="var(--ember)" /><text x={left + 164} y="15" fontSize="11" fill="var(--ink)">gap at the kickoff</text>
+      {conditions.map((c, i) => {
+        const y0 = 28 + i * group;
+        return (
+          <g key={`${c.board}-${c.policy}-${c.method}-${c.lr}`}>
+            <text x={left - 8} y={y0 + group / 2 - 4} textAnchor="end" fontSize="12" fill="var(--ink)">
+              {c.board === "a10" ? "A10" : "random"}, {c.policy}, {update[c.method]} {c.lr}
+            </text>
+            {fields.map(([f, col], n) => {
+              const runs = [...c[f]].sort((a, b) => a - b), mid = runs[Math.floor(runs.length / 2)], y = y0 + n * (bar + 2);
+              return (
+                <g key={f}>
+                  <rect x={left} y={y} width={Math.max(x(mid) - left, 0)} height={bar} fill={col} opacity=".85" />
+                  {runs.map((v, m) => <circle key={m} cx={x(v)} cy={y + bar / 2} r="2.3" fill="var(--ink)" />)}
+                  <text x={x(runs[runs.length - 1]) + 6} y={y + 10} fontSize="11" fontWeight="700" fill="var(--ink)">{mid.toFixed(2)}</text>
+                </g>
+              );
+            })}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 // Rock-paper-scissors: the share of rock in the current play of best-response dynamics (it
 // cycles for ever) against in the average of all play so far (it settles at one third).
 function RpsPlot({ data }) {
@@ -306,7 +348,7 @@ const BOARDS = [
 
 export default function PolicyPage() {
   const [which, setWhich] = useState("deterministic");
-  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related, more_seeds: moreSeeds, symmetry, small_games: smallGames, rps_phases: rpsPhases } = results;
+  const { longer, fp_br: fpBr, mixed, rps, variants, argmax, rps_nn: rpsNn, entropy, choices, curves, related, more_seeds: moreSeeds, symmetry, small_games: smallGames, rps_phases: rpsPhases, exact_play: exactPlay } = results;
   const vr = variants && variants.random, vd = variants && variants.deterministic, vc = variants && variants.continuing;
   const boards = { deterministic: results, random: results.random, continuing: results.continuing };
   const available = BOARDS.filter(([k]) => boards[k]);
@@ -838,10 +880,42 @@ export default function PolicyPage() {
         </section>
       )}
 
-      {related && (
-        <section className="band-tint" id="related">
+      {exactPlay && (
+        <section className="band-tint" id="exact-play">
           <div className="wrap">
-            <div className="eyebrow"><span className="badge p0">17</span>Related work</div>
+            <div className="eyebrow"><span className="badge p0">17</span>Without sampling noise</div>
+            <h2>Exact gradient play: a table against a network</h2>
+            <p className="lede">To separate the learning rule from the noise of sampled gradients, both players follow the <b>exact</b> gradient of their own value, computed from the
+              transition table on the stationary discounted game (discount 0.9, no step count) and summed over every state, as if a game could start anywhere. The <b>duality gap</b>
+              at a state is the first player&rsquo;s best-response value against the second&rsquo;s policy minus the second&rsquo;s best-response value against the first&rsquo;s; it is
+              0 only at a Markov-perfect equilibrium. A <b>table</b> has one row of move logits per state; a <b>network</b> is one 64&times;64 network per player, shared across states.
+              Bars are the median over runs (1 table run, 5 network seeds, 3 seeds for the 6,000-step runs) and dots single runs.</p>
+            <GapBars conditions={exactPlay.conditions} />
+            {(() => {
+              const pick = (b, p, m) => exactPlay.conditions.filter((c) => c.board === b && c.policy === p && c.method === m);
+              const span = (cs, f) => { const v = cs.flatMap((c) => c[f]); return [Math.min(...v), Math.max(...v)]; };
+              const r = (x, d = 2) => x.toFixed(d);
+              const [aT, aN, rN, sgd, eg] = [pick("a10", "table", "adam"), pick("a10", "network", "adam"), pick("random", "network", "adam"),
+                pick("random", "table", "sgd"), pick("random", "table", "eg")];
+              if (!aT.length || !aN.length || !rN.length || !sgd.length || !eg.length) return null;
+              return (
+                <p>On the deterministic board, where the equilibrium is pure everywhere, the table reaches it (mean gap {r(aT[0].gap_mean[0], 3)}) and every network stalls
+                  (mean gap {r(span(aN, "gap_mean")[0])}&ndash;{r(span(aN, "gap_mean")[1])}, kickoff gap {r(span(aN, "gap_kickoff")[0])}&ndash;{r(span(aN, "gap_kickoff")[1])}), the same
+                  scale as the sampled learners&rsquo; exploitability: there the network, not the sampling noise, stops policy gradient. On the random board, where the equilibrium mixes,
+                  no exact gradient method tried reaches it even with a table: simultaneous gradient steps leave {r(span(sgd, "gap_mean")[0])}&ndash;{r(span(sgd, "gap_mean")[1])} after
+                  {" "}{sgd[0].steps.toLocaleString()} steps, and extragradient, a standard fix for the cycling of simultaneous gradient play, roughly halves that to
+                  {" "}{r(span(eg, "gap_mean")[0], 3)}&ndash;{r(span(eg, "gap_mean")[1], 3)} and then stops improving; the networks end at {r(span(rN, "gap_mean")[0])}&ndash;{r(span(rN, "gap_mean")[1])}.
+                  Two separate obstacles, then: a shared network, and simultaneous gradient play near mixed equilibria. This is the stationary discounted game, not the finite-horizon games above.</p>
+              );
+            })()}
+          </div>
+        </section>
+      )}
+
+      {related && (
+        <section id="related">
+          <div className="wrap">
+            <div className="eyebrow"><span className="badge p1">18</span>Related work</div>
             <h2>Has fictitious play been combined with policy gradient before?</h2>
             <p className="lede">Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang) and compared each one-line summary with the abstract on the paper&rsquo;s own proceedings, journal or arXiv page, or on a bibliographic mirror where the publisher&rsquo;s page would not load (noted in the entry). JSTOR and the publisher pages for the 1951 papers would not load, so Brown and Robinson are cited from the linked secondary source and were not read. I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in
               zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>
@@ -859,7 +933,7 @@ export default function PolicyPage() {
         </section>
       )}
 
-      <section id="end">
+      <section className="band-tint" id="end">
         <div className="wrap">
           <div className="cta-row">
             <a className="btn btn-primary" href="policy_gradient.pdf">Read the PDF &rarr;</a>

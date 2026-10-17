@@ -588,3 +588,18 @@ def test_the_batch_size_study_uses_the_published_runs_for_64_episodes():
     for row in study["rows"]:
         published = by[(row["label"], row["training"])]["vs_best_response"][0]
         assert row["b64"]["mean"] == pytest.approx(published, abs=1e-5)
+
+
+def test_the_exact_play_summary_is_the_final_checkpoint_of_every_run():
+    import csv
+    rows = list(csv.DictReader((ROOT / "experiments" / "pg_exact_play.csv").open()))
+    last = {}
+    for r in rows:
+        key = (r["board"], r["policy"], r["method"], float(r["lr"]), int(r["seed"]))
+        if key not in last or int(r["step"]) > int(last[key]["step"]):
+            last[key] = r
+    for c in RESULTS["exact_play"]["conditions"]:
+        for seed, gap in zip(c["seeds"], c["gap_mean"]):
+            run = last[(c["board"], c["policy"], c["method"], c["lr"], seed)]
+            assert gap == round(float(run["gap_mean"]), 6)
+    assert "exact-play" in PAGE and "Without sampling noise" in PAGE

@@ -242,6 +242,66 @@ def ten_seeds_block(res: dict) -> str:
             f"and {pct((ball + other) / 2)} averaged over both starts.</p>{''.join(parts)}")
 
 
+EXACT_NAMES = {"adam": "simultaneous Adam", "sgd": "simultaneous gradient steps", "eg": "extragradient"}
+
+
+def gap_bars(ex: dict, width=660) -> str:
+    """Exact gradient play: per condition, the mean duality gap over states (green) and at the kickoff (orange),
+    median over runs as a bar and each run as a dot, on a 0 to 1 scale."""
+    left, right, bar = 250, 40, 13
+    group = 2 * (bar + 2) + 14
+    h = group * len(ex["conditions"]) + 48
+    x = lambda v: left + min(v, 1.0) * (width - left - right)  # noqa: E731
+    board = {"a10": "A10", "random": "random"}
+    out = [f'<svg viewBox="0 0 {width} {h}" xmlns="http://www.w3.org/2000/svg" '
+           'font-family="Helvetica,Arial,sans-serif" font-size="11">']
+    for g in (0, 0.25, 0.5, 0.75, 1.0):
+        out.append(f'<line x1="{x(g):.1f}" y1="22" x2="{x(g):.1f}" y2="{h - 22}" stroke="#dbe5df"/>'
+                   f'<text x="{x(g):.1f}" y="{h - 8}" text-anchor="middle" fill="#5b6b63">{g:g}</text>')
+    out.append(f'<rect x="{left}" y="6" width="10" height="10" fill="{GREEN}"/><text x="{left + 14}" y="15" fill="#1c2e26">mean gap over states</text>'
+               f'<rect x="{left + 150}" y="6" width="10" height="10" fill="{ORANGE}"/><text x="{left + 164}" y="15" fill="#1c2e26">gap at the kickoff</text>')
+    for i, c in enumerate(ex["conditions"]):
+        y0 = 28 + i * group
+        label = f'{board[c["board"]]}, {c["policy"]}, {EXACT_NAMES[c["method"]]} {c["lr"]:g}'
+        out.append(f'<text x="{left - 8}" y="{y0 + group / 2 - 4}" text-anchor="end" fill="#1c2e26">{label}</text>')
+        for n, (field, colour) in enumerate((("gap_mean", GREEN), ("gap_kickoff", ORANGE))):
+            runs, y = sorted(c[field]), y0 + n * (bar + 2)
+            mid = runs[len(runs) // 2]
+            out.append(f'<rect x="{left}" y="{y}" width="{max(x(mid) - left, 0):.1f}" height="{bar}" fill="{colour}" opacity=".85"/>')
+            out += [f'<circle cx="{x(v):.1f}" cy="{y + bar / 2}" r="2.3" fill="#1c2e26"/>' for v in runs]
+            out.append(f'<text x="{x(max(runs)) + 6:.1f}" y="{y + 10}" fill="#1c2e26" font-weight="700">{mid:.2f}</text>')
+    out.append("</svg>")
+    return "".join(out)
+
+
+def exact_play_section(res: dict, number: str = "") -> str:
+    ex = res.get("exact_play")
+    if not ex:
+        return ""
+    return f"""<section><h2>{number}Without sampling noise: exact gradient play</h2>
+<p>To separate the learning rule from the noise of sampled gradients, both players follow the <b>exact</b> gradient of their own value, computed from the transition table on the stationary discounted game (discount 0.9, no step count) and summed over every state, as if a game could start anywhere. The <b>duality gap</b> at a state is the first player's best-response value against the second's policy minus the second's best-response value against the first's; it is 0 only at a Markov-perfect (stationary Nash) equilibrium. A <b>table</b> has one row of move logits per state; a <b>network</b> is one 64&times;64 network per player, shared across states. Bars are the median over runs (1 table run, 5 network seeds, 3 seeds for the 6,000-step runs) and dots single runs (<code>scripts/pg_exact_play.py</code>).</p>
+<div>{gap_bars(ex)}</div>
+{exact_play_findings(ex)}</section>"""
+
+
+def exact_play_findings(ex: dict) -> str:
+    """The section's conclusions, with every number read from the runs."""
+    def get(board, policy, method):
+        return [c for c in ex["conditions"] if (c["board"], c["policy"], c["method"]) == (board, policy, method)]
+    span = lambda cs, f: (min(v for c in cs for v in c[f]), max(v for c in cs for v in c[f]))  # noqa: E731
+    a10_table, a10_net = get("a10", "table", "adam"), get("a10", "network", "adam")
+    rnd_table, rnd_net = get("random", "table", "adam"), get("random", "network", "adam")
+    sgd, eg = get("random", "table", "sgd"), get("random", "table", "eg")
+    if not (a10_table and a10_net and rnd_table and rnd_net and sgd and eg):
+        return ""
+    lines = [
+        f"<b>Deterministic board (pure equilibrium everywhere): the table reaches the equilibrium and the networks do not.</b> The table ends with a mean gap of {a10_table[0]['gap_mean'][0]:.3f} and a largest gap of {a10_table[0]['gap_max'][0]:.3f}; every network stalls with a mean gap of {span(a10_net, 'gap_mean')[0]:.2f}&ndash;{span(a10_net, 'gap_mean')[1]:.2f} and a kickoff gap of {span(a10_net, 'gap_kickoff')[0]:.2f}&ndash;{span(a10_net, 'gap_kickoff')[1]:.2f}, the same scale as the sampled learners' exploitability. On this board the network, not the sampling noise, is what stops policy gradient.",
+        f"<b>Random board (the equilibrium mixes at 94 states): no exact gradient method tried here reaches it, even with a table.</b> The table with Adam stays at a mean gap of {rnd_table[0]['gap_mean'][0]:.2f}; simultaneous gradient steps leave {span(sgd, 'gap_mean')[0]:.2f}&ndash;{span(sgd, 'gap_mean')[1]:.2f} after {sgd[0]['steps']:,} steps; extragradient, a standard fix for the cycling of simultaneous gradient play near mixed equilibria, roughly halves that to {span(eg, 'gap_mean')[0]:.3f}&ndash;{span(eg, 'gap_mean')[1]:.3f} and then stops improving. The networks end at {span(rnd_net, 'gap_mean')[0]:.2f}&ndash;{span(rnd_net, 'gap_mean')[1]:.2f}.",
+        "So there are two separate obstacles: sharing a network across states stops learning even where the equilibrium is pure, and where it has to mix, simultaneous gradient play does not settle even with a table. Why extragradient stops improving is not tested. The game here is the stationary discounted one, not the finite-horizon games of the sections above.",
+    ]
+    return "<ul>" + "".join(f"<li>{x}</li>" for x in lines) + "</ul>"
+
+
 def related_section(res: dict) -> str:
     items = res.get("related")
     if not items:
@@ -254,7 +314,7 @@ def related_section(res: dict) -> str:
     groups = "".join(
         f"<h3>{title}</h3><ul class=\"related\">{''.join(entry(r) for r in items if r['group'] == key)}</ul>"
         for key, title in (("older", "Older work"), ("recent", "Recent work")))
-    return f"""<section><h2>7. Related work</h2>
+    return f"""<section><h2>{"8" if res.get("exact_play") else "7"}. Related work</h2>
 <p>Has fictitious play been combined with policy gradient before? Yes, in several forms, and the convergence theory is much older than the neural networks. I checked the titles, authors and venues against Google Scholar (its top result for fictitious play, policy gradient and zero-sum Markov games was Liu, Yang and Wang) and compared each one-line summary with the abstract on the paper's own proceedings, journal or arXiv page, or on a bibliographic mirror where the publisher's page would not load (noted in the entry). JSTOR and the publisher pages for the 1951 papers would not load, so Brown and Robinson are cited from the linked secondary source and were not read. I have not checked the proofs. I did not find a result that proves convergence for deep policy gradient with fictitious play in zero-sum Markov games; the closest results are tabular, regularized or for special game classes.</p>{groups}</section>"""
 
 
@@ -455,6 +515,8 @@ On first-goal deterministic play the exact solver ties itself. In goal-reset pla
 {rps_section(res)}
 
 {choices_section(res)}
+
+{exact_play_section(res, "7. ")}
 
 {related_section(res)}
 </body></html>"""
