@@ -62,6 +62,24 @@ Started from the mixed states, every learner wins far fewer games against the ex
 
 A2C ends clearly lower on both seeds, REINFORCE on one of two, PPO on neither, and the best single run is 0.44, still far from 0. With two seeds this is a trend, not a result. These runs were interrupted by a restart: four of the six finished runs were recovered from the run logs (same script, same settings) and the other two were rerun, which is why they sit in separate files, `experiments/pg_finite_a10_long_*.csv`.
 
+### Without sampling noise: exact gradient play
+
+To separate the learning rule from the noise of sampled gradients, both players follow the **exact** gradient of their own value, computed from the transition table on the stationary discounted game (discount 0.9, no step count) and summed over every state, as if a game could start anywhere. The **duality gap** at a state is the first player's best-response value against the second's policy minus the second's best-response value against the first's; it is 0 only at a Markov-perfect (stationary Nash) equilibrium. A **table** has one row of move logits per state; a **network** is one 64x64 network per player, shared across states. Median over runs, range in brackets (`soccer_nash/exact_play.py`, `scripts/pg_exact_play.py`, `experiments/pg_exact_play.csv`):
+
+| board | policy | update | runs x steps | mean gap over states | largest gap | gap at the kickoff |
+|---|---|---|---|---|---|---|
+| Deterministic (A10) | table | simultaneous Adam, step 0.05 | 1 x 2,000 | 0.002 | 0.008 | 0.003 |
+| Deterministic (A10) | network | simultaneous Adam, step 0.003 | 5 x 2,000 | 0.456 (0.432-0.469) | 1.381 (1.378-1.431) | 0.904 (0.848-0.910) |
+| Random move order | table | simultaneous Adam, step 0.05 | 1 x 2,000 | 0.228 | 0.950 | 0.514 |
+| Random move order | network | simultaneous Adam, step 0.003 | 5 x 2,000 | 0.297 (0.235-0.340) | 1.159 (0.896-1.219) | 0.617 (0.602-0.750) |
+| Random move order | table | simultaneous gradient steps, step 0.5 | 3 x 6,000 | 0.142 (0.119-0.168) | 0.740 (0.637-0.772) | 0.344 (0.272-0.404) |
+| Random move order | table | extragradient, step 0.25 | 3 x 6,000 | 0.088 (0.086-0.091) | 0.431 (0.420-0.587) | 0.224 (0.205-0.282) |
+| Random move order | table | extragradient, step 0.5 | 3 x 6,000 | 0.088 (0.077-0.095) | 0.441 (0.350-0.457) | 0.227 (0.191-0.230) |
+
+- Deterministic board (pure equilibrium everywhere): the table reaches the equilibrium and the networks do not. The table ends with a mean gap of 0.002 and a largest gap of 0.008; every network stalls with a mean gap of 0.43-0.47 and a kickoff gap of 0.85-0.91, the same scale as the sampled learners' exploitability. On this board the network, not the sampling noise, is what stops policy gradient.
+- Random board (the equilibrium mixes at 94 states): no exact gradient method tried here reaches it, even with a table. The table with Adam stays at a mean gap of 0.23; simultaneous gradient steps leave 0.12-0.17 after 6,000 steps; extragradient, a standard fix for the cycling of simultaneous gradient play near mixed equilibria, roughly halves that to 0.077-0.095 and then stops improving. The networks end at 0.24-0.34.
+- So there are two separate obstacles: sharing a network across states stops learning even where the equilibrium is pure, and where it has to mix, simultaneous gradient play does not settle even with a table. Why extragradient stops improving is not tested. The game here is the stationary discounted one, not the finite-horizon games of the sections above.
+
 The earlier sections (stationary `gamma = 0.9`, no step count, kickoff or random-start training, both boards) follow.
 
 > September 28 audit: PG results below predate the terminal-return fix and
